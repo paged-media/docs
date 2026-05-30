@@ -1,0 +1,82 @@
+name: pages
+
+# Build the static export (Next.js output: 'export') and deploy to GitHub Pages
+# at docs.paged.media. The WebGPU live-preview wasm is built from paged-media/core
+# (the commit pinned in core.pin) as part of the build.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; don't cancel an in-progress production deploy.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: resolve core pin
+        id: core
+        run: echo "sha=$(grep -v '^#' core.pin | head -1 | tr -d '[:space:]')" >> "$GITHUB_OUTPUT"
+
+      - name: checkout core (WebGPU paged-sdk for the live preview)
+        uses: actions/checkout@v4
+        with:
+          repository: paged-media/core
+          ref: ${{ steps.core.outputs.sha }}
+          path: core
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core
+          key: ${{ steps.core.outputs.sha }}
+
+      - name: toolchain — wasm-bindgen-cli (pinned) + binaryen
+        run: |
+          WB=$(awk '/^name = "wasm-bindgen"$/{getline; gsub(/version = "|"/,""); print; exit}' core/Cargo.lock)
+          echo "wasm-bindgen pin: $WB"
+          if ! command -v wasm-bindgen >/dev/null || [ "$(wasm-bindgen --version | awk '{print $2}')" != "$WB" ]; then
+            cargo install wasm-bindgen-cli --version "$WB"
+          fi
+          sudo apt-get update -y && sudo apt-get install -y binaryen
+
+      - name: build the WebGPU preview wasm (paged-sdk → public/preview)
+        run: CORE_DIR="$PWD/core" bash scripts/build-preview-wasm.sh
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: build static export (out/)
+        run: pnpm build
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

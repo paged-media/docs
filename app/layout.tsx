@@ -21,7 +21,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <body className="flex min-h-screen flex-col">
         <WipBanner />
-        <RootProvider>{children}</RootProvider>
+        <RootProvider search={{ options: { type: 'static' } }}>{children}</RootProvider>
         <Analytics />
       </body>
     </html>
