@@ -1,12 +1,56 @@
 ---
 title: Styles
+description: How an IDML document keeps its formatting in named, reusable style sheets — and how the parser turns a style reference plus a chain of parents into the values a run actually renders with.
 tier: intermediate
 diataxis: explanation
-status: stub
+status: published
+owner: paged-docs
 ---
 
-Paragraph, character, object, cell, and table styles; groups, inheritance, local overrides, and conflict resolution. Read right after the things being styled exist.
+A finished page carries thousands of formatting decisions — every paragraph's
+font, size, indent, and spacing; every run's colour and tracking; every frame's
+fill and stroke. IDML does not repeat those decisions on each piece of text.
+Instead it names them once, in `Resources/Styles.xml`, and lets stories, frames,
+and tables *point at* a style by id. A run says `AppliedCharacterStyle="…"`; the
+values live in the style sheet.
 
-> 🚧 Being written. This is a placeholder section landing; it is excluded from
-> search until it reaches real depth. Its order in the reference is justified by
-> reader progression, not by the source spec's organization (clean-room §6.1).
+That indirection is what this chapter is about. A style is rarely self-contained:
+it inherits from a parent through `BasedOn`, and the text that applies it can
+override a single attribute right on the range. So the value a glyph finally
+renders with is the result of a small resolution — applied style, parent chain,
+and local override, folded together in a fixed order. Read this chapter once the
+[stories](/docs/stories-text) and [frames](/docs/frames-paths) that *carry* these
+styles already make sense; styles are the layer that paints them.
+
+## What lives in the style sheet
+
+`Resources/Styles.xml` is one part referenced from the design map by its
+`idPkg:Styles` entry. Inside, each kind of style sits in its own root group:
+
+- **[Paragraph styles](/docs/styles/paragraph-styles)** — `<ParagraphStyle>` in
+  `<RootParagraphStyleGroup>`. Font, size, alignment, indents, spacing, and the
+  character defaults a paragraph starts from.
+- **[Character styles](/docs/styles/character-styles)** — `<CharacterStyle>` in
+  `<RootCharacterStyleGroup>`. Run-level overrides: font style, size, fill,
+  tracking, and the like.
+- **[Object styles](/docs/styles/object-styles)** — `<ObjectStyle>` in
+  `<RootObjectStyleGroup>`. Fill, stroke, and corner defaults a frame inherits.
+- **[Table and cell styles](/docs/styles/table-and-cell-styles)** —
+  `<TableStyle>` and `<CellStyle>`. Region cell styles, borders, fills, and
+  insets for [tables](/docs/tables).
+
+## The two ideas to carry through
+
+Every style kind shares the same two mechanics, and the chapter spends most of its
+time on them:
+
+1. **[The cascade](/docs/styles/the-cascade)** — `BasedOn` links a style to a
+   parent. The parser walks that chain at resolve time, filling any attribute the
+   child left unset from the parent above it, all the way down to the root.
+2. **Local overrides** — an attribute set directly on a `<ParagraphStyleRange>` or
+   `<CharacterStyleRange>` wins over whatever the applied style would supply.
+
+The last page, **[conflict resolution](/docs/styles/conflict-resolution)**, puts
+both together: it traces, attribute by attribute, exactly how the parser computes
+a single run's effective formatting, and calls out the ambiguous cases and the
+constructs it parses but does not yet act on.

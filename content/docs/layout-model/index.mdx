@@ -1,12 +1,47 @@
 ---
 title: Layout model
+description: How a document's pages are grouped into spreads, how page items stack within them, and how master spreads supply repeating layout.
 tier: intermediate
 diataxis: explanation
-status: stub
+status: published
+owner: paged-docs
 ---
 
-Spreads, pages, page items, stacking, master spreads, and override resolution. The container everything else is placed into.
+A story holds text, but text has to land *somewhere*. The layout model is the
+set of containers that decide where: a document is a sequence of **spreads**,
+each spread holds one or more **pages**, and each page is filled by **page
+items** — the frames, rectangles, ovals, lines, and polygons that carry the
+visible content. Layered on top, a **master spread** supplies items that repeat
+across many pages, and a body page can selectively **override** any master item
+it wants to replace.
 
-> 🚧 Being written. This is a placeholder section landing; it is excluded from
-> search until it reaches real depth. Its order in the reference is justified by
-> reader progression, not by the source spec's organization (clean-room §6.1).
+This chapter follows that nesting from the outside in: the spread, then its
+pages, then the items inside them, then the master layer that feeds them.
+
+## Why a reader ends up here
+
+Open any real-world `Spreads/Spread_*.xml` and you are looking at this model.
+The geometry of every frame is expressed relative to a page, the page relative
+to its spread, and the spread relative to the document's pasteboard. Master
+pages add a second source of items that get *stamped* onto body pages at render
+time. To predict what appears on a given page — and in what order — you need all
+four pieces.
+
+The order below is reader progression, not the source spec's arrangement: we
+start with the container you meet first and work toward the resolution rule you
+meet last.
+
+- **[Spreads and pages](/docs/layout-model/spreads-and-pages)** — the `Spread`
+  and `Page` elements and the attributes that position them.
+- **[Page items and stacking](/docs/layout-model/page-items-and-stacking)** —
+  what lives inside a spread, and how document order becomes z-order.
+- **[Master spreads](/docs/layout-model/master-spreads)** — the repeating-layout
+  layer and how a page points at it.
+- **[Override resolution](/docs/layout-model/override-resolution)** — how a body
+  page replaces individual master items.
+
+The frame *types* themselves — `TextFrame`, `Rectangle`, `Oval`, `GraphicLine`,
+`Polygon` — have their own geometry and paint attributes covered under
+[Frames & paths](/docs/frames-paths). The point coordinates those frames use are
+explained under [Geometry & coordinates](/docs/geometry-coordinates). This
+chapter is about the containers and the stacking, not the shapes.

@@ -1,0 +1,45 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "open-path",
+  "title": "An open path",
+  "tier": "pro",
+  "chapter": "geometry-coordinates",
+  "concept": "PathOpen=\"true\" on a GeometryPathType leaves the contour unclosed.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Spreads/Spread_uspread.xml",
+    "language": "xml",
+    "label": "Spreads/Spread_uspread.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree",
+    "live"
+  ],
+  "annotations": [
+    {
+      "lines": "8",
+      "note": "PathOpen=\"true\" tells the renderer not to add the closing segment back to the first anchor. Flip it to false and the V would close into a triangle."
+    },
+    {
+      "lines": "10-12",
+      "note": "Three anchors, two segments: a chevron. The path stops at the last anchor instead of joining back to the first."
+    },
+    {
+      "lines": "5",
+      "note": "FillColor is Swatch/None and only the stroke is set, so the open contour reads as a line rather than a region."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 2,
+    "paragraphs": 1,
+    "runs": 1
+  },
+  "pathological": false,
+  "license": "MIT"
+}

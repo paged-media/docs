@@ -1,0 +1,31 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "two-paragraphs",
+  "title": "Two paragraphs in one story",
+  "tier": "beginner",
+  "chapter": "stories-text",
+  "concept": "Each paragraph is its own ParagraphStyleRange; the count of those blocks is the paragraph count.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Stories/Story_ustory.xml",
+    "language": "xml",
+    "label": "Stories/Story_ustory.xml"
+  },
+  "views": ["raw", "annotated", "tree"],
+  "annotations": [
+    { "lines": "4", "note": "The first paragraph: one ParagraphStyleRange wrapping one CharacterStyleRange and its Content." },
+    { "lines": "9", "note": "The second paragraph: a sibling ParagraphStyleRange. A new paragraph means a new range, not a break inside the first." },
+    { "lines": "9", "note": "SpaceBefore=\"6\" is a local override on this range — space added above the paragraph, in points." }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 1,
+    "paragraphs": 2,
+    "runs": 2
+  },
+  "pathological": false,
+  "license": "MIT"
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "local-override",
+  "title": "A local override on a CharacterStyleRange",
+  "tier": "intermediate",
+  "chapter": "styles",
+  "concept": "Both runs apply the Emphasis character style; the second range sets PointSize directly on itself, and that local value wins over the style.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Stories/Story_ustory.xml",
+    "language": "xml",
+    "label": "Stories/Story_ustory.xml"
+  },
+  "views": ["raw", "annotated", "tree"],
+  "annotations": [
+    { "lines": "5-7", "note": "First run: applies Emphasis with no overrides, so its size comes from the style (PointSize 12)." },
+    { "lines": "8-10", "note": "Second run: applies the same Emphasis style but carries PointSize=\"24\" on the range itself; the run-level value wins, so this text shapes at 24 pt." }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 1,
+    "paragraphs": 1,
+    "runs": 2
+  },
+  "pathological": false,
+  "license": "MIT"
+}

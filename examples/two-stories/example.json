@@ -1,0 +1,29 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "two-stories",
+  "title": "A package with two stories",
+  "tier": "intermediate",
+  "chapter": "package-anatomy",
+  "concept": "How the design map names parts and how the parts reference each other.",
+  "packageDir": "package",
+  "editable": {
+    "part": "designmap.xml",
+    "language": "xml",
+    "label": "designmap.xml"
+  },
+  "views": ["raw", "annotated", "tree"],
+  "annotations": [
+    { "lines": "3", "note": "StoryList enumerates this document's stories by id; idPkg references point at the part files." },
+    { "lines": "10", "note": "Each idPkg:Spread / idPkg:Story / idPkg:MasterSpread names another part by its src path." },
+    { "lines": "12-13", "note": "Two stories are declared; the spread's two text frames each point at one via ParentStory." }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 2,
+    "frames": 2
+  },
+  "pathological": false,
+  "license": "MIT"
+}

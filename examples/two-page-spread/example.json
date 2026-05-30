@@ -1,0 +1,49 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "two-page-spread",
+  "title": "A two-page spread sharing a master",
+  "tier": "intermediate",
+  "chapter": "layout-model",
+  "concept": "Two pages in one spread, each applying the same master by its Self id.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Spreads/Spread_uspread.xml",
+    "language": "xml",
+    "label": "Spreads/Spread_uspread.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree",
+    "live"
+  ],
+  "annotations": [
+    {
+      "lines": "3",
+      "note": "PageCount=2: this spread holds two pages side by side. ShowMasterItems=true lets the master's items stamp onto each page."
+    },
+    {
+      "lines": "4",
+      "note": "The left page. Its ItemTransform shifts the page's inner origin to x=-595.276 so it sits to the left of the binding."
+    },
+    {
+      "lines": "4-5",
+      "note": "Both pages carry AppliedMaster=\"umaster\" — the bare Self id of the MasterSpread, not its src path."
+    },
+    {
+      "lines": "5",
+      "note": "The right page sits at the spread origin (identity translation)."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 2,
+    "stories": 2,
+    "frames": 4,
+    "paragraphs": 2,
+    "runs": 2
+  },
+  "pathological": false,
+  "license": "MIT"
+}

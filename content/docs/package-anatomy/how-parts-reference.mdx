@@ -1,14 +1,87 @@
 ---
 title: How the parts reference each other
-description: The id-and-reference graph that turns separate parts into one document.
+description: The id-and-reference graph that turns separate XML parts into one document, resolved by id lookup.
 tier: intermediate
 diataxis: explanation
-status: stub
+status: published
 owner: paged-docs
 ---
 
-Parts point at each other by id: a text frame names its `ParentStory`; a paragraph
-names its `AppliedParagraphStyle`; the design map names every part by `src`.
-Reading a document means resolving this graph.
+An IDML package is deliberately split: colors in one file, styles in another,
+each spread and each story in its own. That split only works because the parts
+point at each other. Almost every cross-part link is the same move — an attribute
+holds the `Self` id of something defined elsewhere, and reading the document means
+*resolving* those ids: looking each one up in the table of things with that id.
+Nothing is nested across files; everything is referenced.
 
-> 🚧 Being written.
+<PackageGraph />
+
+## One mechanism: a name, looked up
+
+The design map sits at the top of the graph. It points at parts by `src` path,
+and our parser turns those paths into the parts it loads. From there the links
+are all id references, and each resolves by the same lookup pattern:
+
+- **`idPkg:* src` → a part.** The design map's `idPkg:Spread` / `idPkg:Story` /
+  `idPkg:MasterSpread` elements carry a `src` like `Stories/Story_ustory1.xml`.
+  The parser reads each referenced spread, master, and story, and derives that
+  part's `Self` id back from the file name. (The resource parts —
+  `Graphic.xml`, `Styles.xml` — it opens at their fixed paths rather than from
+  the `idPkg` entries.)
+- **`TextFrame@ParentStory` → a `Story`.** A frame in a spread names a story id;
+  the document indexes frames by their `ParentStory`, so a story finds the frame
+  that hosts it (and vice versa) without scanning.
+- **`Page@AppliedMaster` → a `MasterSpread`.** A body page names the master it
+  inherits from. Masters are loaded first and keyed by id, so the lookup is
+  ready before any page asks for it. The reference may be the bare id or the full
+  `MasterSpread/<id>` form; both resolve to the same master.
+- **`AppliedParagraphStyle` / `AppliedCharacterStyle` → a style.** A paragraph or
+  character range in a story names a style by id; resolution looks it up in the
+  style sheet loaded from `Styles.xml`.
+- **`FillColor` / `StrokeColor` → a `Color`.** A frame or run names a swatch id;
+  resolution looks it up in the palette loaded from `Graphic.xml`, following a
+  `Swatch` indirection one level when needed.
+
+Each of these is a key lookup in a table the parser built once at open time. The
+ids are global within the package, which is why a `Self` value defined in one
+file can be referenced from any other.
+
+## Resolution is forgiving
+
+Because everything is a lookup, a *missing* target is not a crash — it is simply a
+lookup that returns nothing, and the consumer falls back. A `FillColor` naming a
+color that isn't in the palette resolves to no paint rather than aborting the
+parse. An `AppliedParagraphStyle` with no matching style yields an empty resolved
+set, so the cascade falls through to its defaults. This is deliberate: real
+documents drift, and a reader that resolves what it can is more useful than one
+that refuses the whole file over one dangling id.
+
+## Two links that need more than a single lookup
+
+Most references resolve in one hop. Two are worth calling out because they chain.
+
+**Style resolution walks `BasedOn`.** A style can be *based on* another style,
+inheriting any attribute it doesn't set itself. Resolving an applied style
+therefore means walking that chain — the run's own attributes first, then the
+applied character style, then the applied paragraph style, each hop filling in
+only what's still unset, down to the document's `$ID/[No … style]` defaults. The
+walk is depth-bounded so a self-referential `BasedOn` can't loop forever.
+
+**Story threading walks `NextTextFrame`.** A story longer than one frame flows
+into the next; each frame names the `Self` id of the frame that continues it. To
+lay out the whole story, the resolver finds the head frame (the one on the story
+that no other frame points to) and follows `NextTextFrame` from frame to frame
+until the chain ends. The walk is bounded too, so a cyclic chain stops rather than
+hangs.
+
+<StoryThreading />
+
+## Why the split is worth it
+
+The payoff of all this referencing is that each part stays small and editable on
+its own. Change a swatch and only `Graphic.xml` moves; rewrite a paragraph and
+only one `Story_*.xml` changes; the ids that connect everything stay put, so the
+rest of the graph still resolves. The cost is that you can't read any one part in
+isolation and know what it will look like — you have to resolve its references
+first. That resolution, an id at a time, is the whole job of opening an IDML
+document.

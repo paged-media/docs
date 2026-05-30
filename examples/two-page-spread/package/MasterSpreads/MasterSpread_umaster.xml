@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<idPkg:MasterSpread xmlns:idPkg="http://ns.adobe.com/AdobeInDesign/idml/1.0/packaging" DOMVersion="20.0">
+  <MasterSpread Self="umaster" Name="A-Master" NamePrefix="A" BaseName="Master" PageCount="2" ShowMasterItems="false" ItemTransform="1 0 0 1 0 0">
+    <Page Self="umasterL" Name="" AppliedMaster="n" ItemTransform="1 0 0 1 -595.276 0" GeometricBounds="0 0 841.89 595.276"/>
+    <Page Self="umasterR" Name="" AppliedMaster="n" ItemTransform="1 0 0 1 0 0" GeometricBounds="0 0 841.89 595.276"/>
+    <Rectangle Self="umasterRuleL" ContentType="Unassigned" AppliedObjectStyle="ObjectStyle/$ID/[None]" Visible="true" Name="$ID/" ItemTransform="1 0 0 1 -537.638 56.6929" FillColor="Color/Black" StrokeColor="Swatch/None" StrokeWeight="0">
+      <Properties>
+        <PathGeometry>
+          <GeometryPathType PathOpen="false">
+            <PathPointArray>
+              <PathPointType Anchor="0 0" LeftDirection="0 0" RightDirection="0 0"/>
+              <PathPointType Anchor="0 2" LeftDirection="0 2" RightDirection="0 2"/>
+              <PathPointType Anchor="480 2" LeftDirection="480 2" RightDirection="480 2"/>
+              <PathPointType Anchor="480 0" LeftDirection="480 0" RightDirection="480 0"/>
+            </PathPointArray>
+          </GeometryPathType>
+        </PathGeometry>
+      </Properties>
+    </Rectangle>
+    <Rectangle Self="umasterRuleR" ContentType="Unassigned" AppliedObjectStyle="ObjectStyle/$ID/[None]" Visible="true" Name="$ID/" ItemTransform="1 0 0 1 57.638 56.6929" FillColor="Color/Black" StrokeColor="Swatch/None" StrokeWeight="0">
+      <Properties>
+        <PathGeometry>
+          <GeometryPathType PathOpen="false">
+            <PathPointArray>
+              <PathPointType Anchor="0 0" LeftDirection="0 0" RightDirection="0 0"/>
+              <PathPointType Anchor="0 2" LeftDirection="0 2" RightDirection="0 2"/>
+              <PathPointType Anchor="480 2" LeftDirection="480 2" RightDirection="480 2"/>
+              <PathPointType Anchor="480 0" LeftDirection="480 0" RightDirection="480 0"/>
+            </PathPointArray>
+          </GeometryPathType>
+        </PathGeometry>
+      </Properties>
+    </Rectangle>
+  </MasterSpread>
+</idPkg:MasterSpread>

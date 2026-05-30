@@ -1,0 +1,84 @@
+---
+title: Threading and overset
+description: How one story flows across several frames, and what happens to text that doesn't fit.
+tier: pro
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+A story holds text; a frame shows it. When a story is longer than its frame, the
+text has to go somewhere — IDML's answer is **threading**: the story continues in
+the next frame in a chain. The text that still doesn't fit at the end of the chain
+is **overset**.
+
+<StoryThreading />
+
+## A story is independent of its frames
+
+The text lives in one `Stories/Story_*.xml` part regardless of how many frames
+display it. Frames don't *contain* text; they *reference* a story through their
+`ParentStory` attribute and contribute a box for it to flow into. So "one story in
+three frames" is one `Story` part and three `TextFrame` elements that all name the
+same `ParentStory`. The story is composed once, as a single continuous column,
+then poured into the frames in chain order.
+
+## The chain: `NextTextFrame` and `PreviousTextFrame`
+
+Each frame in a thread points forward to the next with `NextTextFrame` (the `Self`
+id of the following frame) and back with `PreviousTextFrame`. A frame at the head
+of the chain has no incoming link; a frame at the tail has `NextTextFrame="n"`
+(the IDML "none" sentinel).
+
+To build the chain for a story, our scene layer collects every frame whose
+`ParentStory` matches, picks the **head** — the one frame that is *not* named as
+any other frame's `NextTextFrame` — and follows `NextTextFrame` links until they
+run out. (`PreviousTextFrame` is the document's back-pointer; the walk itself only
+needs the forward links, and is bounded so a malformed cyclic document can't hang.)
+This is `Document::frame_chain` in `paged-scene/src/lib.rs:253`. The forward link
+is read off each frame's `NextTextFrame` attribute in `paged-parse/src/spread.rs:1714`.
+
+The example below is exactly that: one story `ustory`, two frames. Frame A is too
+short to hold the whole story, so it names frame B as its `NextTextFrame`; frame B
+names frame A as its `PreviousTextFrame`; both carry `ParentStory="ustory"`.
+
+<ExampleEmbed example="threaded-story">
+  One story, two frames: frame A’s NextTextFrame points at frame B, which points back.
+</ExampleEmbed>
+
+## Overset: the text that doesn't fit
+
+When the composed story is taller than the chain can hold, the leftover lines at
+the bottom of the **last** frame are *overset*. In InDesign this is the red plus
+sign on a frame's out-port; in the IDML there is nothing to mark it — overset is a
+layout outcome, not an attribute.
+
+Our renderer composes the whole story and lays lines into the chain frame by
+frame. At the last frame, lines whose baseline falls past the frame's bottom are
+**dropped** rather than spilled past the frame with no clip — see
+`paged-renderer/src/pipeline.rs:3909`. That matches how InDesign's exported PDF
+hides overset behind the frame's clip, which keeps the rendered page faithful, but
+it means:
+
+<SupportBadge status="parsed-not-rendered" note="overset lines are dropped at the end of the chain, not surfaced or flagged — paged-renderer/src/pipeline.rs:3909" />
+
+The text is still fully present in the story part — extraction (see
+[extract all text](/docs/stories-text/extract-all-text)) returns it all. Only the
+*rendered* page omits the lines that didn't fit. There is no diagnostic that says
+"this story overset"; if you need to detect it, compare the composed line count to
+the placed line count yourself.
+
+## A related gap: conditional and metadata runs
+
+Threading decides *where* text goes; a couple of other constructs decide *whether*
+a run is laid out at all, and these don't all behave the same:
+
+- **Conditional text is enforced.** A `CharacterStyleRange` with
+  `AppliedConditions` is dropped when any referenced `Condition` resolves to
+  `Visible="false"`; runs with no conditions, or whose conditions are all visible,
+  are laid out normally. <SupportBadge status="supported" note="hidden conditional runs are filtered before layout — paged-renderer/src/pipeline.rs:2765" />
+- **Hidden and note text never flows.** `HiddenText`, `Note`, and index-marker
+  subtrees are suppressed by the parser, so they never reach layout. <SupportBadge status="supported" note="suppressed during story parse — paged-parse/src/story.rs:994" />
+
+Both are different from overset: those runs are removed because of *what they are*,
+whereas overset text is dropped only because of *where it ended up*.

@@ -3,18 +3,71 @@ title: The design map
 description: The root manifest that names every other part and lists the document's stories.
 tier: intermediate
 diataxis: reference
-status: draft
+status: published
 owner: paged-docs
 ---
 
-`designmap.xml` is the document's root manifest. It does two jobs: it carries
-document-level settings, and it names every other part through `idPkg:*` reference
-elements that each carry a `src` pointing at another file in the archive — the
-graphic resources, the fonts, the styles, the spreads, the stories, and so on.
+`designmap.xml` is the part a reader — and our parser — opens first. It is the
+document's root manifest: it carries a handful of document-level settings on its
+`Document` element, and it names every other part in the package through
+`idPkg:*` reference elements. Open it and you can see the whole shape of the
+document before reading anything else.
 
-It also declares the document's `StoryList`: the ids of the stories the document
-contains. A consumer reads the design map first to learn the shape of the whole
-document before opening any other part.
+<PackageGraph />
 
-> 🚧 Being written. This page will annotate a real design map field by field,
-> drawn from what our parser reads when it opens a package.
+The package below has two stories in two frames. The view shows its design map:
+note how `StoryList` enumerates the stories and how each `idPkg:*` element points
+at a part file by `src`.
+
+<ExampleEmbed example="two-stories">
+  The design map of a two-story document — the manifest that ties the package together.
+</ExampleEmbed>
+
+## The `Document` element
+
+The root element carries the document's identity and a few global settings. Our
+parser reads these and ignores the rest; everything structural lives in the parts
+the design map references.
+
+<AttrTable
+  element="Document"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'supported', note: 'The document id, conventionally "d".' },
+    { attr: 'DOMVersion', type: 'string (e.g. "20.0")', support: 'parsed-not-rendered', note: 'Read but not yet used to branch behavior — the parser targets a modern DOM.' },
+    { attr: 'StoryList', type: 'space-separated ids', support: 'supported', note: 'The ids of the document’s stories; each should have a matching idPkg:Story.' },
+    { attr: 'Name', type: 'string', support: 'parsed-not-rendered', note: 'The .indd file name; informational.' },
+    { attr: 'CMYKProfile', type: 'string', support: 'supported', note: 'ICC profile name; passed to color management.' },
+    { attr: 'RGBProfile', type: 'string', support: 'supported', note: 'ICC profile name; passed to color management.' },
+  ]}
+/>
+
+## The `idPkg:*` references
+
+Each child of `Document` in this namespace names one other part by a `src` path
+relative to the package root. The parser follows the ones it needs to build the
+document and resolves the rest lazily.
+
+<AttrTable
+  element="idPkg:* (src on each)"
+  rows={[
+    { attr: 'idPkg:Graphic', type: 'src="Resources/Graphic.xml"', support: 'supported', note: 'Colors, swatches, and gradients.' },
+    { attr: 'idPkg:Fonts', type: 'src="Resources/Fonts.xml"', support: 'parsed-not-rendered', note: 'A font manifest; actual fonts are provided to the renderer separately.' },
+    { attr: 'idPkg:Styles', type: 'src="Resources/Styles.xml"', support: 'supported', note: 'Paragraph, character, object, cell, and table styles.' },
+    { attr: 'idPkg:Preferences', type: 'src="Resources/Preferences.xml"', support: 'not-yet-parsed', note: 'Document/UI preferences; read past, not acted on.' },
+    { attr: 'idPkg:MasterSpread', type: 'src="MasterSpreads/MasterSpread_*.xml"', support: 'supported', note: 'One per master spread.' },
+    { attr: 'idPkg:Spread', type: 'src="Spreads/Spread_*.xml"', support: 'supported', note: 'One per spread (the pages and their items).' },
+    { attr: 'idPkg:Story', type: 'src="Stories/Story_*.xml"', support: 'supported', note: 'One per story; matched to StoryList.' },
+    { attr: 'idPkg:BackingStory', type: 'src="XML/BackingStory.xml"', support: 'not-yet-parsed', note: 'The tagged-XML backing store; skipped today.' },
+  ]}
+/>
+
+## Two things the design map does *not* do
+
+The container's `META-INF/container.xml` (the UCF "start here" pointer) names the
+design map as the document's root. Our parser does not read it — it goes straight
+to `designmap.xml` at the fixed package path. <SupportBadge status="not-yet-parsed" note="META-INF/container.xml" />
+
+And while the design map *lists* the stories, it does not contain them. The text
+lives in the [content parts](/docs/package-anatomy/content-parts); the design map
+only points the way. How those pointers resolve — `ParentStory`, `AppliedMaster`,
+`src` — is the subject of [how the parts reference each other](/docs/package-anatomy/how-parts-reference).

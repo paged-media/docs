@@ -1,0 +1,86 @@
+---
+title: Table and cell styles
+description: The TableStyle and CellStyle elements — how a table style nominates a default cell style per region and sets its border strokes and alternating fills, and how a cell style carries per-edge strokes, insets, and fill.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+Tables get their own two style kinds. A **cell style** formats a single cell —
+its fill, its four edge strokes, its insets. A **table style** sits a level above:
+it nominates a default cell style for each *region* of the table (header, body,
+footer, and the left / right columns) and carries the table's own border strokes
+and alternating-row fills. Both cascade through `BasedOn` and resolve with the
+same first-setter-wins fold described in [the cascade](/docs/styles/the-cascade).
+For the table structure these styles dress — rows, columns, header/footer regions,
+merged cells — see the [Tables chapter](/docs/tables).
+
+## Where they live
+
+`<TableStyle>` lives in `<RootTableStyleGroup>` and `<CellStyle>` in
+`<RootCellStyleGroup>` (each with optional intermediate group nesting the parser
+flattens). A `<Table>` names its table style with `AppliedTableStyle="…"`; a
+`<Cell>` names its cell style with `AppliedCellStyle="…"`.
+
+## TableStyle
+
+A table style's region attributes are *references to cell styles* — the cell style
+to apply to cells in that region unless the cell overrides it. The border-stroke
+attributes (`Swatch/None` normalises to unset) and the start/end alternating-fill
+attributes paint the table itself.
+
+<AttrTable
+  element="TableStyle"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'supported', note: 'The style id. What a table references via AppliedTableStyle.' },
+    { attr: 'Name', type: 'string', support: 'parsed-not-rendered', note: 'Human-readable name; resolution keys on Self.' },
+    { attr: 'BasedOn', type: 'string id', support: 'supported', note: 'Parent table style, or the [No table style] default. Attribute or <BasedOn> Properties child.' },
+    { attr: 'BodyRegionCellStyle', type: 'string (CellStyle id)', support: 'supported', note: 'Cell style for body cells (everything outside header/footer/columns).' },
+    { attr: 'HeaderRegionCellStyle', type: 'string (CellStyle id)', support: 'supported', note: 'Cell style for header-row cells.' },
+    { attr: 'FooterRegionCellStyle', type: 'string (CellStyle id)', support: 'supported', note: 'Cell style for footer-row cells.' },
+    { attr: 'LeftColumnRegionCellStyle / RightColumnRegionCellStyle', type: 'string (CellStyle id)', support: 'supported', note: 'Cell styles for the leftmost / rightmost column regions.' },
+    { attr: 'TopBorderStrokeColor / BottomBorderStrokeColor / LeftBorderStrokeColor / RightBorderStrokeColor', type: 'string (swatch id)', support: 'supported', note: 'Per-edge table-border paint. "Swatch/None" normalises to unset.' },
+    { attr: 'TopBorderStrokeWeight / … / RightBorderStrokeWeight', type: 'double (pt)', support: 'supported', note: 'Per-edge table-border weight in points.' },
+    { attr: 'StartRowFillColor / StartRowFillCount / StartRowFillTint', type: 'swatch id / int / double', support: 'supported', note: 'The "starting" alternating-row fill: colour, how many consecutive rows take it, and its tint.' },
+    { attr: 'EndRowFillColor / EndRowFillCount / EndRowFillTint', type: 'swatch id / int / double', support: 'supported', note: 'The alternating "end" fill that follows the starting run.' },
+  ]}
+/>
+
+(`crates/paged-parse/src/styles.rs` defines `TableStyleDef`, mirrored above.)
+
+The `StrokeOrder` attribute — which strokes win at a crossing (`RowOnTop`,
+`ColumnOnTop`, `BestJoins`, `Indesign2Compatibility`) — and the gap-colour,
+skip-alternating, and column-fill families are stored by IDML on `<TableStyle>`
+but are not yet read here. <SupportBadge status="not-yet-parsed" note="StrokeOrder, gap colours, column fills, skip-alternating counts" />
+
+## CellStyle
+
+A cell style carries the fill, four per-edge strokes, and vertical justification a
+cell falls back on when its own attributes are absent. Colour attributes set to
+`Swatch/None` normalise to unset for the cascade.
+
+<AttrTable
+  element="CellStyle"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'supported', note: 'The style id. What a cell references via AppliedCellStyle, and what a TableStyle region attribute points at.' },
+    { attr: 'Name', type: 'string', support: 'parsed-not-rendered', note: 'Human-readable name; resolution keys on Self.' },
+    { attr: 'BasedOn', type: 'string id', support: 'supported', note: 'Parent cell style, or the [None] default. Attribute or <BasedOn> Properties child.' },
+    { attr: 'FillColor', type: 'string (swatch id)', support: 'supported', note: 'Cell background fill. "Swatch/None" normalises to unset.' },
+    { attr: 'VerticalJustification', type: 'string (e.g. TopAlign, CenterAlign, BottomAlign)', support: 'supported', note: 'Vertical placement of the cell\'s content.' },
+    { attr: 'TopEdgeStrokeColor / BottomEdgeStrokeColor / LeftEdgeStrokeColor / RightEdgeStrokeColor', type: 'string (swatch id)', support: 'supported', note: 'Per-edge cell-border paint. "Swatch/None" normalises to unset.' },
+    { attr: 'TopEdgeStrokeWeight / … / RightEdgeStrokeWeight', type: 'double (pt)', support: 'supported', note: 'Per-edge cell-border weight in points.' },
+  ]}
+/>
+
+(`crates/paged-parse/src/styles.rs` defines `CellStyleDef`, mirrored above.)
+
+The cell **insets** (`TopInset`, `LeftInset`, `BottomInset`, `RightInset`), the
+`AppliedParagraphStyle` the cell's text starts from, diagonal lines, and gap
+colours are stored by IDML on `<CellStyle>` but are not yet read here — cell
+padding today comes from the cell element rather than its style.
+<SupportBadge status="not-yet-parsed" note="Cell insets, AppliedParagraphStyle, diagonal lines, gap colours on CellStyle" />
+
+How a cell's effective formatting is built — its own attributes, then its cell
+style's chain, then the table style's region default — follows the same layered
+logic as text; see [conflict resolution](/docs/styles/conflict-resolution).

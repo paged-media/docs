@@ -1,4 +1,12 @@
 {
   "title": "Styles",
-  "pages": ["index"]
+  "pages": [
+    "index",
+    "the-cascade",
+    "paragraph-styles",
+    "character-styles",
+    "object-styles",
+    "table-and-cell-styles",
+    "conflict-resolution"
+  ]
 }

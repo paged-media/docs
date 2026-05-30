@@ -1,0 +1,90 @@
+---
+title: Text variables
+description: How TextVariableInstance and auto-page-number markers turn into characters in a run.
+tier: intermediate
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+Some of the characters in a story aren't typed — they're computed. A running
+header, a chapter number, a file name, the current page number: InDesign stores
+these as **text variables** and **page-number markers**, and bakes their value
+into the story at export. Our parser inlines that value into the run text, so by
+the time you have a run string the variable is just more characters.
+
+## Two pieces: the definition and the instance
+
+A text variable has a **definition** in the design map and one or more
+**instances** in the stories.
+
+The definition is a `TextVariable` element under `Document`. The parser records
+its identity and type — `paged-parse/src/designmap.rs:227`.
+
+<AttrTable
+  element="TextVariable (designmap.xml)"
+  rows={[
+    { attr: 'Self', type: 'string id (TextVariable/…)', support: 'supported', note: 'The id an instance references via AssociatedTextVariable.' },
+    { attr: 'Name', type: 'string', support: 'supported', note: 'The variable’s display name (e.g. "Chapter Number").' },
+    { attr: 'VariableType', type: 'string', support: 'supported', note: 'What kind of variable it is (running header, file name, page number, …).' },
+  ]}
+/>
+
+The instance is a `TextVariableInstance` element sitting inside a
+`CharacterStyleRange`, where the variable's value appears in the flowed text. It
+carries the value verbatim in `ResultText`, plus a back-reference to its
+definition. When the parser reaches one, it appends `ResultText` to the current
+run — `paged-parse/src/story.rs:1643`.
+
+<AttrTable
+  element="TextVariableInstance (inside a CharacterStyleRange)"
+  rows={[
+    { attr: 'ResultText', type: 'string', support: 'supported', note: 'The computed value, inlined into the run text exactly as written.' },
+    { attr: 'AssociatedTextVariable', type: 'string ref (TextVariable/…)', support: 'parsed-not-rendered', note: 'Points back at the definition. Read, but not used to recompute the value.' },
+  ]}
+/>
+
+<SupportBadge status="parsed-not-rendered" note="ResultText is the frozen value from the last export; it is not recomputed at render time — paged-parse/src/story.rs:1643" />
+
+`ResultText` is a snapshot. It is whatever InDesign computed the last time it
+composed the document — so a "Running Header" instance carries the header text as
+of export, and a "File Name" instance carries the file name as of export. The
+renderer inlines that snapshot; it does not re-derive the value from the current
+layout. A running header won't update if you move the paragraph it tracks, and a
+page-number variable baked as text won't follow repagination.
+
+## Auto-page-number markers
+
+The current- and next-page numbers are a special case. InDesign doesn't store them
+as `TextVariableInstance` — it writes a processing instruction inside `Content`:
+`<?ACE 18?>` for the current page number and `<?ACE 19?>` for the next page number
+(the kind familiar from "continued on page …" footers). These correspond to the
+`PageNumberType` values `AutoPageNumber` and `NextPageNumber`.
+
+Because the real number depends on where the frame lands, the parser can't inline a
+literal. Instead it substitutes a private-use placeholder character that the
+renderer replaces with the live page number at emit time —
+`AUTO_PAGE_NUMBER_MARKER` (U+E018) and `NEXT_PAGE_NUMBER_MARKER` (U+E019),
+defined at `paged-parse/src/story.rs:45`, written when the PI is seen at
+`paged-parse/src/story.rs:1729`.
+
+<AttrTable
+  element="Page-number markers (PI inside Content)"
+  rows={[
+    { attr: '<?ACE 18?>', type: 'processing instruction', support: 'supported', note: 'Current-page-number marker → U+E018; renderer substitutes the live page number.' },
+    { attr: '<?ACE 19?>', type: 'processing instruction', support: 'supported', note: 'Next-page-number marker → U+E019; used in "continued on" footers.' },
+  ]}
+/>
+
+These markers are deliberately picked from a Unicode tag block that no real text
+produces, so they never collide with authored characters. If you extract text and
+see a U+E018 / U+E019, that's a live page-number marker, not stray data — map it
+back to a page number (or strip it) for a plain-text export.
+
+## Why this matters for extraction
+
+When you [extract all text](/docs/stories-text/extract-all-text), a
+`TextVariableInstance` contributes its `ResultText` like any other characters, so a
+running header shows up in your output as the frozen header string. The page-number
+markers, by contrast, come through as the U+E018 / U+E019 placeholders — decide per
+export whether to resolve them, leave them, or drop them.

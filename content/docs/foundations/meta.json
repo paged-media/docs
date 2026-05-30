@@ -1,4 +1,4 @@
 {
   "title": "Foundations",
-  "pages": ["index", "what-is-idml", "binary-to-xml-lineage", "why-a-package", "read-one-by-hand"]
+  "pages": ["index", "what-is-idml", "binary-to-xml-lineage", "why-a-package", "read-one-by-hand", "how-the-renderer-reads-it"]
 }

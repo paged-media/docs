@@ -1,0 +1,45 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "framed-rectangle",
+  "title": "A rectangle placed by its transform",
+  "tier": "intermediate",
+  "chapter": "geometry-coordinates",
+  "concept": "How ItemTransform positions a shape whose PathGeometry is authored at the origin.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Spreads/Spread_uspread.xml",
+    "language": "xml",
+    "label": "Spreads/Spread_uspread.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree",
+    "live"
+  ],
+  "annotations": [
+    {
+      "lines": "5",
+      "note": "ItemTransform is the 6-tuple a b c d tx ty. Here a=d=1, b=c=0 (no scale/rotate) and tx=150 ty=200 slide the rectangle 150pt right and 200pt down into the page."
+    },
+    {
+      "lines": "9-12",
+      "note": "The four PathPointType anchors are authored in the rectangle's own inner coords, starting at 0 0. The shape lives at the origin; the transform does the placing."
+    },
+    {
+      "lines": "10",
+      "note": "Anchor is x y. 0 120 is x=0, y=120 — y grows downward, so this is the lower-left corner."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 2,
+    "paragraphs": 1,
+    "runs": 1
+  },
+  "pathological": false,
+  "license": "MIT"
+}

@@ -1,4 +1,11 @@
 {
   "title": "Geometry & coordinates",
-  "pages": ["index"]
+  "pages": [
+    "index",
+    "units-and-origin",
+    "item-transform",
+    "geometric-bounds",
+    "path-geometry",
+    "compound-paths"
+  ]
 }

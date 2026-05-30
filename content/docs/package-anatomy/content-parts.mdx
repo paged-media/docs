@@ -1,14 +1,101 @@
 ---
 title: Content parts
-description: The spreads and stories that hold pages and text.
+description: The Spreads, MasterSpreads, and Stories parts — what each holds and how Self ids tie them to the design map.
 tier: intermediate
 diataxis: reference
-status: stub
+status: published
 owner: paged-docs
 ---
 
-The content lives in `Spreads` (pages and the items on them) and `Stories` (the
-text). Each spread and each story is its own part, so a change to one touches only
-one file.
+If the resource parts are the document's shared vocabulary, the content parts are
+the document itself: where the pages are, what shapes sit on them, and what text
+those shapes hold. Three folders carry it — `Spreads`, `MasterSpreads`, and
+`Stories` — and each part is one file, named so the design map can point at it.
 
-> 🚧 Being written.
+The design map lists these parts with `idPkg:Spread`, `idPkg:MasterSpread`, and
+`idPkg:Story` elements, each carrying a `src` path. The embed below shows that
+manifest for a two-story document — note the two `idPkg:Story` entries that match
+the `StoryList` and the two text frames in the single spread.
+
+<ExampleEmbed example="two-stories">
+  A one-page, two-story package: one spread with two frames, two stories, one master.
+</ExampleEmbed>
+
+## `Spreads/Spread_*.xml` — pages and the items on them
+
+A spread part holds one `<Spread>` element. Inside it are the `<Page>` elements
+(the spread's pages) and the page items that sit on those pages — `<TextFrame>`,
+`<Rectangle>`, `<Oval>`, `<GraphicLine>`, `<Polygon>`, and `<Group>`. The parser
+reads page bounds and a flat, z-ordered list of items per spread; a `<TextFrame>`
+is the bridge to text, because it names a story rather than containing the words
+itself.
+
+<AttrTable
+  element="Page"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'supported', note: 'The page id (e.g. "upage").' },
+    { attr: 'GeometricBounds', type: '"y1 x1 y2 x2" in points', support: 'supported', note: 'Page rectangle in the page’s own coordinate space. Y grows downward.' },
+    { attr: 'AppliedMaster', type: 'MasterSpread id', support: 'supported', note: 'The master this page inherits from; resolved to a MasterSpread by id. "n" means none.' },
+    { attr: 'ItemTransform', type: '6 numbers (affine)', support: 'supported', note: 'Maps the page’s coords into the spread. Absent ⇒ identity.' },
+    { attr: 'OverrideList', type: 'space-separated ids', support: 'supported', note: 'Master items this page has overridden; the originals are not stamped onto the page.' },
+    { attr: 'Name', type: 'string', support: 'supported', note: 'The page label as InDesign numbered it ("1", "iii", "A-3"); substituted for auto-page-number markers.' },
+  ]}
+/>
+
+<AttrTable
+  element="TextFrame"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'supported', note: 'The frame id (e.g. "uframe1"); the target of another frame’s NextTextFrame.' },
+    { attr: 'ParentStory', type: 'Story id', support: 'supported', note: 'The story whose text flows into this frame. This is the link from spread to story.' },
+    { attr: 'GeometricBounds / PathGeometry', type: 'bounds or path', support: 'supported', note: 'The frame’s shape; supplies the column box the text composes into.' },
+    { attr: 'ItemTransform', type: '6 numbers (affine)', support: 'supported', note: 'Places the frame in the spread. Absent ⇒ identity.' },
+    { attr: 'NextTextFrame', type: 'TextFrame id', support: 'supported', note: 'The frame this story continues into when it overflows. "n" / absent ends the chain.' },
+    { attr: 'AppliedObjectStyle', type: 'ObjectStyle id', support: 'supported', note: 'Fill / stroke / corner defaults; resolved against Styles.xml. Real documents rely on this over per-frame FillColor.' },
+    { attr: 'FillColor / StrokeColor', type: 'Color or Swatch id', support: 'supported', note: 'Per-frame paint overrides; resolved against the Graphic palette. Swatch/None means no paint.' },
+  ]}
+/>
+
+A text frame nested inside a `<Group>` is currently skipped, and the spread
+records a count of how many it dropped so a consumer can detect the loss.
+<SupportBadge status="parsed-not-rendered" note="TextFrame nested inside a Group" />
+
+## `MasterSpreads/MasterSpread_*.xml` — the master pages
+
+A master spread is the template a body page inherits from. Its XML is the same
+shape as a regular spread — one `<MasterSpread>` element with `<Page>` children
+and the same kinds of page items — so the parser reuses the spread parser to read
+it. The parser loads every master first, before the body spreads, and keys each
+by the `Self` id derived from its file name (`MasterSpreads/MasterSpread_umaster.xml`
+→ `umaster`). A page's `AppliedMaster` resolves against that table, whether it
+gives the bare id or the full `MasterSpread/umaster` reference.
+
+## `Stories/Story_*.xml` — the text
+
+A story part holds one `<Story>` element: the text and its formatting, with no
+geometry. The parser reads it as a tree of `<ParagraphStyleRange>` →
+`<CharacterStyleRange>` → `<Content>`, collapsing the content runs into paragraphs
+of styled runs. The styles a story applies are *named*, not embedded — a paragraph
+range carries `AppliedParagraphStyle`, a character range carries
+`AppliedCharacterStyle` and any local overrides, and those names resolve against
+`Styles.xml`.
+
+<AttrTable
+  element="Story content"
+  rows={[
+    { attr: 'Story@Self', type: 'string id', support: 'supported', note: 'The story id (e.g. "ustory1"); matches an entry in the document’s StoryList and a TextFrame’s ParentStory.' },
+    { attr: 'ParagraphStyleRange@AppliedParagraphStyle', type: 'ParagraphStyle id', support: 'supported', note: 'The paragraph style for this range; resolved against Styles.xml. Also the layer the cascade falls through to.' },
+    { attr: 'CharacterStyleRange@AppliedCharacterStyle', type: 'CharacterStyle id', support: 'supported', note: 'The character style for this run; local attributes on the range override it.' },
+    { attr: 'Content', type: 'text', support: 'supported', note: 'The literal characters. A sibling <Br/> is a forced line break within the paragraph; a new <ParagraphStyleRange> starts a new paragraph.' },
+    { attr: 'StoryDirection', type: 'Horizontal | VerticalWritingDirection', support: 'parsed-not-rendered', note: 'CJK vertical-text flag. Captured; the layout does not yet honour vertical writing.' },
+  ]}
+/>
+
+## How the Self ids tie back to the design map
+
+The design map's `StoryList` is just a list of story ids; each id should have a
+matching `idPkg:Story` whose `src` names the file, and the parser derives the
+story's `Self` id back from that file name (`Stories/Story_ustory1.xml` →
+`ustory1`). The same id appears again as a frame's `ParentStory` in some spread.
+That triple — listed in the manifest, named on a frame, carried on the story
+element — is what places a story's text on a page. Following those ids from part
+to part is the subject of [how the parts reference each other](/docs/package-anatomy/how-parts-reference).

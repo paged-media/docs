@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<idPkg:Story xmlns:idPkg="http://ns.adobe.com/AdobeInDesign/idml/1.0/packaging" DOMVersion="20.0">
+  <Story Self="ustory">
+    <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
+      <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+        <Content>This is one story, but it is too long to fit in the first frame alone. When the words run past the bottom of frame A, they continue in frame B, because frame A names frame B as its NextTextFrame and frame B names frame A as its PreviousTextFrame. Both frames carry the same ParentStory, so the renderer treats them as one continuous column of text split across two boxes.</Content>
+      </CharacterStyleRange>
+    </ParagraphStyleRange>
+  </Story>
+</idPkg:Story>

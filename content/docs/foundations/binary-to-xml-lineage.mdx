@@ -3,19 +3,48 @@ title: The binary-to-XML lineage
 description: Why an XML interchange form exists alongside the native binary document.
 tier: beginner
 diataxis: explanation
-status: draft
+status: published
 owner: paged-docs
 ---
 
 The native document format is a packed binary: compact, fast for the application
 to load, and tightly coupled to that application's internals. That is good for the
-app and hard for everyone else — you cannot reliably read it, diff it, or generate
-it from another tool.
+app and hard for everyone else. You cannot reliably read it, diff it, or generate
+it from another tool without reverse-engineering the byte layout.
 
 IDML is the answer to "everyone else." It expresses the same document as XML, so
-the structure is inspectable and other software can produce and consume it without
-reverse-engineering a binary.
+the structure is inspectable and other software can produce and consume it. The
+binary and the XML carry the same document; they differ in audience. The binary
+serves one application. The XML serves any tool willing to read element names.
 
-> 🚧 Being written. This page will trace what is preserved when a document is
-> written as IDML and what is intentionally left to the application, drawn from
-> what our parser observes round-tripping real files.
+## What the form preserves
+
+The interchange form keeps the things a second tool needs to reconstruct the
+document: the page geometry, the text and where it flows, the styles, the colors,
+and the references that tie those parts together. It does not try to be the
+application's working memory. Live caches, undo history, and editor-only state
+stay in the binary. What survives the trip to XML is the document's structure and
+intent — what is on the page and why — not a snapshot of the app's runtime.
+
+## What it leaves to the application
+
+Some values are recorded as facts rather than as instructions. A text variable,
+for example, carries the text it resolved to at export time; recomputing it page
+by page is left to whatever opens the file. The form states "this is what it said
+then" and trusts the application to decide whether to refresh it.
+
+## What we read first
+
+Our reader treats the archive as a container before it treats it as a document.
+The container open (`core/crates/paged-parse`) decompresses every entry, then
+checks one thing up front: the `mimetype` entry must read exactly
+`application/vnd.adobe.indesign-idml-package`. Anything else is rejected as
+not-IDML before a single page is parsed. Only then does it read `designmap.xml`,
+the manifest that names every other part.
+
+`Document::open` (`core/crates/paged-scene`) builds on that: it pulls the shared
+resources (graphics, styles), then the master spreads, the spreads, and the
+stories the manifest enumerates — each fetched by the path the design map gave it.
+The lineage shows here in the order of reading: identify the package, read the
+manifest, follow it to the parts. The XML exists precisely so a tool other than
+the original application can do exactly that.

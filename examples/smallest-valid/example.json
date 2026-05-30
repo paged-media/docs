@@ -11,12 +11,28 @@
     "language": "xml",
     "label": "Stories/Story_ustory.xml"
   },
-  "views": ["raw", "annotated", "tree"],
+  "views": [
+    "raw",
+    "annotated",
+    "tree"
+  ],
   "annotations": [
-    { "lines": "3", "note": "A Story holds the text; its Self id is what the spread's text frame points at." },
-    { "lines": "4", "note": "A ParagraphStyleRange is one run of text sharing a paragraph style." },
-    { "lines": "5", "note": "A CharacterStyleRange nests inside it for character-level styling." },
-    { "lines": "6", "note": "Content is the actual text. Edit it and the page re-renders." }
+    {
+      "lines": "3",
+      "note": "A Story holds the text; its Self id is what the spread's text frame points at."
+    },
+    {
+      "lines": "4",
+      "note": "A ParagraphStyleRange is one run of text sharing a paragraph style."
+    },
+    {
+      "lines": "5",
+      "note": "A CharacterStyleRange nests inside it for character-level styling."
+    },
+    {
+      "lines": "6",
+      "note": "Content is the actual text. Edit it and the page re-renders."
+    }
   ],
   "expect": {
     "opens": true,

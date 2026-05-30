@@ -1,0 +1,45 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "compound-path",
+  "title": "A compound path with a hole",
+  "tier": "pro",
+  "chapter": "geometry-coordinates",
+  "concept": "Two GeometryPathType contours in one PathGeometry form a shape with a hole.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Spreads/Spread_uspread.xml",
+    "language": "xml",
+    "label": "Spreads/Spread_uspread.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree",
+    "live"
+  ],
+  "annotations": [
+    {
+      "lines": "8-15",
+      "note": "The first GeometryPathType is the outer contour, wound 0,0 to 240,0 to 240,240 to 0,240."
+    },
+    {
+      "lines": "16-23",
+      "note": "The second GeometryPathType is the inner contour. It is wound the opposite way so the nonzero winding rule subtracts it, punching the hole."
+    },
+    {
+      "lines": "16",
+      "note": "Each GeometryPathType is recorded as a separate contour boundary (subpath_starts). Drop the second one and the two squares would join into one broken outline instead of a hole."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 2,
+    "paragraphs": 1,
+    "runs": 1
+  },
+  "pathological": false,
+  "license": "MIT"
+}

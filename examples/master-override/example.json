@@ -1,0 +1,45 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "master-override",
+  "title": "Overriding a master item on a body page",
+  "tier": "pro",
+  "chapter": "layout-model",
+  "concept": "A body page's OverrideList names a master item so the placeholder is suppressed in favour of the page's own copy.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Spreads/Spread_uspread.xml",
+    "language": "xml",
+    "label": "Spreads/Spread_uspread.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree",
+    "live"
+  ],
+  "annotations": [
+    {
+      "lines": "4",
+      "note": "OverrideList=\"umasterHeader\" lists the master item this page has overridden. The renderer skips stamping that master item."
+    },
+    {
+      "lines": "5",
+      "note": "The page's own replacement rectangle stands in for the suppressed master header — here at 40% tint."
+    },
+    {
+      "lines": "5-19",
+      "note": "Top-level page items appear as direct children of the spread in document order; that order is the back-to-front z-order."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 2,
+    "paragraphs": 1,
+    "runs": 1
+  },
+  "pathological": false,
+  "license": "MIT"
+}

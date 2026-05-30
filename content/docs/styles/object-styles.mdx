@@ -1,0 +1,79 @@
+---
+title: Object styles
+description: The ObjectStyle element — the page-item analogue of paragraph and character styles — its fill, stroke, and corner attributes, the RootObjectStyleGroup, and the [None] default that every frame in the reference packages applies.
+tier: intermediate
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+Where paragraph and character styles format text, an **object style** formats a
+*page item* — a [text frame](/docs/frames-paths), rectangle, oval, or other shape.
+It supplies the fill, stroke, and corner defaults a frame inherits when the frame
+itself carries no inline override. Object styles cascade through `BasedOn` exactly
+like the text styles, and resolve with the same first-setter-wins fold (see
+[the cascade](/docs/styles/the-cascade)).
+
+## Where they live
+
+Each `<ObjectStyle>` sits inside `<RootObjectStyleGroup>` in `Resources/Styles.xml`
+(with optional `<ObjectStyleGroup>` nesting the parser flattens). InDesign always
+ships a set of defaults — `[None]`, `[Normal Graphics Frame]`, `[Normal Text
+Frame]`, and `[Normal Grid]`. The one that matters most is `[None]`.
+
+### The `[None]` default
+
+`ObjectStyle/$ID/[None]` is the object style a frame applies when it wants no
+style-supplied formatting — it sets no fill or stroke of its own, so the frame's
+own inline attributes (or the bottom-of-cascade renderer defaults) stand. It is
+the object-style counterpart of the `[No paragraph style]` and `[No character
+style]` roots, and it is the style every frame in the reference packages applies
+via `AppliedObjectStyle="ObjectStyle/$ID/[None]"`:
+
+```xml
+<RootObjectStyleGroup>
+  <ObjectStyle Self="ObjectStyle/$ID/[None]" Name="$ID/[None]"
+               FillColor="Swatch/None" StrokeColor="Swatch/None" StrokeWeight="0"
+               AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]"
+               CornerOption="None" CornerRadius="0"
+               StrokeAlignment="CenterAlignment" StrokeType="StrokeStyle/$ID/Solid"
+               Nonprinting="false"/>
+</RootObjectStyleGroup>
+```
+
+A frame names its object style with `AppliedObjectStyle="…"`. When a frame
+attribute is absent, the resolved object style fills it; `Swatch/None` on a colour
+attribute normalises to unset so a `BasedOn` chain can fall through to a real
+colour from a parent (so a placeholder rectangle can take its grey entirely from a
+style).
+
+## Attributes
+
+The parser reads the fill / stroke / corner subset the renderer consumes. The
+`Enable*` category toggles and transparency / drop-shadow effect blocks that IDML
+also stores on `<ObjectStyle>` are not yet acted on.
+
+<AttrTable
+  element="ObjectStyle"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'supported', note: 'The style id, e.g. "ObjectStyle/$ID/[None]". What a frame references via AppliedObjectStyle.' },
+    { attr: 'Name', type: 'string', support: 'parsed-not-rendered', note: 'Human-readable name; resolution keys on Self.' },
+    { attr: 'BasedOn', type: 'string id', support: 'supported', note: 'Parent object style id, or the [None] / [Normal …] default. Attribute or <BasedOn> Properties child.' },
+    { attr: 'FillColor', type: 'string (Color/Swatch id)', support: 'supported', note: 'Frame fill paint. "Swatch/None" normalises to unset so the cascade can fall through.' },
+    { attr: 'FillTint', type: 'double (0–100%)', support: 'supported', note: 'Fill tint percentage; cascades into a frame whose own FillTint is absent.' },
+    { attr: 'StrokeColor', type: 'string (Color/Swatch id)', support: 'supported', note: 'Frame stroke paint. "Swatch/None" normalises to unset.' },
+    { attr: 'StrokeTint', type: 'double (0–100%)', support: 'supported', note: 'Stroke tint percentage.' },
+    { attr: 'StrokeWeight', type: 'double (pt)', support: 'supported', note: 'Stroke thickness in points.' },
+    { attr: 'CornerOption', type: 'None | Rounded | InverseRounded | Inset | Bevel | Fancy', support: 'parsed-not-rendered', note: 'Rounded maps to a rounded-rect path; the decorative variants currently fall back to Rounded until per-shape parsers land.' },
+    { attr: 'CornerRadius', type: 'double (pt)', support: 'supported', note: 'Corner radius; honoured only when CornerOption is a rounding variant.' },
+    { attr: 'AppliedParagraphStyle', type: 'string (ParagraphStyle id)', support: 'parsed-not-rendered', note: 'Default paragraph style for a text frame using this object style; carried on the [None] default.' },
+  ]}
+/>
+
+(`crates/paged-parse/src/styles.rs:216–243` defines the `ObjectStyleDef` fields
+this table mirrors.)
+
+Object styles meet the page-item side of the document in
+[frames and paths](/docs/frames-paths), where `AppliedObjectStyle` and a frame's
+own inline fill / stroke combine the same way a run's local override combines with
+its character style.

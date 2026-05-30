@@ -1,0 +1,31 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "threaded-story",
+  "title": "One story threaded through two frames",
+  "tier": "pro",
+  "chapter": "stories-text",
+  "concept": "NextTextFrame / PreviousTextFrame chain two frames so one story flows from the first into the second.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Spreads/Spread_uspread.xml",
+    "language": "xml",
+    "label": "Spreads/Spread_uspread.xml"
+  },
+  "views": ["raw", "annotated", "tree"],
+  "annotations": [
+    { "lines": "5", "note": "Frame A. ParentStory=\"ustory\" makes it host the story; NextTextFrame=\"uframeB\" sends the overflow onward." },
+    { "lines": "11", "note": "Frame A is only 60pt tall, so the story cannot finish here — the rest continues in frame B." },
+    { "lines": "19", "note": "Frame B. Same ParentStory; PreviousTextFrame=\"uframeA\" points back, and NextTextFrame=\"n\" marks the end of the chain." }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 2,
+    "paragraphs": 1,
+    "runs": 1
+  },
+  "pathological": false,
+  "license": "MIT"
+}

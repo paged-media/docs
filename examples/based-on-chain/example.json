@@ -1,0 +1,31 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "based-on-chain",
+  "title": "A BasedOn chain of paragraph styles",
+  "tier": "intermediate",
+  "chapter": "styles",
+  "concept": "Body inherits from the [No paragraph style] root; Body Indented inherits from Body. The applied style resolves by walking the chain.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Resources/Styles.xml",
+    "language": "xml",
+    "label": "Resources/Styles.xml"
+  },
+  "views": ["raw", "annotated", "tree"],
+  "annotations": [
+    { "lines": "7", "note": "The root [No paragraph style] carries the document's base font, size, and fill — the bottom of every chain." },
+    { "lines": "8", "note": "Body is BasedOn the root: it sets PointSize and SpaceAfter, and inherits AppliedFont and FillColor from the root." },
+    { "lines": "9", "note": "Body Indented is BasedOn Body: it sets only FirstLineIndent and inherits everything else through Body to the root." }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 1,
+    "paragraphs": 1,
+    "runs": 1
+  },
+  "pathological": false,
+  "license": "MIT"
+}

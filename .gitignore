@@ -27,3 +27,6 @@ idml-specification*
 
 # clean-room baseline is fetched privately into CI, never committed
 cleanroom/.baseline/
+
+# Built WebGPU preview wasm (built by scripts/build-preview-wasm.sh from a core checkout)
+public/preview/

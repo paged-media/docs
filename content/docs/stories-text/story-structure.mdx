@@ -1,14 +1,138 @@
 ---
 title: Story structure
-description: The element model of a story — ranges, runs, content, breaks.
+description: The element model of a story — the Story → ParagraphStyleRange → CharacterStyleRange → Content nesting, and the attributes the renderer reads.
 tier: pro
 diataxis: reference
-status: stub
+status: published
 owner: paged-docs
 ---
 
-A reference for the story element model: `Story`, `ParagraphStyleRange`,
-`CharacterStyleRange`, `Content`, `Br`, `Tab`, and the inline/anchored object
-elements — with the attributes the renderer reads and how ranges map to runs.
+A story is a tree four levels deep. The outer `Story` element carries the id a
+frame points at; inside it, each paragraph is a `ParagraphStyleRange`; inside
+each of those, one or more `CharacterStyleRange` elements hold runs of uniform
+character formatting; and inside those, the literal text lives in `Content`
+elements, interrupted by `Br` and `Tab` markers. The parser reads exactly this
+shape — every other story attribute it doesn't yet act on is read past.
 
-> 🚧 Being written.
+```text
+Story
+└── ParagraphStyleRange        one paragraph
+    └── CharacterStyleRange    one run of uniform character formatting
+        ├── Content            literal text
+        ├── Br                 forced line break
+        └── Tab                tab character
+```
+
+The example below is one story with two paragraphs. Each paragraph is its own
+`ParagraphStyleRange`; the second carries a local `SpaceBefore` override. The
+renderer reports `paragraphs: 2`, `runs: 2` for it.
+
+<ExampleEmbed example="two-paragraphs">
+  Two ParagraphStyleRange blocks in one story — two paragraphs, each with one run.
+</ExampleEmbed>
+
+## `Story`
+
+The root element of a `Stories/Story_*.xml` part. Its `Self` id is the value a
+text frame names in `ParentStory`, and the value the design map lists in
+`StoryList`. The parser surfaces the writing direction today and reads the rest
+past — additional story-level attributes land in later parser work.
+
+<AttrTable
+  element="Story"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'supported', note: 'The story id a frame points at via ParentStory.' },
+    { attr: 'StoryDirection', type: 'LeftToRightDirection | RightToLeftDirection', support: 'supported', note: 'Writing direction for the whole story.' },
+    { attr: 'AppliedTOCStyle', type: 'string ref', support: 'not-yet-parsed', note: 'Read past; not acted on.' },
+    { attr: 'TrackChanges', type: 'boolean', support: 'not-yet-parsed', note: 'Read past; tracked changes are not surfaced.' },
+  ]}
+/>
+
+A `Story` may also hold a `StoryPreference` child; the parser reads
+`OpticalMarginAlignment` and `OpticalMarginSize` from it.
+
+## `ParagraphStyleRange`
+
+One paragraph. A new `ParagraphStyleRange` sibling starts a new paragraph — that
+is what makes paragraph count equal to the number of these blocks, not a count of
+line breaks. `AppliedParagraphStyle` names the style; any attribute set directly
+on the element is a *local override* that wins over the style for this paragraph.
+
+<AttrTable
+  element="ParagraphStyleRange"
+  rows={[
+    { attr: 'AppliedParagraphStyle', type: 'string ref (ParagraphStyle/…)', support: 'supported', note: 'The paragraph style applied; resolved against Styles.xml.' },
+    { attr: 'Justification', type: 'LeftAlign | CenterAlign | RightAlign | LeftJustified | CenterJustified | RightJustified | FullyJustified | ToBindingSide | AwayFromBindingSide', support: 'supported', note: 'Alignment override. FullyJustified is composed as LeftJustified; the binding-aware values fall back to Left/Right until binding side is plumbed through.' },
+    { attr: 'SpaceBefore', type: 'double (pt)', support: 'supported', note: 'Space added above the paragraph.' },
+    { attr: 'SpaceAfter', type: 'double (pt)', support: 'supported', note: 'Space added below the paragraph.' },
+    { attr: 'FirstLineIndent', type: 'double (pt)', support: 'supported', note: 'Indent of the paragraph’s first line.' },
+    { attr: 'DropCapCharacters', type: 'short (0–150)', support: 'supported', note: 'Number of leading characters to set as a drop cap.' },
+    { attr: 'DropCapLines', type: 'short (0–25)', support: 'supported', note: 'How many lines tall the drop cap is.' },
+    { attr: 'DropCapDetail', type: 'int', support: 'supported', note: 'Drop-cap sizing/positioning detail; read alongside the two counts.' },
+    { attr: 'BulletsAndNumberingListType', type: 'NoList | BulletList | NumberedList', support: 'supported', note: 'Whether the paragraph carries a bullet or a number.' },
+    { attr: 'OverprintFill', type: 'boolean', support: 'supported', note: 'Paragraph-level fill overprint; inherits from the cascade when absent.' },
+  ]}
+/>
+
+A `ParagraphStyleRange` can also carry a `TabList` of `TabStop` children and (when
+the paragraph hosts one) a `Table`; tabs are covered alongside the run model
+below.
+
+## `CharacterStyleRange`
+
+One run of uniform character formatting inside a paragraph. A new
+`CharacterStyleRange` starts wherever the character formatting changes — bold to
+regular, one size to another. Like paragraphs, the count of runs equals the count
+of these blocks. `AppliedCharacterStyle` names the style; direct attributes are
+local overrides. Some character properties (`AppliedFont`, `Leading`) are carried
+as typed children inside a `Properties` element rather than as attributes, and the
+parser reads both forms.
+
+<AttrTable
+  element="CharacterStyleRange"
+  rows={[
+    { attr: 'AppliedCharacterStyle', type: 'string ref (CharacterStyle/…)', support: 'supported', note: 'The character style applied; resolved against Styles.xml.' },
+    { attr: 'PointSize', type: 'double (pt)', support: 'supported', note: 'Type size for the run.' },
+    { attr: 'AppliedFont', type: 'string (font family) — Properties child', support: 'supported', note: 'Font family. Carried as a typed child of Properties; FontStyle names the face.' },
+    { attr: 'FontStyle', type: 'string', support: 'supported', note: 'The named face within the family (e.g. "Bold").' },
+    { attr: 'FillColor', type: 'string ref (Color/… or Swatch/None)', support: 'supported', note: 'Glyph fill swatch; resolved against Graphic.xml.' },
+    { attr: 'FillTint', type: 'double (0–100, or -1)', support: 'supported', note: 'Tint percentage of the fill; -1 / absent means use the swatch as-is.' },
+    { attr: 'Tracking', type: 'double (1/1000 em)', support: 'supported', note: 'Uniform spacing added to every glyph’s advance.' },
+    { attr: 'Leading', type: 'double (pt) — Properties child', support: 'supported', note: 'Line leading. Absent means Auto (point size × 1.2).' },
+    { attr: 'Underline', type: 'boolean', support: 'supported', note: 'Draws an underline under the run.' },
+    { attr: 'StrikeThru', type: 'boolean', support: 'supported', note: 'Draws a strikethrough through the run.' },
+    { attr: 'BaselineShift', type: 'double (pt)', support: 'supported', note: 'Raises (+) or lowers (−) glyphs from the baseline.' },
+    { attr: 'AppliedConditions', type: 'space-separated Condition/… refs', support: 'supported', note: 'When all referenced conditions resolve to Visible, the run is laid out; if any is hidden, the run is dropped.' },
+  ]}
+/>
+
+## `Content`, `Br`, `Tab`
+
+The leaves of the tree. `Content` holds literal text and is the only place text
+lives. `Br` is a forced line break inside the paragraph; the parser turns it into
+a newline in the run. `Tab` is a tab character. A run can hold any number of these
+in sequence — several `Content` chunks split by `Br`/`Tab` collapse into one
+run string with `\n` / `\t` in place.
+
+<AttrTable
+  element="Content / Br / Tab"
+  rows={[
+    { attr: 'Content', type: 'element with text body', support: 'supported', note: 'The literal characters. U+2028 / U+2029 inside it are normalised to newlines.' },
+    { attr: 'Br', type: 'empty element', support: 'supported', note: 'Forced line break — becomes a newline in the run text.' },
+    { attr: 'Tab', type: 'empty element', support: 'supported', note: 'Tab character — becomes a tab in the run text. TabStop positions live on the paragraph’s TabList.' },
+  ]}
+/>
+
+## What the story tree carries but the renderer doesn't fully place
+
+A `CharacterStyleRange` is also where IDML hangs several constructs the parser
+reads but the renderer does not yet fully lay out. They are detailed on the
+[threading and overset](/docs/stories-text/threading-and-overset) and
+[text variables](/docs/stories-text/text-variables) pages; in short:
+
+- **Footnotes** are parsed and distributed to the page that hosts their anchor,
+  but the footnote bodies are not yet drawn. <SupportBadge status="parsed-not-rendered" note="footnote bodies not yet drawn — paged-renderer/src/pipeline.rs:356" />
+- **Ruby** (`RubyFlag` / `RubyString` / `RubyType`) is parsed and a GroupRuby MVP
+  is drawn above the base run; per-character distribution is not yet exact. <SupportBadge status="parsed-not-rendered" note="GroupRuby MVP only — paged-renderer/src/pipeline.rs:4208" />
+- **Hyperlinks inside a story** (`HyperlinkTextSource`) are not wired through to
+  the run, so link regions aren't emitted. <SupportBadge status="not-yet-parsed" note="in-story hyperlink sources not surfaced on runs — paged-parse/src/story.rs" />

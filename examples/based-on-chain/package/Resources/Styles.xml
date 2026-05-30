@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<idPkg:Styles xmlns:idPkg="http://ns.adobe.com/AdobeInDesign/idml/1.0/packaging" DOMVersion="20.0">
+  <RootCharacterStyleGroup>
+    <CharacterStyle Self="CharacterStyle/$ID/[No character style]" Name="$ID/[No character style]"/>
+  </RootCharacterStyleGroup>
+  <RootParagraphStyleGroup>
+    <ParagraphStyle Self="ParagraphStyle/$ID/[No paragraph style]" Name="$ID/[No paragraph style]" AppliedFont="Open Sans" PointSize="12" FillColor="Color/Black"/>
+    <ParagraphStyle Self="ParagraphStyle/Body" Name="Body" BasedOn="ParagraphStyle/$ID/[No paragraph style]" PointSize="14" SpaceAfter="6"/>
+    <ParagraphStyle Self="ParagraphStyle/Body Indented" Name="Body Indented" BasedOn="ParagraphStyle/Body" FirstLineIndent="18"/>
+  </RootParagraphStyleGroup>
+  <RootObjectStyleGroup>
+    <ObjectStyle Self="ObjectStyle/$ID/[None]" Name="$ID/[None]" FillColor="Swatch/None" StrokeColor="Swatch/None" StrokeWeight="0" AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]" CornerOption="None" CornerRadius="0" EndCap="ButtEndCap" EndJoin="MiterEndJoin" MiterLimit="4" StrokeAlignment="CenterAlignment" StrokeType="StrokeStyle/$ID/Solid" Nonprinting="false"/>
+  </RootObjectStyleGroup>
+</idPkg:Styles>

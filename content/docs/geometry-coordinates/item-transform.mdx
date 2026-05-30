@@ -1,0 +1,93 @@
+---
+title: ItemTransform
+description: The six-number affine matrix that places a page item's inner space onto the page.
+tier: intermediate
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+`ItemTransform` is the attribute that answers "where does this shape actually
+go?" A page item is authored in its own inner coordinate space — usually with
+its outline starting at `(0, 0)` — and `ItemTransform` maps that whole space into
+its parent's space (the page, or an enclosing `Group`, or the spread).
+
+## The six-tuple
+
+The value is six whitespace-separated numbers:
+
+```
+ItemTransform="a b c d tx ty"
+```
+
+These are the six free entries of a 2D affine transformation matrix. The parser
+reads exactly six numbers; anything else is rejected and the transform is treated
+as absent (identity). Applied to an inner point `(x, y)`, the result is:
+
+```
+x' = a·x + c·y + tx
+y' = b·x + d·y + ty
+```
+
+So `a` and `d` scale, `b` and `c` shear/rotate, and `tx` / `ty` translate. The
+identity transform — the one that places a shape with no change — is
+`1 0 0 1 0 0`: leave X and Y alone, move by nothing.
+
+<AttrTable
+  element="ItemTransform (a b c d tx ty)"
+  rows={[
+    { attr: 'a', type: 'number', support: 'supported', note: 'X scale factor (and part of any rotation/shear). 1 for no horizontal scaling.' },
+    { attr: 'b', type: 'number', support: 'supported', note: 'Vertical shear of the X axis (part of rotation). 0 when upright.' },
+    { attr: 'c', type: 'number', support: 'supported', note: 'Horizontal shear of the Y axis (part of rotation). 0 when upright.' },
+    { attr: 'd', type: 'number', support: 'supported', note: 'Y scale factor (and part of any rotation/shear). 1 for no vertical scaling.' },
+    { attr: 'tx', type: 'number (pt)', support: 'supported', note: 'Horizontal translation, in points.' },
+    { attr: 'ty', type: 'number (pt)', support: 'supported', note: 'Vertical translation, in points. Positive moves down (Y grows downward).' },
+  ]}
+/>
+
+## Where it appears
+
+`ItemTransform` is read off every page item the parser handles — `TextFrame`,
+`Rectangle`, `Oval`, `GraphicLine`, `Polygon` — and also off the structural
+elements above them:
+
+<AttrTable
+  element="ItemTransform carriers"
+  rows={[
+    { attr: 'Spread / MasterSpread', type: 'a b c d tx ty', support: 'parsed-not-rendered', note: 'Maps the spread into the pasteboard. Per-page rendering does not need it (each page already lives in spread space); it is parsed for whole-document fidelity.' },
+    { attr: 'Page', type: 'a b c d tx ty', support: 'supported', note: 'Maps the page’s inner space into the spread. Identity for single-page-size layouts.' },
+    { attr: 'Page · MasterPageTransform', type: 'a b c d tx ty', support: 'supported', note: 'Positions master-page items on this specific page (the Master Page Overlay).' },
+    { attr: 'Group', type: 'a b c d tx ty', support: 'supported', note: 'The group transform is composed into each member’s effective transform; the un-composed value is also retained.' },
+    { attr: 'page items', type: 'a b c d tx ty', support: 'supported', note: 'TextFrame / Rectangle / Oval / GraphicLine / Polygon.' },
+  ]}
+/>
+
+## Transforms compose
+
+When a shape sits inside one or more `Group` elements, its placement is the
+*composition* of the group transforms with its own. The parser walks the stack of
+enclosing group transforms outermost-first and composes each one, then composes
+the item's own `ItemTransform` last, so the value stored on the item is already
+the full inner-to-page mapping. A bare top-level item — no groups — just keeps its
+own transform unchanged.
+
+Composition follows the usual rule: applying `A ∘ B` to a point means apply `B`
+first, then `A`. So the item's own transform acts before the group's, which is
+what you want — the shape is positioned within the group, then the group is
+positioned on the page.
+
+## A shape at the origin, placed by its transform
+
+The cleanest way to see `ItemTransform` at work is a shape whose outline is
+authored at `(0, 0)` and moved entirely by its translation. The rectangle below
+has a `300 × 120` outline starting at the origin and an `ItemTransform` of
+`1 0 0 1 150 200` — no scale, no rotation, just slide it 150 pt right and 200 pt
+down.
+
+<ExampleEmbed example="framed-rectangle">
+  A rectangle authored at the origin, then placed on the page by its translation.
+</ExampleEmbed>
+
+Edit the `tx` / `ty` numbers and the red rectangle moves; edit `a` or `d` away
+from `1` and it scales. The outline anchors never change — only the transform
+that carries them onto the page.

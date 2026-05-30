@@ -1,4 +1,10 @@
 {
   "title": "Layout model",
-  "pages": ["index"]
+  "pages": [
+    "index",
+    "spreads-and-pages",
+    "page-items-and-stacking",
+    "master-spreads",
+    "override-resolution"
+  ]
 }

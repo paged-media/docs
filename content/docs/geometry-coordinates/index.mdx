@@ -1,12 +1,52 @@
 ---
 title: Geometry & coordinates
+description: The coordinate space every page item lives in — units, origin, transforms, and path anatomy.
 tier: intermediate
 diataxis: explanation
-status: stub
+status: published
+owner: paged-docs
 ---
 
-Units, origin, transforms, path-point anatomy, and the coordinate gotchas. Placed before visible elements because everything below lives in this coordinate space.
+Before a frame can hold text or a shape can be filled, it has to be *somewhere*.
+This section is about that somewhere: the coordinate space an IDML document
+draws into, and the handful of attributes that place and shape every page item.
 
-> 🚧 Being written. This is a placeholder section landing; it is excluded from
-> search until it reaches real depth. Its order in the reference is justified by
-> reader progression, not by the source spec's organization (clean-room §6.1).
+We put it ahead of the chapters on visible elements deliberately. A `TextFrame`,
+a `Rectangle`, an `Oval` — they all carry the same geometry attributes, read the
+same way by the parser. Learn the space once here and every later element page
+gets shorter.
+
+## What you need to know
+
+The space itself is simple, and three facts cover most of it:
+
+- **Units are points.** Everything numeric — bounds, transforms, path
+  coordinates — is in points, 72 to the inch. See [units & origin](/docs/geometry-coordinates/units-and-origin).
+- **The origin is the page's top-left, and Y grows downward.** This is flipped
+  from the math-class convention; it trips up everyone once.
+- **Each page item has its own inner coordinate space.** Its shape is authored
+  around its own origin, and an [`ItemTransform`](/docs/geometry-coordinates/item-transform)
+  slides (or rotates, or scales) that whole space into the page.
+
+On top of that sit two ways IDML records where a shape is and what it looks like:
+
+- [`GeometricBounds`](/docs/geometry-coordinates/geometric-bounds) — the
+  axis-aligned bounding rectangle, in an axis order that surprises people:
+  `y1 x1 y2 x2`.
+- [`PathGeometry`](/docs/geometry-coordinates/path-geometry) — the actual
+  outline, as one or more contours of anchor points. This is how real InDesign
+  exports describe every shape, even a plain rectangle.
+
+## Where it gets interesting
+
+Two path constructs earn their own pages because they are easy to get subtly
+wrong:
+
+- [Compound paths](/docs/geometry-coordinates/compound-paths) — more than one
+  contour in a single shape, which is how a hole gets punched.
+- Open paths — contours that are *not* closed, flagged by `PathOpen` and
+  covered alongside the path anatomy on the [`PathGeometry`](/docs/geometry-coordinates/path-geometry)
+  page.
+
+Each page is grounded in what our parser actually does with the attribute, and
+carries a live example you can edit and re-render.

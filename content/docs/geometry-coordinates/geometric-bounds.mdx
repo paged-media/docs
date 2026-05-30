@@ -1,0 +1,78 @@
+---
+title: GeometricBounds
+description: The axis-aligned bounding box — and its surprising y-before-x axis order.
+tier: intermediate
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+`GeometricBounds` is the axis-aligned bounding rectangle of a page item, given as
+four numbers in points. It is the quickest way to know how big a frame is and
+where its box sits, and it appears on both `Page` elements and page items.
+
+## The axis order is y before x
+
+This is the one thing to memorize, because it is the opposite of the `(x, y)`
+ordering used almost everywhere else:
+
+```
+GeometricBounds="y1 x1 y2 x2"
+```
+
+That is **top, left, bottom, right** — the *vertical* coordinate comes first.
+The parser reads the four numbers in exactly that order into a `Bounds` record:
+
+<AttrTable
+  element="GeometricBounds (y1 x1 y2 x2)"
+  rows={[
+    { attr: 'y1', type: 'number (pt)', support: 'supported', note: 'Top edge. Stored as Bounds.top.' },
+    { attr: 'x1', type: 'number (pt)', support: 'supported', note: 'Left edge. Stored as Bounds.left.' },
+    { attr: 'y2', type: 'number (pt)', support: 'supported', note: 'Bottom edge (larger Y, since Y grows downward). Stored as Bounds.bottom.' },
+    { attr: 'x2', type: 'number (pt)', support: 'supported', note: 'Right edge. Stored as Bounds.right.' },
+  ]}
+/>
+
+The parser requires exactly four numbers. A value with any other count is
+rejected, and the item falls back to deriving its bounds elsewhere (see below).
+
+## What the renderer computes from it
+
+Once parsed, the box yields the frame's dimensions directly:
+
+- **width** = `right − left` = `x2 − x1`
+- **height** = `bottom − top` = `y2 − y1`
+
+Because Y grows downward, `y2` (bottom) is the *larger* number and `y1` (top) the
+smaller, so the height subtraction is positive. A page declared
+`GeometricBounds="0 0 841.89 595.276"` is therefore 595.276 pt wide and 841.89 pt
+tall — an A4 page with its top-left at the origin.
+
+## Bounds vs. the real outline
+
+`GeometricBounds` is only the *bounding box*. The actual shape of a page item
+lives in its [`PathGeometry`](/docs/geometry-coordinates/path-geometry). For an
+axis-aligned rectangle the two agree; for a triangle, an ellipse, or a Bézier
+blob the bounding box is just the tightest box around the outline.
+
+Real-world InDesign exports often omit `GeometricBounds` on page items entirely
+and serialise only the path. When the attribute is absent, the parser derives the
+box from the path's anchor points: it scans every anchor and takes the minimum Y
+as the top, the maximum Y as the bottom, the minimum X as the left, and the
+maximum X as the right. Either way the frame ends up with the same `Bounds`
+record — one read from the attribute, the other reconstructed from the geometry.
+
+## Where it appears
+
+<AttrTable
+  element="GeometricBounds carriers"
+  rows={[
+    { attr: 'Page', type: 'y1 x1 y2 x2', support: 'supported', note: 'The page rectangle, in the page’s own coordinates.' },
+    { attr: 'page items', type: 'y1 x1 y2 x2', support: 'supported', note: 'TextFrame / Rectangle / Oval / GraphicLine / Polygon. Optional when a PathGeometry is present.' },
+  ]}
+/>
+
+The bounds are always in the element's own *inner* coordinate space — the same
+space the path anchors live in — and the item's
+[`ItemTransform`](/docs/geometry-coordinates/item-transform) maps that space onto
+the page.

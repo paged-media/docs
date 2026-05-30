@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<idPkg:Styles xmlns:idPkg="http://ns.adobe.com/AdobeInDesign/idml/1.0/packaging" DOMVersion="20.0">
+  <RootCharacterStyleGroup>
+    <CharacterStyle Self="CharacterStyle/$ID/[No character style]" Name="$ID/[No character style]"/>
+    <CharacterStyle Self="CharacterStyle/Emphasis" Name="Emphasis" FontStyle="Bold" PointSize="12"/>
+  </RootCharacterStyleGroup>
+  <RootParagraphStyleGroup>
+    <ParagraphStyle Self="ParagraphStyle/$ID/[No paragraph style]" Name="$ID/[No paragraph style]" AppliedFont="Open Sans" PointSize="12" FillColor="Color/Black"/>
+  </RootParagraphStyleGroup>
+  <RootObjectStyleGroup>
+    <ObjectStyle Self="ObjectStyle/$ID/[None]" Name="$ID/[None]" FillColor="Swatch/None" StrokeColor="Swatch/None" StrokeWeight="0" AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]" CornerOption="None" CornerRadius="0" EndCap="ButtEndCap" EndJoin="MiterEndJoin" MiterLimit="4" StrokeAlignment="CenterAlignment" StrokeType="StrokeStyle/$ID/Solid" Nonprinting="false"/>
+  </RootObjectStyleGroup>
+</idPkg:Styles>

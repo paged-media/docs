@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?aid style="50" type="document" readerVersion="6.0" featureSet="257" product="20.0(32)"?>
+<Document xmlns:idPkg="http://ns.adobe.com/AdobeInDesign/idml/1.0/packaging" DOMVersion="20.0" Self="d" StoryList="ustory" Name="master-override.indd" CMYKProfile="Coated FOGRA39 (ISO 12647-2:2004)" RGBProfile="sRGB IEC61966-2.1" SolidColorIntent="UseColorSettings" AfterBlendingIntent="UseColorSettings" DefaultImageIntent="UseColorSettings">
+  <idPkg:Graphic src="Resources/Graphic.xml"/>
+  <idPkg:Fonts src="Resources/Fonts.xml"/>
+  <idPkg:Styles src="Resources/Styles.xml"/>
+  <idPkg:Preferences src="Resources/Preferences.xml"/>
+  <idPkg:Tags src="XML/Tags.xml"/>
+  <idPkg:MasterSpread src="MasterSpreads/MasterSpread_umaster.xml"/>
+  <idPkg:Spread src="Spreads/Spread_uspread.xml"/>
+  <idPkg:Story src="Stories/Story_ustory.xml"/>
+  <idPkg:BackingStory src="XML/BackingStory.xml"/>
+</Document>

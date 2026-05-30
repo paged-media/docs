@@ -1,0 +1,69 @@
+---
+title: How the renderer reads it
+description: A high-level walk from open to pixels, naming the crates that do each step.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+An IDML package describes a document's structure and intent, not pixels. Turning
+that intent into a rendered page is a pipeline of distinct steps, each owned by a
+different crate in the engine. This page walks the path at altitude so the rest of
+the reference has a shape to hang on. The deeper mechanics live in
+[the renderer](/docs/the-renderer) and [parser internals](/docs/parser-internals).
+
+## Open
+
+First the package is treated as a container. The archive is decompressed, the
+`mimetype` entry is checked, and `designmap.xml` is read to learn which parts
+exist and where. This is the job of **`paged-parse`** — ZIP plus XML into an
+abstract syntax tree of containers, spreads, stories, styles, and graphics.
+
+## Parse
+
+Each part named by the manifest is parsed into typed structures: spreads with
+their frames and shapes, stories with their paragraphs and runs, the style sheet,
+the color palette. Still **`paged-parse`**. At this stage everything is faithful to
+the file — nothing has been resolved or laid out yet.
+
+## Resolve
+
+Now **`paged-scene`** assembles the parsed parts into a coherent document via
+`Document::open`. Two kinds of resolution happen here.
+
+The **style cascade**: a run's effective attributes are found by walking from the
+run's direct properties, down through any applied character style, down through
+the applied paragraph style — each layer filling in only what the layer above left
+unset.
+
+<StyleCascade />
+
+And **story threading**: a story can flow through several frames. The resolver
+finds the chain head (the frame no other frame points at) and follows
+`NextTextFrame` links until the chain ends, so the text knows which frames it
+fills and in what order.
+
+<StoryThreading />
+
+## Build
+
+With the document resolved, **`paged-text`** shapes and lines the text —
+glyph shaping, Knuth-Plass line breaking, hyphenation, tab stops. **`paged-compose`**
+turns the laid-out result and the page geometry into a display list: an ordered
+list of fills, strokes, images, and glyph runs. **`paged-renderer`** sits on top,
+driving `paged-parse` → `paged-scene` → `paged-text` → `paged-compose` and
+rasterizing the display list into pixels.
+
+## Honest gaps
+
+Reading a construct is not the same as rendering it. Some things are parsed and
+held faithfully but do not yet change the rendered output. Text variables are a
+clear case: the resolved `ResultText` is captured exactly as the document recorded
+it, but live per-page recomputation is a future task.
+
+<SupportBadge status="parsed-not-rendered" note="text variables (ResultText captured; live recomputation pending)" />
+
+Where a page in this reference describes a construct we read but do not fully
+render, it says so and links forward to the status detail. The pipeline above is
+the spine; the gaps are noted in place rather than hidden.

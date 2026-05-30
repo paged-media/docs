@@ -5,6 +5,9 @@ import { AnnotatedView } from './annotated-view';
 import { TreeView } from './tree-view';
 import { DifficultyLabel } from './difficulty-label';
 import { ExampleEmbed } from './example-embed';
+import { SupportBadge } from './support-badge';
+import { AttrTable } from './attr-table';
+import { PackageGraph, CoordinateSpace, StyleCascade, StoryThreading } from '@/components/diagrams';
 
 /**
  * Custom components available in every MDX page. `ExampleEmbed` is the one
@@ -18,6 +21,12 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     TreeView,
     DifficultyLabel,
     ExampleEmbed,
+    SupportBadge,
+    AttrTable,
+    PackageGraph,
+    CoordinateSpace,
+    StyleCascade,
+    StoryThreading,
     ...extra,
   };
 }

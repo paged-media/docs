@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { getExample, type ExampleView } from '@/lib/examples';
+import { assembleExampleBase64 } from '@/lib/assemble-example';
 import { RawView } from './raw-view';
 import { AnnotatedView } from './annotated-view';
 import { TreeView } from './tree-view';
@@ -21,11 +22,15 @@ export async function ExampleEmbed({
 }) {
   const { manifest, editableSource, editablePart } = getExample(example);
 
+  // Assemble the full package to bytes only when this example offers the live
+  // view — the WebGPU preview renders the same bytes the CI gate validates.
+  const idmlBase64 = manifest.views.includes('live') ? assembleExampleBase64(example) : undefined;
+
   const panels: Partial<Record<ExampleView, ReactNode>> = {
     raw: <RawView code={editableSource} lang={manifest.editable.language} />,
     annotated: <AnnotatedView code={editableSource} annotations={manifest.annotations} />,
     tree: <TreeView code={editableSource} />,
-    live: <LivePreview example={example} part={editablePart} />,
+    live: <LivePreview example={example} part={editablePart} idmlBase64={idmlBase64} />,
   };
 
   return (
