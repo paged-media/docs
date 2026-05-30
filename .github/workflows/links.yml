@@ -1,0 +1,33 @@
+name: links
+
+on:
+  pull_request:
+    paths:
+      - 'content/**'
+      - '**/*.mdx'
+  schedule:
+    # External link rot is checked weekly so flaky third-party timeouts never
+    # block a content PR.
+    - cron: '0 6 * * 2'
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: internal links (hard fail on PRs); external only on schedule
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            pnpm dlx linkinator ./.next/server/app --recurse
+          else
+            pnpm dlx linkinator ./.next/server/app --recurse --skip "^https?://"
+          fi

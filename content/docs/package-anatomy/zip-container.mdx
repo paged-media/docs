@@ -1,0 +1,27 @@
+---
+title: The ZIP container
+description: The archive shape, the mimetype entry, and the entry that names the document.
+tier: beginner
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+The outermost layer is an ordinary ZIP archive — but with one convention borrowed
+from other open document formats that makes the archive *self-identifying*.
+
+**The `mimetype` entry comes first, and is stored uncompressed.** The very first
+entry in the archive is a tiny file named `mimetype` whose contents are exactly the
+media type of an IDML package, with no trailing newline. Because it is first and
+stored (not deflated), a tool can read the first few bytes of the archive and know
+what it is holding without decompressing anything. Our renderer checks this entry
+when it opens a package.
+
+**`META-INF/container.xml` names the entry point.** Inside a `META-INF` folder, a
+small `container.xml` points at the part that is the document's root manifest —
+`designmap.xml`. This is the "start here" pointer: a consumer reads the container,
+follows it to the design map, and the design map names everything else.
+
+Everything after those two is the document itself: the design map, a `Resources`
+folder, `Spreads`, `Stories`, and so on. The next page reads the design map, which
+is where the document's structure begins.

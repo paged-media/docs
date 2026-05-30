@@ -1,0 +1,29 @@
+# Node / pnpm
+node_modules/
+*.tsbuildinfo
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+
+# Fumadocs generated source index
+.source/
+
+# generated example barrel + assembled artifacts
+examples/.generated/
+dist/
+
+# OS / editor / runtime
+.DS_Store
+.vscode/
+.idea/
+.claude/
+
+# DEFENSIVE — the IDML spec is copyrighted vendor material and must NEVER land
+# in this PUBLIC repo (clean-room §6.1). Never reference it by path either.
+*.pdf
+idml-specification*
+
+# clean-room baseline is fetched privately into CI, never committed
+cleanroom/.baseline/

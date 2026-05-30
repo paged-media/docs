@@ -1,0 +1,33 @@
+---
+title: Your first story
+description: Build the smallest story that renders one line of text.
+tier: beginner
+diataxis: tutorial
+status: draft
+owner: paged-docs
+---
+
+A story is the smallest interesting thing in an IDML document: the text itself.
+Here is the complete story from the smallest valid package — three nested ranges
+and one line of `Content`. Edit the `Content` text and, once the live preview
+lands, the page will re-render.
+
+<ExampleEmbed example="smallest-valid">
+  The whole story: one paragraph range, one character range, one line of text.
+</ExampleEmbed>
+
+Read it inside out:
+
+1. `Content` holds the literal text.
+2. The `CharacterStyleRange` around it says how those characters are styled — here,
+   the default character style.
+3. The `ParagraphStyleRange` around that says which paragraph the run belongs to —
+   here, the default paragraph style.
+4. The `Story` wraps the lot and carries the `Self` id that a frame points at to
+   display this text.
+
+That nesting — story › paragraph range › character range › content — is the spine
+of all IDML text. Longer stories just have more ranges.
+
+> 🚧 The next steps (adding a second paragraph, changing the style) are being
+> written; the example above is real and validated against the renderer.

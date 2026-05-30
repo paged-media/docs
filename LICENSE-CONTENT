@@ -1,0 +1,34 @@
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+Copyright (c) And The Next GmbH and the Paged project
+
+Applies to the documentation content in `content/` and the examples in
+`examples/` (the site code is licensed under MIT — see LICENSE-CODE).
+Recommended default pending the single pre-launch legal review (briefing §9).
+
+SPDX-License-Identifier: CC-BY-4.0
+
+You are free to:
+  - Share — copy and redistribute the material in any medium or format.
+  - Adapt — remix, transform, and build upon the material for any purpose,
+    even commercially.
+
+Under the following terms:
+  - Attribution — You must give appropriate credit to the Paged project,
+    provide a link to the license, and indicate if changes were made. You may
+    do so in any reasonable manner, but not in any way that suggests the
+    licensor endorses you or your use.
+  - No additional restrictions — You may not apply legal terms or
+    technological measures that legally restrict others from doing anything the
+    license permits.
+
+The full legal code is available at:
+  https://creativecommons.org/licenses/by/4.0/legalcode
+
+This permissive, attribution license is deliberate: the knowledge here is meant
+to travel, with the Paged project's name on it (briefing §3, §9).
+
+Note: IDML element and attribute names used throughout are functional
+identifiers (facts), not copyrightable expression. IDML is a published file
+format owned by its vendor; this documentation is an independent description by
+the Paged project and is not affiliated with or endorsed by the vendor.

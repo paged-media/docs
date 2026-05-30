@@ -1,0 +1,15 @@
+---
+title: Why ranges, not spans
+description: Why IDML models text as nested style ranges rather than inline spans.
+tier: pro
+diataxis: explanation
+status: stub
+owner: paged-docs
+---
+
+HTML models styled text as inline spans wrapping characters. IDML instead models
+it as nested **ranges** — a paragraph-style range containing character-style ranges
+containing content. This page explains why that shape fits a paginated,
+style-driven layout model better, and what it implies for anyone walking the tree.
+
+> 🚧 Being written.

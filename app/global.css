@@ -1,0 +1,26 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
+/* Tailwind v4 needs to scan Fumadocs UI's prebuilt components (node_modules is
+ * not auto-scanned). Our own app/, components/, content/ are auto-detected. */
+@source '../node_modules/fumadocs-ui/dist/**/*.js';
+
+/*
+ * Reserved, restrained technical-reference identity (briefing §6.6).
+ * Dual-theme Shiki output for the custom example views (rendered with
+ * defaultColor:false in lib/shiki.ts): Fumadocs toggles `.dark` on <html>.
+ */
+.shiki,
+.shiki span {
+  color: var(--shiki-light);
+  background-color: var(--shiki-light-bg);
+}
+.dark .shiki,
+.dark .shiki span {
+  color: var(--shiki-dark);
+  background-color: var(--shiki-dark-bg);
+}
+.shiki {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+}

@@ -1,0 +1,31 @@
+---
+title: Read one by hand
+description: Open a minimal IDML package and read its parts.
+tier: beginner
+diataxis: tutorial
+status: published
+owner: paged-docs
+---
+
+The fastest way to understand the format is to open the smallest possible valid
+package and read it. Below is a complete IDML document that holds a single page
+with a single line of text. The view shows the **story** — the part that holds the
+words; the rest of the package (the manifest, the resources, the spread) is there
+too, but this is the part you would edit to change what the page says.
+
+<ExampleEmbed example="smallest-valid">
+  A complete one-page document, reduced to its smallest valid form. This is the
+  story part — the text lives here.
+</ExampleEmbed>
+
+A few things to notice, top to bottom:
+
+- The outer `idPkg:Story` is the part wrapper; the inner `Story` is the content,
+  and its `Self` id is how the page's text frame finds it.
+- A `ParagraphStyleRange` is a run of text sharing one paragraph style; a
+  `CharacterStyleRange` nests inside for character-level styling.
+- The actual text sits in `Content`.
+
+That is the entire payload of this document. Everything else in the package exists
+to give this story a page to live on and styles to resolve against — which is what
+the **[package anatomy](/docs/package-anatomy)** section unpacks next.

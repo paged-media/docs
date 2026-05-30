@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://docs.paged.media/schema/example.json",
+  "title": "Paged docs example manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "tier", "chapter", "packageDir", "editable", "views"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Stable slug; MUST equal the example directory name."
+    },
+    "title": { "type": "string" },
+    "tier": { "enum": ["beginner", "intermediate", "pro"] },
+    "chapter": {
+      "type": "string",
+      "description": "The IA section slug this example anchors (e.g. package-anatomy)."
+    },
+    "concept": { "type": "string" },
+    "packageDir": {
+      "type": "string",
+      "description": "Directory (relative to the example dir) holding the unzipped IDML parts."
+    },
+    "editable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["part", "language", "label"],
+      "properties": {
+        "part": {
+          "type": "string",
+          "description": "Path WITHIN packageDir of the chapter-relevant fragment the reader sees/edits."
+        },
+        "language": { "type": "string", "default": "xml" },
+        "label": { "type": "string" }
+      }
+    },
+    "views": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "enum": ["raw", "annotated", "tree", "live"] },
+      "uniqueItems": true
+    },
+    "annotations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["lines", "note"],
+        "properties": {
+          "lines": { "type": "string", "description": "A line number or \"start-end\" range." },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "expect": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The CI contract: what the renderer must report for the assembled package.",
+      "properties": {
+        "opens": { "type": "boolean" },
+        "builds": { "type": "boolean" },
+        "pages": { "type": "integer", "minimum": 0 },
+        "stories": { "type": "integer", "minimum": 0 },
+        "frames": { "type": "integer", "minimum": 0 },
+        "paragraphs": { "type": "integer", "minimum": 0 },
+        "runs": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "pathological": {
+      "type": "boolean",
+      "default": false,
+      "description": "true => the example is EXPECTED to surface a diagnostic, not crash."
+    },
+    "license": { "type": "string", "default": "MIT" }
+  }
+}

@@ -1,0 +1,21 @@
+---
+title: The binary-to-XML lineage
+description: Why an XML interchange form exists alongside the native binary document.
+tier: beginner
+diataxis: explanation
+status: draft
+owner: paged-docs
+---
+
+The native document format is a packed binary: compact, fast for the application
+to load, and tightly coupled to that application's internals. That is good for the
+app and hard for everyone else — you cannot reliably read it, diff it, or generate
+it from another tool.
+
+IDML is the answer to "everyone else." It expresses the same document as XML, so
+the structure is inspectable and other software can produce and consume it without
+reverse-engineering a binary.
+
+> 🚧 Being written. This page will trace what is preserved when a document is
+> written as IDML and what is intentionally left to the application, drawn from
+> what our parser observes round-tripping real files.

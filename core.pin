@@ -1,0 +1,5 @@
+# The paged-media/core commit that the example-validation gate builds
+# `paged-inspect` from (briefing §6.2 / §7 "docs version to the renderer's minor
+# version"). Bump deliberately via a PR; the weekly core-drift job opens one when
+# core@main still passes. Format: a single commit SHA on the first non-comment line.
+93592541c601fdb141b22972ed23dec60042818d

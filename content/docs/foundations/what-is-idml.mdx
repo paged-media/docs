@@ -1,0 +1,35 @@
+---
+title: What IDML is
+description: IDML is how a layout document travels as text instead of as an opaque binary.
+tier: beginner
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+IDML is a way for a page-layout document to travel as **text** rather than as an
+opaque binary. A layout application can save its work in a packed binary file that
+only that application fully understands; IDML is the interchange form of the same
+document, where the structure is written out as XML and bundled into a single
+archive.
+
+Two ideas are worth holding onto from the start, because everything else follows
+from them.
+
+**It is a package, not a file.** What looks like one `.idml` document is really a
+ZIP archive containing many small XML parts — a manifest that names the others,
+parts that describe shared resources like colors and styles, and parts that hold
+the actual pages and text. Open the archive and you can read every part with a
+text editor.
+
+**It describes content and intent, not pixels.** An IDML part does not say "put a
+black dot at this coordinate." It says "this story uses this paragraph style, and
+flows through this frame on this page." Turning that intent into pixels is the job
+of a renderer — which is what Paged does, and what much of this reference is
+secretly about. When we explain a part of the format, we explain it from what our
+renderer actually has to do with it.
+
+That is the whole shape of the thing: an archive of XML, describing a document's
+structure and intent, meant to be read and rewritten by tools rather than stared
+at by people. The next pages explain where this form came from and why it is
+packaged the way it is.

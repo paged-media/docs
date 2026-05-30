@@ -1,0 +1,58 @@
+name: examples
+
+on:
+  pull_request:
+    paths:
+      - 'examples/**'
+      - 'scripts/examples/**'
+      - 'core.pin'
+      - '.github/workflows/examples.yml'
+  push:
+    branches: [main]
+  schedule:
+    # Weekly core-drift check: re-validate against core@main and surface breakage.
+    - cron: '0 6 * * 1'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: resolve core ref
+        id: core
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "ref=main" >> "$GITHUB_OUTPUT"   # drift check: latest
+          else
+            echo "ref=$(grep -v '^#' core.pin | head -1 | tr -d '[:space:]')" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: checkout core (public, no token needed)
+        uses: actions/checkout@v4
+        with:
+          repository: paged-media/core
+          ref: ${{ steps.core.outputs.ref }}
+          path: core
+
+      # core/rust-toolchain.toml pins the channel; rustup honors it inside ./core.
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core
+          key: ${{ steps.core.outputs.ref }}
+
+      - name: build paged-inspect
+        run: cargo build --release --manifest-path core/Cargo.toml -p paged-renderer --bin paged-inspect
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: validate every example against the renderer
+        run: PAGED_INSPECT="$PWD/core/target/release/paged-inspect" pnpm validate:examples

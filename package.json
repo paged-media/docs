@@ -1,0 +1,40 @@
+{
+  "name": "paged-docs",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "packageManager": "pnpm@9.0.0",
+  "description": "docs.paged.media — the independent IDML living reference (Fumadocs).",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "postinstall": "fumadocs-mdx",
+    "examples:assemble": "tsx scripts/examples/assemble-cli.ts",
+    "examples:index": "tsx scripts/examples/index.ts",
+    "validate:examples": "tsx scripts/examples/validate.ts"
+  },
+  "dependencies": {
+    "fflate": "^0.8.2",
+    "fumadocs-core": "^16.9.3",
+    "fumadocs-ui": "^16.9.3",
+    "next": "^16.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "shiki": "^1.27.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/mdx": "^2.0.13",
+    "@types/node": "^22.13.0",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "fumadocs-mdx": "^15.0.10",
+    "postcss": "^8.5.1",
+    "tailwindcss": "^4.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}

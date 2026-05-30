@@ -1,0 +1,20 @@
+---
+title: The design map
+description: The root manifest that names every other part and lists the document's stories.
+tier: intermediate
+diataxis: reference
+status: draft
+owner: paged-docs
+---
+
+`designmap.xml` is the document's root manifest. It does two jobs: it carries
+document-level settings, and it names every other part through `idPkg:*` reference
+elements that each carry a `src` pointing at another file in the archive — the
+graphic resources, the fonts, the styles, the spreads, the stories, and so on.
+
+It also declares the document's `StoryList`: the ids of the stories the document
+contains. A consumer reads the design map first to learn the shape of the whole
+document before opening any other part.
+
+> 🚧 Being written. This page will annotate a real design map field by field,
+> drawn from what our parser reads when it opens a package.

@@ -1,0 +1,39 @@
+# Crate → doc-path ownership map (drift control, briefing §6.3).
+#
+# When a core crate changes behavior, the doc paths below describe it and should be
+# revisited. This map lives in `docs` (not `core`) because docs owns the doc paths
+# and the public/private boundary means docs cannot write into core's CODEOWNERS.
+#
+# Honest scope: across the repo split, this is advisory, not a hard merge gate.
+# The hard backstop is the example-CI gate (examples.yml) + the weekly core-drift
+# job. An opt-in advisory comment workflow in `core` can read this file to flag
+# touched crates on core PRs. The `owner` here must match a row in OWNERSHIP.md.
+
+mappings:
+  - crate: crates/paged-parse
+    docs: ['content/docs/parser-internals/**', 'content/docs/package-anatomy/**']
+    owner: paged-docs
+  - crate: crates/paged-scene
+    docs: ['content/docs/layout-model/**', 'content/docs/master-spreads-overrides/**']
+    owner: paged-docs
+  - crate: crates/paged-text
+    docs: ['content/docs/typography/**', 'content/docs/stories-text/**']
+    owner: paged-docs
+  - crate: crates/paged-compose
+    docs: ['content/docs/the-renderer/**']
+    owner: paged-docs
+  - crate: crates/paged-gpu
+    docs: ['content/docs/the-renderer/**']
+    owner: paged-docs
+  - crate: crates/paged-renderer
+    docs: ['content/docs/the-renderer/**']
+    owner: paged-docs
+  - crate: crates/paged-color
+    docs: ['content/docs/color-swatches/**']
+    owner: paged-docs
+  - crate: crates/paged-gen
+    docs: ['content/docs/test-corpus/**', 'examples/**']
+    owner: paged-docs
+  - crate: crates/paged-fidelity
+    docs: ['content/docs/test-corpus/**']
+    owner: paged-docs

@@ -1,0 +1,44 @@
+name: cleanroom
+
+on:
+  pull_request:
+    paths:
+      - 'content/**'
+      - '**/*.mdx'
+
+# The masked-prose similarity check (briefing §6.1) — "a small build, not a flag".
+# The spec baseline is a non-invertible fingerprint held PRIVATELY and fetched via
+# a read-only secret; it is never committed to this public repo. Fork PRs (no
+# secret) fall back to the author's clean-room confirmation + reviewer.
+jobs:
+  similarity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: fetch private baseline fingerprint
+        if: ${{ secrets.CLEANROOM_BASELINE_TOKEN != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.CLEANROOM_BASELINE_TOKEN }}
+        run: |
+          mkdir -p cleanroom/.baseline
+          gh release download cleanroom-baseline \
+            -R paged-media/cleanroom-baseline \
+            -p 'fingerprint.json' -D cleanroom/.baseline || echo "baseline unavailable"
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: similarity over changed MDX (masked connective prose)
+        if: ${{ hashFiles('cleanroom/.baseline/fingerprint.json') != '' }}
+        run: pnpm exec tsx cleanroom/check.ts --baseline cleanroom/.baseline/fingerprint.json
+
+      - name: notice when baseline unavailable (e.g. fork PR)
+        if: ${{ hashFiles('cleanroom/.baseline/fingerprint.json') == '' }}
+        run: echo "::notice::Clean-room fingerprint unavailable on this PR; relying on the author confirmation + reviewer."
