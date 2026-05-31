@@ -1,0 +1,41 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "color-fill",
+  "title": "A rectangle filled with a CMYK color",
+  "tier": "intermediate",
+  "chapter": "color-swatches",
+  "concept": "A named <Color> defined in Graphic.xml, applied to a shape by FillColor.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Resources/Graphic.xml",
+    "language": "xml",
+    "label": "Resources/Graphic.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree",
+    "live"
+  ],
+  "annotations": [
+    {
+      "lines": "5",
+      "note": "A process CMYK swatch named Red. Self is the id everything references; Model=Process and Space=CMYK pick the model and space; ColorValue carries the four channel percentages C M Y K, here 0 100 100 0 (pure red)."
+    },
+    {
+      "lines": "3-4",
+      "note": "Black and Paper are the reserved built-ins InDesign writes into every document; the renderer treats them by name even when omitted."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 2,
+    "paragraphs": 1,
+    "runs": 1
+  },
+  "pathological": false,
+  "license": "MIT"
+}

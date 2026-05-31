@@ -1,0 +1,87 @@
+---
+title: Anchored objects
+description: The element model of an anchored object — a frame nested inside a CharacterStyleRange, plus every attribute of its AnchoredObjectSetting.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+An anchored object is a frame written as a child of a `CharacterStyleRange`. The
+frame is one of three familiar elements — a `<Rectangle>`, a `<TextFrame>`, or a
+`<Group>` — and it carries a single extra child, `<AnchoredObjectSetting>`, that
+describes where it should land relative to the anchor character. The parser reads
+the frame's geometry and styling onto the host paragraph and reads the setting
+alongside it.
+
+<ExampleEmbed example="anchored-frame">
+  A Rectangle nested inside a run, with an AnchoredObjectSetting. The renderer
+  reports `paragraphs: 1`, `runs: 1` — the anchored frame is read onto the
+  paragraph, not counted as a spread item.
+</ExampleEmbed>
+
+## The frame element
+
+Any of three elements may appear directly inside a `CharacterStyleRange` to become
+an anchored object. Which one it is, the parser records as a frame *kind*; the rest
+of the attributes it reads mirror how the same element is read at spread level.
+
+<AttrTable
+  element="Rectangle / TextFrame / Group (nested in a CharacterStyleRange)"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'parsed-not-rendered', note: 'The frame’s id. Recorded on the anchored-frame record.' },
+    { attr: 'GeometricBounds', type: 'string "y1 x1 y2 x2" (pt)', support: 'parsed-not-rendered', note: 'The frame’s box. Read here; an explicit GeometricBounds wins over bounds derived from a nested PathGeometry.' },
+    { attr: 'ItemTransform', type: 'string "a b c d e f" (matrix)', support: 'parsed-not-rendered', note: 'The frame’s transform. For an anchored frame it positions content in the frame’s own coordinates, not on the spread.' },
+    { attr: 'ParentStory', type: 'string ref (Story/…)', support: 'parsed-not-rendered', note: 'TextFrame only — the story whose text fills the anchored frame. Absent for Rectangle and Group.' },
+    { attr: 'FillColor', type: 'string ref (Color/… or Swatch/None)', support: 'parsed-not-rendered', note: 'Fill swatch. None ⇒ inherit from the applied object style cascade.' },
+    { attr: 'StrokeColor', type: 'string ref (Color/… or Swatch/None)', support: 'parsed-not-rendered', note: 'Stroke swatch.' },
+    { attr: 'StrokeWeight', type: 'double (pt)', support: 'parsed-not-rendered', note: 'Stroke width.' },
+    { attr: 'FillTint', type: 'double (0–100)', support: 'parsed-not-rendered', note: 'Tint percentage of the fill.' },
+    { attr: 'GradientFillAngle', type: 'double (deg)', support: 'parsed-not-rendered', note: 'Angle of a gradient fill.' },
+    { attr: 'AppliedObjectStyle', type: 'string ref (ObjectStyle/…)', support: 'parsed-not-rendered', note: 'The object style applied to the frame.' },
+  ]}
+/>
+
+A few things the parser deliberately does **not** recurse into on an anchored
+frame: nested transparency settings, and — beyond a nested `<Image>`'s link URI
+and transform on an anchored `<Rectangle>` — image styling. A `<Group>` records its
+child frames in z-order; a `<TextFrame>` records its `ParentStory` so the renderer
+can chase the story content once placement lands. <SupportBadge status="parsed-not-rendered" note="anchored frames read but not flowed — paged-parse/src/story.rs:264" />
+
+## `AnchoredObjectSetting`
+
+The placement block. It sits inside the frame element and records *intent* — where
+the object should land relative to the anchor — without itself moving anything. The
+parser stores each attribute's value verbatim; an absent attribute falls back to
+the cascaded default.
+
+<AttrTable
+  element="AnchoredObjectSetting"
+  rows={[
+    { attr: 'AnchoredPosition', type: 'InlinePosition | AboveLine | Anchored', support: 'parsed-not-rendered', note: 'The placement mode. Absent ⇒ inline. See inline vs anchored positioning for what each mode means.' },
+    { attr: 'AnchorPoint', type: 'TopLeftAnchor | TopCenterAnchor | TopRightAnchor | LeftCenterAnchor | CenterAnchor | RightCenterAnchor | BottomLeftAnchor | BottomCenterAnchor | BottomRightAnchor', support: 'parsed-not-rendered', note: 'Which point of the object is pinned to the anchor.' },
+    { attr: 'AnchorXoffset', type: 'double (pt)', support: 'parsed-not-rendered', note: 'Horizontal nudge from the anchor point. 0 when absent.' },
+    { attr: 'AnchorYoffset', type: 'double (pt)', support: 'parsed-not-rendered', note: 'Vertical nudge from the anchor point. 0 when absent.' },
+    { attr: 'SpineRelative', type: 'boolean', support: 'parsed-not-rendered', note: 'true flips the offset direction on facing pages. false is the default.' },
+    { attr: 'LockPosition', type: 'boolean', support: 'parsed-not-rendered', note: 'true pins the object so it can’t be dragged. false is the default.' },
+    { attr: 'HorizontalReferencePoint', type: 'AnchorLocation | ColumnEdge | TextFrame | PageMargins | PageEdge', support: 'parsed-not-rendered', note: 'For custom positioning — which rectangle the horizontal alignment measures from. Absent ⇒ AnchorLocation.' },
+    { attr: 'HorizontalAlignment', type: 'LeftAlign | CenterAlign | RightAlign | TextAlign', support: 'parsed-not-rendered', note: 'For custom positioning — which side of the horizontal reference the object sits against.' },
+    { attr: 'VerticalReferencePoint', type: 'LineBaseline | LineXHeight | LineCapHeight | TopOfLeading | Column | TextFrame | PageMargins | PageEdge', support: 'parsed-not-rendered', note: 'For custom positioning — which line or page feature the vertical alignment measures from.' },
+    { attr: 'VerticalAlignment', type: 'TopAlign | CenterAlign | BottomAlign', support: 'parsed-not-rendered', note: 'For custom positioning — vertical alignment against the vertical reference.' },
+  ]}
+/>
+
+## Why the count doesn't change
+
+The example above adds a whole `<Rectangle>` to the story, yet the renderer still
+reports `frames: 1`, `paragraphs: 1`, `runs: 1`. That is the point of an anchored
+object being *inside* a run: it is recorded on the host paragraph, not promoted to
+a spread-level frame, so it does not inflate the frame count — and the run that
+hosts it is still one run. The frame on the spread (`frames: 1`) is the page's text
+frame; the anchored rectangle is data hanging off the paragraph within it.
+
+## Next
+
+What `AnchoredPosition`, `AnchorPoint`, and the reference/alignment attributes
+actually *do* — and how much of it the renderer carries today — is the subject of
+[inline vs anchored positioning](/docs/anchored-inline-objects/inline-vs-anchored).

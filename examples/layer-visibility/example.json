@@ -1,0 +1,41 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "layer-visibility",
+  "title": "A hidden layer drops its page item",
+  "tier": "intermediate",
+  "chapter": "layers",
+  "concept": "Two Layers in the design map, one Visible and one not. Each filled Rectangle names its layer through ItemLayer; the renderer skips the item whose layer is hidden, so only one shape paints.",
+  "packageDir": "package",
+  "editable": {
+    "part": "designmap.xml",
+    "language": "xml",
+    "label": "designmap.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree",
+    "live"
+  ],
+  "annotations": [
+    {
+      "lines": "4",
+      "note": "The \"Front\" layer with Visible=\"true\". Its page items render normally."
+    },
+    {
+      "lines": "5",
+      "note": "The \"Back\" layer with Visible=\"false\". Flip this to true and the blue rectangle reappears."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 1,
+    "paragraphs": 0,
+    "runs": 0
+  },
+  "pathological": false,
+  "license": "MIT"
+}

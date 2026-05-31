@@ -1,12 +1,46 @@
 ---
 title: Layers
+description: What a layer is in an IDML document, and why a page item points back at one.
 tier: beginner
 diataxis: explanation
-status: stub
+status: published
+owner: paged-docs
 ---
 
-The organizational overlay that groups page items. Low day-one urgency, simple to grasp.
+A layer in IDML is not a thing you can see. It is an *organizational overlay*: a
+named plane that page items are assigned to, the way folders group files. A
+document might keep its background art on one layer, its body frames on another,
+and a set of printer's marks on a third — and the layer each item belongs to says
+nothing about where the item sits on the page. Position comes from the item's own
+geometry; the layer only records membership, stacking order among layers, and a
+few document-wide switches.
 
-> 🚧 Being written. This is a placeholder section landing; it is excluded from
-> search until it reaches real depth. Its order in the reference is justified by
-> reader progression, not by the source spec's organization (clean-room §6.1).
+That last part is why layers matter to a renderer at all. Two of those switches —
+whether a layer is *visible* and whether it is *printable* — decide whether the
+items assigned to a layer are drawn. The rest are authoring conveniences that the
+renderer never needs to act on.
+
+So there are really two halves to the story, and they live in two different
+parts of the package:
+
+- The **layer definitions** live in `designmap.xml`, alongside the document's
+  other top-level settings. Each `<Layer>` element gives the layer an id, a name,
+  and its on/off switches.
+- The **membership** lives out on the page items. Every page item in a spread can
+  carry an `ItemLayer` attribute naming the layer it belongs to. There is no list
+  of members on the layer itself — the link runs from the item back to the layer.
+
+The chapter is short because the model is small:
+
+- [The layer model](/docs/layers/the-layer-model) is the attribute reference for
+  `<Layer>` and the `ItemLayer` back-reference — what each attribute is and how
+  the parser reads it.
+- [Visibility and printing](/docs/layers/visibility-and-printing) explains the one
+  behavior layers actually drive at render time, and is honest about the parts of
+  the layer model that are read but do not change the output.
+
+Why does a beginner meet layers this early? Because the day you open a real-world
+IDML and a frame you can plainly see in the XML does not appear in the rendered
+page, the answer is almost always a hidden layer. Knowing where to look — the
+item's `ItemLayer`, then that layer's `Visible` in the design map — turns a
+mystery into a one-line check.

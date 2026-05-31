@@ -1,0 +1,44 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "drop-cap",
+  "title": "A paragraph with a drop cap",
+  "tier": "pro",
+  "chapter": "typography",
+  "concept": "DropCapCharacters and DropCapLines on a ParagraphStyleRange lift the leading characters into an enlarged initial spanning the named number of lines.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Stories/Story_ustory.xml",
+    "language": "xml",
+    "label": "Stories/Story_ustory.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree"
+  ],
+  "annotations": [
+    {
+      "lines": "4",
+      "note": "DropCapCharacters=\"1\" sets how many leading characters become the drop cap; DropCapLines=\"3\" sets how many lines tall it is."
+    },
+    {
+      "lines": "4",
+      "note": "DropCapDetail=\"0\" carries InDesign's sizing/positioning detail; the renderer reads it alongside the two counts."
+    },
+    {
+      "lines": "6",
+      "note": "The first character of this Content becomes the drop cap; the rest of the run flows around it as body text."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 1,
+    "paragraphs": 1,
+    "runs": 1
+  },
+  "pathological": false,
+  "license": "MIT"
+}

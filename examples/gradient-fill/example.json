@@ -1,0 +1,45 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "gradient-fill",
+  "title": "A rectangle filled with a linear gradient",
+  "tier": "intermediate",
+  "chapter": "color-swatches",
+  "concept": "A <Gradient> swatch with two <GradientStop>s, applied to a shape by FillColor.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Resources/Graphic.xml",
+    "language": "xml",
+    "label": "Resources/Graphic.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree",
+    "live"
+  ],
+  "annotations": [
+    {
+      "lines": "7-10",
+      "note": "A Gradient swatch. Type=Linear (the other value is Radial); its Self id is what a shape's FillColor points at. The blend is defined entirely by its child GradientStop elements."
+    },
+    {
+      "lines": "8-9",
+      "note": "Each GradientStop references a Color by StopColor and places it with Location, a percentage 0..100 along the gradient. Midpoint (13..87) biases where the halfway blend sits between this stop and the next."
+    },
+    {
+      "lines": "5-6",
+      "note": "The two stop colors. A gradient holds no color of its own; it only references existing <Color> swatches by their Self id."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 2,
+    "paragraphs": 1,
+    "runs": 1
+  },
+  "pathological": false,
+  "license": "MIT"
+}

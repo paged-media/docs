@@ -1,0 +1,126 @@
+---
+title: Hyperlinks & bookmarks
+description: The Hyperlink element and its source/destination pair — URL, page, and anchor destinations — plus Bookmark navigation anchors, and what the parser keeps from each.
+tier: intermediate
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+A hyperlink is a pair: a **source** — the stretch of text or the frame the
+reader interacts with — and a **destination** — the place it jumps to. IDML
+splits the two into separate elements and joins them by id, so the same
+destination can be reached from many sources. The `Hyperlink` element in the
+design map is the join: it names a `Source` and points at a `Destination`. The
+source's anchor lives back in the story; the destination is its own element,
+also in the design map.
+
+The package below carries one complete hyperlink — a `HyperlinkURLDestination`,
+a `HyperlinkTextSource`, and the `Hyperlink` that ties them together — plus the
+in-story anchor that the source records. The renderer reports one page, one
+story, one run: the three `Content` chunks (the text before the link, the linked
+words, and the text after) collapse into a single run, and the hyperlink
+metadata rides alongside without changing the count.
+
+<ExampleEmbed example="with-hyperlink">
+  One Hyperlink joining a text source to a URL destination — parsed into the
+  model, not drawn on the page.
+</ExampleEmbed>
+
+<SupportBadge status="parsed-not-rendered" note="hyperlink interaction and link drawing are not wired — paged-parse/src/designmap.rs:256" />
+
+## `Hyperlink`
+
+The join element, listed flat in the design map. The parser keeps the four
+fields it needs to follow the link — the id, the human name, the source ref, and
+the destination — and reads the appearance attributes past. Note that the
+destination is read from `DestinationUniqueKey` when present (the integer key a
+destination element exposes) and otherwise from `Destination`.
+
+<AttrTable
+  element="Hyperlink"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'supported', note: 'The hyperlink id.' },
+    { attr: 'Name', type: 'string', support: 'supported', note: 'Human-readable name shown in the Hyperlinks panel.' },
+    { attr: 'Source', type: 'string ref (HyperlinkTextSource/… or a page-item source)', support: 'parsed-not-rendered', note: 'The source the link starts from. Kept on the model; not resolved to a drawn region.' },
+    { attr: 'DestinationUniqueKey', type: 'int', support: 'parsed-not-rendered', note: 'Preferred destination key. Read into the destination field when present.' },
+    { attr: 'Destination', type: 'string ref', support: 'parsed-not-rendered', note: 'Fallback destination ref when DestinationUniqueKey is absent.' },
+    { attr: 'Visible', type: 'boolean', support: 'not-yet-parsed', note: 'Whether the link is visible in exported PDF. Read past.' },
+    { attr: 'Hidden', type: 'boolean', support: 'not-yet-parsed', note: 'Whether the link is hidden in output. Read past.' },
+    { attr: 'Highlight', type: 'None | Invert | Outline | Inset', support: 'not-yet-parsed', note: 'PDF click highlight style. Read past.' },
+    { attr: 'Width', type: 'Thin | Medium | Thick', support: 'not-yet-parsed', note: 'Border stroke width. Read past.' },
+    { attr: 'BorderStyle', type: 'Solid | Dashed', support: 'not-yet-parsed', note: 'Border style of the link box. Read past.' },
+  ]}
+/>
+
+## The source side
+
+A `Hyperlink`'s `Source` names one of two anchor kinds. Both are recorded at
+document level; the text kind also leaves a wrapper inside the story.
+
+- A **`HyperlinkTextSource`** wraps a stretch of text inside a
+  `CharacterStyleRange`. In the example, it surrounds the words "paged media
+  docs" between two plain `Content` chunks. Today the parser does not surface
+  this wrapper onto the run — the linked region is not marked on the run text —
+  so the run is read exactly as if the wrapper were absent, and the text flows
+  unbroken. <SupportBadge status="not-yet-parsed" note="in-story hyperlink sources not surfaced on runs — paged-parse/src/story.rs" />
+- A **`HyperlinkPageItemSource`** makes a whole page item (a frame) the source
+  via its `SourcePageItem` attribute, with no in-text wrapper.
+
+## The destination side
+
+A hyperlink jumps to exactly one of three destination elements, each listed in
+the design map. They share `Self`, `Name`, and a `DestinationUniqueKey` integer
+key; what differs is the kind of place they name.
+
+<AttrTable
+  element="HyperlinkURLDestination"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'supported', note: 'The destination id.' },
+    { attr: 'Name', type: 'string (unique in document)', support: 'parsed-not-rendered', note: 'Destination name; must be unique within the document.' },
+    { attr: 'DestinationURL', type: 'string (URL)', support: 'parsed-not-rendered', note: 'The web address the link opens.' },
+    { attr: 'DestinationUniqueKey', type: 'int', support: 'parsed-not-rendered', note: 'The key a Hyperlink names to reach this destination.' },
+    { attr: 'Hidden', type: 'boolean', support: 'not-yet-parsed', note: 'Whether the link is hidden in PDF. Read past.' },
+  ]}
+/>
+
+<AttrTable
+  element="HyperlinkPageDestination"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'supported', note: 'The destination id.' },
+    { attr: 'Name', type: 'string (unique in document)', support: 'parsed-not-rendered', note: 'Destination name.' },
+    { attr: 'DestinationPage', type: 'string ref (a page)', support: 'parsed-not-rendered', note: 'The target page in this document.' },
+    { attr: 'ViewSetting', type: 'Fixed | FitView | FitWindow | FitWidth | FitHeight | FitVisible | InheritZoom', support: 'not-yet-parsed', note: 'How the viewer frames the page on arrival. Read past.' },
+    { attr: 'ViewPercentage', type: 'double (5–4000)', support: 'not-yet-parsed', note: 'Zoom level when ViewSetting is Fixed. Read past.' },
+  ]}
+/>
+
+A third kind, `HyperlinkExternalPageDestination`, names a page in *another*
+document via a `DocumentPath` and a `DestinationPageIndex` (1–9999); it shares
+the page destination's view-setting vocabulary.
+
+## `Bookmark`
+
+A bookmark is the source-less cousin: a named anchor that appears in a PDF's
+navigation outline and jumps to a destination, with no clickable region in the
+body text. The parser keeps its id, name, and destination ref.
+
+<AttrTable
+  element="Bookmark"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'supported', note: 'The bookmark id.' },
+    { attr: 'Name', type: 'string', support: 'supported', note: 'The label shown in the PDF navigation pane.' },
+    { attr: 'Destination', type: 'string ref (a HyperlinkTextDestination or HyperlinkPageDestination)', support: 'parsed-not-rendered', note: 'The anchor the bookmark jumps to. Kept on the model; not turned into a navigation entry.' },
+  ]}
+/>
+
+## What is not wired yet
+
+The whole chain — source anchor, join element, destination — is read into the
+document model, but nothing here reaches the page:
+
+- Hyperlink regions are not drawn and not made interactive; the link box,
+  highlight, and border attributes are read past. <SupportBadge status="parsed-not-rendered" note="paged-parse/src/designmap.rs:256" />
+- The in-story `HyperlinkTextSource` wrapper is not surfaced onto the run, so the
+  linked span is not marked. <SupportBadge status="not-yet-parsed" note="paged-parse/src/story.rs" />
+- Bookmarks are not emitted into any navigation structure. <SupportBadge status="parsed-not-rendered" note="paged-parse/src/designmap.rs:267" />

@@ -1,0 +1,31 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "conditional-run",
+  "title": "A run hidden by a condition",
+  "tier": "pro",
+  "chapter": "conditional-text",
+  "concept": "A CharacterStyleRange that names a hidden Condition via AppliedConditions is dropped before layout — the parser reads two runs, the renderer lays out one.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Stories/Story_ustory.xml",
+    "language": "xml",
+    "label": "Stories/Story_ustory.xml"
+  },
+  "views": ["raw", "annotated", "tree"],
+  "annotations": [
+    { "lines": "5-7", "note": "The first run carries no AppliedConditions, so it is always laid out." },
+    { "lines": "8", "note": "The second run names Condition/Draft via AppliedConditions — a space-separated list of Condition references." },
+    { "lines": "8-10", "note": "Condition/Draft is declared Visible=\"false\" in Resources/Styles.xml, so the renderer drops this whole run before layout. The page shows only the first run." }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 1,
+    "paragraphs": 1,
+    "runs": 1
+  },
+  "pathological": false,
+  "license": "MIT"
+}

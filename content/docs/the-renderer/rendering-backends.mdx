@@ -1,0 +1,136 @@
+---
+title: Rendering backends
+description: Paged has two rasterizers behind one trait — a WebGPU backend on Vello that powers the SDK and live preview, and a CPU backend on tiny-skia kept as the deterministic fidelity yardstick for headless CI.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+**The renderer has two rasterizers behind one trait: WebGPU (Vello) is the forward
+path you actually see, and a CPU backend (tiny-skia) is the deterministic yardstick
+that keeps it honest.**
+
+**In short:** The final stage of the pipeline turns a [display list](/docs/the-renderer/the-display-list)
+into pixels, and it can do so two ways. Both implement the same `PathRasterizer`
+trait, so they consume an identical display list. The **WebGPU backend, built on
+Vello**, is the forward path — it drives the SDK, the viewer, and this site's live
+preview. The **CPU backend, built on tiny-skia**, is legacy in the sense that it is
+not where the product is heading; it survives because it needs no GPU and renders
+deterministically, which makes it the reference backend for headless CI and the
+fidelity gate. This page explains the split and is honest about where each backend's
+coverage ends.
+
+## One trait, two implementations
+
+Both backends implement `PathRasterizer`: hand it a `DisplayList` and `RasterOptions`
+(page size, DPI, background), get back an RGBA8 buffer. The trait stays deliberately
+small so the engine can pick a backend at the edge and the fidelity harness can run
+both against the same list.
+
+```rust
+pub trait PathRasterizer {
+    fn name(&self) -> &'static str;
+    fn rasterize(&self, list: &DisplayList, options: &RasterOptions) -> Vec<u8>;
+}
+```
+
+Notice the contract's honesty clause: a backend that can't render a particular
+command should *log and skip it* rather than fail the whole page. That's why a
+preview never goes blank because of one unsupported effect — the rest of the page
+still draws.
+
+## WebGPU (Vello) — the forward path
+
+The Vello backend drives Vello via `wgpu`, targeting the browser's WebGPU API on the
+web and native GPUs elsewhere. This is the path that matters going forward: it's what
+the published `@paged-media/sdk` viewer surface uses to load an IDML package and
+present it to a canvas, and it's what renders the live preview on this site.
+
+<SupportBadge status="supported" note="WebGPU/Vello: the SDK, viewer, and live-preview path." />
+
+Its coverage of the display list is broad:
+
+<AttrTable
+  element="Vello backend coverage"
+  rows={[
+    { attr: 'FillPath / FillPathBlend', type: 'fills', support: 'supported', note: 'Solid, linear, and radial paints. Non-Normal blends wrapped in a transient blend layer; Normal stays on the fast fill path.' },
+    { attr: 'StrokePath', type: 'strokes', support: 'supported', note: 'Cap / join / miter mapped to peniko stroke parameters.' },
+    { attr: 'Image', type: 'placed images', support: 'supported', note: 'Decoded RGBA8 placed via an image brush.' },
+    { attr: 'PushClip / PopClip', type: 'clipping', support: 'supported', note: 'Via Vello clip layers.' },
+    { attr: 'BeginBlendGroup / EndBlendGroup', type: 'transparency groups', support: 'supported', note: 'Via Vello blend layers; blend modes mapped 1:1.' },
+    { attr: 'PathShadow / InnerShadow / OuterGlow / InnerGlow / Satin / Feather', type: 'soft effects', support: 'parsed-not-rendered', note: 'Approximated with a multi-stamp falloff (centre fill plus expanding strokes at decreasing alpha), not a true image-space Gaussian. Visually soft; the CPU backend is the fidelity reference.' },
+    { attr: 'PushLayer { GaussianBlur } / PopLayer', type: 'layer blur', support: 'supported', note: 'Replayed across a 7×7 Gaussian sample grid — a true convolution up to grid discretisation, since Vello lacks an image-space layer blur in the linked version.' },
+    { attr: 'DropShadow', type: 'rect-stamp shadow', support: 'parsed-not-rendered', note: 'Logged and skipped; current emitters route shadows through PathShadow instead, so this arm rarely fires.' },
+    { attr: 'BevelEmboss', type: 'bevel / emboss', support: 'parsed-not-rendered', note: 'Logged and skipped — the chisel-edge approximation regresses geometry without the per-pixel normal field. Full fidelity is CPU-only today.' },
+  ]}
+/>
+
+The summary the backend states about itself is the one to remember: it keeps the
+WASM/native preview from dropping frames on common-case primitives, with effect
+approximations close enough for preview — and it explicitly defers to the CPU
+backend for fidelity.
+
+## CPU (tiny-skia) — the legacy yardstick
+
+The CPU backend rasterizes the same display list on the CPU using tiny-skia. It is
+*legacy* in the product sense — the renderer's future is the GPU — but it earns its
+keep for two reasons that the GPU path can't match:
+
+- **It needs no GPU.** Headless CI runners don't have one. The hard fidelity gate
+  runs every fixture through the CPU backend so the check is reproducible anywhere.
+- **It is the path of record for fidelity.** Where the Vello backend approximates a
+  soft effect, the CPU rasterizer does the real image-space Gaussian convolution and
+  the real per-pixel work. When we ask "does our render match InDesign?", the answer
+  is measured against the CPU backend's output.
+
+<SupportBadge status="supported" note="tiny-skia CPU: headless CI + the fidelity reference. Not the product's forward path." />
+
+This is why the engine keeps both. The fidelity harness (`paged-fidelity`) diffs the
+CPU render against an InDesign-exported reference PDF using ΔE2000 colour difference
+and SSIM; that gate is what gives us the confidence to keep evolving the GPU path
+without silently regressing. The CPU backend lives behind the default `cpu` feature;
+the GPU backend behind `vello-backend`. The published WebGPU SDK build is GPU-only and
+ships no CPU page rasterizer.
+
+## Which one runs?
+
+It's a build-and-edge decision, not something the display list knows about:
+
+- The **live preview / SDK / viewer** run the **Vello** backend (WebGPU in the
+  browser).
+- **Headless CI and the fidelity gate** run the **CPU** backend (deterministic, no
+  GPU).
+- A native tool can pick either; the engine's `render` helpers default to the CPU
+  backend when the `cpu` feature is on.
+
+Because both consume the same display list, switching backends never changes *what*
+gets drawn — only *how faithfully* a handful of soft effects come out, and that gap
+is exactly what the [support badges](/docs/the-renderer/the-display-list) above are
+for.
+
+## Frequently asked questions
+
+**If the CPU backend is the fidelity reference, why isn't it the forward path?**
+Because faithfulness and interactivity are different jobs. The CPU backend is the
+yardstick *because* it's deterministic and does the full per-pixel work — but that
+same work is too slow for a live, zoomable, interactive preview. The Vello/WebGPU
+backend renders fast enough for the editor and viewer, and the CPU backend keeps it
+honest by catching regressions in CI.
+
+**Will the live preview ever look wrong compared to a print render?**
+For common-case content — text, fills, strokes, images, clips, gradients — the two
+backends agree. The differences are confined to a few soft effects (drop/inner
+shadows, glows, satin, feather, bevel) that the GPU path approximates or skips. Those
+are flagged with <SupportBadge status="parsed-not-rendered" /> badges so you always
+know where the preview is an approximation.
+
+**Does the live preview need WebGPU support in the browser?**
+Yes. The Vello backend targets the browser's WebGPU API. Modern browsers ship it;
+where it's unavailable, the preview can't run the GPU path. The CPU backend is not a
+browser fallback — it's the headless/CI rasterizer.
+
+**Can I run the renderer without a GPU at all?**
+Yes — that's exactly what the CPU (tiny-skia) backend is for. Build with the default
+`cpu` feature and the engine rasterizes entirely on the CPU, which is how headless CI
+and the fidelity harness operate.

@@ -1,4 +1,10 @@
 {
   "title": "Typography",
-  "pages": ["index"]
+  "pages": [
+    "index",
+    "fonts-and-faces",
+    "spacing-and-leading",
+    "justification-and-linebreaking",
+    "drop-caps-and-tabs"
+  ]
 }

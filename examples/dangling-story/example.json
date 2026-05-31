@@ -1,0 +1,25 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "dangling-story",
+  "title": "A dangling story reference",
+  "tier": "pro",
+  "chapter": "edge-cases",
+  "concept": "The manifest still advertises a story whose part has been removed from the archive. Document::open resolves every manifest reference, finds nothing for this one, and stops with a structured MissingEntry error instead of guessing.",
+  "packageDir": "package",
+  "editable": {
+    "part": "designmap.xml",
+    "language": "xml",
+    "label": "designmap.xml"
+  },
+  "views": ["raw", "annotated", "tree"],
+  "annotations": [
+    { "lines": "3", "note": "StoryList still names ustory as a story belonging to this document." },
+    { "lines": "11", "note": "This idPkg:Story line points the loader at Stories/Story_ustory.xml — but that part no longer exists in the package. This is the dangling reference." }
+  ],
+  "expect": {
+    "opens": false,
+    "builds": false
+  },
+  "pathological": true,
+  "license": "MIT"
+}

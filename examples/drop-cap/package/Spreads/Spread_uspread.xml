@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<idPkg:Spread xmlns:idPkg="http://ns.adobe.com/AdobeInDesign/idml/1.0/packaging" DOMVersion="20.0">
+  <Spread Self="uspread" PageCount="1" BindingLocation="0" ShowMasterItems="true" AllowPageShuffle="true" ItemTransform="1 0 0 1 0 0">
+    <Page Self="upage" Name="1" AppliedMaster="umaster" ItemTransform="1 0 0 1 0 0" GeometricBounds="0 0 841.89 595.276" MasterPageTransform="1 0 0 1 0 0"/>
+    <TextFrame Self="uframe" ParentStory="ustory" PreviousTextFrame="n" NextTextFrame="n" ContentType="TextType" AppliedObjectStyle="ObjectStyle/$ID/[None]" Visible="true" Name="$ID/" ItemTransform="1 0 0 1 57.638 145.8237" FillColor="Swatch/None" StrokeColor="Swatch/None" StrokeWeight="0">
+      <Properties>
+        <PathGeometry>
+          <GeometryPathType PathOpen="false">
+            <PathPointArray>
+              <PathPointType Anchor="0 0" LeftDirection="0 0" RightDirection="0 0"/>
+              <PathPointType Anchor="0 400" LeftDirection="0 400" RightDirection="0 400"/>
+              <PathPointType Anchor="480 400" LeftDirection="480 400" RightDirection="480 400"/>
+              <PathPointType Anchor="480 0" LeftDirection="480 0" RightDirection="480 0"/>
+            </PathPointArray>
+          </GeometryPathType>
+        </PathGeometry>
+      </Properties>
+    </TextFrame>
+  </Spread>
+</idPkg:Spread>

@@ -1,12 +1,52 @@
 ---
 title: Images & graphics
+description: How placed pictures live inside frames — the link the parser captures, and the asset lookup it defers to render time.
 tier: intermediate
 diataxis: explanation
-status: stub
+status: published
+owner: paged-docs
 ---
 
-Placed images, links vs. embeds, the major image formats, transforms, and clipping. Placed content that needs frames and transforms first.
+A picture in an InDesign layout is never a free-floating thing. It is always
+*placed* — it lives inside a frame, the same kind of frame that can hold a colour
+or a story. The frame owns the geometry: where the picture sits on the page, how
+big it is, and what shape crops it. The picture itself only adds a pointer to some
+image data and a small transform that says how its pixels land inside that frame.
 
-> 🚧 Being written. This is a placeholder section landing; it is excluded from
-> search until it reaches real depth. Its order in the reference is justified by
-> reader progression, not by the source spec's organization (clean-room §6.1).
+That split is the whole reason this chapter comes *after*
+[frames & paths](/docs/frames-paths) and
+[geometry & coordinates](/docs/geometry-coordinates). A placed image is a frame
+you already understand, with two extra things hung off it: a reference to the
+image, and the image's own [`ItemTransform`](/docs/geometry-coordinates/item-transform).
+Read those chapters first and a graphic frame holds no surprises — it is a
+`Rectangle` (or `Oval`, or `Polygon`) that happens to nest an `<Image>`.
+
+## What the parser captures, and what it doesn't
+
+The single most important idea in this chapter is that **our parser does not load
+images**. It reads the frame, it reads the reference string (a URI, or inline
+bytes), it reads the image's transform — and then it stops. The actual job of
+finding the file, decoding the JPEG or PNG, and turning it into pixels happens
+later, at render time, through a separate component called the *asset resolver*.
+
+This is deliberate. The same parsed document can be rendered by a host that has
+all the linked files on disk, by one that has none of them, or by one that
+substitutes its own. The parser's output is identical in every case; only the
+resolver differs. So when you parse a package whose images are missing, nothing
+fails — you get a perfectly good description of every frame, with the picture
+slots simply left for the resolver to fill or leave empty.
+
+## What this chapter covers
+
+- **[Placed images](/docs/images-graphics/placed-images)** — the reference page.
+  How a frame nests an `<Image>`, how it points at a file through
+  `<Link>` / `LinkResourceURI`, the image's own transform, and why a *linked*
+  picture and an *embedded* one look the same to the parser.
+- **[Formats & clipping](/docs/images-graphics/formats-and-clipping)** — which
+  image formats the resolver can decode, how the frame's path crops the picture,
+  and where the current gaps are (decoding deferred to the resolver, clipping
+  precision, vector formats like EPS and PDF).
+
+Throughout, "graphic frame" just means a frame with a picture in it. The frame
+machinery is unchanged from the frames chapter; everything new here is the
+picture and how it attaches.

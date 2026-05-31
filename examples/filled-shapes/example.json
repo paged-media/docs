@@ -1,0 +1,45 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "filled-shapes",
+  "title": "A filled rectangle and a filled oval",
+  "tier": "intermediate",
+  "chapter": "frames-paths",
+  "concept": "Rectangle and Oval as pure vector frames: a FillColor swatch makes each shape paint without any text or image content.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Spreads/Spread_uspread.xml",
+    "language": "xml",
+    "label": "Spreads/Spread_uspread.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree",
+    "live"
+  ],
+  "annotations": [
+    {
+      "lines": "5",
+      "note": "A Rectangle with FillColor=\"Color/Red\". No ParentStory, so the parser files it as a vector frame, not a text frame. ContentType=\"GraphicType\" declares it a graphics frame."
+    },
+    {
+      "lines": "19",
+      "note": "An Oval with FillColor=\"Color/Blue\". The parser treats it as the ellipse inscribed in its path's bounding box."
+    },
+    {
+      "lines": "25",
+      "note": "The four PathPointType anchors describe a 240x240 square; the inscribed ellipse is therefore a circle."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 2,
+    "paragraphs": 0,
+    "runs": 0
+  },
+  "pathological": false,
+  "license": "MIT"
+}

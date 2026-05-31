@@ -1,12 +1,60 @@
 ---
 title: Tables
-tier: pro
+description: How an IDML table is modelled — a grid that rides on a paragraph, with rows, columns, and cells that each hold their own text.
+tier: intermediate
 diataxis: explanation
-status: stub
+status: published
+owner: paged-docs
 ---
 
-The table model, cells, rows, columns, headers and footers, merged cells, and tables in text flow. A specialized text-flow structure.
+A table in IDML is not a page item of its own. It is a `<Table>` element that
+**rides on a paragraph**, the same way an inline graphic does — it sits inside a
+`<CharacterStyleRange>`, inside a `<ParagraphStyleRange>`, inside a story. The
+story flows down its [text frame](/docs/stories-text); when the flow reaches the
+paragraph that hosts the table, the table draws there. Everything that makes a
+table a *table* — the grid, the cells, the borders — lives on that one `<Table>`
+element and its children.
 
-> 🚧 Being written. This is a placeholder section landing; it is excluded from
-> search until it reaches real depth. Its order in the reference is justified by
-> reader progression, not by the source spec's organization (clean-room §6.1).
+This is worth pausing on, because it is the key to everything else on these pages.
+A table has no position attribute. It does not name a frame. It inherits its
+horizontal placement from the paragraph it rides on and its vertical placement
+from where that paragraph lands in the flow. If you understand stories and
+paragraphs, you already understand where a table *goes*; these pages are about
+what a table *is*.
+
+## The model in one breath
+
+A `<Table>` declares its shape with counts: how many header rows, how many body
+rows, how many footer rows, and how many columns. It then carries three kinds of
+children:
+
+- **`<Row>`** elements — one per row, giving each row its height.
+- **`<Column>`** elements — one per column, giving each column its width.
+- **`<Cell>`** elements — one per occupied grid position, each addressed by a
+  `Name="col:row"` and each holding its own paragraphs of text.
+
+The counts and the children are redundant on purpose: the counts tell the renderer
+the grid's dimensions, and the rows / columns / cells fill it in. A cell can span
+more than one row or column, so the number of `<Cell>` elements is usually fewer
+than rows × columns.
+
+## How to read this chapter
+
+The pages build up in the order the renderer meets the pieces:
+
+- **[The table model](/docs/tables/the-table-model)** — the `<Table>` element
+  itself: the row and column counts, the outer border, and the row / column
+  divider rules.
+- **[Rows, columns, and cells](/docs/tables/rows-columns-cells)** — the `<Row>`,
+  `<Column>`, and `<Cell>` children: track sizes, the `col:row` addressing,
+  merged cells via spans, per-cell insets and strokes, and the text inside a cell.
+- **[Tables in the text flow](/docs/tables/tables-in-text-flow)** — what it means
+  for a table to be anchored in a paragraph: how it breaks across threaded frames,
+  and how header and footer rows repeat.
+
+A table's *formatting* — the styles it can apply — is a separate concern, covered
+in [table and cell styles](/docs/styles/table-and-cell-styles). A `<Table>` names
+a table style with `AppliedTableStyle`, and a `<Cell>` names a cell style with
+`AppliedCellStyle`; both resolve through [the cascade](/docs/styles/the-cascade)
+the same way text styles do. These pages describe the *structure* those styles
+dress.

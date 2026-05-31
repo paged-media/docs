@@ -1,0 +1,34 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "a-table",
+  "title": "A table inside a story",
+  "tier": "pro",
+  "chapter": "tables",
+  "concept": "A <Table> rides on a paragraph: HeaderRowCount/BodyRowCount and ColumnCount set the grid, Row/Column give the tracks, and each Cell (Name=\"col:row\") holds its own paragraph.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Stories/Story_ustory.xml",
+    "language": "xml",
+    "label": "Stories/Story_ustory.xml"
+  },
+  "views": ["raw", "annotated", "tree"],
+  "annotations": [
+    { "lines": "6", "note": "The Table sits inside a CharacterStyleRange, which is inside a ParagraphStyleRange — it rides on a host paragraph. HeaderRowCount=1 + BodyRowCount=2 means three rows; ColumnCount=2 means two columns." },
+    { "lines": "12-14", "note": "One <Row> per row; Name is the zero-based row index, SingleRowHeight the row's height in points." },
+    { "lines": "15-16", "note": "One <Column> per column; Name is the zero-based column index, SingleColumnWidth the column's width in points." },
+    { "lines": "17", "note": "A <Cell> addresses its grid position with Name=\"col:row\" (zero-indexed). This is cell 0:0 — column 0, the header row. RowSpan/ColumnSpan default to 1." },
+    { "lines": "19", "note": "FillColor paints the cell background; the header cells fill Black. The four TextInsets pad the cell content from its edges." },
+    { "lines": "22-25", "note": "The cell's content is an ordinary ParagraphStyleRange — a paragraph that lives inside the cell, not in the story body." }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 1,
+    "paragraphs": 1,
+    "runs": 0
+  },
+  "pathological": false,
+  "license": "MIT"
+}

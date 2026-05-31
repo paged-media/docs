@@ -1,0 +1,88 @@
+---
+title: Conditions and applied conditions
+description: The <Condition> and <ConditionSet> elements in Styles.xml, the attributes our parser reads from them, and how a run opts in through AppliedConditions.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+Conditional text is wired through three named pieces: a `<Condition>` that defines
+a toggle, an optional `<ConditionSet>` that groups toggles, and an
+`AppliedConditions` attribute that attaches a run to one or more conditions. The
+first two live in `Resources/Styles.xml`; the third lives on a
+`<CharacterStyleRange>` inside a story.
+
+The example below is one story with two runs. The first carries no condition; the
+second names `Condition/Draft`, which the document declares `Visible="false"`.
+Because that condition is hidden, the second run is dropped before layout: our
+parser reads two runs from the story, but the rendered page reports one.
+
+<ExampleEmbed example="conditional-run">
+  A run tagged with a hidden condition — present in the XML, absent from the page.
+</ExampleEmbed>
+
+## `<Condition>`
+
+A document-level visibility toggle, declared once in `Resources/Styles.xml`
+alongside the style groups. Its `Self` id is the value a run refers to in
+`AppliedConditions`. Our parser reads the four attributes below; the remaining
+indicator-appearance attributes and the `IndicatorColor` child are read past, not
+acted on, because the renderer never draws the indicator (see
+[visibility resolution](/docs/conditional-text/visibility)).
+
+<AttrTable
+  element="Condition"
+  rows={[
+    { attr: 'Self', type: 'string id (e.g. "Condition/Draft")', support: 'supported', note: 'The condition id. This is what a run names in AppliedConditions.' },
+    { attr: 'Name', type: 'string', support: 'supported', note: 'The human-readable condition name shown in an editor. Required by the format; the renderer keys off Self, not Name.' },
+    { attr: 'Visible', type: 'boolean', support: 'supported', note: 'Whether the condition is currently on. Absent means visible — a missing or unparseable value is treated as true.' },
+    { attr: 'IndicatorMethod', type: 'None | Underline | Highlight', support: 'parsed-not-rendered', note: 'How an editor should flag the governed text. Captured for round-trip; never drawn on the page.' },
+  ]}
+/>
+
+`Visible` is the only attribute the layout pass reads. When it is `false`, every
+run that names this condition is removed; when it is `true` or absent, those runs
+are kept. There is no inheritance and no cascade here — the value on the
+`<Condition>` element is the whole story.
+
+## `AppliedConditions` on a run
+
+A `<CharacterStyleRange>` opts in to conditions through a single
+`AppliedConditions` attribute: a **space-separated list** of `<Condition>`
+references. A run with no `AppliedConditions` (the common case) is never gated and
+is always laid out.
+
+<AttrTable
+  element="CharacterStyleRange"
+  rows={[
+    { attr: 'AppliedConditions', type: 'space-separated Condition/… refs', support: 'supported', note: 'The conditions governing this run. The run is laid out only when every referenced condition resolves to Visible; if any is hidden, the whole run is dropped.' },
+  ]}
+/>
+
+The combination is **AND**: listing two conditions means the run survives only
+when *both* are visible. A reference that does not resolve to any declared
+`<Condition>` is treated as visible (an unknown name cannot hide a run), so a stray
+or mistyped condition id never silently removes text.
+
+## `<ConditionSet>`
+
+A `<ConditionSet>` is a named grouping of conditions — the unit an editor's
+Conditions panel toggles together (for instance, a "Print preview" set that flips
+several conditions at once). It also lives in `Resources/Styles.xml`. Our parser
+reads it for round-trip fidelity, but the layout pass does not branch on it: a run
+is gated by the individual conditions it names, never by which set is "active". See
+[visibility resolution](/docs/conditional-text/visibility) for why.
+
+<AttrTable
+  element="ConditionSet"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'parsed-not-rendered', note: 'The set id. Stored; not consulted during layout.' },
+    { attr: 'Name', type: 'string', support: 'parsed-not-rendered', note: 'The set name shown in an editor.' },
+    { attr: 'Conditions', type: 'space-separated Condition/… refs', support: 'parsed-not-rendered', note: 'The conditions collected into this set, stored as-parsed. The renderer does not use set membership to decide visibility.' },
+  ]}
+/>
+
+With the three pieces in hand — a condition that defines a toggle, a run that names
+it, and the visibility value that decides the outcome — the next page walks the
+resolution rule end to end and pins down which parts are drawn and which are not.

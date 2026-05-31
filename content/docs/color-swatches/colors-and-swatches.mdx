@@ -1,0 +1,102 @@
+---
+title: Colors & swatches
+description: The <Color> and <Swatch> elements — their attributes, the four color spaces, and the reserved built-ins every document carries.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+`<Color>` and `<Swatch>` are the two leaf entries of the palette in
+`Resources/Graphic.xml`. A `<Color>` holds actual channel values; a `<Swatch>`
+is a named handle that usually points at one. Both are keyed by their `Self` id,
+and that id is what a shape or run of text names in its `FillColor` /
+`StrokeColor`.
+
+## `<Color>`
+
+A `<Color>` names a color model (`Model`), a color space (`Space`), and the
+channel values for that space (`ColorValue`). The parser reads these three plus
+the spot-color fallback attributes and ignores the editor-only bookkeeping
+(`ColorEditable`, `ColorRemovable`, `Visible`, `SwatchCreatorID`).
+
+<AttrTable
+  element="Color"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'supported', note: 'The lookup key, conventionally "Color/<name>". Everything that paints this color references this id.' },
+    { attr: 'Name', type: 'string', support: 'supported', note: 'Human-readable swatch name; informational for the renderer.' },
+    { attr: 'Model', type: 'Process | Spot | MixedInk', support: 'supported', note: 'Process is the default. Spot marks a named ink previewed via its CMYK alternate. MixedInk / MixedInkGroup are recognized but collapse to an unhandled model.' },
+    { attr: 'Space', type: 'CMYK | RGB | LAB | Gray', support: 'supported', note: 'Selects how ColorValue is interpreted. CMYK, RGB and Gray convert to device color; Lab is parsed but only the spot CMYK-alternate path renders it.' },
+    { attr: 'ColorValue', type: 'space-separated numbers', support: 'supported', note: 'The channels for Space: CMYK = four 0–100 percentages; RGB = three 0–255; Lab = L 0–100, a/b −128–127; Gray = one 0–100.' },
+    { attr: 'AlternateSpace', type: 'CMYK | RGB | LAB | …', support: 'supported', note: 'Color space of the fallback a spot swatch carries. The renderer previews spot colors through this when it is CMYK.' },
+    { attr: 'AlternateColorValue', type: 'space-separated numbers', support: 'supported', note: 'The fallback channels in AlternateSpace. For a CMYK alternate, four percentages.' },
+    { attr: 'TintValue', type: 'number 0–100', support: 'supported', note: 'A swatch-level tint baked into a spot color ("PANTONE 286 at 50%"). Multiplied into the CMYK alternate before conversion. −1 (Adobe’s "unset") and out-of-range values are treated as absent.' },
+    { attr: 'AlphaPercentage / Alpha', type: 'number', support: 'supported', note: 'Optional opacity on the swatch. AlphaPercentage is 0–100; a bare Alpha may be 0–100 or a 0–1 unit float. Absent ⇒ opaque.' },
+    { attr: 'ColorOverride', type: 'Normal | Specialpaper | Specialblack | …', support: 'parsed-not-rendered', note: 'Marks the reserved built-ins. The renderer keys the built-ins by name rather than branching on this attribute.' },
+    { attr: 'BaseColor', type: 'string id', support: 'not-yet-parsed', note: 'Used by <Tint> to point at the color it is a percentage of; not read off <Color> itself.' },
+  ]}
+/>
+
+### The four color spaces
+
+`Space` decides what `ColorValue` means and how the color reaches the screen:
+
+- **CMYK** — four percentages `C M Y K`, each 0–100. The primary print path; the
+  renderer sends these through ICC conversion (or a naive fallback). Pure red is
+  `0 100 100 0`.
+- **RGB** — three components `R G B`, each 0–255. Converted straight to device
+  color.
+- **Lab** — `L a b` with L in 0–100 and a/b in −128–127. Parsed and stored, but
+  the renderer only produces a visible color for Lab when it arrives through a
+  spot color's CMYK alternate. <SupportBadge status="parsed-not-rendered" note="Lab as a primary space" />
+- **Gray** — one value 0–100. Rendered as an achromatic gray.
+
+## `<Swatch>`
+
+A `<Swatch>` is a named entry that the palette can reference indirectly. The
+parser captures its id, its name, and — when present — the `<Color>` it wraps, so
+a `FillColor` that names a swatch resolves through to the underlying color in one
+hop.
+
+<AttrTable
+  element="Swatch"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'supported', note: 'The lookup key, e.g. "Swatch/None".' },
+    { attr: 'Name', type: 'string', support: 'supported', note: 'The swatch name shown in the UI.' },
+    { attr: 'Color', type: 'string id', support: 'supported', note: 'Optional reference to the <Color> this swatch wraps; resolve() follows it one level.' },
+  ]}
+/>
+
+The single most-referenced swatch is `Swatch/None` — the explicit "no fill" /
+"no stroke" handle. A frame with `FillColor="Swatch/None"` is transparent there;
+it is not an error and not a color.
+
+## The reserved built-ins
+
+A document does not have to define everything it uses. InDesign guarantees a
+fixed set of swatches and colors exist whether or not they appear in
+`Graphic.xml`, and the renderer treats them by name:
+
+- **None** — the transparent "no paint" swatch.
+- **Paper** — the substrate color (white by default); a fill of Paper knocks out
+  to the page color, it is not literally "no fill".
+- **Black** — process black.
+- **Registration** — paints in every separation at once (for crop marks and the
+  like).
+
+In addition, the format reserves the three hidden process primaries — Cyan,
+Magenta, and Yellow — which a document may reference but cannot redefine. Because
+these are guaranteed, an example that omits them still resolves correctly.
+
+## A color, defined and applied
+
+The example below adds one `<Color>` to the palette — a process CMYK red,
+`0 100 100 0` — and a rectangle whose `FillColor` names it. The rectangle has no
+text and no font; it is pure fill, so the live view renders it directly.
+
+<ExampleEmbed example="color-fill">
+  A new CMYK swatch in Graphic.xml, applied to a rectangle by FillColor.
+</ExampleEmbed>
+
+Change `ColorValue` in the palette and the rectangle's color follows, because the
+shape only ever names the swatch — the channel values live in one place.

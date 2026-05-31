@@ -1,12 +1,68 @@
 ---
 title: Comparisons
+description: How IDML relates to the other document and layout formats it lives among — native binaries, fixed-form PDF, the reflowing web, and structure-only XML — and where it fits.
 tier: intermediate
 diataxis: explanation
-status: stub
+status: published
+owner: paged-docs
 ---
 
-IDML vs. other document and layout formats, and where it sits.
+**IDML is one of many ways to capture a document — and the clearest way to see what it is for is to set it next to the others.**
 
-> 🚧 Being written. This is a placeholder section landing; it is excluded from
-> search until it reaches real depth. Its order in the reference is justified by
-> reader progression, not by the source spec's organization (clean-room §6.1).
+**In short:** Every document format makes a trade. A native binary is fast and
+exact but locked to one application; a PDF freezes a layout into fixed pixels you
+can print but not easily re-edit; HTML and CSS describe content that reflows
+forever; an office or structured-XML format captures meaning but leaves visual
+layout to the reader. IDML sits in a specific spot among all of these: an *open,
+editable* description of a *fully composed paged layout*. This section explains why
+that combination is unusual, how IDML differs from each neighbor, and when you'd
+reach for it instead. None of these formats is wrong — each is excellent at the job
+it was built for.
+
+If you've read [What paged media is](/docs/foundations/what-is-paged-media) and
+[What IDML is](/docs/foundations/what-is-idml), you already know the two ideas this
+section builds on: a page is a *finite, fixed* surface, and IDML describes a
+document's *intent* as readable XML rather than as rendered pixels. The natural next
+question is the comparative one. There are many formats a document could be stored
+in — so what does IDML give you that they don't, and what do they give you that it
+doesn't?
+
+That question matters because choosing a format is choosing what you can do later. A
+format decides whether a document can still be *edited* or only *viewed*, whether
+its layout is *preserved exactly* or left to *reflow*, and whether anyone other than
+the original application can *read and rewrite* it. Pick the wrong one and you've
+quietly thrown away the option you needed most. So it's worth understanding the
+landscape before committing a layout to any single shape.
+
+This section is conceptual — there are no IDML parts to dissect here. It's the map
+you consult before the detailed chapters, so that when later pages explain a story,
+a frame, or a style, you already know *why* IDML bothers to describe them the way it
+does rather than the way PDF or HTML would.
+
+- **[IDML vs. other formats](/docs/comparisons/idml-vs-other-formats)** — fair,
+  side-by-side comparisons with native binaries (INDD), fixed-form PDF, the web's
+  HTML and CSS, and structure-only XML.
+- **[Where IDML fits](/docs/comparisons/where-idml-fits)** — when to reach for IDML
+  rather than PDF or HTML, and how Paged turns it into real pages.
+
+## Frequently asked questions
+
+**Why compare IDML to other formats at all?**
+Because the differences are exactly what make IDML useful. IDML's value isn't
+visible in isolation — it shows up when you notice that a native binary can't be
+read by other tools, that a PDF can't easily be re-edited, that HTML doesn't hold a
+fixed page, and that structure-only XML doesn't carry a finished layout. Seeing what
+each format gives up makes clear what IDML is preserving.
+
+**Is one of these formats better than the others?**
+No. Each format is shaped by what it was built to do, and each is genuinely good at
+it: a native binary for fast in-application work, PDF for faithful final delivery,
+HTML and CSS for reflowing screens, structured XML for portable meaning. IDML is
+built for *open, editable, fully-composed paged layout* — a different job, not a
+better one. These pages compare honestly rather than crown a winner.
+
+**Which page should I read first?**
+Start with [IDML vs. other formats](/docs/comparisons/idml-vs-other-formats) for the
+head-to-head differences, then read
+[Where IDML fits](/docs/comparisons/where-idml-fits) for the practical question of
+when to choose IDML over a PDF or a web page.

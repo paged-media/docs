@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<idPkg:Graphic xmlns:idPkg="http://ns.adobe.com/AdobeInDesign/idml/1.0/packaging" DOMVersion="20.0">
+  <Color Self="Color/Black" Model="Process" Space="CMYK" ColorValue="0 0 0 100" ColorOverride="Specialblack" Name="Black" ColorEditable="false" ColorRemovable="false" Visible="true"/>
+  <Color Self="Color/Paper" Model="Process" Space="CMYK" ColorValue="0 0 0 0" ColorOverride="Specialpaper" Name="Paper" ColorEditable="true" ColorRemovable="false" Visible="true"/>
+  <Color Self="Color/Sun" Model="Process" Space="CMYK" ColorValue="0 15 90 0" ColorOverride="Normal" Name="Sun" ColorEditable="true" ColorRemovable="true" Visible="true"/>
+  <Color Self="Color/Sky" Model="Process" Space="CMYK" ColorValue="70 25 0 0" ColorOverride="Normal" Name="Sky" ColorEditable="true" ColorRemovable="true" Visible="true"/>
+  <Gradient Self="Gradient/SkySun" Type="Linear" Name="Sky to Sun" ColorEditable="true" ColorRemovable="true" Visible="true">
+    <GradientStop Self="Gradient/SkySun/stop0" StopColor="Color/Sun" Location="0" Midpoint="50"/>
+    <GradientStop Self="Gradient/SkySun/stop1" StopColor="Color/Sky" Location="100" Midpoint="50"/>
+  </Gradient>
+</idPkg:Graphic>

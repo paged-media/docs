@@ -1,35 +1,88 @@
 ---
 title: What IDML is
-description: IDML is how a layout document travels as text instead of as an opaque binary.
+description: IDML is Adobe's open, XML-based interchange format for InDesign documents — a layout's full structure as readable text in a ZIP, describing content and intent rather than pixels.
 tier: beginner
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
 
-IDML is a way for a page-layout document to travel as **text** rather than as an
-opaque binary. A layout application can save its work in a packed binary file that
-only that application fully understands; IDML is the interchange form of the same
-document, where the structure is written out as XML and bundled into a single
-archive.
+**IDML is how a layout document travels as text instead of as an opaque binary.**
+
+**In short:** IDML (InDesign® Markup Language) is Adobe's open, XML-based
+interchange format for InDesign documents. Instead of a proprietary binary that
+only InDesign can read, IDML packages a document's full structure — its pages,
+text, styles, and shared resources — as human-readable XML inside a single ZIP
+archive. It describes a document's *content and intent* rather than rendered
+pixels, which makes it the format of choice for tools that need to read, generate,
+or transform page layouts. This page explains what IDML is, where the name comes
+from, and the two ideas that shape everything else in this reference.
+
+IDML — short for **InDesign® Markup Language** — is what you get when a page-layout
+document stops hiding inside a proprietary binary and travels as text instead. The
+format was defined by **Adobe®**, who wrote and still maintain its specification, as
+the documented interchange form of an Adobe® InDesign® document. The native working
+file is a packed binary that only InDesign fully understands — version-coupled,
+undocumented, take-it-or-leave-it. IDML is the same document with nothing hidden:
+structure written out as XML, bundled into a single archive, readable by anyone who
+cares to look.
+
+The name is honest about what it is. **InDesign®** is Adobe's professional
+page-layout application, the tool at the center of modern **Desktop Publishing
+(DTP)** — the craft, born in the 1980s, of composing real pages on a computer
+instead of waiting on a typesetter. **Markup Language** drops it into the same
+family as HTML and XML: tags that describe what content *means* and how it's
+structured, not how to paint pixels onto a screen. So IDML is exactly what it says
+— the markup language for InDesign documents, and through InDesign, a language for
+**paged media**: content fixed to discrete, bounded pages with precise positions,
+flowing text, and shared styling. The opposite of the web's endlessly reflowing
+canvas.
 
 Two ideas are worth holding onto from the start, because everything else follows
 from them.
 
-**It is a package, not a file.** What looks like one `.idml` document is really a
-ZIP archive containing many small XML parts — a manifest that names the others,
-parts that describe shared resources like colors and styles, and parts that hold
-the actual pages and text. Open the archive and you can read every part with a
-text editor.
+**It is a package, not a file.** What looks like one tidy `.idml` document is really
+a ZIP archive — many small XML parts inside: parts that name and organize the
+others, parts that hold shared resources like colors and styles, parts that carry
+the actual pages and text. Open the archive and you can read every one of them in a
+text editor. The format is *human-readable*, even though it was built to be
+*machine-processed* — meant for people to inspect, but for tools to author and
+rewrite.
 
-**It describes content and intent, not pixels.** An IDML part does not say "put a
-black dot at this coordinate." It says "this story uses this paragraph style, and
-flows through this frame on this page." Turning that intent into pixels is the job
-of a renderer — which is what Paged does, and what much of this reference is
-secretly about. When we explain a part of the format, we explain it from what our
-renderer actually has to do with it.
+**It describes content and intent, not pixels.** An IDML part never says "put a
+black dot here." It says "this story uses this paragraph style and flows through
+this frame on this page." Turning that intent into actual pixels is the renderer's
+job — which is what Paged does, and what this entire reference is quietly about.
+Every time we explain a part of the format, we explain it from the angle that
+matters: what our renderer actually has to *do* with it.
 
-That is the whole shape of the thing: an archive of XML, describing a document's
-structure and intent, meant to be read and rewritten by tools rather than stared
-at by people. The next pages explain where this form came from and why it is
-packaged the way it is.
+That's the whole shape of the thing: an archive of XML, defined by Adobe®,
+describing a document's structure and intent for paged media — meant to be read and
+rewritten by tools, not squinted at by humans. And credit where it's due: Adobe did
+a genuinely excellent job with IDML. It's clean, thoroughly specified, and holds up
+under real scrutiny — a format that rewards anyone willing to read it, and a real
+pleasure to build a renderer against. The next pages dig into where it came from
+and why it's packaged the way it is.
+
+## Frequently asked questions
+
+**What does IDML stand for?**
+IDML stands for **InDesign Markup Language**. It is Adobe's XML-based interchange
+format for Adobe InDesign documents, designed to represent a layout's structure —
+pages, text, styles, and resources — as readable text rather than as a proprietary
+binary file.
+
+**What is the difference between an IDML and an INDD file?**
+An **INDD** file is InDesign's native working format: a compact, proprietary binary
+that is tied to specific application versions and is not openly documented. An
+**IDML** file is the open, specified interchange version of the same document,
+written as XML and packaged in a ZIP archive. INDD is what InDesign saves for its
+own use; IDML is what you use to move a document between versions or to read,
+generate, and transform it with other tools.
+
+**Can you open and edit an IDML file without Adobe InDesign?**
+Yes. Because an IDML file is just a ZIP archive of XML parts, you can unzip it and
+inspect or edit any part in a plain text editor, and tools can generate or transform
+IDML without InDesign installed. That said, IDML describes content and *intent*, not
+finished pixels — so to turn it into a faithful visual page you still need a renderer
+(such as Paged) or InDesign itself to interpret the layout.

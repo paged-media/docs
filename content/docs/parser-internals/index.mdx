@@ -1,12 +1,106 @@
 ---
 title: Parser internals
+description: How Paged turns an IDML package into a typed AST — the reader that opens the ZIP, the per-resource parsers that run on demand, and the forgiving recovery model that keeps a malformed document rendering.
 tier: pro
 diataxis: explanation
-status: stub
+status: published
+owner: paged-docs
 ---
 
-The reader, validation, recovery, error model, performance, and memory of the IDML parser (core/crates/paged-parse).
+**The parser is the layer that turns an IDML package into a typed tree the rest of the renderer can walk — and nothing more.**
 
-> 🚧 Being written. This is a placeholder section landing; it is excluded from
-> search until it reaches real depth. Its order in the reference is justified by
-> reader progression, not by the source spec's organization (clean-room §6.1).
+**In short:** Everything in this reference describes a *format*. This chapter
+describes the *code that reads it*. Paged's parser, the `paged-parse` crate, takes
+the raw bytes of an `.idml` file and produces a typed Abstract Syntax Tree (AST):
+plain Rust structs for spreads, stories, styles, and resources, with the XML and the
+ZIP machinery left behind. It is deliberately narrow — it opens the container,
+confirms the file really is IDML, and parses each part on demand into typed values.
+It does not lay out text, resolve colors, or draw a single pixel; that is the
+renderer's job. This page explains what the parser is for, why it is built the way it
+is, and where to read about each piece.
+
+## From package to tree
+
+An IDML package, as the [foundations](/docs/foundations) chapter covers, is a ZIP
+archive of XML parts. That is a perfectly good shipping format and a miserable thing
+to render against directly: every question — *what's on page three? which style does
+this paragraph use?* — would mean re-scanning text, re-parsing attributes, and
+chasing cross-references through raw markup. The parser exists so the rest of the
+engine never has to touch XML.
+
+Its single job is this transformation:
+
+```
+.idml bytes  →  paged-parse  →  typed AST  →  renderer
+   (ZIP of XML)                  (Rust structs)
+```
+
+The output is an [AST](/docs/glossary): a tree of ordinary typed structs —
+`Spread`, `Story`, `Paragraph`, `ParagraphStyleDef`, `ColorEntry`, and so on. A
+`PointSize` that lived in the file as the string `"11"` becomes an `f32`. A
+`Justification="CenterAlign"` attribute becomes a Rust enum variant. An absent
+attribute becomes `None`. Once the parse is done, the renderer works entirely in
+this typed world; it never sees an angle bracket again.
+
+The crate draws a firm line around itself. In the engine's own words it stays
+"focused on ZIP+XML plumbing" — the container open, the mimetype check, the
+per-resource parsers — and hands the typed tree up to `paged-scene`, which resolves
+references and cascades into a coherent document. The split matters: the parser is
+about *reading faithfully*, the scene layer is about *making sense of what was read*,
+and the renderer is about *turning sense into pixels*.
+
+## Why read this chapter
+
+You do not need to understand the parser to read an IDML file by hand, and most of
+this reference deliberately stays on the format side of that line. This chapter is
+for the times when the implementation is the answer to your question:
+
+- **When a document renders, but not quite right.** Knowing that an unrecognised
+  attribute value silently becomes `None` (and inherits) tells you *why* a typo in a
+  `Justification` value falls back instead of erroring.
+- **When you are deciding what to put in an IDML you generate.** Knowing which
+  constructs the parser reads on demand, and which it deliberately skips, tells you
+  what will actually reach the page.
+- **When you care about performance.** Knowing that parsing is single-pass and
+  zero-copy, and that the style cascade is resolved lazily at render time, explains
+  the engine's memory and timing behaviour on large books.
+
+The chapter is four pages, ordered the way you would meet the parser if you traced a
+single file through it:
+
+1. **[The reader](/docs/parser-internals/the-reader)** — the container open path:
+   how the ZIP is opened once, kept as zero-copy byte slices, and how individual
+   stories and spreads are parsed only when something asks for them.
+2. **[Validation and recovery](/docs/parser-internals/validation-and-recovery)** —
+   the two hard checks every file must pass, the full error model, and the forgiving
+   way the parser handles everything that *isn't* fatal.
+3. **[Performance and memory](/docs/parser-internals/performance-and-memory)** — the
+   trade-offs behind single-pass, zero-copy, parse-on-demand, and
+   resolve-at-render-time.
+
+It pairs naturally with two neighbouring chapters: [The renderer](/docs/the-renderer)
+picks up where the parser leaves off, and [Edge cases](/docs/edge-cases) catalogues
+the malformed and unusual documents whose handling the recovery model defines.
+
+## Frequently asked questions
+
+**Is the parser the same thing as the renderer?**
+No. The parser (`paged-parse`) only reads — it turns IDML bytes into a typed AST and
+stops there. The renderer is the pipeline above it that lays out text, resolves color
+and style, and rasterises pages. They are separate crates with a clean boundary: the
+parser knows nothing about pixels, and the renderer never touches XML. See
+[The renderer](/docs/the-renderer) for the other side of that line.
+
+**Do I need to read this chapter to work with IDML?**
+Usually not. The rest of this reference documents the IDML format itself, which is
+all most readers need. Reach for this chapter when the *behaviour* of our
+implementation is your actual question — why a malformed value falls back the way it
+does, what reaches the page from a file you generated, or how the engine performs on
+large documents.
+
+**Why is the parser kept so deliberately thin?**
+Because reading and interpreting are different jobs, and mixing them makes both
+harder to trust. Keeping `paged-parse` to ZIP and XML plumbing means the layer that
+faithfully mirrors the file's bytes stays small and auditable, while the harder work
+of resolving references and cascading styles lives one layer up in `paged-scene`,
+where it can be reasoned about on a fully-typed tree.

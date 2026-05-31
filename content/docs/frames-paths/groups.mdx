@@ -1,0 +1,76 @@
+---
+title: Groups
+description: How a Group clusters page items, how its transform and transparency reach the members, and what the renderer does inside one.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+A `Group` is the one page item that holds no marks of its own. It is a
+*container*: its children are the page items it clusters so they can be moved,
+scaled, rotated, or made translucent as a single object. In the IDML on disk a
+group's members are written as child elements of the `<Group>`, exactly the way
+the [page-item reference](/docs/frames-paths/page-item-types) shapes appear as
+children of a `<Spread>`.
+
+The example below is the smallest meaningful group: two filled rectangles
+wrapped so a single transform places the pair.
+
+<ExampleEmbed example="a-group">
+  A Group around two rectangles. The group's ItemTransform moves both at once.
+</ExampleEmbed>
+
+## Membership and the composed transform
+
+When the parser meets a `<Group>` it records the group and then walks its
+children. Each member — `Rectangle`, `Oval`, `GraphicLine`, `Polygon`,
+`TextFrame`, or a nested `Group` — is **lifted out** onto the spread's normal
+page-item lists, but with the group's `ItemTransform` already *composed* onto
+the member's own transform. Nesting composes through every level: a member two
+groups deep ends up with `outer ∘ inner ∘ member`.
+
+The upshot is that downstream layers do not have to special-case groups to place
+things correctly — every member already carries its final transform. The
+original `Group` record is kept alongside (with its member list and its own
+un-composed transform) so a renderer that wants to bracket the cluster — for a
+shared opacity, blend mode, or drop shadow — still can. Both rectangles in the
+example paint at their composed positions; nothing is dropped.
+
+## Group-level transparency
+
+A group can carry a transparency block that applies to all of its members at
+once — the reason to group shapes in the first place is often a single uniform
+effect:
+
+<AttrTable
+  element="Group transparency (from BlendingSetting / DropShadowSetting)"
+  rows={[
+    { attr: 'Opacity', type: 'double (0–100)', support: 'parsed-not-rendered', note: 'From a <BlendingSetting> attached to the Group. Captured for a whole-group composite.' },
+    { attr: 'BlendMode', type: 'Normal | Multiply | Screen | …', support: 'parsed-not-rendered', note: 'Blend mode for the group as a unit.' },
+    { attr: 'DropShadow', type: '<DropShadowSetting>', support: 'parsed-not-rendered', note: 'A shadow cast by the flattened group, captured against the group rather than each child.' },
+  ]}
+/>
+
+The parser routes a `<DropShadowSetting>` or `<BlendingSetting>` that sits
+directly under a `<Group>` (not under a `StrokeTransparencySetting` or
+`ContentTransparencySetting` wrapper) into that group's transparency record, so
+the renderer can one day bracket the member range with a single transparency
+group instead of compositing each shape independently.
+
+## What the renderer does inside a group today
+
+Group *members* render: the lift-and-compose pass means each shape paints at its
+correct place, as the example proves. What is not yet honoured is the
+group-level transparency block — opacity, blend mode, and the group drop shadow
+are parsed and attached to the `Group` record but the whole-group composite that
+would apply them is still on the roadmap.
+
+<SupportBadge status="parsed-not-rendered" note="Group-level transparency (Opacity / BlendMode / DropShadow on a <Group>) is parsed and recorded but not yet composited as a whole-group effect (spread.rs:207–224)." />
+
+One historical note for readers of the parser: a `skipped_nested_frames` counter
+exists on the spread record and is surfaced by `paged-inspect`. It dates from an
+earlier pass that dropped group-nested text frames; the current parser lifts
+those frames out instead, so the counter stays `0` (spread.rs:116–119). If you
+see it report a non-zero value, that is a signal worth investigating, not the
+expected case.

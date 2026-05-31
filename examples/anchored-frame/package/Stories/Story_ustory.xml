@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<idPkg:Story xmlns:idPkg="http://ns.adobe.com/AdobeInDesign/idml/1.0/packaging" DOMVersion="20.0">
+  <Story Self="ustory">
+    <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
+      <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+        <Content>A paragraph that carries an anchored object.</Content>
+        <Rectangle Self="uanchor" AppliedObjectStyle="ObjectStyle/$ID/[None]" ItemTransform="1 0 0 1 0 0" GeometricBounds="0 0 36 72" FillColor="Color/Black" StrokeColor="Swatch/None" StrokeWeight="0">
+          <AnchoredObjectSetting AnchoredPosition="InlinePosition" SpineRelative="false" LockPosition="false" AnchorPoint="BottomLeftAnchor" AnchorXoffset="0" AnchorYoffset="0"/>
+        </Rectangle>
+      </CharacterStyleRange>
+    </ParagraphStyleRange>
+  </Story>
+</idPkg:Story>

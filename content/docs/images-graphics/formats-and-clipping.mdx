@@ -1,0 +1,126 @@
+---
+title: Formats & clipping
+description: Which image formats the asset resolver can decode, how the frame path crops the picture, and where the gaps are.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+[Placed images](/docs/images-graphics/placed-images) showed how a frame points at
+a picture. This page is about what happens *after* the parser hands that pointer
+off — how the picture is found and decoded, and how the frame crops it. None of
+this is the parser's work: it is the asset resolver and the renderer downstream of
+it.
+
+## The asset resolver
+
+When the parser captures a `LinkResourceURI` (or inline image bytes), it does not
+load anything. The render pipeline asks an **asset resolver** to turn that URI
+into bytes — a small interface with one method for images: given the URI string,
+return the file's bytes, or nothing. A host wires up whatever resolver suits it: a
+filesystem resolver that looks under a `Links/` folder, an in-memory one
+pre-loaded with the assets, one that substitutes a placeholder, and so on. The
+same parsed document renders differently depending only on which resolver is
+supplied.
+
+Two things follow from this design:
+
+- **A missing link is not an error.** If the resolver returns nothing for a URI,
+  the frame still parsed and still has its geometry; only the picture is absent.
+  The renderer can stamp a missing-image placeholder in that frame (a grey fill
+  with a diagonal cross) instead of leaving it blank, precisely because the parser
+  recorded that the frame *did* nest an image element. <SupportBadge status="supported" note="missing-image placeholder for an image frame whose link is unresolvable" />
+- **Decoding is deferred too.** Even when the resolver returns bytes, turning
+  those bytes into pixels happens at render time, not parse time. Until a resolver
+  hands over the bytes, a placed image is *parsed but not rendered* — the slot is
+  known, the picture is not yet drawn. <SupportBadge status="parsed-not-rendered" note="placed image without its asset: parsed structurally, drawn only once a resolver supplies and the renderer decodes the bytes" />
+
+## Formats the renderer can decode
+
+Once the resolver returns bytes, the renderer decodes them to RGBA pixels. The
+common web and print raster formats — PNG, JPEG, WebP — are handled, with very
+large JPEGs scaled down during decode so a single huge photo cannot exhaust
+memory. SVG is rasterised through a vector renderer. EPS / PostScript and PDF
+streams are a different story: those are page-description formats, not bitmaps, and
+decoding them needs machinery the renderer does not yet ship.
+
+<AttrTable
+  element="placed-image formats (handled by the renderer after the resolver returns bytes)"
+  rows={[
+    { attr: 'PNG', type: 'raster', support: 'supported', note: 'Decoded to RGBA.' },
+    { attr: 'JPEG', type: 'raster', support: 'supported', note: 'Decoded to RGBA; oversized JPEGs are downscaled during decode to bound memory.' },
+    { attr: 'WebP', type: 'raster', support: 'supported', note: 'Decoded to RGBA.' },
+    { attr: 'SVG', type: 'vector', support: 'supported', note: 'Rasterised; the longest edge is capped to match the raster decode budget.' },
+    { attr: 'EPS / PostScript', type: 'page-description', support: 'not-yet-parsed', note: 'A decode of these bytes returns nothing — rasterising PostScript needs a Ghostscript-class sidecar that is not yet wired up.' },
+    { attr: 'PDF (linked)', type: 'page-description', support: 'not-yet-parsed', note: 'No PDF page rasteriser yet; a linked PDF whose bytes cannot be decoded is treated like any other undecodable payload.' },
+  ]}
+/>
+
+The IDML format reaches these formats through distinct element names — `<Image>`
+for bitmaps, `<EPSImage>` for EPS, `<PDF>` for placed PDFs, `<ImportedPage>` for
+placed InDesign pages. The parser recognises **all four uniformly**: each one
+marks its host frame as an image frame and (where present) captures the link. What
+the elements share at the parser level is exactly what matters here — they all
+produce a graphic frame with a deferred reference. Whether the *bytes* behind that
+reference can be decoded is the renderer's concern, and that is where EPS, PDF, and
+imported pages currently fall short. <SupportBadge status="parsed-not-rendered" note="EPSImage / PDF / ImportedPage: recognised uniformly by the parser; the vector/page-description payload is not yet rasterised" />
+
+There is one deliberate special case. A placed `<PDF>` that carries its content
+inline (rather than a link) is flagged so the renderer falls back to the frame's
+own fill colour, rather than stamping the grey missing-image cross over what is
+genuinely unrenderable-but-present content.
+
+### When a resolved image still cannot be drawn
+
+It is worth separating two failure modes, because the renderer treats them
+differently:
+
+- **Link missing** — the resolver returned nothing. For a frame that nests an
+  image element, the renderer draws the missing-image placeholder.
+- **Decode failed** — the resolver returned bytes, but the decoder could not make
+  pixels of them (an EPS stream, a corrupt file, an unsupported codec). Here the
+  renderer does *not* stamp a "missing" badge over content that InDesign itself
+  would have rasterised; it falls through to the frame's intrinsic fill instead.
+  <SupportBadge status="parsed-not-rendered" note="resolved-but-undecodable payload: frame parses, falls back to fill rather than a missing-image badge" />
+
+## The frame path clips the picture
+
+A picture is bigger than, or offset within, its frame more often than not — that is
+how cropping works in a layout. The frame's outline is the crop: the renderer
+places the image using the composition of the frame transform and the image's own
+[`ItemTransform`](/docs/geometry-coordinates/item-transform), then **clips the
+result to the frame's path**. Pixels outside the outline are not drawn. That is
+what lets a frame show a thin slice of a wide photo, or a square crop of a tall
+one.
+
+For a `Rectangle`, the clip is the rectangle's box — and because IDML rectangles
+are axis-aligned in their own inner space, that box equals the path exactly; any
+rotation rides on the frame transform that the image shares. For non-rectangular
+hosts — an `Oval`, or a `Polygon` with a hand-drawn outline — the clip is that
+shape's path, so the picture takes the frame's silhouette.
+
+<AttrTable
+  element="clipping a placed image"
+  rows={[
+    { attr: 'Rectangle frame', type: 'box clip', support: 'supported', note: 'Image clipped to the rectangle’s axis-aligned path; rotation is carried by the shared frame transform.' },
+    { attr: 'Oval / Polygon frame', type: 'path clip', support: 'supported', note: 'Image clipped to the frame’s outline, so it takes the frame’s silhouette.' },
+    { attr: 'no inner ItemTransform', type: 'stretch-to-bounds', support: 'supported', note: 'When the <Image> carries no transform, the image is fit to the frame’s bounds and no separate clip is needed (it already covers the box).' },
+  ]}
+/>
+
+A note on precision: the clip is the frame's geometric path, which matches
+InDesign for the ordinary case where the crop *is* the frame. A separate,
+independent clipping path drawn around the image inside the frame — InDesign's
+detached image clip — is a finer feature that the current pipeline does not model
+separately from the frame outline. <SupportBadge status="parsed-not-rendered" note="independent image clipping-path precision: the frame outline is the clip; a separate detached image clip is not modelled yet" />
+
+## Where this leaves you
+
+For the common case — a linked or embedded raster picture in a rectangular or
+shaped frame, with the file available to the resolver — placed images render
+faithfully: found, decoded, transformed, and clipped to the frame. The open edges
+are the vector and page-description formats (EPS, PDF, imported pages), which parse
+uniformly but are not yet rasterised, and the detached image clipping path, which
+the frame outline currently stands in for. In every one of those cases the
+*parse* is complete and correct; what is deferred is purely the drawing.

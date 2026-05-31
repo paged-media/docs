@@ -1,12 +1,54 @@
 ---
 title: Conditional text
-tier: pro
+description: Text that is shown or hidden depending on whether a named condition is visible — and what our renderer does with it.
+tier: intermediate
 diataxis: explanation
-status: stub
+status: published
+owner: paged-docs
 ---
 
-Showing and hiding text by condition. A niche authoring feature.
+Conditional text lets one document carry more than one version of its words. A
+phrase, a sentence, or a whole paragraph can be tagged so that it appears in some
+outputs and vanishes in others — a draft watermark that never reaches print, a
+price line that differs between regions, an instructor's answer key hidden in the
+student edition. The text stays in the file; what changes is whether a given
+*condition* is switched on.
 
-> 🚧 Being written. This is a placeholder section landing; it is excluded from
-> search until it reaches real depth. Its order in the reference is justified by
-> reader progression, not by the source spec's organization (clean-room §6.1).
+In IDML this rests on two ideas working together:
+
+- A **`<Condition>`** is a named, on/off visibility toggle declared once at the
+  document level (in `Resources/Styles.xml`). It records whether it is currently
+  `Visible`, and how an editor should mark the text it governs.
+- A **run** of text opts in to one or more conditions through an
+  **`AppliedConditions`** attribute on its `<CharacterStyleRange>`. The run is
+  laid out only when every condition it names is visible.
+
+So the unit that gets shown or hidden is the run — the same
+`CharacterStyleRange` that already carries the run's font, size, and colour (see
+[story structure](/docs/stories-text/story-structure)). Conditional text adds one
+more attribute to it and one small table of toggles beside it.
+
+## What our renderer does
+
+This is the part worth being precise about, because the construct is partly a
+*rendering* feature and partly an *editor* feature, and we draw a hard line
+between them.
+
+The rendering half is honoured. When a run names a condition that resolves to
+hidden, the run is dropped before layout — it contributes no glyphs, no width,
+nothing. The visible text simply closes up around the gap.
+<SupportBadge status="supported" note="run-level conditional visibility" />
+
+The editor half is not drawn. A condition also records *how* its text should be
+flagged on screen — an underline or a coloured highlight — and a document can
+group conditions into named sets that an author toggles as a unit. Those exist to
+help a person author the file; the page output does not depend on them, so the
+renderer reads them and moves on.
+
+## Where to go next
+
+- [Conditions and applied conditions](/docs/conditional-text/conditions-and-sets)
+  is the reference: the attributes on `<Condition>` and `<ConditionSet>`, and how
+  a run names them.
+- [Visibility resolution](/docs/conditional-text/visibility) explains exactly when
+  a run is kept or dropped, and which pieces are parsed-not-rendered.

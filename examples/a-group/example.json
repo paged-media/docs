@@ -1,0 +1,45 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "a-group",
+  "title": "A group of two rectangles",
+  "tier": "intermediate",
+  "chapter": "frames-paths",
+  "concept": "A Group wraps two filled rectangles. The group's ItemTransform composes onto each member, so the cluster moves as one.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Spreads/Spread_uspread.xml",
+    "language": "xml",
+    "label": "Spreads/Spread_uspread.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree",
+    "live"
+  ],
+  "annotations": [
+    {
+      "lines": "5",
+      "note": "The Group element. Its ItemTransform (translate 100 120) is composed onto every member; the parser lifts each child out of the group with the composed transform already applied."
+    },
+    {
+      "lines": "6",
+      "note": "First member: a red Rectangle at the group's local origin. It is a child element of Group, not of Spread."
+    },
+    {
+      "lines": "20",
+      "note": "Second member: a blue Rectangle offset within the group. Both members paint; nothing is skipped."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 2,
+    "paragraphs": 0,
+    "runs": 0
+  },
+  "pathological": false,
+  "license": "MIT"
+}

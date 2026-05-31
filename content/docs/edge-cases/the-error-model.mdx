@@ -1,0 +1,208 @@
+---
+title: The error model
+description: The complete set of failures that stop an IDML load — the ParseError variants from the container layer and the OpenError variants from the document layer — what triggers each, and what a consumer of the renderer gets back when one fires.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+**Loading an IDML package can fail in exactly two layers, and each layer has a
+small, named set of ways it can fail — this page is the catalogue.**
+
+**In short:** the Paged renderer opens a package in two stages. First the
+*container* layer unzips the archive, confirms it is really an IDML package, and
+reads the manifest; its failures are the `ParseError` family. Then the *document*
+layer resolves every part the manifest points at — the spreads, the stories, the
+shared resources — and folds it into a typed document; its one structural failure
+is `OpenError::MissingEntry`, on top of any container error that bubbles up. If
+none of these fire, you get a fully resolved document back. If one does, you get a
+single typed error that names exactly what went wrong, and nothing partial. This
+page lists every variant, what triggers it, and what the value you receive looks
+like.
+
+## The two layers
+
+A load walks a fixed path, and the two error families map onto the two halves of
+that path.
+
+The **container layer** (`Container::open`) is pure ZIP-and-XML plumbing. It pulls
+every entry out of the archive into memory, checks that an entry named `mimetype`
+exists and holds IDML's mimetype string, then parses the root `designmap.xml` into
+a manifest. Anything that goes wrong here — a corrupt ZIP, a missing `mimetype`,
+XML that doesn't parse — is a `ParseError`.
+
+The **document layer** (`Document::open`) sits on top. It takes the manifest the
+container produced and treats every reference in it as a promise: the manifest
+says "there is a spread at `Spreads/Spread_uspread.xml`," so the document layer
+goes and reads that part. If a referenced part isn't in the archive, that promise
+is broken, and the document layer raises `OpenError::MissingEntry`. Every other
+document-layer failure is just a `ParseError` from re-parsing one of those
+sub-parts, wrapped so a caller can handle one error type.
+
+The key idea: the container layer is *tolerant* about entries it wasn't asked
+about — extra files in the ZIP are simply kept around and ignored. The document
+layer is *strict* about entries the manifest explicitly promised. A part that
+nobody references can be missing without consequence; a part the manifest names
+cannot.
+
+## Container failures: `ParseError`
+
+These come from opening and validating the archive itself, before any layout is
+resolved.
+
+<AttrTable
+  element="ParseError"
+  rows={[
+    {
+      attr: 'NotIdml',
+      type: 'String (reason)',
+      note: 'The archive opened, but it is not an IDML package: the mimetype entry holds something other than IDML’s mimetype string, or it is not valid UTF-8. Carries the offending value so you can see what was found instead.',
+    },
+    {
+      attr: 'MissingEntry',
+      type: 'static name',
+      note: 'A required container entry is absent. In practice this is the mimetype entry — without it the archive cannot be confirmed as IDML at all. (The same-named document-layer error below covers missing manifest parts.)',
+    },
+    {
+      attr: 'Io',
+      type: 'std::io::Error',
+      note: 'A read failed while pulling bytes out of the archive — a truncated or unreadable entry. Wraps the underlying I/O error.',
+    },
+    {
+      attr: 'Zip',
+      type: 'zip error',
+      note: 'The bytes are not a usable ZIP archive at all: bad central directory, unsupported compression, corruption. Raised before any IDML-specific check runs.',
+    },
+    {
+      attr: 'Xml',
+      type: 'quick-xml error',
+      note: 'An XML part — the designmap, or a resource the container parses — is not well-formed XML. Wraps the parser’s own position-bearing error.',
+    },
+  ]}
+/>
+
+Read these top to bottom as the order the checks effectively run in: the ZIP must
+open (`Zip` / `Io`), the `mimetype` entry must be present (`MissingEntry`) and
+correct (`NotIdml`), and the manifest must be well-formed (`Xml`). The first one
+that trips is the one you get.
+
+## Document failures: `OpenError`
+
+Once the container is valid, the document layer resolves the manifest. It can fail
+in just two ways.
+
+<AttrTable
+  element="OpenError"
+  rows={[
+    {
+      attr: 'MissingEntry',
+      type: 'String (manifest path)',
+      note: 'The manifest references a part — a spread, master spread, or story — that the archive does not contain. Carries the exact path the manifest named so you can see which reference dangled. This is the canonical “incomplete package” failure.',
+    },
+    {
+      attr: 'Parse',
+      type: 'ParseError',
+      note: 'A referenced part was present but failed to parse. This is a container-layer ParseError (above) surfaced while re-reading a sub-part — e.g. a story file that exists but is not well-formed XML. Wrapped so callers handle one error type.',
+    },
+  ]}
+/>
+
+`MissingEntry` is the one to internalize, because it is the failure mode you will
+actually hit with real, human-edited packages. A manifest reference and the part
+it names can drift apart in dozens of ordinary ways — a story deleted by hand, an
+incomplete export, a package zipped from the wrong working directory, a
+find-and-replace that renamed a file but not its reference. In every one of those
+cases the renderer reaches the broken promise, names the path it could not find,
+and stops.
+
+## What a consumer gets back
+
+`Document::open` returns a `Result`: either a fully resolved document or exactly
+one of the errors above. There is no half-open document — the load is all or
+nothing at the structural level. (Once a document *is* open, the per-attribute and
+per-resource tolerance described in
+[graceful degradation](/docs/edge-cases/graceful-degradation) takes over; that is a
+separate, softer kind of "recovery" that happens *inside* a successful load.)
+
+Each error carries enough to act on without re-opening the file:
+
+- The **variant** tells you the *category* — is this not-IDML, a broken archive, a
+  malformed part, or a dangling reference?
+- The **payload** tells you the *specifics* — `MissingEntry` carries the manifest
+  path that dangled; `NotIdml` carries the mimetype value that was found; `Xml`
+  and `Io` carry the underlying parser or I/O error, with position where the
+  source has it.
+
+Tools built on the renderer surface this directly. The `paged-inspect` CLI, for
+instance, opens the document as its very first step, so a structural failure ends
+the run before any report is produced: it prints the error (and its cause) to
+standard error and exits with a non-zero status. That makes it usable as a
+pass/fail gate — feed it a package, and a non-zero exit means "this package does
+not structurally load," with the reason on the error stream.
+
+## A dangling reference, end to end
+
+The example below is a complete, otherwise-valid package with one deliberate
+wound: the manifest still advertises a story at `Stories/Story_ustory.xml`, and
+the document's `StoryList` still claims `ustory` as one of its stories — but that
+part has been removed from the archive. Everything else (the spread, the frame
+that points at the story, the master, the resources) is intact and correct.
+
+<ExampleEmbed example="dangling-story">
+The manifest promises a story part that is not in the package. The annotated view
+points at the two lines that still reference it.
+</ExampleEmbed>
+
+When `Document::open` reaches the story-resolution step, it asks the container for
+`Stories/Story_ustory.xml`, gets nothing, and raises
+`OpenError::MissingEntry("Stories/Story_ustory.xml")`. Running `paged-inspect`
+over the assembled package prints the diagnostic and exits non-zero:
+
+```text
+Error: open IDML
+
+Caused by:
+    manifest lists Stories/Story_ustory.xml but archive has no such entry
+```
+
+Note what the renderer pointedly does *not* do: it does not silently drop the
+story and render an empty frame, and it does not invent a placeholder story to
+fill it. A frame that points at a story the document claims to own, where that
+story has vanished, is a contradiction the renderer cannot resolve without
+guessing — so it refuses to guess and tells you precisely which promise the
+package failed to keep. That is the whole philosophy of the error model in one
+case: be forgiving about what an *open* document leaves unsaid, be strict about
+what the package structurally promises and then breaks.
+
+## Frequently asked questions
+
+**What is the difference between `ParseError::MissingEntry` and
+`OpenError::MissingEntry`?**
+They name different kinds of "missing." `ParseError::MissingEntry` is the container
+layer reporting that a *required container entry* — in practice the `mimetype` —
+isn't there at all, so the archive can't even be confirmed as IDML. It carries a
+fixed entry name. `OpenError::MissingEntry` is the document layer reporting that a
+part the *manifest explicitly referenced* (a spread, master, or story) isn't in
+the archive; it carries the manifest path that dangled. The first means "this
+isn't an IDML package"; the second means "this IDML package is incomplete."
+
+**Will the renderer ever return a partially loaded document?**
+No. `Document::open` is all-or-nothing at the structural level: you get a fully
+resolved document or a single error. The softer, per-element tolerance — missing
+attributes becoming defaults, unknown values being ignored — only happens *within*
+a load that otherwise succeeds, and is covered under
+[graceful degradation](/docs/edge-cases/graceful-degradation).
+
+**Why does an XML error inside a story come back as an `OpenError`, not a
+`ParseError`?**
+It is still a `ParseError` underneath — the document layer wraps it as
+`OpenError::Parse` so that a caller only has to match on one error type for the
+whole load. The wrapping is purely for the caller's convenience; the original
+parser error, with its position information, is preserved inside.
+
+**Does a corrupt or non-IDML file crash the renderer?**
+No. A broken ZIP surfaces as `ParseError::Zip`, a non-IDML mimetype as
+`ParseError::NotIdml`, and so on. Every one of these is a returned error value, not
+a panic — callers like `paged-inspect` turn it into a non-zero exit with the reason
+printed, which is what makes the renderer safe to point at untrusted input.

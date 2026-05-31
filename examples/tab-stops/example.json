@@ -1,0 +1,48 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "tab-stops",
+  "title": "A paragraph with tab stops",
+  "tier": "pro",
+  "chapter": "typography",
+  "concept": "A paragraph's TabList of TabStop records defines the positions a Tab marker in the run snaps to; alignment and leader come off each stop.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Stories/Story_ustory.xml",
+    "language": "xml",
+    "label": "Stories/Story_ustory.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree"
+  ],
+  "annotations": [
+    {
+      "lines": "6",
+      "note": "The TabList lives in the paragraph's Properties. Each ListItem wraps one TabStop."
+    },
+    {
+      "lines": "8",
+      "note": "A LeftAlign stop at Position=\"144\" (pt from the column's left edge): text after the first Tab starts here."
+    },
+    {
+      "lines": "11",
+      "note": "A RightAlign stop at Position=\"432\" with Leader=\".\": the page number ends at the stop, and dot leaders tile across the gap."
+    },
+    {
+      "lines": "17",
+      "note": "Each Tab marker in the run snaps the following text to the next stop past the current pen position."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 1,
+    "paragraphs": 1,
+    "runs": 1
+  },
+  "pathological": false,
+  "license": "MIT"
+}

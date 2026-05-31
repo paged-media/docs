@@ -1,12 +1,64 @@
 ---
 title: Master spreads & overrides
+description: Why masters and overrides exist, and how a body page mixes inherited master items with its own — the deep companion to the layout model's introduction.
 tier: intermediate
 diataxis: explanation
-status: stub
+status: published
+owner: paged-docs
 ---
 
-Reuse and inheritance at the page level, and how local overrides resolve.
+A long document repeats itself. The same header rule sits at the top of every
+chapter page; the same folio sits in the same corner of every spread; the same
+column frame waits to be filled on page after page. Re-drawing that furniture by
+hand on every page would be tedious to author and impossible to keep consistent.
+A **master spread** is IDML's answer: author the repeating layout once, then have
+each body page **inherit** it. An **override** is the escape hatch — the way a
+single page keeps *most* of the master but swaps out one item it needs to be
+different.
 
-> 🚧 Being written. This is a placeholder section landing; it is excluded from
-> search until it reaches real depth. Its order in the reference is justified by
-> reader progression, not by the source spec's organization (clean-room §6.1).
+The [Layout model](/docs/layout-model) chapter introduces both ideas in passing:
+[Master spreads](/docs/layout-model/master-spreads) shows that a `MasterSpread`
+is structurally just a `Spread`, and [Override resolution](/docs/layout-model/override-resolution)
+shows the one-item swap end to end. This chapter is the **deeper companion**. It
+does not re-teach those basics — it takes apart the two mechanics underneath them:
+how a master item actually reaches a body page (stamping), and how a body page's
+`OverrideList` tells the renderer which of those items to leave out (resolution).
+If you have not met spreads, pages, and the `AppliedMaster` link yet, read the
+layout model first; this chapter assumes them.
+
+## Why a reader ends up here
+
+You are here because a page is showing too much, too little, or the wrong thing
+from its master. To predict what a body page renders you have to hold two facts
+at once:
+
+- **What the master contributes.** Master items are not copied into the body
+  page's XML — they are *stamped* onto it at render time, beneath the page's own
+  items. Which master items land on which body page (and where) is a routing and
+  transform question, not a parsing one.
+- **What the body page suppresses.** A body page carries an `OverrideList`: the
+  `Self` ids of master items it has taken over. The stamping pass skips exactly
+  those ids, so the body's own replacement can stand in their place.
+
+Get either half wrong and the page is off by one item. The two sub-pages below
+take each half in turn.
+
+## The two mechanics
+
+- **[Master items and stamping](/docs/master-spreads-overrides/master-items-and-stamping)**
+  — how a body page inherits its master's items: the per-page routing, the
+  back-of-the-list placement, the `MasterPageTransform` offset, and the
+  `ShowMasterItems` flag. This is the *inheritance* half.
+- **[Override resolution](/docs/master-spreads-overrides/override-resolution)** —
+  how `OverrideList` records which master items a page has replaced, how stamping
+  skips them, and the honest limits of the current resolver. This is the
+  *exception* half.
+
+The ordering here is reader progression: you cannot reason about what an override
+*removes* until you know what stamping *adds*, so stamping comes first. It is not
+the source spec's arrangement (clean-room §6.1).
+
+The master and body elements themselves — `MasterSpread`, `Spread`, `Page`, and
+the page-item shapes they hold — are the [Layout model](/docs/layout-model)'s
+subject. This chapter is about the *relationship* between a master and the pages
+that borrow from it.

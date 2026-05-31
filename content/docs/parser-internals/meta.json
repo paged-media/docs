@@ -1,4 +1,4 @@
 {
   "title": "Parser internals",
-  "pages": ["index"]
+  "pages": ["index", "the-reader", "validation-and-recovery", "performance-and-memory"]
 }

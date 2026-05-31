@@ -1,0 +1,87 @@
+---
+title: Drop caps and tabs
+description: DropCapCharacters / DropCapLines / DropCapDetail on a paragraph, and the TabList of TabStop records a Tab snaps to — with alignment, leaders, and the default tab grid.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+Two paragraph-level constructs change where individual glyphs land without
+touching the run model: a **drop cap** enlarges the opening characters and hangs
+them down several lines, and a **tab** snaps the text after it to a position set
+by the paragraph's tab stops. Both are configured on the `ParagraphStyleRange`;
+the tab also needs a `Tab` marker in the run to take effect.
+
+## Drop caps
+
+A drop cap is described by two counts and a detail value on the
+`ParagraphStyleRange`. `DropCapCharacters` is how many leading characters become
+the drop cap; `DropCapLines` is how many lines tall it is. The renderer lifts that
+many characters into an enlarged initial sized to span that many lines, and flows
+the rest of the paragraph around it.
+
+<AttrTable
+  element="ParagraphStyleRange"
+  rows={[
+    { attr: 'DropCapCharacters', type: 'short (0–150)', support: 'supported', note: 'How many leading characters form the drop cap. 0 ⇒ no drop cap.' },
+    { attr: 'DropCapLines', type: 'short (0–25)', support: 'supported', note: 'How many lines tall the drop cap is.' },
+    { attr: 'DropCapDetail', type: 'int', support: 'supported', note: 'InDesign’s drop-cap sizing/side-bearing detail; read alongside the two counts.' },
+  ]}
+/>
+
+The example below is one paragraph that turns its first character into a
+three-line drop cap. `DropCapCharacters="1"` and `DropCapLines="3"` are the two
+counts; `DropCapDetail="0"` carries the side-bearing detail. The package parses to
+one paragraph and one run — the drop cap is a property of the paragraph, not a
+separate run.
+
+<ExampleEmbed example="drop-cap">
+  A paragraph whose first character is lifted into a three-line drop cap.
+</ExampleEmbed>
+
+## Tabs and tab stops
+
+A `Tab` in a run is a single tab character (it sits alongside `Content` and `Br`
+as a leaf of the story tree). On its own it does nothing visible until the line is
+laid out; then the engine snaps the text after each tab to the next **tab stop**.
+
+The stops live in a `TabList` inside the paragraph's `Properties`, each one a
+`TabStop` record. A `TabStop` carries a `Position` (in points from the column's
+left edge), an `Alignment`, an optional `AlignmentCharacter` for decimal-style
+stops, and an optional `Leader` string tiled across the gap the tab opens up:
+
+<AttrTable
+  element="TabStop (inside ParagraphStyleRange › Properties › TabList)"
+  rows={[
+    { attr: 'Position', type: 'double (pt from column left edge)', support: 'supported', note: 'Required — the stop’s location. A TabStop with no Position is dropped.' },
+    { attr: 'Alignment', type: 'LeftAlign | RightAlign | CenterAlign | CharacterAlign', support: 'supported', note: 'How the segment after the tab snaps: starts at / ends at / is centred on / aligns its character on the stop.' },
+    { attr: 'AlignmentCharacter', type: 'string (default ".")', support: 'supported', note: 'For CharacterAlign stops: the character in the segment that lands on the stop. Ignored otherwise.' },
+    { attr: 'Leader', type: 'string (e.g. ".", ". ")', support: 'supported', note: 'Tiled across the widened gap (TOC dot leaders). Empty / absent ⇒ no leader. Whole copies only; a leader wider than the gap emits none.' },
+  ]}
+/>
+
+When a tab's pen position has already passed every explicit stop — or the
+paragraph defines no stops at all — the engine falls back to a **default tab
+grid** (every 36 pt). The alignment behaviours map directly:
+
+- **`LeftAlign`** — the segment after the tab *starts* at the stop.
+- **`RightAlign`** — the segment *ends* at the stop.
+- **`CenterAlign`** — the segment is *centred* on the stop.
+- **`CharacterAlign`** — the segment's first occurrence of the alignment character
+  (the decimal point, typically) lands at the stop; a segment without that
+  character falls through to left alignment.
+
+If a stop's alignment can't be honoured without glyphs colliding — for example a
+`RightAlign` segment wider than the gap to the stop — the engine falls through to
+left alignment for that one tab so text never overlaps.
+
+The example below is a single line — `Chapter`, a tab, `Typography`, a tab,
+`261` — with a two-stop `TabList`: a `LeftAlign` stop at 144 pt and a `RightAlign`
+stop at 432 pt with a dot `Leader`. It reads like a table-of-contents row. Note
+that the three `Content` chunks split by the two `Tab` markers collapse into a
+single run, so the package reports one paragraph and one run.
+
+<ExampleEmbed example="tab-stops">
+  A table-of-contents-style line: a left tab, then a right tab with dot leaders.
+</ExampleEmbed>

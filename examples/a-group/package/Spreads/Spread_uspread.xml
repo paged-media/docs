@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<idPkg:Spread xmlns:idPkg="http://ns.adobe.com/AdobeInDesign/idml/1.0/packaging" DOMVersion="20.0">
+  <Spread Self="uspread" PageCount="1" BindingLocation="0" ShowMasterItems="true" AllowPageShuffle="true" ItemTransform="1 0 0 1 0 0">
+    <Page Self="upage" Name="1" AppliedMaster="umaster" ItemTransform="1 0 0 1 0 0" GeometricBounds="0 0 841.89 595.276" MasterPageTransform="1 0 0 1 0 0"/>
+    <Group Self="ugroup" ItemTransform="1 0 0 1 100 120" AppliedObjectStyle="ObjectStyle/$ID/[None]" Visible="true" Name="$ID/">
+      <Rectangle Self="urect1" ContentType="GraphicType" AppliedObjectStyle="ObjectStyle/$ID/[None]" Visible="true" Name="$ID/" ItemTransform="1 0 0 1 0 0" FillColor="Color/Red" StrokeColor="Swatch/None" StrokeWeight="0">
+        <Properties>
+          <PathGeometry>
+            <GeometryPathType PathOpen="false">
+              <PathPointArray>
+                <PathPointType Anchor="0 0" LeftDirection="0 0" RightDirection="0 0"/>
+                <PathPointType Anchor="0 180" LeftDirection="0 180" RightDirection="0 180"/>
+                <PathPointType Anchor="180 180" LeftDirection="180 180" RightDirection="180 180"/>
+                <PathPointType Anchor="180 0" LeftDirection="180 0" RightDirection="180 0"/>
+              </PathPointArray>
+            </GeometryPathType>
+          </PathGeometry>
+        </Properties>
+      </Rectangle>
+      <Rectangle Self="urect2" ContentType="GraphicType" AppliedObjectStyle="ObjectStyle/$ID/[None]" Visible="true" Name="$ID/" ItemTransform="1 0 0 1 220 80" FillColor="Color/Blue" StrokeColor="Swatch/None" StrokeWeight="0">
+        <Properties>
+          <PathGeometry>
+            <GeometryPathType PathOpen="false">
+              <PathPointArray>
+                <PathPointType Anchor="0 0" LeftDirection="0 0" RightDirection="0 0"/>
+                <PathPointType Anchor="0 180" LeftDirection="0 180" RightDirection="0 180"/>
+                <PathPointType Anchor="180 180" LeftDirection="180 180" RightDirection="180 180"/>
+                <PathPointType Anchor="180 0" LeftDirection="180 0" RightDirection="180 0"/>
+              </PathPointArray>
+            </GeometryPathType>
+          </PathGeometry>
+        </Properties>
+      </Rectangle>
+    </Group>
+  </Spread>
+</idPkg:Spread>

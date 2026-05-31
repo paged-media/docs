@@ -1,12 +1,59 @@
 ---
 title: Companion formats
+description: The family of IDML-adjacent XML formats — snippets, libraries, story-only files, and assignment files — and why Paged parses full documents only.
 tier: intermediate
 diataxis: explanation
-status: stub
+status: published
+owner: paged-docs
 ---
 
-Snippets, libraries, story-only files, and assignment files, and when each applies.
+Most of this reference is about the IDML *package*: a ZIP archive that opens at a
+[design map](/docs/package-anatomy/the-design-map) and contains a whole document.
+But the same XML vocabulary shows up outside that package, in a small family of
+related files that InDesign and InCopy write for narrower jobs — a single page
+item, a reusable library entry, one story's text, an editorial assignment. They
+look like IDML on the inside, but none of them is a document you can open.
 
-> 🚧 Being written. This is a placeholder section landing; it is excluded from
-> search until it reaches real depth. Its order in the reference is justified by
-> reader progression, not by the source spec's organization (clean-room §6.1).
+This chapter is here so you can recognize those files when you meet them and
+understand how they relate to the package you already know. It is reference
+material about a *format family*, not a guide to loading them — because today
+Paged does not load them at all.
+
+<SupportBadge status="not-yet-parsed" note="the entire companion-format family" />
+
+## What counts as a companion format
+
+Four kinds of file travel alongside IDML, sharing its element names while serving
+a different purpose:
+
+- **InDesign Snippets** (`.idms`) — the elements of a single page, captured for
+  re-use.
+- **Libraries** — collections whose individual items are themselves snippets.
+- **Story-only / InCopy files** (`.icml`) — the text of one story with no page
+  geometry around it, the unit of an editorial round-trip.
+- **Assignment files** (`.icma`) — the InCopy bookkeeping that maps stories to
+  editors.
+
+The next page, [the companion formats](/docs/companion-formats/the-companion-formats),
+treats each one as a fact: what it contains, how it is marked, and how it differs
+from a package. [When each applies](/docs/companion-formats/when-each-applies)
+then sets them in the workflows that produce them.
+
+## Why Paged parses full documents only
+
+The single thing all four share is structural: each is a **standalone XML file**,
+not a ZIP package. That is exactly the shape Paged's reader cannot enter.
+
+Paged's one entry point opens an archive, requires the IDML-package mimetype, and
+then locates `designmap.xml` as the document root. A file with no archive, no
+mimetype, and no design map fails that gate before any of its IDML-looking content
+is ever examined. A snippet is not a smaller document; it is a fragment that only
+becomes meaningful when *placed into* a document, with the host resolving names
+and styles around it. Paged is a renderer of finished documents, so the document
+is the unit it reads.
+
+That boundary is not a judgment about the formats — it is where the parser draws
+its line today. The honest status for every format in this chapter is therefore
+the same, and you will see it repeated on each page: not yet parsed. What it would
+take to change that is the closing topic of
+[when each applies](/docs/companion-formats/when-each-applies).

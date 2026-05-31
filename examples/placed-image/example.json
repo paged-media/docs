@@ -1,0 +1,44 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "placed-image",
+  "title": "A graphic frame with a linked image",
+  "tier": "intermediate",
+  "chapter": "images-graphics",
+  "concept": "How a Rectangle becomes a graphic frame by nesting an <Image> that references an external file via <Link LinkResourceURI>, plus the image's own ItemTransform.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Spreads/Spread_uspread.xml",
+    "language": "xml",
+    "label": "Spreads/Spread_uspread.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree"
+  ],
+  "annotations": [
+    {
+      "lines": "5",
+      "note": "The host is an ordinary Rectangle — the same element a colour swatch uses. What turns it into a graphic frame is the <Image> child below, not any attribute on the rectangle itself."
+    },
+    {
+      "lines": "18",
+      "note": "The nested <Image> carries its own ItemTransform (a b c d tx ty), here a half-scale. It maps the image's natural pixel space into the frame's inner coordinate space; the frame's own ItemTransform then carries that onto the page."
+    },
+    {
+      "lines": "23",
+      "note": "<Link LinkResourceURI> names the external file. The parser captures the URI string and defers the actual lookup to an AssetResolver at render time. A linked Link and an embedded <Contents> payload reach the parser the same way."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 2,
+    "paragraphs": 1,
+    "runs": 1
+  },
+  "pathological": false,
+  "license": "MIT"
+}

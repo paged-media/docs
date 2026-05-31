@@ -1,0 +1,166 @@
+---
+title: Master items and stamping
+description: How a body page inherits its master's items at render time — per-page routing, back-of-list placement, the MasterPageTransform offset, and the ShowMasterItems flag.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+A master item never appears in a body page's XML. When you open a
+`Spreads/Spread_*.xml` you see only the items the user drew *on that page*; the
+header rule that visibly sits behind them lives in the `MasterSpreads/*.xml` file
+the page's [`AppliedMaster`](/docs/layout-model/spreads-and-pages) points at. The
+renderer reconstructs the page by **stamping** the master's items onto it. This
+page is the reference for that stamping pass: what it copies, where it puts it,
+and which attributes steer it.
+
+If you have not yet seen that a `MasterSpread` is parsed by the same reader as a
+`Spread`, read [Master spreads](/docs/layout-model/master-spreads) first — this
+page picks up where it ends.
+
+## The stamping pass, in order
+
+The renderer runs the master pass **before** it emits a page's own items. That
+ordering is the whole reason master furniture sits *behind* body content: items
+emitted first land at the back of the page's display list, and the page's own
+items, emitted afterwards, paint on top. A master header rule therefore shows
+through behind the body copy without any explicit z-index — back-to-front order
+does the work, exactly as it does for [page items within a spread](/docs/layout-model/page-items-and-stacking).
+
+For each body page that names a master, the pass does four things:
+
+1. **Resolves the master.** The page's `AppliedMaster` is looked up against the
+   table of parsed masters. The lookup is forgiving about the prefix: a page may
+   write `umaster` or `MasterSpread/umaster` and both resolve to the same master.
+   If no master matches, the page is left with only its own items.
+2. **Picks the matching master page.** A master can hold more than one page (a
+   facing-pages master with a distinct left and right page). The body page takes
+   items from the master page at its *same ordinal* — left from left, right from
+   right — not from every master page at once.
+3. **Routes each item to the page it belongs to.** Within the chosen master page,
+   the pass keeps an item when its centre lands on that master page, or when the
+   item is large enough to be a full-page background that overlaps it. This is
+   what stops a master's navy left-page panel from also stamping onto every right
+   page.
+4. **Offsets and emits.** Each kept item is copied, shifted so the master page's
+   origin lands on the body page's origin (plus any `MasterPageTransform`
+   offset — see below), and emitted into the body page's display list.
+
+Items the body page has overridden are skipped in step 4; that is the subject of
+[Override resolution](/docs/master-spreads-overrides/override-resolution).
+
+## What gets stamped, and what does not
+
+The pass copies the master's items **per shape type**: text frames, rectangles,
+ovals, graphic lines, and polygons are each walked and stamped. A master text
+frame that hosts a story (a running header, a page-number footer) is relocated
+*and* its story is re-flowed onto the body page, so the folio shows the body
+page's number rather than the master's placeholder.
+
+Two structural caveats are worth stating plainly, because they differ from how a
+body spread's own items are handled:
+
+- **Master items are stamped by shape-type bucket, not in document order.** A
+  body spread's own items render in the single
+  [`frames_in_order`](/docs/layout-model/page-items-and-stacking) list, so their
+  XML order is their z-order. The master pass does not consult that list; it walks
+  each shape vector in turn. For the typical master — a background, then a rule,
+  then a folio frame — the result is indistinguishable, but a master that relies
+  on interleaved cross-type stacking is not guaranteed to keep it.
+  <SupportBadge status="parsed-not-rendered" note="Master items stamped per shape-type, not via frames_in_order" />
+- **A `Group` on the master is not stamped.** The pass has no group arm, so a
+  cluster the user grouped on the master (to share one opacity or drop shadow)
+  does not reach the body page as a group. Author master furniture as top-level
+  shapes, not groups, until this is wired.
+  <SupportBadge status="not-yet-parsed" note="Master-spread Groups are not stamped onto body pages" />
+
+## The attributes that steer stamping
+
+### On the body `Page`
+
+These are the `Page` attributes the stamping pass reads. They are documented in
+full on [Spreads and pages](/docs/layout-model/spreads-and-pages); the notes here
+are about their role *in stamping specifically*.
+
+<AttrTable
+  element="Page (stamping-relevant)"
+  rows={[
+    { attr: 'AppliedMaster', type: 'string (master Self id)', support: 'supported', note: 'Names the master to stamp. Bare id or MasterSpread/<id> both resolve. Absent ⇒ no master pass for this page.' },
+    { attr: 'MasterPageTransform', type: 'list of doubles [a b c d tx ty]', support: 'parsed-not-rendered', note: 'Positions the master overlay on this page. Only the translation (tx, ty) is added to the master→body offset; the rest of the matrix is parsed but not applied.' },
+    { attr: 'OverrideList', type: 'space-separated ids', support: 'supported', note: 'Master-item Self ids this page has taken over; those items are skipped during stamping. See Override resolution.' },
+  ]}
+/>
+
+### On the `MasterSpread`
+
+A `MasterSpread` shares all of a `Spread`'s structure; the parser reads its `Self`
+and `ItemTransform` exactly as for any spread. Beyond that it carries a few
+master-only naming attributes that document spreads do not have. The parser reads
+the `Self` id (so `AppliedMaster` can match it) and treats the rest as
+informational.
+
+<AttrTable
+  element="MasterSpread"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'supported', note: 'The master id, also derivable from the file name. AppliedMaster points at this.' },
+    { attr: 'ItemTransform', type: 'list of doubles [a b c d tx ty]', support: 'parsed-not-rendered', note: 'As on any spread; each master page already maps itself into spread coords, so the whole-spread transform is read but not applied. See Spreads and pages.' },
+    { attr: 'ShowMasterItems', type: 'boolean', support: 'parsed-not-rendered', note: 'Format flag for whether master items display on the spread. Not honored — items stamp regardless. See below.' },
+    { attr: 'Name', type: 'string', support: 'parsed-not-rendered', note: 'Display name, e.g. "A-Master". Master-only; informational.' },
+    { attr: 'NamePrefix', type: 'string', support: 'parsed-not-rendered', note: 'Short prefix in InDesign\'s pages panel, e.g. "A". Master-only; informational.' },
+    { attr: 'BaseName', type: 'string', support: 'parsed-not-rendered', note: 'Base portion of the master name. Master-only; informational.' },
+    { attr: 'OverriddenPageItemProps', type: 'list of ints', support: 'not-yet-parsed', note: 'Master-level record of which item properties were overridden. Not read.' },
+    { attr: 'PageColor', type: 'list of doubles or enum', support: 'not-yet-parsed', note: 'Master-only spread page color (a child element, not an attribute). Not read.' },
+  ]}
+/>
+
+## `MasterPageTransform`: the master overlay offset
+
+A master holds its items in *its own* spread coordinates. To land them on a body
+page, the renderer computes the offset from the master page's origin to the body
+page's origin and shifts every stamped item by it. `MasterPageTransform` is the
+extra nudge that lets one specific body page slide its master overlay — InDesign's
+"master page overlay" control.
+
+The current pass reads the full six-number matrix but consumes only its
+translation `(tx, ty)`, adding it to the master→body offset. For the overwhelmingly
+common case the matrix is identity and there is nothing to add; a master overlay
+that was scaled or rotated relative to its page is not yet reproduced.
+<SupportBadge status="parsed-not-rendered" note="MasterPageTransform: translation applied, full matrix not yet" />
+
+## `ShowMasterItems`: parsed, not honored
+
+The format carries a `ShowMasterItems` boolean — on both the body `Spread` and the
+`MasterSpread` — to toggle whether master items display. The stamping pass does not
+consult it: any page with an `AppliedMaster` gets its master items stamped. A
+spread that sets `ShowMasterItems="false"` to hide its master layer is **not yet
+honored**, and its master items will still appear.
+<SupportBadge status="parsed-not-rendered" note="ShowMasterItems toggle not honored — master items stamp regardless" />
+
+This matters more than it looks. The example below ships with a master spread that
+declares `ShowMasterItems="false"`, yet its master rectangle is still a live
+participant in stamping — it is suppressed on the body page only because the body
+page *overrides* it, not because of the flag.
+
+## A worked example
+
+The two-page spread below is the simplest place to watch stamping route per page.
+The master holds one header rule; the spread holds two body pages side by side,
+each applying that master by its bare `Self` id. Read the spread part: the two
+`<Page>` elements come first (each with its own `ItemTransform` placing it left or
+right of the binding), then the body items. Each page receives the master's header
+rule, offset onto its own origin — the routing in step 3 sends the right copy to
+the right page.
+
+<ExampleEmbed example="two-page-spread">
+  A two-page spread. Each page applies the same master by its Self id; the
+  stamping pass routes the master's header rule onto each page at its own origin.
+</ExampleEmbed>
+
+Read it against the inspector output: two pages, four frames total — each page's
+own text frame plus the stamped master rule. The master's items are not in the
+spread XML; they are stamped in.
+
+Once you can predict what stamping *adds*, the next page covers what an
+[override](/docs/master-spreads-overrides/override-resolution) tells it to leave
+out.

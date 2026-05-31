@@ -1,0 +1,92 @@
+---
+title: Visibility and printing
+description: How Visible and Printable gate the renderer, why Locked does not, and the layer features the model leaves flat.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+Of everything a layer records, only two switches change what comes out of the
+renderer: `Visible` and `Printable`. They are the reason layers are worth
+documenting before the rest of the layer model — get these two wrong in a fixture
+and content silently vanishes. This page explains exactly when that happens, and
+is equally clear about the layer attributes that look like they should matter but
+do not.
+
+## One test, two switches
+
+When the renderer walks a spread, every page item is checked against the layer its
+`ItemLayer` names. The rule is a single AND: an item is drawn only if its layer is
+**both** visible **and** printable. Either switch turned off is enough to drop the
+item.
+
+- `Visible="false"` — the layer is hidden. None of its items are drawn.
+- `Printable="false"` — the layer is marked non-printing. The current renderer
+  treats this the same as hidden: its items are suppressed from output.
+
+<SupportBadge status="supported" note="Visible and Printable both gate the render" />
+
+Both default to on. A layer that omits `Visible` is visible; a layer that omits
+`Printable` prints. And an item whose `ItemLayer` is missing, or which names a
+layer that is not defined, is also drawn — the renderer only suppresses an item
+when it can resolve `ItemLayer` to a real layer that is explicitly off. A missing
+or dangling reference never makes content disappear by accident.
+
+Because the two switches collapse into one decision, the renderer precomputes a
+single `visible && printable` answer per layer before it starts painting, then
+consults that one flag for each item. There is no separate "printing pass" today —
+on-screen and to-output are the same suppression.
+
+<ExampleEmbed example="layer-visibility">
+  The blue rectangle sits on a layer with `Visible="false"`. It parses, but it
+  never paints. Set that layer's `Visible` to `true` to see it return.
+</ExampleEmbed>
+
+The example makes the parse-versus-render distinction concrete. Inspecting the
+package, the spread reports **two** rectangles — both are well-formed and the
+parser builds both. But the rendered page reports a single frame and a single
+paint command: the rectangle on the hidden layer is gone by the time the page is
+drawn. "It is in the XML" and "it is on the page" are two different statements,
+and the layer's switches are what separate them.
+
+## `Locked` is read, but the renderer ignores it
+
+A layer can also be marked `Locked`. In an editor, locking a layer stops you from
+selecting or moving the items on it — it is a guard against accidental edits. The
+parser reads `Locked` and keeps it on the layer model, but it has no bearing on
+output: a locked layer renders exactly like an unlocked one. Locking is an
+authoring-time concern that belongs to a canvas and its selection logic, not to a
+renderer that only draws.
+
+<SupportBadge status="parsed-not-rendered" note="Layer Locked — parsed, but an editor concern; never changes the rendered output" />
+
+So if you are reading an IDML to understand what a page *looks like*, you can
+ignore `Locked` entirely. It matters only to tools that let a user push the
+pixels around.
+
+## Layer folders are flattened
+
+InDesign's Layers panel can nest layers inside *layer groups* (folders) for
+tidiness. That nesting is purely organizational, and the model here does not carry
+it: layers are kept as a single flat, ordered list, with no parent/child
+relationship between them. Every `<Layer>` is a peer. In practice this costs
+nothing for rendering — a folder never affected whether its layers' items draw,
+only how they were grouped in the panel — but it does mean you cannot ask this
+model "which folder is this layer in." There is no folder to ask about.
+
+<SupportBadge status="not-yet-parsed" note="Layer folders / nested layer groups — flattened to a single peer list; no grouping is retained" />
+
+## What to check when content goes missing
+
+The practical payoff of this page is a short checklist. When a frame you can see
+in the spread XML does not appear on the rendered page, and the geometry looks
+fine, walk the layer link:
+
+1. Read the item's `ItemLayer` to find which layer it claims.
+2. Find that `<Layer>` in `designmap.xml`.
+3. Check its `Visible` and `Printable`. If either is `false`, that is your answer.
+
+If the item has no `ItemLayer`, or it points at a layer that is not in the design
+map, layers are not your problem — the renderer would have drawn it on the default
+layer, so the disappearance is something else (geometry, color, or threading).

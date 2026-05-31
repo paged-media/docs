@@ -1,12 +1,100 @@
 ---
 title: The renderer
+description: Paged's renderer is the open Rust engine that turns an IDML package into faithful pages — parsing the XML, laying out text, and painting pixels. It is the same engine that powers this site's live preview.
 tier: pro
 diataxis: explanation
-status: stub
+status: published
+owner: paged-docs
 ---
 
-Architecture, crate map, and the parse to model to layout to composition to rendering pipeline of the Paged renderer (core/crates/paged-renderer and friends).
+**The renderer is the open engine that turns an IDML package into the pixels you
+actually see — and it's the engine behind this site's live preview.**
 
-> 🚧 Being written. This is a placeholder section landing; it is excluded from
-> search until it reaches real depth. Its order in the reference is justified by
-> reader progression, not by the source spec's organization (clean-room §6.1).
+**In short:** Everywhere else in this reference we treat IDML as *content and
+intent* — a story flows through a frame, a paragraph applies a style. The renderer
+is what closes the loop: it reads that intent and produces a faithful page. It is
+an open-source engine written in Rust ([`paged-media/core`](https://github.com/paged-media/core),
+dual-licensed MPL-2.0 OR PMEL), built as a small chain of focused crates that hand
+work to each other — parse, model, layout, compose, rasterize. This chapter walks
+that chain so you understand what happens between "an archive of XML" and "a page on
+your screen."
+
+If you've read [What IDML is](/docs/foundations/what-is-idml), you already know the
+key idea: IDML describes a document's *content and intent*, not rendered pixels.
+"This story uses this paragraph style and flows through this frame on this page" —
+that's intent. Turning it into a page that matches what InDesign would have drawn is
+a genuinely hard job, and it's the renderer's whole reason to exist.
+
+The renderer is **open**. It lives in the public `paged-media/core` repository,
+dual-licensed **MPL-2.0 OR PMEL**, so you can read every line of the code these
+pages describe. When this reference says "our parser reads this attribute" or "the
+rasterizer approximates that effect," there's a real function behind the sentence —
+and where a feature isn't done yet, we say so with a <SupportBadge status="parsed-not-rendered" /> badge
+rather than quietly pretending otherwise.
+
+## The pipeline at a glance
+
+A render is a relay. Each stage takes the previous stage's output, does one job
+well, and hands the result forward. Nothing loops back.
+
+```text
+IDML package
+   │  parse      ZIP + XML  →  typed AST
+   ▼
+   │  model      AST  →  resolved Document (styles, frame chains)
+   ▼
+   │  layout     text  →  shaped glyphs on lines (Knuth–Plass)
+   ▼
+   │  compose    scene  →  DisplayList (a versioned command stream)
+   ▼
+   │  rasterize  DisplayList  →  pixels (WebGPU/Vello, or CPU)
+   ▼
+RGBA pixels
+```
+
+Five stages, five crates, one direction of travel. The [pipeline page](/docs/the-renderer/the-pipeline)
+opens each stage up and shows which crate owns it. The crucial seam is in the middle:
+the layout and compose stages produce a **display list** — a small, versioned
+intermediate representation of "what to paint" — and only the final stage turns that
+into actual pixels. That seam is what lets the same engine drive a print-quality CPU
+render *and* a live WebGPU preview from one source of truth.
+
+## Why a renderer-core chapter at all
+
+Most of this reference reads the format from a renderer's point of view: every page
+asks "what does our engine have to *do* with this?" This chapter answers the
+question head-on. Read it if you want to:
+
+- understand how a faithful page actually gets built, stage by stage;
+- know what the [display list](/docs/the-renderer/the-display-list) is, why an
+  intermediate representation exists, and what commands it carries;
+- understand the [rendering backends](/docs/the-renderer/rendering-backends) — why
+  WebGPU (via Vello) is the forward path while a CPU rasterizer stays around as the
+  fidelity yardstick;
+- or simply read the code: it's open, and these pages point you straight at it.
+
+The renderer is also what you're looking at on this very site. The live preview
+embedded in our examples wraps the same engine — shipped as the `@paged-media/sdk`
+WebGPU surface (`paged-sdk`) — so the page you see rendered next to a snippet is
+produced by exactly the code described here.
+
+## Frequently asked questions
+
+**Is the renderer open source?**
+Yes. The renderer-core engine lives in the public `paged-media/core` repository and
+is dual-licensed **MPL-2.0 OR PMEL** (the Paged Media Enterprise License). Every
+stage these pages describe — parse, model, layout, compose, rasterize — is real,
+readable Rust. The commercial editor is a separate, private product that consumes
+the engine across a published-package boundary; it is not what this chapter
+documents.
+
+**Does the renderer need Adobe InDesign?**
+No. The whole point of the engine is to interpret IDML *without* InDesign. It opens
+the ZIP, parses the XML, lays out the text, and paints the page on its own. InDesign
+only enters the picture on the testing side, where InDesign-exported PDFs serve as
+the reference images our fidelity harness diffs against.
+
+**Is this the same renderer as the live preview on this site?**
+Yes. The live preview wraps the engine's WebGPU surface (`@paged-media/sdk` /
+`paged-sdk`), which loads an IDML package and presents it through the Vello/WebGPU
+backend. The pixels you see beside an example come from the engine documented here.

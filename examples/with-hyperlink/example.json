@@ -1,0 +1,44 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "with-hyperlink",
+  "title": "A document with a hyperlink",
+  "tier": "intermediate",
+  "chapter": "cross-references-hyperlinks",
+  "concept": "A Hyperlink ties a text source to a URL destination; the parser records all three, but link regions are not drawn.",
+  "packageDir": "package",
+  "editable": {
+    "part": "designmap.xml",
+    "language": "xml",
+    "label": "designmap.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree"
+  ],
+  "annotations": [
+    {
+      "lines": "14",
+      "note": "HyperlinkURLDestination — the target. DestinationURL holds the web address; DestinationUniqueKey is the int key a Hyperlink points at."
+    },
+    {
+      "lines": "15",
+      "note": "HyperlinkTextSource — the document-level record of the in-story anchor. Its Self id is what the Hyperlink's Source names."
+    },
+    {
+      "lines": "16",
+      "note": "Hyperlink — ties Source (the text anchor) to Destination (the URL). The parser keeps Self, Name, Source, and Destination; the appearance attributes are read past."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 1,
+    "paragraphs": 1,
+    "runs": 1
+  },
+  "pathological": false,
+  "license": "MIT"
+}

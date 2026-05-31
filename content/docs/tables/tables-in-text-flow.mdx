@@ -1,0 +1,79 @@
+---
+title: Tables in the text flow
+description: What it means for a table to be anchored in a story's paragraph — how it draws where the flow reaches it, breaks across threaded frames, and repeats its header and footer rows.
+tier: pro
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+The [table model](/docs/tables/the-table-model) and its
+[rows, columns, and cells](/docs/tables/rows-columns-cells) describe what a table
+*is*. This page is about where it *goes* — and the answer is the thread that ties
+the whole chapter together: a table is part of the text flow.
+
+## A table rides on a paragraph
+
+A `<Table>` is an inline element. It sits inside a `<CharacterStyleRange>`, inside
+a `<ParagraphStyleRange>`, inside a story — the same place a run of text sits. The
+run that hosts the table carries no text of its own; its job is simply to be the
+anchor the table rides on.
+
+```xml
+<Story Self="ustory">
+  <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
+    <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+      <Table Self="utable" …> … </Table>
+    </CharacterStyleRange>
+  </ParagraphStyleRange>
+</Story>
+```
+
+This is why a table has no position of its own. It draws *where the host paragraph
+lands*. The story flows down its [text frame](/docs/stories-text) — paragraph
+after paragraph, top to bottom — and when the flow reaches the paragraph that
+hosts the table, the renderer lays the table's grid out there, starting at the
+left edge of the text column and running down from the current vertical cursor.
+Whatever follows the table in the story resumes below it. Move the host paragraph,
+and the table moves with it; you never position a table directly.
+
+## Breaking across threaded frames
+
+A story can be [threaded](/docs/stories-text) through a chain of frames, so its
+text flows from one frame into the next. A table caught in that flow can be taller
+than the frame it starts in. When that happens, the table splits: the renderer
+fills the first frame with as many rows as fit, then continues the remaining rows
+at the top of the next frame in the chain, and so on down the chain.
+
+This works for the common case — body rows flowing from one frame into the next —
+but the splitter is deliberately simple. A single row taller than a whole frame is
+not itself split across the break; the table only advances to a new frame when
+there is a next frame in the chain to advance into; and the row's
+`KeepWithNextRow` constraint is not consulted when choosing where to break.
+<SupportBadge status="supported" note="table break across threaded frames — common case; row-level keep-together not yet honoured" />
+
+## Repeating headers and footers
+
+When a table breaks across frames, its header rows can reappear at the top of each
+continuation frame, and its footer rows at the bottom of each frame but the last,
+so a reader of any frame sees the column headings. The
+[`RepeatingHeader` and `RepeatingFooter`](/docs/tables/the-table-model#header-and-footer-repetition)
+booleans on the `<Table>` control this. Both default to repeating when absent; an
+explicit `false` makes the header or footer appear only once, in its original
+position.
+
+The renderer implements both: when repetition is on, it reserves space for the
+replayed footer at the bottom of each non-last frame and re-draws the header rows
+at the top of each continuation. The placement is the straightforward
+once-per-frame replay; the finer `BreakHeaders` / `BreakFooters` placement modes
+(per text column versus per page) and the `SkipFirstHeader` / `SkipLastFooter`
+flags that IDML can also carry are not yet read.
+<SupportBadge status="supported" note="repeating header/footer — once-per-frame replay; BreakHeaders/BreakFooters modes and SkipFirst/SkipLast not yet read" />
+
+## Why this matters
+
+Because a table lives in the flow rather than on the page, everything you know
+about stories applies to it. Its width follows the text column. Its vertical
+position follows the paragraphs above it. Its continuation follows the frame
+chain. The grid, the cells, and the borders from the other pages are *what* draws;
+the flow is *where*. The two together are the whole picture of an IDML table.

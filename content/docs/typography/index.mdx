@@ -1,12 +1,70 @@
 ---
 title: Typography
-tier: pro
+description: What the renderer does with type — fonts, spacing, line-breaking, drop caps, and tabs — and an honest map of where each construct stands.
+tier: intermediate
 diataxis: explanation
-status: stub
+status: published
+owner: paged-docs
 ---
 
-Fonts and references, OpenType, kerning and tracking, justification, hyphenation, composer behavior, drop caps, and tabs. The deep continuation of stories and text.
+[Stories and text](/docs/stories-text/story-structure) covered the *shape* of a
+story: the `Story → ParagraphStyleRange → CharacterStyleRange → Content` tree and
+the attributes that ride on it. This chapter is the continuation that asks the
+next question — once the parser has those runs, what does the renderer actually
+*do* with them when it sets type on a page?
 
-> 🚧 Being written. This is a placeholder section landing; it is excluded from
-> search until it reaches real depth. Its order in the reference is justified by
-> reader progression, not by the source spec's organization (clean-room §6.1).
+That is a different concern from parsing. A `CharacterStyleRange` can carry a
+font family, a face name, a point size, tracking, leading, a baseline shift, and
+a dozen CJK and OpenType knobs. The parser reads them; the text engine then has
+to resolve a real font, shape glyphs, space them, break the paragraph into lines,
+and place the result. Some of those steps are faithful to InDesign today; some
+are approximations with a known divergence; a few attributes are read and parked
+for later. This chapter is organised so you always know which is which.
+
+## What the renderer reads vs. what it places
+
+The honest framing for the whole chapter: **parsing an attribute is not the same
+as honouring it.** This is a format reference, so it documents the full IDML
+surface — and a construct can appear in a `CharacterStyleRange`, be perfectly
+parsed, and still be a no-op at layout time. Throughout these pages, each
+attribute table carries a support status, and anything short of full support
+gets a badge:
+
+<SupportBadge status="supported" note="resolved and laid out on the page" />
+
+<SupportBadge status="parsed-not-rendered" note="read into the model, not yet acted on at layout time" />
+
+<SupportBadge status="not-yet-parsed" note="read past entirely" />
+
+## The path a run takes
+
+A run of text walks roughly this route before it lands as glyphs:
+
+1. **Resolve a face.** The run's `AppliedFont` (family) and `FontStyle` (face) are
+   turned into a lookup against the fonts the host supplied to the renderer — not
+   against anything inside the package. See [fonts and faces](/docs/typography/fonts-and-faces).
+2. **Shape the glyphs.** The resolved face shapes the run's characters, applying
+   the font's own kerning and ligatures. Then per-run adjustments — tracking,
+   baseline shift — are layered on. See [spacing and leading](/docs/typography/spacing-and-leading).
+3. **Break the paragraph into lines.** The composer fits the shaped runs into the
+   column width, choosing break points and distributing space according to the
+   paragraph's `Justification`. See [justification and line-breaking](/docs/typography/justification-and-linebreaking).
+4. **Place special cases.** Drop caps lift the first characters into an enlarged
+   initial; tabs snap text to the paragraph's stops. See
+   [drop caps and tabs](/docs/typography/drop-caps-and-tabs).
+
+Each step has its own page. They are ordered by that pipeline, not by where the
+attributes sit in the IDML schema — the reason of record is reader progression.
+
+## In this chapter
+
+- **[Fonts and faces](/docs/typography/fonts-and-faces)** — how `AppliedFont` and
+  `FontStyle` name a typeface, and why `Fonts.xml` is a manifest the renderer does
+  not read fonts from.
+- **[Spacing and leading](/docs/typography/spacing-and-leading)** — `Tracking`
+  (1/1000 em), `Leading` (points, with Auto = size × 1.2), and where kerning comes
+  from.
+- **[Justification and line-breaking](/docs/typography/justification-and-linebreaking)**
+  — the `Justification` values and how the line-breaker and hyphenator behave.
+- **[Drop caps and tabs](/docs/typography/drop-caps-and-tabs)** — the drop-cap
+  counts and the `TabList` of `TabStop`s a `Tab` snaps to.

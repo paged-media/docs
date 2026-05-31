@@ -1,0 +1,109 @@
+---
+title: Text frames
+description: The TextFramePreference block — InsetSpacing, VerticalJustification, FirstBaselineOffset, and AutoSizingType.
+tier: intermediate
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+A `TextFrame` is the page item that holds text: it points at a story through its
+`ParentStory`, and its `ContentType` is `TextType`. The frame's *outline* (from
+its [`PathGeometry`](/docs/geometry-coordinates/path-geometry)) sets where text
+can go; a single optional child element, `TextFramePreference`, controls *how*
+the text sits inside that outline.
+
+```xml
+<TextFrame Self="uframe" ParentStory="ustory" ContentType="TextType" ...>
+  <Properties>
+    <PathGeometry>...</PathGeometry>
+  </Properties>
+  <TextFramePreference
+    InsetSpacing="6 8 10 12"
+    VerticalJustification="CenterAlign"
+    FirstBaselineOffset="CapHeight"
+    AutoSizingType="HeightOnly"/>
+</TextFrame>
+```
+
+All four attributes are optional; when absent the frame uses InDesign's
+defaults. The parser reads them off `TextFramePreference` only while a
+`TextFrame` is the open element — the same attributes on a non-text shape are
+ignored.
+
+## InsetSpacing — the text inset box
+
+`InsetSpacing` shrinks the area text may occupy inside the frame outline. It is a
+space-separated list of four numbers in points, in IDML's
+`top left bottom right` order. The parser stores them as a `(top, left, bottom,
+right)` tuple; the composer lays text out against the inset box rather than the
+raw outline.
+
+<AttrTable
+  element="TextFramePreference — InsetSpacing"
+  rows={[
+    { attr: 'InsetSpacing', type: '"top left bottom right" (pt)', support: 'supported', note: 'Four points of padding pulled in from each edge. Omitted → no inset.' },
+  ]}
+/>
+
+## VerticalJustification — text within the column height
+
+`VerticalJustification` decides where the composed text block sits between the
+top and bottom insets when it does not fill the frame. `Top` is the default.
+
+<AttrTable
+  element="TextFramePreference — VerticalJustification"
+  rows={[
+    { attr: 'TopAlign', type: 'enum', support: 'supported', note: 'Default. First line at the top inset.' },
+    { attr: 'CenterAlign', type: 'enum', support: 'supported', note: 'Text block centred between the insets.' },
+    { attr: 'BottomAlign', type: 'enum', support: 'supported', note: 'Last line at the bottom inset.' },
+    { attr: 'JustifyAlign', type: 'enum', support: 'supported', note: 'Inter-paragraph gaps grow so the last baseline reaches the bottom; within-paragraph leading is preserved.' },
+  ]}
+/>
+
+## FirstBaselineOffset — where the first line lands
+
+`FirstBaselineOffset` sets how far below the top inset the first line's baseline
+falls. `AscentOffset` is the IDML default. The renderer honours each policy at
+layout time; the metric-driven ones (`CapHeight`, `XHeight`) need the frame's
+font, and the `LeadingOffset` / `FixedHeight` pair reads the companion
+`MinimumFirstBaselineOffset` value (in points).
+
+<AttrTable
+  element="TextFramePreference — FirstBaselineOffset"
+  rows={[
+    { attr: 'AscentOffset', type: 'enum', support: 'supported', note: 'Default. Baseline one ascender below the top inset. Used for any unrecognised value too.' },
+    { attr: 'CapHeight', type: 'enum', support: 'supported', note: 'One cap-height below the inset (needs font metrics).' },
+    { attr: 'XHeight', type: 'enum', support: 'supported', note: 'One x-height below the inset (needs font metrics).' },
+    { attr: 'EmBoxHeight', type: 'enum', support: 'supported', note: 'One em-box-height below the inset.' },
+    { attr: 'LeadingOffset', type: 'enum', support: 'supported', note: 'Distance comes from MinimumFirstBaselineOffset (pt).' },
+    { attr: 'FixedHeight', type: 'enum', support: 'supported', note: 'Same source as LeadingOffset — the MinimumFirstBaselineOffset value.' },
+  ]}
+/>
+
+## AutoSizingType — letting the frame grow
+
+`AutoSizingType` lets a frame's bounds grow at composition time so a display
+headline or dynamic copy does not clip against an undersized authored box. `Off`
+is the default — a static frame whose bounds are authoritative.
+
+<AttrTable
+  element="TextFramePreference — AutoSizingType"
+  rows={[
+    { attr: 'Off', type: 'enum', support: 'supported', note: 'Default. Static frame; the authored bounds win.' },
+    { attr: 'WidthOnly', type: 'enum', support: 'supported', note: 'The renderer estimates the longest line and widens the wrap column to fit (honouring MinimumWidthForAutoSizing).' },
+    { attr: 'HeightOnly', type: 'enum', support: 'parsed-not-rendered', note: 'Parsed; the width-growth pass does not act on height-only growth yet.' },
+    { attr: 'HeightAndWidth', type: 'enum', support: 'parsed-not-rendered', note: 'Only the width component is applied; height growth is not yet honoured.' },
+    { attr: 'HeightAndWidthProportionally', type: 'enum', support: 'parsed-not-rendered', note: 'As HeightAndWidth — only width growth takes effect today.' },
+  ]}
+/>
+
+<SupportBadge status="parsed-not-rendered" note="Only width growth is applied. The companion AutoSizingReferencePoint and MinimumHeightForAutoSizing are parsed but not yet acted on for vertical growth." />
+
+## Insets, justification, and the first baseline together
+
+The frame outline, the inset box, the vertical justification, and the first
+baseline stack up in that order: the outline is the room, the insets pull a
+margin in, the first-baseline policy places the top line, and vertical
+justification distributes whatever slack is left. Get the inset wrong and every
+later number shifts with it.

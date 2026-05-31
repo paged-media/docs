@@ -1,0 +1,100 @@
+---
+title: Cross-references & the index
+description: The CrossReferenceSource element and its applied format, plus Topic definitions and the in-story index markers — both parsed into the model, neither resolved or generated yet.
+tier: intermediate
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+Hyperlinks and bookmarks point somewhere and leave the displayed text alone. The
+two constructs on this page are different: each one is meant to be *filled in* by
+a pass over the whole document. A cross-reference borrows its display text from
+the thing it points at ("see *Chapter 3*", "page 12"); an index is assembled
+from markers scattered through the body copy. Both therefore depend on a
+resolution step — and that step is the part the engine has not built yet. The
+parser records the inputs; the resolution that turns them into rendered text is
+deferred.
+
+## `CrossReferenceSource`
+
+A cross-reference source is a marker that says "show, here, a phrase derived from
+that target." Its `AppliedFormat` names a `CrossReferenceFormat` — a template
+that decides the words ("See", "See also", a page number, the heading text) —
+and its `Destination` names the anchor the phrase is built from. The parser keeps
+the id, name, format ref, and destination.
+
+<AttrTable
+  element="CrossReferenceSource"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'supported', note: 'The cross-reference source id.' },
+    { attr: 'Name', type: 'string', support: 'supported', note: 'Human-readable name.' },
+    { attr: 'AppliedFormat', type: 'string ref (CrossReferenceFormat/…)', support: 'parsed-not-rendered', note: 'The format template that decides the displayed phrase. Kept on the model; not applied.' },
+    { attr: 'Destination', type: 'string ref (a text anchor / destination)', support: 'parsed-not-rendered', note: 'The target the phrase is derived from. Kept on the model; not resolved.' },
+  ]}
+/>
+
+The closely related index *cross-reference* — IDML's `CrossReference` element,
+which records a "see / see also" entry *within* an index rather than inline body
+text — carries a `CrossReferenceType` drawn from a fixed vocabulary
+(`CustomCrossReference`, `CustomCrossReferenceAfter`, `CustomCrossReferenceBefore`,
+`See`, `SeeAlso`, `SeeAlsoHerein`, `SeeHerein`, `SeeOrAlsoBracket`), an optional
+`CustomTypeString` for the custom variants, and a `ReferencedTopic`. The parser
+folds these into the same cross-reference record.
+
+<SupportBadge status="parsed-not-rendered" note="cross-reference target resolution is deferred — paged-parse/src/designmap.rs:276" />
+
+## `Topic` and the index entries
+
+An index has two halves that meet only at resolution time.
+
+The **topics** are the headings the finished index will list. Each `Topic`
+element in the design map declares one term: its id, its display `Name`, and an
+optional `SortOrder` that overrides where it falls alphabetically (so "École"
+can sort under E, or "1984" under N for "nineteen…"). The parser flattens IDML's
+nested-topic tree to one record per `Self`.
+
+<AttrTable
+  element="Topic"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'supported', note: 'The topic id — what an in-story marker names via AppliedTopic.' },
+    { attr: 'Name', type: 'string', support: 'supported', note: 'The term as it should print in the index.' },
+    { attr: 'SortOrder', type: 'string', support: 'parsed-not-rendered', note: 'Optional sort key overriding alphabetical order. Kept; not yet applied.' },
+  ]}
+/>
+
+The **markers** are the other half: zero-width points scattered through the body
+text that each say "this spot contributes to a topic." They are serialised inside
+the story runs as `PageReference`, `IndexEntry`, or `Index` elements — the parser
+treats all three names the same — and it attaches each one to the paragraph it
+sits in. A marker that carries an inline `TopicName` uses that term directly; a
+marker that instead carries `AppliedTopic="Topic/<id>"` is meant to be looked up
+against the `Topic` table above. Either way the marker inserts no character into
+the run, so the body text flows past it untouched.
+
+<AttrTable
+  element="PageReference / IndexEntry / Index (in-story marker)"
+  rows={[
+    { attr: 'TopicName', type: 'string', support: 'parsed-not-rendered', note: 'The indexed term given inline on the marker. Captured onto the host paragraph.' },
+    { attr: 'AppliedTopic', type: 'string ref (Topic/<id>)', support: 'parsed-not-rendered', note: 'Reference to a Topic; the term comes from the topic table when this is used instead of TopicName.' },
+    { attr: 'SortOrder', type: 'string', support: 'parsed-not-rendered', note: 'Optional per-marker sort override. Captured; not yet applied.' },
+  ]}
+/>
+
+A marker with neither `TopicName` nor `AppliedTopic` has nothing to index and is
+dropped.
+
+## Why nothing prints yet
+
+Both constructs need a whole-document pass that the engine does not run:
+
+- A cross-reference's display text would come from applying its `AppliedFormat`
+  to its resolved `Destination`. That resolution is deferred, so the phrase is
+  not produced. <SupportBadge status="parsed-not-rendered" note="paged-parse/src/designmap.rs:276" />
+- An index would come from collecting every marker, grouping by topic,
+  alphabetising (honouring `SortOrder`), and emitting a generated story. The
+  markers and topics are captured; the generation pass is not implemented, so no
+  index story is rendered. <SupportBadge status="parsed-not-rendered" note="markers captured at paged-parse/src/story.rs:317; topics at paged-parse/src/designmap.rs:286" />
+
+The inputs are all in the model, ready for the SDK Phase 5 resolution work to
+consume.

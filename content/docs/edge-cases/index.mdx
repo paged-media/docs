@@ -1,12 +1,54 @@
 ---
 title: Edge cases & real-world quirks
+description: How the Paged renderer behaves when an IDML package is incomplete, contradictory, or malformed — the error model that draws the line between recoverable and fatal, and the graceful-degradation rules that keep imperfect documents rendering.
 tier: pro
 diataxis: explanation
-status: stub
+status: published
+owner: paged-docs
 ---
 
-The depth that makes the site worth citing: the pathological inputs and how the renderer handles them.
+**This section is about what happens when an IDML package is *wrong* — and why a
+renderer's answer to that question is the part worth citing.**
 
-> 🚧 Being written. This is a placeholder section landing; it is excluded from
-> search until it reaches real depth. Its order in the reference is justified by
-> reader progression, not by the source spec's organization (clean-room §6.1).
+**In short:** every page before this one describes IDML as it is *supposed* to be:
+a complete package, every reference resolvable, every value in range. Real
+documents are messier. They arrive with a story the manifest still advertises but
+that someone deleted, an attribute value from a newer InDesign than the renderer
+knows, a `BasedOn` chain that loops back on itself, an image link pointing at a
+file that never shipped. This section documents exactly what the Paged renderer
+does with each of those — what it quietly tolerates, what it caps, and what it
+refuses to guess about and stops on. That behavior *is* the contract, so we write
+it down.
+
+A specification tells you what a *valid* document looks like. It is mostly quiet
+about what a reader should do with an invalid one — and that silence is where real
+renderers diverge from each other and from the page you expected. Two tools can
+both "support IDML" and disagree completely the moment a package is a little
+broken: one drops the bad story and renders the rest, one substitutes a default,
+one throws. None of that is in the format definition; all of it is in the code. A
+reference that only describes the happy path is describing the easy half of the
+problem.
+
+So this is the half that makes the rest worth trusting. When you are debugging why
+a document rendered blank, or deciding whether to feed user-uploaded IDML straight
+into a pipeline, or writing a tool that *generates* IDML and wants to know which
+shortcuts the renderer will forgive — the answer lives here, pinned to the actual
+behavior of `Document::open` and the parse layer beneath it, not to a hopeful
+reading of the spec. Where the renderer's behavior is a deliberate limitation
+rather than a feature, we say so plainly and badge it; honest gaps are more useful
+than flattering ones.
+
+The two pages under this section split the topic along its natural seam:
+
+- **[The error model](/docs/edge-cases/the-error-model)** is the reference: the
+  precise set of failures that stop a load, what each one means, and what a
+  consumer gets back. This is the line between "recoverable" and "fatal."
+- **[Graceful degradation](/docs/edge-cases/graceful-degradation)** is the other
+  side: everything the renderer *doesn't* stop on — the missing attributes that
+  become defaults, the unknown values it ignores, the cycles it caps, the missing
+  image it stands in for. The forgiving reads that keep an imperfect document
+  rendering instead of failing.
+
+Read the error model first if you want to know what will make a load fail outright;
+read graceful degradation if you want to know what will quietly change what you
+see on the page.

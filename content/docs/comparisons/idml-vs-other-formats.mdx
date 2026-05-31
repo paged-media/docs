@@ -1,0 +1,164 @@
+---
+title: IDML vs. other formats
+description: Honest, side-by-side comparisons of IDML with InDesign's native INDD binary, fixed-form PDF, reflowing HTML and CSS, and structure-only XML — what each format keeps and what it gives up.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+**IDML is the open, editable, fully-composed middle ground between a locked binary, a frozen PDF, a reflowing web page, and structure-only XML.**
+
+**In short:** Four neighbors define IDML by contrast. **INDD** is InDesign's native
+binary — the same document, but fast and exact for one application instead of open
+and portable. **PDF** is final-form: it freezes the layout into fixed marks you can
+view and print everywhere but not easily re-edit. **HTML and CSS** describe
+*continuous, reflowing* content for screens of any size, not fixed pages. And
+**structure-only XML** — office formats, DocBook, and the like — captures what
+content *means* but leaves the finished visual layout out. IDML keeps all three at
+once: open and readable like XML, fully composed like a PDF, and still editable like
+the native file. This page compares each pairing fairly — every one of these formats
+is excellent at its own job.
+
+The point of these comparisons isn't to declare IDML the winner. It's to locate it.
+Every format here makes a deliberate trade, and IDML's identity is the particular
+trade it refuses to make — it declines to be locked, declines to be frozen, declines
+to reflow, and declines to drop the layout. Seeing each neighbor clearly is the
+fastest way to understand what IDML is actually preserving.
+
+## IDML vs. INDD — the editable working file vs. the open interchange
+
+`.indd` is InDesign's **native document** format: a compact, proprietary binary that
+Adobe® InDesign® reads and writes as its working file. It is built for speed and
+fidelity inside one application — open, edit, save, repeat — and it carries the full
+live state of a document with no translation cost.
+
+IDML is the *same document*, but written out in the open. Where INDD is a packed
+binary tied to specific application versions and not publicly documented, IDML is the
+documented interchange form: the same pages, stories, styles, and resources expressed
+as human-readable XML inside a ZIP, against a published specification. (Our
+[What IDML is](/docs/foundations/what-is-idml) page covers this lineage in depth.)
+
+The trade is straightforward and fair. INDD is faster, more compact, and the
+canonical thing InDesign actually works in — but only InDesign fully understands it,
+and a future version may change it. IDML is larger and a step removed from the live
+editing model, but anyone can read it, any tool can generate or transform it, and it
+is meant to survive across versions and applications. You save INDD to *keep
+working*; you produce IDML to *move the document somewhere else* — into another
+version, another tool, or a renderer like Paged. Same document, two jobs.
+
+## IDML vs. PDF — final-form pixels vs. editable intent
+
+PDF is the great **final-form** format: a page described as the exact marks to place
+— this glyph at this position, this rule, this image — so that it looks identical
+everywhere, prints reliably, and needs no access to the original fonts, styles, or
+application logic to display. That fixity is its genius. A PDF is a faithful,
+portable *photograph* of the finished page.
+
+IDML describes the page from the other end. It doesn't say "place this glyph here";
+it says "this story uses this paragraph style and flows through this frame." It
+captures the *intent and structure* that a layout was composed from, and leaves the
+final placement of every glyph to a renderer. The two formats sit at opposite ends of
+the same pipeline: IDML is the editable *recipe*, PDF is the cooked *result*.
+
+This is why you can't treat one as a drop-in for the other. From IDML a renderer can
+recompose the document — reflow a corrected paragraph, swap a style, re-break the
+pages — because the structure is still there. A PDF has already committed those
+decisions to fixed marks; editing it means patching a finished image, not re-running
+the layout. Conversely, IDML on its own isn't something you hand to a printer or a
+viewer, because it isn't pixels yet. You reach for PDF when the layout is *done and
+must look the same everywhere*; you reach for IDML when the layout still needs to be
+*read, changed, or regenerated*. Producing a faithful PDF *from* IDML is exactly the
+kind of job a renderer like Paged exists to do.
+
+## IDML vs. HTML and CSS — continuous reflow vs. fixed pages
+
+HTML and CSS are the language of **continuous media**. An HTML document is a tree of
+semantic content; CSS styles it; and the result reflows to fit whatever viewport it
+lands in — a phone, a wide monitor, a resized window. There are no inherent page
+edges. Content simply flows down an effectively unbounded canvas, and that
+adaptability is precisely what makes the web work across countless screen sizes.
+
+IDML describes the opposite world: **paged media**, where the surface is finite and
+fixed. A page has real edges, a known size, and a definite spot for every element,
+and content must *break* across pages rather than reflow to fit. (The
+[What is paged media](/docs/foundations/what-is-paged-media) page unpacks why that
+constraint is the whole source of layout's difficulty.) Where CSS asks "how should
+this adapt as the window changes?", IDML answers a question CSS rarely needs to:
+"where exactly does this sit on *this* page, and what carries to the next one?"
+
+It's worth being fair to both directions here. The web has grown real paged
+capabilities — CSS has a `@page` model and fragmentation rules, and "paged" renderers
+exist that turn HTML and CSS into print-quality PDFs. And IDML content can be
+exported toward the web. But the *default assumption* of each format is opposite:
+HTML and CSS assume reflow and treat fixed pages as a special mode; IDML assumes a
+composed, fixed page and treats reflow as something a downstream tool does. You choose
+HTML and CSS when the content must adapt to unknown screens; you choose IDML when the
+content is composed for a known, bounded page and that composition must be preserved.
+
+## IDML vs. structure-only XML — meaning vs. full visual layout
+
+A whole family of XML formats captures a document's *structure and meaning* without
+committing to a finished visual layout: word-processing and office XML formats,
+**DocBook**, DITA, and similar. They model headings, paragraphs, lists, tables,
+metadata, and semantic roles cleanly, and they're portable and toolable for exactly
+that reason. Their deliberate stance is that *presentation is a separate concern* —
+the same DocBook source might be rendered to a web page, a PDF, or a manual, each with
+its own styling decided elsewhere.
+
+IDML shares their openness — it is XML, readable and transformable — but it makes the
+opposite commitment about layout. It doesn't stop at "this is a heading"; it carries
+the *fully composed page*: where frames sit in real coordinates, how stories thread
+through them, which master spread a page derives from, the precise styling and
+geometry. The structure is there *and* the visual layout is there. A DocBook file
+tells you what the document is; an IDML file tells you what the document is *and
+exactly how it was laid out on the page*.
+
+The trade is one of scope, and each side is right for its purpose. Structure-only XML
+is lighter, more presentation-agnostic, and ideal when one source must feed many very
+different outputs. IDML is heavier and opinionated about layout, which is precisely
+what you want when the layout itself is the content you're trying to preserve, move,
+or render faithfully. (Note the difference from IDML's *own* optional structure layer:
+IDML can also carry tagged-XML semantics alongside its layout — that's a complement to
+the visual model, not a replacement for it.)
+
+## Frequently asked questions
+
+**What is the difference between IDML and INDD?**
+INDD is InDesign's native binary working file — compact, fast, proprietary, and tied
+to specific application versions. IDML is the open, documented interchange version of
+the same document, written as XML inside a ZIP. You save INDD to keep working inside
+InDesign; you produce IDML to move the document to another version, another tool, or a
+renderer.
+
+**Is IDML a replacement for PDF?**
+No — they sit at opposite ends of the same pipeline. PDF is a final-form format that
+freezes a layout into fixed marks so it looks identical everywhere and prints
+reliably. IDML describes the editable *intent and structure* a layout was composed
+from, before it becomes pixels. You use IDML when the document still needs to be read,
+edited, or regenerated, and PDF when it's finished and must look the same everywhere.
+A renderer can produce a faithful PDF *from* IDML.
+
+**Why not just use HTML and CSS instead of IDML?**
+HTML and CSS are built for continuous, reflowing content that adapts to any screen
+size, with no inherent page edges. IDML is built for paged media: fixed-size pages
+with precise positions, where content must break across pages rather than reflow.
+When the layout is composed for a known, bounded page and that composition must be
+preserved, IDML expresses it directly; HTML and CSS treat fixed pages as a special
+mode layered on top of reflow.
+
+**How is IDML different from DocBook or office XML?**
+DocBook, DITA, and office XML capture a document's structure and meaning — headings,
+paragraphs, tables, roles — but deliberately leave the finished visual presentation
+to be decided downstream. IDML captures the structure *and* the fully composed page:
+real coordinates, threaded stories, master spreads, precise styling. Structure-only
+XML is ideal when one source must feed many different outputs; IDML is ideal when the
+layout itself is what you need to preserve.
+
+**Which format should I choose?**
+It depends on what you need to do next. Choose a native binary to keep working in one
+application, PDF to deliver a finished and unchangeable page, HTML and CSS for content
+that must adapt to any screen, and structure-only XML when presentation is a separate
+concern. Choose IDML when you need an open, editable description of a fully composed
+paged layout — see [Where IDML fits](/docs/comparisons/where-idml-fits) for the
+decision in practical terms.

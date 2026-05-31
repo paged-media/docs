@@ -1,0 +1,32 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "anchored-frame",
+  "title": "A rectangle anchored inside a run",
+  "tier": "pro",
+  "chapter": "anchored-inline-objects",
+  "concept": "A Rectangle nested inside a CharacterStyleRange is an anchored object; the parser reads it (geometry + AnchoredObjectSetting) onto the host paragraph instead of treating it as a free spread item.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Stories/Story_ustory.xml",
+    "language": "xml",
+    "label": "Stories/Story_ustory.xml"
+  },
+  "views": ["raw", "annotated", "tree"],
+  "annotations": [
+    { "lines": "5", "note": "The host run. The anchored object is a child of this CharacterStyleRange, not a sibling of the frame on the spread." },
+    { "lines": "6", "note": "Content comes first — the literal text the object is anchored into." },
+    { "lines": "7", "note": "A Rectangle nested directly inside the run is an anchored object. GeometricBounds and FillColor are read just like a spread-level frame; the bounds give it a 36x72pt box." },
+    { "lines": "8", "note": "AnchoredObjectSetting carries the placement intent. AnchoredPosition=\"InlinePosition\" requests inline (glyph-space) anchoring; AnchorPoint names which corner of the object lands on the anchor." }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 1,
+    "paragraphs": 1,
+    "runs": 1
+  },
+  "pathological": false,
+  "license": "MIT"
+}

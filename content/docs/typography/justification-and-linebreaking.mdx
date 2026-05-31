@@ -1,0 +1,88 @@
+---
+title: Justification and line-breaking
+description: The Justification values, how the composer breaks a paragraph into lines, and where its line-breaking and hyphenation diverge from InDesign.
+tier: pro
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+A paragraph's `Justification` says how its lines align in the column, and that
+choice feeds into a harder question the composer answers next: *where* to break
+each line so the chosen alignment looks good. This page covers both — the
+alignment values first, then how the line-breaker and hyphenator actually behave,
+including where they knowingly differ from InDesign.
+
+## The `Justification` values
+
+`Justification` rides on the `ParagraphStyleRange` (and on `ParagraphStyle`). It
+distinguishes alignment-only modes from justified modes — the latter stretch the
+space between words to fill the line:
+
+<AttrTable
+  element="ParagraphStyleRange"
+  rows={[
+    { attr: 'Justification = LeftAlign', type: 'enum', support: 'supported', note: 'Flush left, ragged right. The IDML default.' },
+    { attr: 'Justification = CenterAlign', type: 'enum', support: 'supported', note: 'Centred, ragged both sides.' },
+    { attr: 'Justification = RightAlign', type: 'enum', support: 'supported', note: 'Flush right, ragged left.' },
+    { attr: 'Justification = LeftJustified', type: 'enum', support: 'supported', note: 'Justified, last line flush left.' },
+    { attr: 'Justification = CenterJustified', type: 'enum', support: 'supported', note: 'Composed as Center (the centred-last-line variant maps to Center alignment).' },
+    { attr: 'Justification = RightJustified', type: 'enum', support: 'supported', note: 'Composed as Right (maps to Right alignment).' },
+    { attr: 'Justification = FullyJustified', type: 'enum', support: 'supported', note: 'Every line, including the last, stretched. Currently composed the same as LeftJustified.' },
+    { attr: 'Justification = ToBindingSide', type: 'enum', support: 'parsed-not-rendered', note: 'Binding-aware; falls back to LeftAlign until binding side is plumbed through.' },
+    { attr: 'Justification = AwayFromBindingSide', type: 'enum', support: 'parsed-not-rendered', note: 'Binding-aware; falls back to RightAlign.' },
+  ]}
+/>
+
+The value is parsed into a typed enum at read time, so an unrecognised string is
+not silently misaligned — it simply resolves to the left-aligned default. Two
+points of honesty in the table above: `FullyJustified` is composed the same as
+`LeftJustified` today (the distinction round-trips losslessly but does not yet
+change the last line), and the two binding-aware values fall back to plain
+left/right because binding side is a document-level setting the layout does not
+yet read. <SupportBadge status="parsed-not-rendered" note="ToBindingSide / AwayFromBindingSide fall back to Left / Right; binding side not yet plumbed through. core/crates/paged-parse/src/story.rs" />
+
+## How the composer breaks lines
+
+The composer does **not** break greedily line by line. It builds a Knuth–Plass
+item stream for the whole paragraph — boxes (glyph runs), glue (inter-word space
+with a desired width and a stretch/shrink band), and penalties (break
+opportunities) — and runs a total-fit pass that minimises the badness across the
+*entire* paragraph at once, the way InDesign's Paragraph Composer does. That is
+why moving one word can re-flow lines above it: the algorithm is weighing all the
+breaks together, not committing to each line in isolation.
+
+The space band is shaped by the paragraph's spacing preferences: the desired
+word spacing scales the natural space width, and stretch/shrink ratios set how
+far that space may grow or compress before a break is preferred elsewhere. When
+the breaker can't find a feasible set of breaks at the configured tolerance — for
+example a single token wider than the column — it relaxes the tolerance and tries
+again rather than failing the paragraph.
+
+### Calibration is ongoing
+
+The shape of the algorithm matches InDesign; the exact *weights* — tolerance,
+looseness, and the glue stretch/shrink ratios — are still being calibrated against
+InDesign's output on a reference corpus. So line breaks are close to InDesign's
+but not yet guaranteed identical on every paragraph; expect occasional divergence
+in where a specific line ends until the penalty weights are locked in. <SupportBadge status="supported" note="Knuth–Plass total-fit is implemented and used; penalty-weight calibration against InDesign's Paragraph Composer is in progress. core/crates/paged-text/src/compose.rs" />
+
+## Hyphenation is a heuristic
+
+When hyphenation is enabled, the composer can break inside a word at a hyphenation
+point, paying a penalty so it only does so when it improves the paragraph fit. The
+hyphenation points themselves come from **TeX (Liang) patterns**, by language — a
+compact, embedded pattern set that needs no external dictionary and works the same
+on native and WASM builds.
+
+InDesign uses Proximity's licensed hyphenation dictionaries, which we do not ship.
+The TeX patterns are the same family of algorithm and agree the vast majority of
+the time, but on some words they place a break one syllable differently. The
+result is a small, known divergence in *where* a word hyphenates — not in whether
+the paragraph is correct. <SupportBadge status="supported" note="Hyphenation via TeX patterns (hypher); Proximity dictionary not licensed — minor break-position divergence vs InDesign. core/crates/paged-text/src/hyphenate.rs" />
+
+A related gap sits on the CJK side. The composer enforces a small built-in set of
+hard *kinsoku* (line-break-forbidden) rules — roughly the characters that may not
+start or end a line — but it does not consult IDML's named `KinsokuSet` tables or
+the full JIS X 4051 line-composition rules. The paragraph's `KinsokuType` toggles
+the built-in enforcement on; the finer per-set flavour is not yet wired. <SupportBadge status="parsed-not-rendered" note="KinsokuSet / MojikumiTable references parsed onto the paragraph; only a built-in hard-kinsoku heuristic is enforced, not the named tables. core/crates/paged-parse/src/story.rs" />

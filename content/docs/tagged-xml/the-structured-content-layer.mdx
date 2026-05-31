@@ -1,0 +1,178 @@
+---
+title: The structured-content layer
+description: The element vocabulary of IDML's tagged-XML layer — XMLElement, XMLAttribute, XMLComment, XMLInstruction, the XMLStory in BackingStory.xml, the XMLTag entries in Tags.xml, and the maps in Mapping.xml — documented as format facts.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+This page is a **format reference** for the tagged-XML layer. Every element and
+attribute name below is a fact drawn from the IDML element vocabulary; the
+descriptions and the order are ours, arranged so the parts build on each other.
+None of it is read by the Paged renderer — every construct on this page is
+**Not yet parsed**, and the support column says so. To understand the parser
+behaviour behind that label, see
+[why it's not parsed yet](/docs/tagged-xml/why-its-not-parsed-yet).
+
+The layer spans three parts of the package:
+
+| Part | Holds |
+| --- | --- |
+| `XML/Tags.xml` | the tag vocabulary — the names you may apply |
+| `XML/BackingStory.xml` | the structure tree, plus any tagged-but-unplaced content |
+| `XML/Mapping.xml` | tag-to-style and style-to-tag mappings |
+
+## `<XMLTag>` — the vocabulary (`Tags.xml`)
+
+`XML/Tags.xml` lists the tags a document defines, one `<XMLTag>` per name. A tag
+is just a named, optionally coloured label; it carries no content of its own.
+Other parts of the layer refer to a tag by its `Self` id (conventionally of the
+form `XMLTag/<name>`).
+
+<AttrTable
+  element="XMLTag"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'not-yet-parsed', note: 'The tag id; referenced by MarkupTag elsewhere. Not read.' },
+    { attr: 'Name', type: 'string', support: 'not-yet-parsed', note: 'The tag name as shown in the InDesign Tags panel. Not read.' },
+  ]}
+/>
+
+`<XMLTag>` also carries a `TagColor` child element — the swatch shown beside the
+tag in the UI. Its value is either a UI-colour name (an `InDesignUIColor`
+enumeration value such as `Yellow`) or an explicit RGB triple. It is editorial
+chrome only and, like the rest of the tag, is not parsed.
+<SupportBadge status="not-yet-parsed" note="XMLTag/TagColor" />
+
+## `<XMLElement>` — the structure tree (`BackingStory.xml`)
+
+The structure itself is a tree of `<XMLElement>` nodes. Each node names the tag
+it applies (`MarkupTag`) and may either point at content already placed in the
+layout or contain content directly. Nesting `<XMLElement>` inside `<XMLElement>`
+builds the document's XML hierarchy.
+
+<AttrTable
+  element="XMLElement"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'not-yet-parsed', note: 'The element id within the tree. Not read.' },
+    { attr: 'MarkupTag', type: 'string (ref to an XMLTag Self)', support: 'not-yet-parsed', note: 'Which tag this element applies. Not read.' },
+    { attr: 'XMLContent', type: 'string (ref to a placed item Self)', support: 'not-yet-parsed', note: 'Links the element to placed content — a Story, a Rectangle, a TextFrame. Used by the top-level element of a tagged story. Not read.' },
+    { attr: 'NoTextMarker', type: 'enumeration (XMLNoTextMarker)', support: 'not-yet-parsed', note: 'Marks elements such as Table and Cell that have no marker character in the layout. Not read.' },
+  ]}
+/>
+
+The two ways an `<XMLElement>` relates to content are worth keeping straight:
+
+- **It references placed content.** When the tagged content already lives in the
+  layout, the element sets `XMLContent` to that item's `Self` id — a `Story`, or a
+  page item like `Rectangle` or `TextFrame`. The characters or the frame stay in
+  their layout part; the element only labels them.
+- **It contains content.** An `<XMLElement>` may directly hold child
+  `<XMLElement>` nodes, `<XMLAttribute>`, `<XMLComment>`, and `<XMLInstruction>`
+  nodes, plus `<Content>` (a run of text) and `<Br>` (a break) — and, for
+  not-yet-placed material, the same page-item and style-range elements that can
+  appear in a story.
+
+### `<XMLAttribute>`
+
+XML attributes attached to a tagged element. A flat name/value pair.
+
+<AttrTable
+  element="XMLAttribute"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'not-yet-parsed', note: 'The attribute id. Not read.' },
+    { attr: 'Name', type: 'string', support: 'not-yet-parsed', note: 'The attribute name. Not read.' },
+    { attr: 'Value', type: 'string', support: 'not-yet-parsed', note: 'The attribute value. Not read.' },
+  ]}
+/>
+
+### `<XMLComment>`
+
+An XML comment recorded inside the structure tree.
+
+<AttrTable
+  element="XMLComment"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'not-yet-parsed', note: 'The comment id. Not read.' },
+    { attr: 'StoryOffset', type: 'string (ref to a CharacterStyleRange Self)', support: 'not-yet-parsed', note: 'Where the comment sits in the text flow. Not read.' },
+    { attr: 'Value', type: 'string', support: 'not-yet-parsed', note: 'The comment text. Not read.' },
+  ]}
+/>
+
+### `<XMLInstruction>`
+
+An XML processing instruction recorded inside the structure tree.
+
+<AttrTable
+  element="XMLInstruction"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'not-yet-parsed', note: 'The instruction id. Not read.' },
+    { attr: 'StoryOffset', type: 'string (ref to a CharacterStyleRange Self)', support: 'not-yet-parsed', note: 'Where the instruction sits in the text flow. Not read.' },
+    { attr: 'Target', type: 'string', support: 'not-yet-parsed', note: 'The processing-instruction target. Not read.' },
+    { attr: 'Data', type: 'string', support: 'not-yet-parsed', note: 'The processing-instruction data. Not read.' },
+  ]}
+/>
+
+## `<XMLStory>` — the backing store (`BackingStory.xml`)
+
+`XML/BackingStory.xml` wraps the whole structure tree. Its root is the package's
+`idPkg:BackingStory` element (carrying a `DOMVersion`), and inside it is a single
+`<XMLStory>`.
+
+An `<XMLStory>` is structurally identical to a layout
+[`Story`](/docs/package-anatomy/content-parts): it can hold
+`ParagraphStyleRange` and `CharacterStyleRange` runs, `Table` elements, anchored
+frames, and everything else a story can — with `<XMLElement>` nodes interleaved to
+record the structure. Its job is twofold: to anchor the root of the XML tree, and
+to hold any content that has been **tagged but not yet placed** on a page. Once
+content is placed, the matching `<XMLElement>` points at the layout item by
+`XMLContent` instead.
+
+<AttrTable
+  element="XMLStory"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'not-yet-parsed', note: 'The backing-story id, distinct from any layout Story. Not read.' },
+  ]}
+/>
+
+<SupportBadge status="not-yet-parsed" note="XML/BackingStory.xml as a whole — the root idPkg:BackingStory reference is dropped by the design-map parser." />
+
+## `<XMLExportMap>` and `<XMLImportMap>` — the maps (`Mapping.xml`)
+
+`XML/Mapping.xml` records how tags relate to InDesign styles, in two directions.
+`<XMLExportMap>` carries the *style-to-tag* mapping (which style becomes which tag
+on export); `<XMLImportMap>` carries the *tag-to-style* mapping (which tag becomes
+which style on import). Both refer to a tag by an `XMLTag` `Self` id and to a
+style by a `ParagraphStyle` or `CharacterStyle` `Self` id.
+
+<AttrTable
+  element="XMLExportMap"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'not-yet-parsed', note: 'The map-entry id. Not read.' },
+    { attr: 'MarkupTag', type: 'string (ref to an XMLTag Self)', support: 'not-yet-parsed', note: 'The tag this entry maps. Not read.' },
+    { attr: 'MappedStyle', type: 'string (ref to a ParagraphStyle/CharacterStyle Self)', support: 'not-yet-parsed', note: 'The style mapped to the tag. Not read.' },
+    { attr: 'IncludeMasterPageStories', type: 'boolean', support: 'not-yet-parsed', note: 'Whether master-spread stories are mapped on export. Not read.' },
+    { attr: 'IncludePasteboardStories', type: 'boolean', support: 'not-yet-parsed', note: 'Whether pasteboard stories are mapped on export. Not read.' },
+    { attr: 'IncludeEmptyStories', type: 'boolean', support: 'not-yet-parsed', note: 'Whether empty stories are mapped on export. Not read.' },
+  ]}
+/>
+
+<AttrTable
+  element="XMLImportMap"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'not-yet-parsed', note: 'The map-entry id. Not read.' },
+    { attr: 'MarkupTag', type: 'string (ref to an XMLTag Self)', support: 'not-yet-parsed', note: 'The tag this entry maps. Not read.' },
+    { attr: 'MappedStyle', type: 'string (ref to a ParagraphStyle/CharacterStyle Self)', support: 'not-yet-parsed', note: 'The style mapped to the tag. Not read.' },
+  ]}
+/>
+
+## A note on these tables
+
+The names and value domains above are facts: they are the element and attribute
+names IDML uses, and any code that reads or writes this layer must match them
+exactly. The **support** column, by contrast, describes the Paged renderer, and
+it reads the same all the way down — *not yet parsed*. There is no example to
+embed for this chapter, because there is no rendered output to validate against:
+the renderer produces identical pages whether or not these parts are present. The
+[next page](/docs/tagged-xml/why-its-not-parsed-yet) shows exactly where in the
+engine that boundary sits.

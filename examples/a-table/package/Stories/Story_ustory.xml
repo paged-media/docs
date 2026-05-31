@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<idPkg:Story xmlns:idPkg="http://ns.adobe.com/AdobeInDesign/idml/1.0/packaging" DOMVersion="20.0">
+  <Story Self="ustory">
+    <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
+      <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+        <Table Self="utable" HeaderRowCount="1" FooterRowCount="0" BodyRowCount="2" ColumnCount="2"
+               AppliedTableStyle="TableStyle/$ID/[Basic Table]"
+               TopBorderStrokeColor="Color/Black" TopBorderStrokeWeight="1"
+               BottomBorderStrokeColor="Color/Black" BottomBorderStrokeWeight="1"
+               LeftBorderStrokeColor="Color/Black" LeftBorderStrokeWeight="1"
+               RightBorderStrokeColor="Color/Black" RightBorderStrokeWeight="1">
+          <Row Self="urow0" Name="0" SingleRowHeight="24"/>
+          <Row Self="urow1" Name="1" SingleRowHeight="24"/>
+          <Row Self="urow2" Name="2" SingleRowHeight="24"/>
+          <Column Self="ucol0" Name="0" SingleColumnWidth="120"/>
+          <Column Self="ucol1" Name="1" SingleColumnWidth="120"/>
+          <Cell Self="ucell00" Name="0:0" RowSpan="1" ColumnSpan="1"
+                TextTopInset="2" TextLeftInset="3" TextBottomInset="2" TextRightInset="3"
+                AppliedCellStyle="CellStyle/$ID/[None]" FillColor="Color/Black"
+                BottomEdgeStrokeColor="Color/Black" BottomEdgeStrokeWeight="1"
+                RightEdgeStrokeColor="Color/Black" RightEdgeStrokeWeight="1">
+            <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
+              <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+                <Content>Item</Content>
+              </CharacterStyleRange>
+            </ParagraphStyleRange>
+          </Cell>
+          <Cell Self="ucell10" Name="1:0" RowSpan="1" ColumnSpan="1"
+                TextTopInset="2" TextLeftInset="3" TextBottomInset="2" TextRightInset="3"
+                AppliedCellStyle="CellStyle/$ID/[None]" FillColor="Color/Black"
+                BottomEdgeStrokeColor="Color/Black" BottomEdgeStrokeWeight="1">
+            <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
+              <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+                <Content>Qty</Content>
+              </CharacterStyleRange>
+            </ParagraphStyleRange>
+          </Cell>
+          <Cell Self="ucell01" Name="0:1" RowSpan="1" ColumnSpan="1"
+                TextTopInset="2" TextLeftInset="3" TextBottomInset="2" TextRightInset="3"
+                AppliedCellStyle="CellStyle/$ID/[None]"
+                BottomEdgeStrokeColor="Color/Black" BottomEdgeStrokeWeight="1"
+                RightEdgeStrokeColor="Color/Black" RightEdgeStrokeWeight="1">
+            <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
+              <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+                <Content>Paper</Content>
+              </CharacterStyleRange>
+            </ParagraphStyleRange>
+          </Cell>
+          <Cell Self="ucell11" Name="1:1" RowSpan="1" ColumnSpan="1"
+                TextTopInset="2" TextLeftInset="3" TextBottomInset="2" TextRightInset="3"
+                AppliedCellStyle="CellStyle/$ID/[None]"
+                BottomEdgeStrokeColor="Color/Black" BottomEdgeStrokeWeight="1">
+            <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
+              <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+                <Content>12</Content>
+              </CharacterStyleRange>
+            </ParagraphStyleRange>
+          </Cell>
+          <Cell Self="ucell02" Name="0:2" RowSpan="1" ColumnSpan="1"
+                TextTopInset="2" TextLeftInset="3" TextBottomInset="2" TextRightInset="3"
+                AppliedCellStyle="CellStyle/$ID/[None]"
+                RightEdgeStrokeColor="Color/Black" RightEdgeStrokeWeight="1">
+            <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
+              <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+                <Content>Toner</Content>
+              </CharacterStyleRange>
+            </ParagraphStyleRange>
+          </Cell>
+          <Cell Self="ucell12" Name="1:2" RowSpan="1" ColumnSpan="1"
+                TextTopInset="2" TextLeftInset="3" TextBottomInset="2" TextRightInset="3"
+                AppliedCellStyle="CellStyle/$ID/[None]">
+            <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
+              <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+                <Content>4</Content>
+              </CharacterStyleRange>
+            </ParagraphStyleRange>
+          </Cell>
+        </Table>
+      </CharacterStyleRange>
+    </ParagraphStyleRange>
+  </Story>
+</idPkg:Story>

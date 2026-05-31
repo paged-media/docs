@@ -1,12 +1,85 @@
 ---
 title: Sections, numbering & variables
+description: How a document labels its pages and bakes computed text — and why those two things are entangled at export.
 tier: intermediate
 diataxis: explanation
-status: stub
+status: published
+owner: paged-docs
 ---
 
-Document-level section starts, page numbering, and text variables.
+A finished document rarely numbers its pages "1, 2, 3" from cover to colophon.
+Front matter runs in lowercase Roman, the body restarts at Arabic 1, an appendix
+carries a "B-" prefix. And the text itself often *quotes* those numbers — a footer
+that says "page iv", a cross-reference that says "see page 42", a running header
+that repeats the current chapter title. None of that is typed by hand. InDesign
+computes it, and IDML has to write it down so the document round-trips.
 
-> 🚧 Being written. This is a placeholder section landing; it is excluded from
-> search until it reaches real depth. Its order in the reference is justified by
-> reader progression, not by the source spec's organization (clean-room §6.1).
+Two mechanisms do that work, and this chapter is about the seam between them at the
+**document level**:
+
+- **Sections** decide what a page is *called*. A `Section` element breaks the page
+  range into runs with their own start number, numbering style, and prefix.
+- **Text variables** are computed strings that get *placed* in the flowing text —
+  a file name, a chapter number, the current page number, a running header.
+
+They are entangled because a variable like the page number depends on the section
+that owns the page. InDesign resolves both at export time and writes the *answers*
+into the package. Understanding which answers are durable facts in the IDML and
+which are stale snapshots is the whole point of reading this chapter.
+
+## What the package actually carries
+
+When InDesign exports, it has already laid the document out. So it does not store a
+recipe that a reader has to re-run; it stores the *result*:
+
+- Every `Page` element carries a `Name` — the label the page showed in InDesign,
+  with the section's numbering style and prefix already applied. Page four of the
+  front matter is `Name="iv"`, not `Name="4"` plus a "make this Roman" instruction.
+- Every placed variable is written as a `TextVariableInstance` whose `ResultText`
+  attribute is the literal string the variable evaluated to.
+
+This is good news and bad news. The good news: a reader (our parser included) can
+display a faithful copy of the document without implementing InDesign's numbering
+engine. The bad news: those baked answers can drift. Move a paragraph and the
+running header's `ResultText` is now wrong; repaginate and a baked page label no
+longer matches where the page lands. InDesign fixes drift by recomposing. A reader
+that only consumes the IDML sees the snapshot.
+
+## How our renderer treats each piece
+
+The parser and renderer lean into the "answers are already here" design, and they
+are honest about what they do not reconstruct:
+
+- **Page labels are trusted.** The renderer uses each page's `Name` as its
+  user-visible label and substitutes that label wherever an auto-page-number marker
+  appears. See [sections and numbering](/docs/sections-numbering-variables/sections-and-numbering).
+- **The `Section` element itself is not parsed.** We never read the numbering
+  *rules* — because we never need to recompute a label that `Page.Name` already
+  carries. The cost is that a document with no `Page.Name` (rare; mostly synthetic
+  fixtures) falls back to plain 1-based counting with no section awareness.
+- **Variable values are inlined verbatim.** A `TextVariableInstance` contributes its
+  `ResultText` to the run text exactly as written; the value is never recomputed.
+  See [text variables](/docs/sections-numbering-variables/text-variables).
+
+## Two altitudes of "text variable"
+
+This chapter documents the **document-level** view: where a variable is *defined*
+(the `TextVariable` element under `Document`) and how its baked value rides along in
+a story (`ResultText`). That is enough to extract or re-display a document.
+
+The **run-level** mechanics — how a `TextVariableInstance` and the
+`<?ACE 18?>` / `<?ACE 19?>` page-number markers turn into characters inside a
+specific `CharacterStyleRange`, and which private-use codepoints stand in for the
+live page number — are covered once, in
+[stories & text → text variables](/docs/stories-text/text-variables). Read that page
+for the marker codepoints and the extraction details; read this chapter for where the
+definitions live and how sections shape the numbers the variables quote.
+
+## Where to go next
+
+- [Text variables](/docs/sections-numbering-variables/text-variables) — the
+  `TextVariable` definition, its `VariableType` kinds, and how an instance carries
+  its frozen `ResultText`.
+- [Sections and numbering](/docs/sections-numbering-variables/sections-and-numbering)
+  — how `Page.Name` drives the displayed number, what `Section` would add, and the
+  naive fallback when no name is present.

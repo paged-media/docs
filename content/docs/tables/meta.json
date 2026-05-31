@@ -1,4 +1,9 @@
 {
   "title": "Tables",
-  "pages": ["index"]
+  "pages": [
+    "index",
+    "the-table-model",
+    "rows-columns-cells",
+    "tables-in-text-flow"
+  ]
 }

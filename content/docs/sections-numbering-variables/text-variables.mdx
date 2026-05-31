@@ -1,0 +1,104 @@
+---
+title: Text variables
+description: The document-level TextVariable definition, its VariableType kinds, and the frozen ResultText an instance carries.
+tier: intermediate
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+A text variable is a named, computed string — a file name, a chapter number, a
+running header, a date — that InDesign places into the flowing text and re-derives
+whenever the document changes. IDML splits it into two parts at two altitudes: a
+**definition** that lives once under `Document` in the design map, and one or more
+**instances** that sit in the stories where the value actually appears.
+
+This page is the document-level reference: the `TextVariable` definition and the
+shape of the value an instance carries. The run-level mechanics — how an instance
+becomes characters inside a `CharacterStyleRange`, and how page-number markers
+differ — are documented once in
+[stories & text → text variables](/docs/stories-text/text-variables). This page
+links there rather than repeating it.
+
+## The definition: `TextVariable`
+
+Each text variable is declared by a `TextVariable` element directly under
+`Document` in `designmap.xml`. The parser records three things from it — the id, the
+display name, and the kind — at `paged-parse/src/designmap.rs:227`.
+
+<AttrTable
+  element="TextVariable (designmap.xml)"
+  rows={[
+    { attr: 'Self', type: 'string id (TextVariable/…)', support: 'supported', note: 'The id an instance references back to via AssociatedTextVariable.' },
+    { attr: 'Name', type: 'string', support: 'supported', note: 'The variable’s display name in InDesign, e.g. "Chapter Number" or "File Name".' },
+    { attr: 'VariableType', type: 'VariableTypes enumeration', support: 'parsed-not-rendered', note: 'What kind of variable it is. Recorded, but not used to recompute a value — the baked ResultText is trusted instead.' },
+  ]}
+/>
+
+### `VariableType` kinds
+
+`VariableType` names the rule InDesign *would* run to produce the value. The
+enumeration covers the variable families InDesign offers:
+
+<AttrTable
+  element="VariableType values"
+  rows={[
+    { attr: 'CustomTextType', type: 'enum', support: 'parsed-not-rendered', note: 'A fixed user-supplied string.' },
+    { attr: 'FileNameType', type: 'enum', support: 'parsed-not-rendered', note: 'The document’s file name.' },
+    { attr: 'ChapterNumberType', type: 'enum', support: 'parsed-not-rendered', note: 'The chapter number for the document (book context).' },
+    { attr: 'LastPageNumberType', type: 'enum', support: 'parsed-not-rendered', note: 'The last page number — e.g. for "page 3 of 12" footers.' },
+    { attr: 'OutputDateType / CreationDateType / ModificationDateType', type: 'enum', support: 'parsed-not-rendered', note: 'A date stamp (output, creation, or last-modified).' },
+    { attr: 'MatchParagraphStyleType / MatchCharacterStyleType', type: 'enum', support: 'parsed-not-rendered', note: 'Running header / footer: the text of the nearest paragraph or character run in a named style.' },
+    { attr: 'XrefPageNumberType / XrefChapterNumberType', type: 'enum', support: 'parsed-not-rendered', note: 'The page or chapter number of a cross-reference target.' },
+    { attr: 'LiveCaptionType', type: 'enum', support: 'parsed-not-rendered', note: 'A caption derived from a placed image’s metadata.' },
+  ]}
+/>
+
+We record `VariableType` so a consumer can tell *what* a variable is, but the
+renderer never acts on it: it does not run the rule. A `ChapterNumberType` variable
+is parsed, but its number is not re-derived from the book — the parsed value is the
+frozen `ResultText` on the instance, not a recomputed chapter count.
+
+<SupportBadge status="parsed-not-rendered" note="VariableType is recorded but never executed; chapter-number and running-header rules are parsed-not-acted — paged-parse/src/designmap.rs:227" />
+
+## The instance: `TextVariableInstance` and `ResultText`
+
+Where the variable's value appears in the text, the story carries a
+`TextVariableInstance` element inside a `CharacterStyleRange`'s `Content`. It holds
+the value verbatim in `ResultText` and points back at its definition through
+`AssociatedTextVariable`. When the parser reaches one, it appends `ResultText` to the
+current run — `paged-parse/src/story.rs:1643` — so by the time you hold a run string,
+the variable is just more characters.
+
+<AttrTable
+  element="TextVariableInstance (inside a CharacterStyleRange)"
+  rows={[
+    { attr: 'ResultText', type: 'string', support: 'supported', note: 'The computed value as of the last export, inlined into the run text exactly as written.' },
+    { attr: 'AssociatedTextVariable', type: 'string ref (TextVariable/…)', support: 'parsed-not-rendered', note: 'Back-reference to the definition. Read, but not used to recompute the value.' },
+    { attr: 'Self / Name', type: 'string id / string', support: 'parsed-not-rendered', note: 'Identity of the instance; not needed to produce the run text.' },
+  ]}
+/>
+
+`ResultText` is a **snapshot** — whatever InDesign computed the last time it composed
+the document. A "Running Header" instance carries the header text as of export; a
+"File Name" instance carries the file name as of export. The renderer inlines that
+snapshot; it does not re-derive the value from the current layout. So a running
+header will not update if you move the paragraph it tracks, and a chapter number will
+not change if the document's place in a book changes.
+
+<SupportBadge status="parsed-not-rendered" note="ResultText is the frozen value from the last export; it is not recomputed at render time — paged-parse/src/story.rs:1643" />
+
+## What this means in practice
+
+- **Re-display is faithful, recomputation is not.** Because the value is baked, a
+  consumer reproduces exactly what InDesign last showed — but it will not catch up to
+  edits made outside InDesign.
+- **The page-number variable is a separate path.** The current- and next-page
+  numbers are *not* stored as `TextVariableInstance`; they are processing
+  instructions (`<?ACE 18?>` / `<?ACE 19?>`) that resolve to the live page label at
+  render time. That mechanism — and the private-use marker codepoints it uses — is
+  detailed in [stories & text → text variables](/docs/stories-text/text-variables),
+  and the labels it resolves to are explained in
+  [sections and numbering](/docs/sections-numbering-variables/sections-and-numbering).
+- **For extraction**, a `TextVariableInstance` contributes its `ResultText` like any
+  other characters; see [extract all text](/docs/stories-text/extract-all-text).

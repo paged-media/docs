@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<idPkg:Story xmlns:idPkg="http://ns.adobe.com/AdobeInDesign/idml/1.0/packaging" DOMVersion="20.0">
+  <Story Self="ustory">
+    <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
+      <Properties>
+        <TabList type="list">
+          <ListItem type="record">
+            <TabStop Self="utab1" Position="144" Alignment="LeftAlign" AlignmentCharacter="." Leader=""/>
+          </ListItem>
+          <ListItem type="record">
+            <TabStop Self="utab2" Position="432" Alignment="RightAlign" AlignmentCharacter="." Leader="."/>
+          </ListItem>
+        </TabList>
+      </Properties>
+      <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+        <Content>Chapter</Content>
+        <Tab/>
+        <Content>Typography</Content>
+        <Tab/>
+        <Content>261</Content>
+      </CharacterStyleRange>
+    </ParagraphStyleRange>
+  </Story>
+</idPkg:Story>

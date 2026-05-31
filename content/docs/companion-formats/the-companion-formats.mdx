@@ -1,0 +1,112 @@
+---
+title: The companion formats
+description: Snippets, libraries, story-only/InCopy files, and assignment files — what each contains and how it differs from a full IDML package.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+Four file kinds reuse IDML's element vocabulary outside the package. This page
+states each as a fact: its name and extension, the marker that identifies it,
+what it carries, and the precise way it differs from a full `.idml` package. None
+is something Paged can open.
+
+<SupportBadge status="not-yet-parsed" note="every format on this page" />
+
+## The shared shape: standalone XML, not a package
+
+A full IDML document is a ZIP archive — a `mimetype` entry, a `designmap.xml`
+root, and the parts the design map references. Every format below is the
+opposite: a single, standalone XML file with no archive wrapper and no design
+map. That one difference is what each "how it differs" row reduces to, and it is
+why none of them reaches Paged's reader.
+
+Three of these files announce themselves with a processing instruction at the top
+— an `aid` instruction whose attribute and value identify the kind. They are
+facts of the format, listed here so you can identify a file by inspection.
+
+<AttrTable
+  element="leading processing instruction"
+  rows={[
+    { attr: 'SnippetType="PageItem"', type: '<?aid SnippetType="PageItem"?>', support: 'not-yet-parsed', note: 'Marks an InDesign Snippet (and a library item).' },
+    { attr: 'SnippetType="InCopyInterchange"', type: '<?aid SnippetType="InCopyInterchange"?>', support: 'not-yet-parsed', note: 'Marks an InCopy ICML (story-only) file.' },
+    { attr: 'type="assignment"', type: '<?aid type="assignment"?>', support: 'not-yet-parsed', note: 'Marks an InCopy assignment file.' },
+  ]}
+/>
+
+## InDesign Snippets (`.idms`)
+
+A snippet is the elements of a single page captured into one XML file: the page
+items plus whatever styles, colors, and layers are needed to re-create and format
+them when the snippet is later placed into a document. It uses the same element
+names you find inside a package — `Spread` and `Story` for the items and their
+text, `ParagraphStyle`, `CharacterStyle`, and `Color` for the formatting those
+items depend on.
+
+How it differs from a package: a snippet is a fragment, not a document. It carries
+no `designmap.xml`, so nothing names a root or enumerates the document's stories;
+it is not a ZIP archive, so there is no mimetype to confirm. Its meaning is
+completed at placement time by the host document, which reconciles incoming names
+against what already exists (a `Color` of the same name already in the document
+wins over the one in the snippet, for instance). A renderer cannot resolve a
+fragment in isolation.
+
+<SupportBadge status="not-yet-parsed" note=".idms" />
+
+## Libraries
+
+A library is a collection of reusable items. The items themselves are InDesign
+snippets — so each entry carries the same `SnippetType="PageItem"` marker and the
+same fragment content as a standalone `.idms` file.
+
+How it differs from a package: a library is a container of fragments, not a
+document, and each fragment is subject to the same placement-time resolution as
+any snippet. There is no design map and no single document to render.
+
+<SupportBadge status="not-yet-parsed" note="library items (snippets)" />
+
+## Story-only / InCopy files (`.icml`)
+
+An ICML file holds one story — the text content and its formatting — with no page
+or spread geometry around it. It is the unit InDesign and InCopy exchange when an
+editor works on copy independently of layout. It is marked by the
+`SnippetType="InCopyInterchange"` instruction.
+
+How it differs from a package: it is text without a place to sit. A package's
+[stories](/docs/package-anatomy/content-parts) are reached through the design
+map's `StoryList` and laid into frames on spreads; an ICML file has neither a
+design map nor a spread, so there is no frame, no geometry, and no document
+identity. Paged builds a rendered document from frames on pages, and an ICML file
+supplies none of that scaffolding.
+
+<SupportBadge status="not-yet-parsed" note=".icml" />
+
+## Assignment files (`.icma`)
+
+An assignment file is InCopy's editorial bookkeeping: it records which stories are
+checked out to which editor as a unit of work. It is marked by the
+`type="assignment"` instruction rather than a `SnippetType`.
+
+How it differs from a package: it is workflow metadata, not content. It references
+stories rather than containing a renderable document, and like the others it is a
+standalone XML file with no design map and no archive wrapper. There is nothing
+here for a renderer to draw.
+
+<SupportBadge status="not-yet-parsed" note=".icma" />
+
+## Side by side
+
+<AttrTable
+  element="companion formats vs. a full package"
+  rows={[
+    { attr: 'InDesign Snippet (.idms)', type: 'standalone XML', support: 'not-yet-parsed', note: 'One page’s items + needed styles; placed into a document.' },
+    { attr: 'Library item', type: 'standalone XML (a snippet)', support: 'not-yet-parsed', note: 'A reusable snippet held in a collection.' },
+    { attr: 'InCopy ICML (.icml)', type: 'standalone XML', support: 'not-yet-parsed', note: 'One story’s text, no geometry; an editorial round-trip unit.' },
+    { attr: 'Assignment (.icma)', type: 'standalone XML', support: 'not-yet-parsed', note: 'Maps stories to editors; workflow metadata, not content.' },
+    { attr: 'IDML package (.idml)', type: 'ZIP archive', support: 'supported', note: 'mimetype + designmap.xml + parts — the unit Paged opens.' },
+  ]}
+/>
+
+Why each companion format is unsupported, and what supporting it would require, is
+the subject of [when each applies](/docs/companion-formats/when-each-applies).

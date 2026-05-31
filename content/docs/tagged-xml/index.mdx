@@ -1,12 +1,86 @@
 ---
 title: Tagged XML inside IDML
-tier: pro
+description: The structured-content layer that maps a document's text and page items onto a user-defined XML tree — and why Paged does not read it yet.
+tier: intermediate
 diataxis: explanation
-status: stub
+status: published
+owner: paged-docs
 ---
 
-The structured-content layer that maps document content onto XML tags.
+An IDML document carries two parallel views of the same content. One is the
+*layout* view you have met in [package anatomy](/docs/package-anatomy): stories
+hold the text, spreads place the frames, and styles decide how it all looks. The
+other is the *structured-content* view — a tree of XML tags that the author drew
+over the same words and page items so the document also reads as data.
 
-> 🚧 Being written. This is a placeholder section landing; it is excluded from
-> search until it reaches real depth. Its order in the reference is justified by
-> reader progression, not by the source spec's organization (clean-room §6.1).
+This chapter documents that second view: the **tagged-XML layer**. It is a true
+part of the format, present in every package, and worth knowing if you generate
+or post-process IDML. But it is the one place in this reference where we have to
+be plain up front:
+
+<SupportBadge status="not-yet-parsed" note="The Paged renderer reads the layout view, not the tagged-XML tree." />
+
+## What the layer is
+
+In InDesign you can tag content with your own XML structure: wrap a heading and
+its body in a `chapter` element, mark a price as a `price` element, and so on.
+That structure is independent of how the page looks. The same heading can be an
+`h1` in your XML and a "Heading 1" paragraph in the layout at the same time —
+they are two labels on one piece of content.
+
+When the document is written out as IDML, that structure does not vanish into the
+stories. It is recorded explicitly:
+
+- The **tags themselves** — the vocabulary of element names you may apply — live
+  in `XML/Tags.xml`.
+- The **structure** — which content sits inside which tagged element, and in what
+  order — lives in `XML/BackingStory.xml`, as a tree of `<XMLElement>` nodes.
+- The **mapping** between a tag and a paragraph or character style lives in
+  `XML/Mapping.xml`.
+
+A tagged element does not duplicate the content it covers. It *points* at it:
+text that has been placed in the layout is referenced by id, so the XML tree and
+the layout stories describe the same characters from two directions. Text that
+has been tagged but *not* yet placed on a page is held in the backing story
+itself, waiting.
+
+## Why a reader cares
+
+You will meet this layer for one of two reasons.
+
+If you **author or generate** IDML — say, to feed a publishing pipeline — the
+tagged-XML layer is how downstream tools find content by meaning rather than by
+position. Knowing the element names lets you read or write that structure
+deliberately.
+
+If you **render or inspect** IDML with Paged, you mostly care about the opposite:
+knowing that this layer exists, that it is safe to ignore for layout, and that
+its parts in the package are *not* a sign of content you are missing. The text
+you render comes from the [stories](/docs/package-anatomy/content-parts), not from
+the backing story.
+
+## The honest part
+
+Paged does not parse the tagged-XML tree. The parser opens the package, reads the
+design map, and follows it to the spreads, stories, and resources it needs to lay
+out pages. `XML/BackingStory.xml`, `XML/Tags.xml`, and `XML/Mapping.xml` are
+present in the archive — the parser even unzips them into memory — but nothing
+walks them, and the design map's reference to the backing story is dropped on the
+floor. A document renders identically whether or not it carries any XML tags.
+
+That is a deliberate scoping decision, not a bug, and this chapter treats it as a
+first-class fact rather than a footnote. The two pages that follow split the work
+cleanly:
+
+- [The structured-content layer](/docs/tagged-xml/the-structured-content-layer)
+  documents the element vocabulary — `<XMLElement>`, `<XMLAttribute>`,
+  `<XMLComment>`, `<XMLInstruction>`, the `<XMLStory>` in `BackingStory.xml`, the
+  `<XMLTag>` entries in `Tags.xml`, and the maps in `Mapping.xml` — as format
+  facts.
+- [Why it's not parsed yet](/docs/tagged-xml/why-its-not-parsed-yet) explains the
+  parser's actual behaviour, points at exactly where in the engine the layer is
+  skipped, and sketches what supporting it would take.
+
+Throughout, every construct carries a **Not yet parsed** badge. These pages
+describe the IDML format; they do not describe anything the Paged renderer acts
+on today.

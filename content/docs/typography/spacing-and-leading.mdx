@@ -1,0 +1,94 @@
+---
+title: Spacing and leading
+description: Tracking in 1/1000 em, Leading in points (Auto = point size × 1.2), baseline shift, and where kerning comes from — the per-run space adjustments the engine applies after shaping.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+Once a run's face is resolved and its glyphs are shaped, the engine layers on the
+per-run space adjustments the `CharacterStyleRange` requests: horizontal spacing
+between glyphs (`Tracking`), the vertical step between baselines (`Leading`), and
+a vertical nudge of the glyphs themselves (`BaselineShift`). Kerning is in this
+picture too, but it arrives differently — it comes from the font, not from an
+IDML attribute.
+
+## Tracking — uniform letter spacing
+
+`Tracking` adds the same amount of space to every glyph's advance in the run. Its
+unit is **1/1000 em** — InDesign's convention — so the space added per glyph
+scales with the type size. The engine converts it to points as
+`tracking ÷ 1000 × point_size` and adds that to each glyph's horizontal advance.
+At 12 pt, a `Tracking` of `100` adds `100 ÷ 1000 × 12 = 1.2` pt to every advance;
+a negative value tightens the run.
+
+Tracking is a **post-shape** adjustment: it changes advances *after* shaping, so
+it does not disturb the shaping decisions themselves — kerning pairs and ligatures
+are already chosen by the time tracking is applied. The composer measures runs
+*with* tracking included, so column fit and line-breaking see the tracked widths.
+
+## Leading — the baseline step
+
+`Leading` is the vertical distance from one line's baseline to the next, in
+points. It is carried as a typed child of the run's `Properties` element (like
+`AppliedFont`), and the parser reads it from there.
+
+When `Leading` is **absent**, the line uses **Auto leading**, which the engine
+computes as **point size × 1.2**. When a line mixes runs of different sizes, the
+auto value is driven by the **largest** point size on the line, so the tallest
+run sets the line's vertical rhythm. (InDesign exposes the 1.2 factor as a
+document-level `AutoLeading` percentage — 120% by default; the engine uses the
+120% default and does not yet read a per-document override of it.)
+
+## Baseline shift
+
+`BaselineShift` moves the run's glyphs off the baseline without changing the line
+step: positive lifts them up, negative drops them down, measured in points. The
+engine applies it per glyph at emit time, so it stacks cleanly on top of shaping
+and tracking. It is the mechanism behind manually raised footnote markers, small
+adjustments to inline symbols, and the like.
+
+<AttrTable
+  element="CharacterStyleRange"
+  rows={[
+    { attr: 'Tracking', type: 'double (1/1000 em)', support: 'supported', note: 'Uniform space added to every glyph advance. Applied after shaping; the composer measures with it included.' },
+    { attr: 'Leading', type: 'double (pt) — Properties child', support: 'supported', note: 'Baseline-to-baseline step. Absent ⇒ Auto = largest point size on the line × 1.2.' },
+    { attr: 'BaselineShift', type: 'double (pt)', support: 'supported', note: 'Per-glyph vertical offset; + lifts, − drops. Does not change the line step.' },
+  ]}
+/>
+
+## Kerning comes from the font
+
+There is no IDML attribute that carries a kerning *amount* between glyph pairs.
+Kerning is a property of the font, applied during shaping: the engine lets the
+shaper apply the face's OpenType `kern` data by default. What IDML *does* expose
+is a `KerningMethod` that selects *which* kerning to use, plus a `Ligatures`
+switch:
+
+- **`KerningMethod="Metrics"`** (the default) uses the font's built-in pair
+  kerning.
+- **`KerningMethod="Optical"`** asks InDesign to compute kerning from glyph
+  outlines instead. The engine does not have an optical-kerning pass yet, so it
+  **falls back to Metrics** — the two are tracked as distinct so an optical pass
+  can land later without disturbing anything else.
+- **`KerningMethod="None"`** disables kerning for the run entirely.
+- **`Ligatures="false"`** turns off standard ligatures (`liga` / `clig`); they are
+  on by default.
+
+<AttrTable
+  element="CharacterStyleRange"
+  rows={[
+    { attr: 'KerningMethod', type: 'Metrics | Optical | None', support: 'parsed-not-rendered', note: 'Metrics and None are honoured. Optical is parsed but falls back to Metrics until an optical-kerning pass lands.' },
+    { attr: 'Ligatures', type: 'boolean', support: 'supported', note: 'Standard ligatures (liga/clig). Default true; "false" disables them.' },
+  ]}
+/>
+
+<SupportBadge status="parsed-not-rendered" note='KerningMethod="Optical" — parsed and distinguished from Metrics, but no optical-kerning pass exists yet; it renders as Metrics. core/crates/paged-text/src/shape.rs' />
+
+A note on what is *not* here: IDML carries a long tail of OpenType and CJK spacing
+controls — discretionary ligatures, contextual alternates beyond the defaults,
+fractions, and the mojikumi/aki spacing tables for Japanese — that this engine
+does not expose as switches. Standard ligatures and metric kerning are the two
+font-driven features it applies; the rest of the OpenType feature surface is not
+in scope for the current shaper.
