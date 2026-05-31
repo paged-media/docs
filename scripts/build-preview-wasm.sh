@@ -41,11 +41,23 @@ echo "wasm-bindgen → $OUT_DIR"
 wasm-bindgen "$TARGET_DIR/paged_sdk.wasm" --target web --out-dir "$OUT_DIR" --out-name paged_sdk
 
 if command -v wasm-opt >/dev/null; then
-  echo "wasm-opt -Oz …"
-  wasm-opt -Oz "$OUT_DIR/paged_sdk_bg.wasm" -o "$OUT_DIR/paged_sdk_bg.wasm"
+  echo "wasm-opt -Oz ($(wasm-opt --version)) …"
+  # Keep reference-types/bulk-memory ON: wasm-bindgen's externref table relies on
+  # them, and an opt pass that drops the feature can rebind the exported
+  # __wbindgen_externrefs table to the fixed-size funcref table (see the guard
+  # below). Harmless on a correct binaryen; defensive on a marginal one.
+  wasm-opt -Oz --enable-reference-types --enable-bulk-memory \
+    "$OUT_DIR/paged_sdk_bg.wasm" -o "$OUT_DIR/paged_sdk_bg.wasm"
 else
   echo "warning: wasm-opt not found; shipping unoptimized wasm" >&2
 fi
+
+# Guard: some binaryen versions (e.g. Ubuntu apt's v116) miscompile the
+# reference-types tables so the live preview dies at runtime with
+# "WebAssembly.Table.grow(): failed to grow table by 4". Fail the build here
+# rather than deploy a dead preview. Runs locally and in CI.
+echo "verifying preview wasm …"
+node "$DOCS_ROOT/scripts/verify-preview-wasm.mjs" "$OUT_DIR/paged_sdk_bg.wasm"
 
 echo "done:"
 ls -lh "$OUT_DIR"

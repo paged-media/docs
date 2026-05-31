@@ -43,14 +43,25 @@ jobs:
           workspaces: core
           key: ${{ steps.core.outputs.sha }}
 
-      - name: toolchain — wasm-bindgen-cli (pinned) + binaryen
+      - name: toolchain — wasm-bindgen-cli (pinned) + binaryen (pinned)
         run: |
           WB=$(awk '/^name = "wasm-bindgen"$/{getline; gsub(/version = "|"/,""); print; exit}' core/Cargo.lock)
           echo "wasm-bindgen pin: $WB"
           if ! command -v wasm-bindgen >/dev/null || [ "$(wasm-bindgen --version | awk '{print $2}')" != "$WB" ]; then
             cargo install wasm-bindgen-cli --version "$WB"
           fi
-          sudo apt-get update -y && sudo apt-get install -y binaryen
+          # Do NOT use apt's binaryen: on ubuntu-latest it is v116, which
+          # miscompiles wasm-bindgen's reference-types tables and binds the
+          # exported __wbindgen_externrefs table to the fixed-size funcref table.
+          # The live preview then dies at runtime with
+          # "WebAssembly.Table.grow(): failed to grow table by 4". Pin a known-good
+          # release (matches the local toolchain; verify-preview-wasm.mjs guards it).
+          BINARYEN=126
+          curl -fsSL -o /tmp/binaryen.tgz \
+            "https://github.com/WebAssembly/binaryen/releases/download/version_${BINARYEN}/binaryen-version_${BINARYEN}-x86_64-linux.tar.gz"
+          tar -xzf /tmp/binaryen.tgz -C /tmp
+          echo "/tmp/binaryen-version_${BINARYEN}/bin" >> "$GITHUB_PATH"
+          "/tmp/binaryen-version_${BINARYEN}/bin/wasm-opt" --version
 
       - name: build the WebGPU preview wasm (paged-sdk → public/preview)
         run: CORE_DIR="$PWD/core" bash scripts/build-preview-wasm.sh
