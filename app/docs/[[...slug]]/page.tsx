@@ -4,7 +4,6 @@ import { DocsPage, DocsBody, DocsTitle, DocsDescription } from 'fumadocs-ui/page
 import { source } from '@/lib/source';
 import { getMDXComponents } from '@/components/mdx';
 import { DifficultyLabel } from '@/components/mdx/difficulty-label';
-import { SiteFooter } from '@/components/site-footer';
 import { pageRobots } from '@/lib/metadata';
 import type { Tier, Diataxis, Status } from '@/lib/frontmatter';
 
@@ -26,9 +25,6 @@ export default async function Page(props: PageProps) {
       <DocsBody>
         <MDX components={getMDXComponents()} />
       </DocsBody>
-      {/* Rendered here (not in the layout) so the block sits at the very bottom
-          of the page content rather than in a top grid cell. */}
-      <SiteFooter />
     </DocsPage>
   );
 }

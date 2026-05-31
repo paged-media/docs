@@ -2,15 +2,19 @@ import type { ReactNode } from 'react';
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { source } from '@/lib/source';
 import { baseOptions } from '@/app/layout.config';
+import { SiteFooter } from '@/components/site-footer';
 
-// NOTE: the SiteFooter is rendered at the END of each page's content (see
-// app/docs/[[...slug]]/page.tsx), NOT here. DocsLayout lays its children out in
-// a CSS grid, so a trailing child lands in a top grid cell instead of below the
-// article — which put the whole footer block at the top of the page.
+// The SiteFooter is a SIBLING of DocsLayout, not a child: a child lands in
+// DocsLayout's CSS grid and gets auto-placed in a top cell (which put the block
+// at the top of the page), whereas a sibling after it stacks below the whole
+// layout — the very bottom of the page, under the article and its prev/next nav.
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <DocsLayout tree={source.pageTree} {...baseOptions}>
-      {children}
-    </DocsLayout>
+    <>
+      <DocsLayout tree={source.pageTree} {...baseOptions}>
+        {children}
+      </DocsLayout>
+      <SiteFooter />
+    </>
   );
 }
