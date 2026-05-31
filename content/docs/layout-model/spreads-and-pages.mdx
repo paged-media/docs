@@ -1,17 +1,21 @@
 ---
 title: Spreads and pages
-description: The Spread and Page elements — the attributes that position a spread on the pasteboard and a page within its spread.
+description: The IDML Spread and Page elements — the attributes that position a spread on the pasteboard and a page within its spread, and how the parser reads each one.
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
 ---
 
-A `Spreads/Spread_*.xml` part wraps a single `<Spread>` element, and that spread
-contains one or more `<Page>` elements followed by the page items that sit on
-them. The spread is the outer coordinate frame; each page maps its own inner
-coordinates into the spread. This page is the attribute reference for both
-elements as the parser reads them.
+**A `Spread` is the outer coordinate frame of a layout, and each `Page` maps its own inner coordinates into that spread.**
+
+**In short:** In IDML, a `Spreads/Spread_*.xml` part wraps a single `<Spread>`
+element, and that spread contains one or more `<Page>` elements followed by the
+page items that sit on them. The spread is the outer coordinate frame onto the
+document's pasteboard; each page carries its own rectangle and an
+`ItemTransform` that places it within the spread. This is how the two pages of a
+facing-pages opening end up side by side. This page is the attribute reference
+for both elements as the parser actually reads them.
 
 ## The `Spread` element
 
@@ -82,3 +86,23 @@ extent it has already been baked into each page's `Name`.
 <SupportBadge status="parsed-not-rendered" note="Section-driven numbering (sections not parsed; naive 1-based fallback)" />
 Section numbering proper is covered under
 [Sections, numbering & variables](/docs/sections-numbering-variables).
+
+## Frequently asked questions
+
+**What is the difference between a spread and a page in IDML?**
+A `<Spread>` is the outer container — the coordinate frame that sits on the
+document's pasteboard and holds the pages of one opening. A `<Page>` is a bounded
+rectangle within that spread, described by its own `GeometricBounds` and carried
+into spread space by its `ItemTransform`. One spread can hold several pages.
+
+**Why does a `Page` need both `GeometricBounds` and `ItemTransform`?**
+`GeometricBounds` gives the page rectangle in the page's own coordinate system,
+while `ItemTransform` places that rectangle within the spread. For a single page
+per spread the transform is identity, so the bounds are also the spread-space
+bounds; once a spread holds two pages, each page's transform is what sets them
+side by side.
+
+**What happens if a `Page` has no `GeometricBounds`?**
+The parser requires a parseable `GeometricBounds` to derive the page rectangle, so
+a `<Page>` without one is skipped entirely. Every other page attribute is
+optional, but bounds are not.

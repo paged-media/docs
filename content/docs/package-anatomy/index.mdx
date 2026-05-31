@@ -1,16 +1,22 @@
 ---
 title: Package anatomy
-description: What is actually inside the ZIP, and how the parts point at each other.
+description: An IDML document is a ZIP archive of XML parts — a self-identifying container, a design map that names everything, shared resource parts, and content parts, wired together by id references.
 tier: beginner
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
 
-An IDML document is a ZIP archive of XML parts. This section walks the archive
-from the outside in: the container itself, the manifest that names everything (the
-*design map*), the shared resource parts, the content parts that hold pages and
-text, and finally the references that wire them together.
+**An IDML document is a ZIP archive of small XML parts that point at each other by id.**
+
+**In short:** An IDML package is not one file but many — a ZIP container holding
+separate XML parts, each with a job. A *design map* names every other part; shared
+*resource parts* hold the colors, styles, and fonts the document reuses; *content
+parts* carry the pages and the text; and a web of id references wires them back
+together into a single document. This section walks the archive from the outside
+in, in the order our parser meets each part: the container itself, the manifest
+that names everything, the resource parts, the content parts, and finally the
+references that tie them together.
 
 If you have not yet opened one, start with
 **[read one by hand](/docs/foundations/read-one-by-hand)** — this section explains
@@ -21,3 +27,26 @@ what you saw there.
 - **[Resource parts](/docs/package-anatomy/resource-parts)**
 - **[Content parts](/docs/package-anatomy/content-parts)**
 - **[How the parts reference each other](/docs/package-anatomy/how-parts-reference)**
+
+## Frequently asked questions
+
+**What is inside an IDML file?**
+An IDML file is a ZIP archive of XML parts: a top-level `designmap.xml` manifest, a
+`Resources` folder of shared definitions (colors, styles, the font manifest, and
+preferences), and content folders — `Spreads`, `MasterSpreads`, and `Stories` —
+that hold the pages and the text. A small `mimetype` entry and a `META-INF` folder
+identify the archive as an IDML package.
+
+**Why is an IDML document split into so many separate parts?**
+Splitting the document keeps each part small and editable on its own: change a
+color and only `Graphic.xml` moves; rewrite a paragraph and only one story file
+changes. The cost is that no single part is self-contained — the parts point at
+each other by id, so reading the document means resolving those references.
+
+**In what order should I read these pages?**
+The pages follow the archive from the outside in, which is also the order our
+parser meets each part: the [ZIP container](/docs/package-anatomy/zip-container)
+first, then the [design map](/docs/package-anatomy/the-design-map) that names
+everything, the [resource parts](/docs/package-anatomy/resource-parts) and
+[content parts](/docs/package-anatomy/content-parts) they describe, and finally
+[how the parts reference each other](/docs/package-anatomy/how-parts-reference).

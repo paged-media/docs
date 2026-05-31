@@ -7,6 +7,18 @@ status: published
 owner: paged-docs
 ---
 
+**An object style is the page-item analogue of a text style: it supplies the fill, stroke, and corner defaults a frame inherits.**
+
+**In short:** Where paragraph and character styles format text, an object style
+formats a *page item* — a [text frame](/docs/frames-paths), rectangle, oval, or
+other shape — supplying the fill, stroke, and corner defaults the frame falls back
+on when it carries no inline override of its own. Object styles live in
+`<RootObjectStyleGroup>` inside `Resources/Styles.xml`, cascade through `BasedOn`
+with the same first-setter-wins fold as the text styles, and bottom out at the
+`[None]` default that every frame in the reference packages applies. A frame names
+its object style with `AppliedObjectStyle`, and a colour attribute set to
+`Swatch/None` normalises to unset so the cascade can fall through to a real colour.
+
 Where paragraph and character styles format text, an **object style** formats a
 *page item* — a [text frame](/docs/frames-paths), rectangle, oval, or other shape.
 It supplies the fill, stroke, and corner defaults a frame inherits when the frame
@@ -77,3 +89,30 @@ Object styles meet the page-item side of the document in
 [frames and paths](/docs/frames-paths), where `AppliedObjectStyle` and a frame's
 own inline fill / stroke combine the same way a run's local override combines with
 its character style.
+
+## Frequently asked questions
+
+**What does an object style format?**
+An object style formats a page item — a text frame, rectangle, oval, or other
+shape — supplying the fill, stroke, and corner defaults the frame inherits when it
+carries no inline override. It is the page-item counterpart of paragraph and
+character styles.
+
+**What is the `[None]` object style?**
+`ObjectStyle/$ID/[None]` is the object style a frame applies when it wants no
+style-supplied formatting: it sets no fill or stroke of its own, so the frame's own
+inline attributes (or the renderer defaults) stand. It is the object-style
+counterpart of the `[No paragraph style]` and `[No character style]` roots, and it
+is the style every frame in the reference packages applies.
+
+**Which object-style attributes does the parser read?**
+The parser reads the fill, stroke, and corner subset the renderer consumes —
+`FillColor`, `StrokeColor`, `StrokeWeight`, `CornerOption`, `CornerRadius`, and the
+like. The `Enable*` category toggles and the transparency and drop-shadow effect
+blocks IDML also stores on `<ObjectStyle>` are not yet acted on.
+
+**How do an object style and a frame's own attributes combine?**
+A frame's own inline fill or stroke wins; whatever the frame leaves absent is
+filled by the resolved object style, with `Swatch/None` on a colour normalised to
+unset so a `BasedOn` chain can fall through. This is the same layering a run's local
+override uses against its character style.

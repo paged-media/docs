@@ -1,16 +1,22 @@
 ---
 title: ItemTransform
-description: The six-number affine matrix that places a page item's inner space onto the page.
+description: ItemTransform is the six-number affine matrix (a b c d tx ty) that maps a page item's inner coordinate space onto the page, encoding translation, scale, rotation, and shear.
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
 ---
 
-`ItemTransform` is the attribute that answers "where does this shape actually
-go?" A page item is authored in its own inner coordinate space — usually with
-its outline starting at `(0, 0)` — and `ItemTransform` maps that whole space into
-its parent's space (the page, or an enclosing `Group`, or the spread).
+**`ItemTransform` is the six-number affine matrix that maps a page item's inner space onto the page.**
+
+**In short:** `ItemTransform` is the attribute that answers "where does this
+shape actually go?" A page item is authored in its own inner coordinate space —
+usually with its outline starting at `(0, 0)` — and `ItemTransform` maps that
+whole space into its parent's space: the page, an enclosing `Group`, or the
+spread. The value is six whitespace-separated numbers, `a b c d tx ty`, the free
+entries of a 2D affine matrix that together encode translation, scale, rotation,
+and shear. The identity transform, which places a shape with no change, is
+`1 0 0 1 0 0`.
 
 ## The six-tuple
 
@@ -91,3 +97,24 @@ down.
 Edit the `tx` / `ty` numbers and the red rectangle moves; edit `a` or `d` away
 from `1` and it scales. The outline anchors never change — only the transform
 that carries them onto the page.
+
+## Frequently asked questions
+
+**What do the six numbers in ItemTransform mean?**
+They are the free entries `a b c d tx ty` of a 2D affine matrix. Applied to an
+inner point `(x, y)`, the result is `x' = a·x + c·y + tx` and `y' = b·x + d·y +
+ty` — so `a` and `d` scale, `b` and `c` shear or rotate, and `tx` / `ty`
+translate (with positive `ty` moving down, since Y grows downward).
+
+**What is the identity ItemTransform?**
+The identity transform is `1 0 0 1 0 0`: it leaves X and Y unchanged and moves by
+nothing. The parser requires exactly six numbers, and any value it cannot read as
+six is treated as absent, which is equivalent to applying this identity.
+
+**How do nested Group transforms combine with an item's own transform?**
+When a shape sits inside one or more `Group` elements, the parser composes the
+enclosing group transforms (outermost-first) and then the item's own transform
+last, so the value stored on the item is already the full inner-to-page mapping.
+Composition follows `A ∘ B` order — the item's own transform acts first, then the
+group's — so the shape is positioned within the group and the group is then
+positioned on the page.

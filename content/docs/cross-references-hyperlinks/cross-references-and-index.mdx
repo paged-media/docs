@@ -7,6 +7,18 @@ status: published
 owner: paged-docs
 ---
 
+**Cross-references and the index are the references that must be *filled in* by a whole-document pass — the parser captures their inputs, but the resolution that turns them into rendered text is deferred.**
+
+**In short:** Unlike hyperlinks, a cross-reference and an index do not leave the
+displayed text alone — each is meant to be completed by a pass over the entire
+document. A `CrossReferenceSource` borrows its display phrase from the target it
+points at ("see *Chapter 3*", "page 12") via an applied format; an index is
+assembled from `Topic` definitions and zero-width markers scattered through the
+body copy. Paged's parser records all of these inputs — formats, destinations,
+topics, and markers — onto the document model, but the resolution and generation
+that would produce the rendered phrase or the index story are not yet built. This
+page covers what the parser keeps from each and why nothing prints yet.
+
 Hyperlinks and bookmarks point somewhere and leave the displayed text alone. The
 two constructs on this page are different: each one is meant to be *filled in* by
 a pass over the whole document. A cross-reference borrows its display text from
@@ -98,3 +110,36 @@ Both constructs need a whole-document pass that the engine does not run:
 
 The inputs are all in the model, ready for the SDK Phase 5 resolution work to
 consume.
+
+## Frequently asked questions
+
+**What is the difference between a cross-reference and a hyperlink?**
+A hyperlink jumps to a destination and leaves its displayed text alone. A
+**cross-reference** instead derives the very words it shows from its target: its
+`AppliedFormat` names a `CrossReferenceFormat` template that decides the phrase
+("See", "See also", a page number, the heading text), and its `Destination` names
+the anchor the phrase is built from. The arrow and the words it shows are bound
+together.
+
+**How does IDML represent an index?**
+In two halves that meet only at resolution time. The **topics** are `Topic`
+elements in the design map — each declares a term's id, display `Name`, and an
+optional `SortOrder`. The **markers** are zero-width points scattered through the
+story runs (serialised as `PageReference`, `IndexEntry`, or `Index` elements) that
+each say "this spot contributes to a topic," either via an inline `TopicName` or an
+`AppliedTopic` reference into the topic table.
+
+**Does a cross-reference or index marker insert text into the run?**
+No. A cross-reference source and an index marker both add reference metadata
+without inserting any character, so the body text flows past them untouched. A
+cross-reference's phrase would only appear after its format is applied to a
+resolved destination; an index marker contributes to a generated index story
+rather than to inline text.
+
+**Why doesn't Paged print cross-references or an index?**
+Both need a whole-document pass the engine does not yet run. A cross-reference's
+display text would come from applying its `AppliedFormat` to a resolved
+`Destination`, and an index would come from collecting every marker, grouping by
+topic, alphabetising (honouring `SortOrder`), and emitting a generated story. The
+parser captures all the inputs, but these resolution and generation passes are
+**parsed, not rendered**, deferred to SDK Phase 5.

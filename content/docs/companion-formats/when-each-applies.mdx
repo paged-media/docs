@@ -1,11 +1,22 @@
 ---
 title: When each applies
-description: The workflows that produce snippets, libraries, story-only files, and assignment files — how they relate to the full package, and what supporting them would take.
+description: When each IDML companion format shows up in real workflows — reuse, libraries, editorial round-trips, and team assignments — how each relates to the full package, and what it would take for Paged to read them.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
+
+**Each companion format is a slice of a document, separated for a job the whole document is too heavy for.**
+
+**In short:** Companion formats show up in distinct workflows: **snippets** when
+someone reuses a piece of a layout, **libraries** when that reuse becomes a habit,
+**story-only / InCopy files** when writing and layout are separate jobs, and
+**assignment files** when that editorial split scales to a team. In every case the
+file is a slice of what a full document holds, with the [design map](/docs/package-anatomy/the-design-map)
+— the thing that makes parts into *a document* — stripped away. This page explains
+when you actually meet each format, how it relates back to the package you can
+open, and, honestly, what it would take for Paged to read it.
 
 The [previous page](/docs/companion-formats/the-companion-formats) said what each
 companion format *is*. This page says when you actually meet one, how it relates
@@ -88,3 +99,30 @@ Until such a path exists, the status across this chapter stays the same, and it 
 recorded honestly on every page: not yet parsed. The single document remains
 Paged's unit of work — see [the package anatomy](/docs/package-anatomy/index) for
 the format Paged does read end to end.
+
+## Frequently asked questions
+
+**When would I use an InDesign Snippet instead of a full IDML export?**
+You reach for a snippet when you want to reuse a *piece* of a layout rather than a
+whole document — dragging a group of page items out as a `.idms` file and dropping
+it into another document later. The snippet travels with the styles and colors its
+items need, so it can re-create their formatting wherever it lands; a library is
+the same idea turned into a habit, a curated shelf of those fragments.
+
+**Why do editorial teams use `.icml` and `.icma` files?**
+Story-only `.icml` files appear when writing and layout are separate jobs: the
+layout stays in the InDesign document while an `.icml` carries one story's text out
+to an editor and back, so copy can be edited without touching the page it belongs
+to. Assignment `.icma` files appear when that split scales to a team — they group
+stories into a unit of work and track who has which, so several editors can work in
+parallel against one layout without colliding.
+
+**What would it take for Paged to support these formats?**
+Because Paged's only entry point opens a ZIP archive, confirms the IDML-package
+mimetype, and reads `designmap.xml` as the root, supporting a standalone companion
+file would mean a *second way in* alongside the package reader — not just a few
+extra element handlers. Snippets and library items would need a host document to be
+placed into and the name-reconciliation rules that go with it; `.icml` files would
+need the frame and geometry their text was separated from; and `.icma` files raise
+no rendering question at all, since they are workflow metadata that reference
+stories rather than carrying renderable content.

@@ -1,17 +1,22 @@
 ---
 title: The design map
-description: The root manifest that names every other part and lists the document's stories.
+description: designmap.xml is an IDML document's root manifest — it carries document-level settings on its Document element and names every other part in the package through idPkg:* reference elements.
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
 ---
 
-`designmap.xml` is the part a reader — and our parser — opens first. It is the
-document's root manifest: it carries a handful of document-level settings on its
-`Document` element, and it names every other part in the package through
-`idPkg:*` reference elements. Open it and you can see the whole shape of the
-document before reading anything else.
+**`designmap.xml` is the root manifest that names every other part in an IDML package.**
+
+**In short:** The design map, `designmap.xml`, is the part a reader — and our
+parser — opens first. Its root `Document` element carries a handful of
+document-level settings and lists the document's stories in `StoryList`, while a
+set of `idPkg:*` reference elements names every other part in the package by a
+`src` path. Open the design map and you can see the whole shape of the document —
+its resources, spreads, and stories — before reading anything else. This page
+covers the `Document` element, the `idPkg:*` references, and two things the design
+map deliberately leaves to other parts.
 
 <PackageGraph />
 
@@ -71,3 +76,23 @@ And while the design map *lists* the stories, it does not contain them. The text
 lives in the [content parts](/docs/package-anatomy/content-parts); the design map
 only points the way. How those pointers resolve — `ParentStory`, `AppliedMaster`,
 `src` — is the subject of [how the parts reference each other](/docs/package-anatomy/how-parts-reference).
+
+## Frequently asked questions
+
+**What is the design map in an IDML file?**
+The design map is `designmap.xml`, the document's root manifest. It holds
+document-level settings on its `Document` element and names every other part in
+the package through `idPkg:*` reference elements, so it is the part a consumer
+reads first to learn the document's shape.
+
+**What does the `StoryList` attribute do?**
+`StoryList` on the `Document` element is a space-separated list of the document's
+story ids. Each id should have a matching `idPkg:Story` reference naming the file
+that holds it — the link between the manifest's list of stories and the
+[content parts](/docs/package-anatomy/content-parts) that contain the text.
+
+**Does the design map contain the document's text and pages?**
+No. The design map only *names* the parts; the pages live in the spread parts and
+the text lives in the story parts. It points the way, and the actual content is
+resolved by following the `src` paths and ids to the
+[content parts](/docs/package-anatomy/content-parts).

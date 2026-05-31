@@ -1,11 +1,20 @@
 ---
 title: Threading and overset
-description: How one story flows across several frames, and what happens to text that doesn't fit.
+description: How one story flows across several frames in a chain, and why text that doesn't fit at the end is overset and dropped from the rendered page.
 tier: pro
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
+
+**Threading is how one story flows across a chain of frames; overset is the text that still doesn't fit at the end.**
+
+**In short:** A story holds text and a frame shows it, so when a story is longer
+than its frame the text has to go somewhere. IDML's answer is *threading*: frames
+link in a chain via `NextTextFrame` / `PreviousTextFrame`, and the story is composed
+once then poured into them in order. Text that still doesn't fit at the end of the
+chain is *overset* — a layout outcome with no attribute of its own. This page explains
+how the chain is built and what our renderer does with the leftover lines.
 
 A story holds text; a frame shows it. When a story is longer than its frame, the
 text has to go somewhere — IDML's answer is **threading**: the story continues in
@@ -82,3 +91,27 @@ a run is laid out at all, and these don't all behave the same:
 
 Both are different from overset: those runs are removed because of *what they are*,
 whereas overset text is dropped only because of *where it ended up*.
+
+## Frequently asked questions
+
+**What is text threading in IDML?**
+Threading is how a single story flows across more than one frame. Each frame names
+the next with `NextTextFrame` and the previous with `PreviousTextFrame`, forming a
+chain; the story is composed once and poured into the frames in chain order.
+
+**What is overset text?**
+Overset is the text that still doesn't fit after the last frame in the chain is full.
+It is a layout outcome rather than an IDML attribute — InDesign shows it as the red
+plus on a frame's out-port, but nothing in the IDML marks it.
+
+**Does overset text get lost when Paged renders a page?**
+The text is never lost from the story part — extraction still returns all of it. Only
+the *rendered* page omits it: at the last frame, lines whose baseline falls past the
+frame's bottom are dropped rather than spilled, matching how InDesign's exported PDF
+clips overset. There is no "this story overset" diagnostic; to detect it, compare the
+composed line count to the placed line count yourself.
+
+**Do all frames that show a story contain their own copy of the text?**
+No. The text lives in one `Stories/Story_*.xml` part regardless of how many frames
+display it; frames only *reference* the story through `ParentStory` and contribute a
+box for it to flow into.

@@ -1,11 +1,20 @@
 ---
 title: Version markers
-description: The <?aid?> processing instruction and Document@DOMVersion — what they declare, and how much of it our parser acts on.
+description: Version markers are the two stamps that declare an IDML package's vintage — the <?aid?> processing instruction and Document@DOMVersion — and how much of each our parser acts on.
 tier: pro
 diataxis: reference
 status: published
 owner: paged-docs
 ---
+
+**Version markers are the two stamps a package writes to declare its vintage: the `<?aid?>` processing instruction and the `Document@DOMVersion` attribute.**
+
+**In short:** Every IDML package records which format revision it follows and which
+application build wrote it, and it does so in two places at the very top of the
+design map. The `<?aid?>` processing instruction carries pseudo-attributes like
+`readerVersion`, `featureSet`, and `product`; the root `Document` element carries
+`DOMVersion`. This page names each field and is precise about one thing: our parser
+reads all of them and branches on none of them.
 
 A package declares its vintage in two places, both at the very top of the design
 map. The first is a processing instruction; the second is an attribute on the root
@@ -86,3 +95,32 @@ You can see that this is intentional rather than accidental: our own fixtures st
 special-casing. The markers are recorded facts about a package's origin; they are
 not switches that change how we read it. The consequences of that choice — and
 where it could bite — are the subject of [compatibility](/docs/round-tripping/compatibility).
+
+## Frequently asked questions
+
+**Where does an IDML package declare its version?**
+In two places, both at the top of the design map. The `<?aid?>` processing
+instruction sits before the root element and carries pseudo-attributes such as
+`readerVersion`, `featureSet`, and `product`; the root `Document` element carries
+the `DOMVersion` attribute. Together they say which format revision the package
+follows and which application build wrote it.
+
+**What is the `<?aid?>` processing instruction?**
+It is a processing instruction whose target is `aid`, sitting as a sibling of the
+XML declaration before the root element. Because it is not an element, it has no XML
+attributes — instead it holds a single pseudo-attribute string the application parses
+itself. An application's IDML reader treats it as mandatory: a package missing it is
+rejected as an unrecognized format even when the archive is otherwise well-formed.
+
+**Does Paged's parser branch on `DOMVersion` or `featureSet`?**
+No. There is no version branch anywhere in the parse path. The design-map parser in
+`core/crates/paged-parse/src/designmap.rs` extracts identity, color settings, layers,
+and part references but never reads `DOMVersion`, and it never inspects the `<?aid?>`
+instruction at all. The reader targets one modern DOM and applies the same logic to
+every package, whatever vintage it claims.
+
+**Is `<?aid?>` the only processing instruction Paged interprets?**
+No — but it is *not* one Paged acts on. The instruction the parser does interpret is
+a different one entirely: the `<?ACE?>` markers inside story content that stand in
+for auto page numbers, handled in `core/crates/paged-parse/src/story.rs`. The
+`<?aid?>` instruction on the design map is read past, not acted on.

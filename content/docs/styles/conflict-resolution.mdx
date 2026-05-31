@@ -7,6 +7,19 @@ status: published
 owner: paged-docs
 ---
 
+**A run's effective formatting is resolved in one pass that layers three sources: the local range value, then the character style's chain, then the paragraph style's chain.**
+
+**In short:** A single glyph's formatting can be specified in four places at once —
+directly on its run, on the character style the run applies, on the paragraph style
+the run sits in, and on the root defaults at the bottom of either chain. The parser
+turns that pile of candidates into one effective value per attribute by seeding the
+value set directly on the range first, then filling what is still unset from the
+applied character style resolved through its `BasedOn` chain, then from the applied
+paragraph style's chain, and finally from the renderer's bottom-of-cascade default.
+Each layer fills only the slots still empty after the layers above it. This page
+traces that order attribute by attribute and is honest about the ambiguous cases
+and the constructs the parser reads but does not yet enforce.
+
 A single glyph's formatting can be specified in four places at once: directly on
 its run, on the character style the run applies, on the paragraph style the run
 sits in, and on the root defaults at the bottom of either chain. They do not
@@ -110,3 +123,30 @@ about:
 For the broader picture of which IDML features the renderer handles, the
 [conditional text](/docs/conditional-text) chapter goes deeper on conditions, and
 each style page above carries per-attribute support badges.
+
+## Frequently asked questions
+
+**In what order does the parser resolve a run's formatting?**
+Highest priority first: the value set directly on the `<CharacterStyleRange>`, then
+the applied character style resolved through its `BasedOn` chain, then the applied
+paragraph style's chain, then the renderer's bottom-of-cascade default. Each layer
+fills only the attributes still unset after the layers above it.
+
+**Why does `Swatch/None` not force "no paint"?**
+On colour attributes the literal `Swatch/None` is normalised to *unset* rather than
+kept as a real "no paint" value, so a `BasedOn` parent or higher layer can supply a
+colour instead of the chain dead-ending. The trade-off is that a style cannot use
+`Swatch/None` to force no paint over a parent that sets one — the cascade reads it
+as silence.
+
+**Does "absent everywhere" always mean a feature is off?**
+No. Some booleans default to *true* when no layer sets them — `Ligatures` and
+`Hyphenation`, for instance — so a run only loses them when some layer explicitly
+sets `false`.
+
+**Which style constructs does the parser read but not yet apply?**
+Nested styles (`<NestedStyle>` children that would split runs along a delimiter)
+and conditional styles (`<Condition>` definitions and a run's `AppliedConditions`)
+are both parsed and stored, but the renderer does not yet split runs at nested-style
+boundaries or gate visibility on conditions — conditioned runs render as if always
+visible.

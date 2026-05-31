@@ -7,6 +7,15 @@ status: published
 owner: paged-docs
 ---
 
+**A story is a tree four levels deep: `Story` → `ParagraphStyleRange` → `CharacterStyleRange` → `Content`.**
+
+**In short:** Every IDML story nests the same four levels. The outer `Story`
+element carries the id a frame points at; each paragraph is a `ParagraphStyleRange`;
+each run of uniform character formatting is a `CharacterStyleRange`; and the literal
+text lives in `Content` elements, interrupted by `Br` and `Tab` markers. This page is
+the reference for that model — the elements, the attributes our parser reads, and the
+constructs it reads but doesn't yet fully place.
+
 A story is a tree four levels deep. The outer `Story` element carries the id a
 frame points at; inside it, each paragraph is a `ParagraphStyleRange`; inside
 each of those, one or more `CharacterStyleRange` elements hold runs of uniform
@@ -136,3 +145,27 @@ reads but the renderer does not yet fully lay out. They are detailed on the
   is drawn above the base run; per-character distribution is not yet exact. <SupportBadge status="parsed-not-rendered" note="GroupRuby MVP only — paged-renderer/src/pipeline.rs:4208" />
 - **Hyperlinks inside a story** (`HyperlinkTextSource`) are not wired through to
   the run, so link regions aren't emitted. <SupportBadge status="not-yet-parsed" note="in-story hyperlink sources not surfaced on runs — paged-parse/src/story.rs" />
+
+## Frequently asked questions
+
+**How many paragraphs does a story have?**
+Exactly as many as it has `ParagraphStyleRange` blocks — a new sibling block starts a
+new paragraph. Paragraph count is the count of those blocks, not a count of line
+breaks; a `Br` is a forced line break *within* a paragraph and does not start a new
+one.
+
+**What is the difference between a `ParagraphStyleRange` and a `CharacterStyleRange`?**
+A `ParagraphStyleRange` is one paragraph and applies a paragraph style; a
+`CharacterStyleRange` sits inside it and is one run of uniform character formatting,
+applying a character style. A new `CharacterStyleRange` begins wherever the character
+formatting changes — bold to regular, one size to another.
+
+**Where does the literal text live?**
+Only in `Content` elements, the leaves of the tree. `Br` and `Tab` are empty markers
+that the parser folds into the run text as `\n` and `\t`, so several `Content` chunks
+split by markers collapse into one run string with the breaks in place.
+
+**Does the renderer act on every story attribute?**
+No. The parser reads exactly the four-level shape and the attributes documented here;
+other story attributes it doesn't yet act on are read past. Some constructs — footnotes,
+ruby, in-story hyperlinks — are parsed but not yet fully laid out, as noted above.

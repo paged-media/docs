@@ -1,11 +1,23 @@
 ---
 title: Formats & clipping
-description: Which image formats the asset resolver can decode, how the frame path crops the picture, and where the gaps are.
+description: Which image formats the renderer can decode once the asset resolver returns bytes, how the frame path crops the picture, and where the current gaps are.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
+
+**Once the parser hands off a picture's reference, an asset resolver finds the bytes and the renderer decodes and clips them — none of it is the parser's job.**
+
+**In short:** After [placed images](/docs/images-graphics/placed-images) showed
+how a frame points at a picture, this page covers what happens downstream. The
+render pipeline asks an *asset resolver* to turn the captured URI into bytes, then
+the renderer decodes those bytes — PNG, JPEG, WebP, and SVG are handled, while
+EPS, PostScript, and PDF are recognised but not yet rasterised — and clips the
+result to the frame's outline. A missing link is never an error: the frame still
+has its geometry, and the renderer can stamp a missing-image placeholder. This
+page explains the resolver, which formats decode, how the frame path crops the
+picture, and where the current gaps are.
 
 [Placed images](/docs/images-graphics/placed-images) showed how a frame points at
 a picture. This page is about what happens *after* the parser hands that pointer
@@ -124,3 +136,30 @@ are the vector and page-description formats (EPS, PDF, imported pages), which pa
 uniformly but are not yet rasterised, and the detached image clipping path, which
 the frame outline currently stands in for. In every one of those cases the
 *parse* is complete and correct; what is deferred is purely the drawing.
+
+## Frequently asked questions
+
+**What image formats can the renderer decode?**
+Once the resolver returns bytes, the renderer decodes the common raster formats —
+PNG, JPEG, and WebP — to RGBA pixels, and rasterises SVG through a vector renderer.
+Oversized JPEGs are downscaled during decode so a single huge photo cannot exhaust
+memory, and SVG's longest edge is capped to the same budget.
+
+**Why don't EPS and PDF images render?**
+EPS, PostScript, and PDF are page-description formats rather than bitmaps, so
+turning them into pixels needs machinery the renderer does not yet ship — a
+Ghostscript-class sidecar for PostScript, and a PDF page rasteriser. The parser
+still recognises `<EPSImage>`, `<PDF>`, and `<ImportedPage>` uniformly and marks
+their frames as image frames; only the rasterisation is missing.
+
+**How does a frame crop a placed image?**
+The frame's outline is the crop: the renderer composes the frame transform with
+the image's own `ItemTransform`, then clips the result to the frame's path, so
+pixels outside the outline are not drawn. For a `Rectangle` the clip is the
+axis-aligned box; for an `Oval` or `Polygon` it is the frame's silhouette.
+
+**Is a missing image file treated as an error?**
+No. If the resolver returns nothing for a URI, the frame still parsed and still
+has its geometry — only the picture is absent. Because the parser recorded that
+the frame nests an image element, the renderer can stamp a missing-image
+placeholder (a grey fill with a diagonal cross) rather than leaving it blank.

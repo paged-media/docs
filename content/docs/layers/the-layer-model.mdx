@@ -1,11 +1,22 @@
 ---
 title: The layer model
-description: The Layer element's attributes and the ItemLayer back-reference that assigns a page item to a layer.
+description: The Layer element's attributes and the ItemLayer back-reference that assigns a page item to a layer, and how the parser reads each end of that link.
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
 ---
+
+**A layer is defined once in the design map; a page item joins it by naming its id through `ItemLayer`.**
+
+**In short:** Layers are declared document-wide as `<Layer>` children of the
+`Document` element in `designmap.xml`, each carrying an id, a name, and three
+boolean switches — `Visible`, `Printable`, and `Locked`. A page item joins a layer
+by setting its `ItemLayer` attribute to that layer's `Self` id, so the link always
+points from the item to the layer and never the reverse. The order layers appear
+in the design map also fixes cross-layer paint order, while XML order only breaks
+ties between items on the same layer. This page is the attribute reference for both
+ends of that link and how the parser reads each one.
 
 Layers are defined once, document-wide, as `<Layer>` children of the `Document`
 element in `designmap.xml`. Each definition is small — an id, a name, and three
@@ -79,3 +90,27 @@ a single paint command — the blue rectangle on the hidden `Back` layer never
 becomes output. That gap between what the document declares and what the page
 draws is the whole subject of
 [visibility and printing](/docs/layers/visibility-and-printing).
+
+## Frequently asked questions
+
+**How does a page item get assigned to a layer in IDML?**
+A page item joins a layer by setting its `ItemLayer` attribute to the `Self` id of
+a `<Layer>` defined in the design map. The reference runs from the item to the
+layer; a layer never holds a list of its members.
+
+**Which page items can carry an `ItemLayer` attribute?**
+Any spread page item — a `Rectangle`, `Oval`, `Polygon`, `GraphicLine`,
+`TextFrame`, or a `Group`. Each may name the layer it belongs to through
+`ItemLayer`.
+
+**What happens if `ItemLayer` is missing or names a layer that does not exist?**
+The renderer treats the item as being on the default layer — visible and unlocked
+— and draws it. A missing or dangling reference never makes content disappear,
+because the parser only suppresses an item when `ItemLayer` resolves to a real
+layer that is explicitly turned off.
+
+**Does the order of `<Layer>` elements matter?**
+Yes. The parser keeps the layers in an ordered list, and the renderer keys
+cross-layer paint order off each layer's position in it. So when two items live on
+different layers, their layers decide which one wins the overlap; XML order only
+breaks ties between items on the *same* layer.

@@ -7,6 +7,17 @@ status: published
 owner: paged-docs
 ---
 
+**A gradient blends across two or more stops; a tint is a color used at less than full strength — and neither owns any color of its own.**
+
+**In short:** In IDML, a `<Gradient>` is a blend defined by its child
+`<GradientStop>` elements, each of which *references* an existing `<Color>` in the
+palette. A tint is the same palette color used at reduced strength, and it reaches
+a painted thing two ways: as a swatch-level `TintValue` baked into a spot color,
+or as a per-use `FillTint` on the element being painted. Both gradients and tints
+build on colors already in the palette rather than introducing new channel values.
+This page is the attribute-level reference for `<Gradient>`, `<GradientStop>`, and
+the two tint paths.
+
 A gradient is a blend across two or more stops; a tint is a color used at less
 than full strength. Both build on the [colors](/docs/color-swatches/colors-and-swatches)
 already in the palette — a gradient *references* existing `<Color>` swatches, and
@@ -106,3 +117,26 @@ points at the color it is a percentage of, with its own `TintValue`. The palette
 parser keys colors, swatches, gradients, and color groups; a dedicated `<Tint>`
 swatch is not yet captured as its own kind, so reach for the per-use `FillTint`
 or a spot `TintValue` instead. <SupportBadge status="not-yet-parsed" note="standalone <Tint> swatch" />
+
+## Frequently asked questions
+
+**Where do a gradient's colors come from?**
+From its child `<GradientStop>` elements. The `<Gradient>` itself carries only its
+kind (`Type`); each stop references a `<Color>` in the palette by `StopColor` and
+places it along the blend with `Location`. The gradient owns no color of its own.
+
+**How many stops does a gradient need?**
+At least two. If a gradient resolves to fewer than two valid stops, the renderer
+drops it and the shape falls back to no gradient paint.
+
+**What is the difference between a swatch-level tint and `FillTint`?**
+A swatch-level `TintValue` bakes "this ink at N%" into a spot `<Color>` itself, so
+the swatch *is* the tinted color everywhere it is used. A per-use `FillTint` scales
+whatever color the painted element points at, only there — so the same full-strength
+swatch can appear at 100% in one place and 40% in another.
+
+**Why is my `Midpoint` or standalone `<Tint>` swatch not showing?**
+`GradientStop` `Midpoint` is parsed but not yet honored, so the halfway color
+always sits at the geometric middle between two stops. The standalone `<Tint>`
+swatch is not yet captured as its own kind, so reach for a per-use `FillTint` or a
+spot `TintValue` instead.

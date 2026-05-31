@@ -1,11 +1,25 @@
 ---
 title: Sections, numbering & variables
-description: How a document labels its pages and bakes computed text — and why those two things are entangled at export.
+description: How an IDML document labels its pages with sections and bakes computed text into TextVariable instances — and why those two things are entangled at export.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
+
+**Sections decide what a page is called; text variables are computed strings placed in the text — and IDML writes down the answers to both, already resolved.**
+
+**In short:** Sections and text variables are the two mechanisms an IDML document
+uses to label its pages and to embed computed text. A **section** breaks the page
+range into runs with their own start number, numbering style, and prefix, so front
+matter can run in lowercase Roman while the body restarts at Arabic 1. A **text
+variable** is a computed string — a file name, a chapter number, a running header,
+the current page number — placed directly into the flowing text. The two are
+entangled because a page-number variable depends on the section that owns the page,
+and InDesign resolves both at export time and writes the *answers* into the package
+rather than the recipes. This chapter explains what those baked answers are, which
+of them stay true and which can go stale, and how our parser and renderer treat
+each one.
 
 A finished document rarely numbers its pages "1, 2, 3" from cover to colophon.
 Front matter runs in lowercase Roman, the body restarts at Arabic 1, an appendix
@@ -83,3 +97,32 @@ definitions live and how sections shape the numbers the variables quote.
 - [Sections and numbering](/docs/sections-numbering-variables/sections-and-numbering)
   — how `Page.Name` drives the displayed number, what `Section` would add, and the
   naive fallback when no name is present.
+
+## Frequently asked questions
+
+**What is the difference between a section and a text variable in IDML?**
+A **section** controls what a page is *called* — it breaks the page range into runs
+with their own start number, numbering style, and prefix. A **text variable** is a
+computed string *placed in the flowing text*, such as a file name, chapter number,
+or running header. They overlap only where a variable quotes a section-controlled
+value, like the current page number.
+
+**Why are page numbers and text variables stored as values instead of formulas?**
+Because InDesign has already laid the document out at export time, so it writes the
+*result* rather than a recipe a reader would have to re-run. Each `Page` carries a
+resolved `Name` label, and each placed variable carries its evaluated string in
+`ResultText` — which is what lets a reader display a faithful copy without
+reimplementing InDesign's numbering engine.
+
+**Can these baked values become stale?**
+Yes. The labels and `ResultText` values are snapshots from the last export, so they
+can drift if the document is edited outside InDesign — moving a paragraph can leave a
+running header's `ResultText` wrong, and repaginating can make a baked page label no
+longer match where the page lands. InDesign fixes drift by recomposing; a reader that
+only consumes the IDML sees the snapshot.
+
+**Does the renderer parse the `Section` element?**
+No. The renderer trusts each page's `Name`, which already carries the section's
+numbering style and prefix, so it never needs to read the `Section` numbering rules.
+The only cost is that a document missing `Page.Name` — rare, mostly synthetic
+fixtures — falls back to plain 1-based counting with no section awareness.

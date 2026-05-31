@@ -1,11 +1,21 @@
 ---
 title: Visibility and printing
-description: How Visible and Printable gate the renderer, why Locked does not, and the layer features the model leaves flat.
+description: An item is drawn only when its layer is both Visible and Printable — how those two switches gate the renderer, why Locked does not, and the layer features the model leaves flat.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
+
+**An item is drawn only when its layer is both `Visible` and `Printable`; everything else a layer records is ignored at render time.**
+
+**In short:** Of all the switches a layer carries, only two change the renderer's
+output: `Visible` and `Printable`. An item is painted only if the layer its
+`ItemLayer` names is **both** visible and printable — either one turned off drops
+the item, and both default to on. `Locked` is read but never affects what is
+drawn, and nested layer folders are flattened to a single peer list. This page
+explains exactly when content is suppressed, and is equally clear about the layer
+attributes that look like they should matter but do not.
 
 Of everything a layer records, only two switches change what comes out of the
 renderer: `Visible` and `Printable`. They are the reason layers are worth
@@ -90,3 +100,29 @@ fine, walk the layer link:
 If the item has no `ItemLayer`, or it points at a layer that is not in the design
 map, layers are not your problem — the renderer would have drawn it on the default
 layer, so the disappearance is something else (geometry, color, or threading).
+
+## Frequently asked questions
+
+**When is a page item's layer allowed to keep it off the page?**
+An item is drawn only when its layer is **both** `Visible` and `Printable`. Either
+switch set to `false` is enough to suppress the item; both must be on (their
+default) for it to paint.
+
+**Does `Printable="false"` behave differently from `Visible="false"`?**
+Not in the current renderer. There is no separate printing pass: on-screen and
+to-output are the same suppression, so a non-printing layer hides its items exactly
+as a non-visible one does. The renderer precomputes a single `visible && printable`
+flag per layer and consults that.
+
+**Does a `Locked` layer affect the rendered output?**
+No. `Locked` is read into the layer model but never changes what is drawn — a
+locked layer renders exactly like an unlocked one. Locking is an authoring-time
+guard against accidental edits, a concern for an editor's selection logic, not for
+a renderer.
+
+**Are nested layer folders (layer groups) preserved?**
+No. InDesign's layer groups are purely organizational, so the model flattens them
+to a single ordered list of peer layers with no parent/child relationship. This
+costs nothing at render time — a folder never affected whether its layers' items
+drew — but the model cannot tell you which folder a layer was in, because no
+folder is retained.

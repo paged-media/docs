@@ -1,11 +1,22 @@
 ---
 title: Placed images
-description: A graphic frame nests an Image that points at a file via Link/LinkResourceURI and carries its own ItemTransform; links and embeds parse alike.
+description: A graphic frame nests an Image element that points at a file via Link/LinkResourceURI and carries its own ItemTransform; linked and embedded pictures parse alike.
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
 ---
+
+**A placed image is a frame with an `<Image>` element nested inside it.**
+
+**In short:** In IDML, a picture is a frame — most often a `Rectangle`, but also
+an `Oval` or `Polygon` — that contains an `<Image>` child. Nothing on the frame's
+own start tag marks it as "a graphic frame"; the nested image element is the whole
+signal. That `<Image>` carries two things our parser captures: a reference to the
+picture data, pointed at through a `<Link>` and `LinkResourceURI` (or inline
+bytes), and its own `ItemTransform` that maps the picture into the frame. This
+reference page covers the shape of a graphic frame, how the link is read, and why
+a linked picture and an embedded one look identical to the parser.
 
 A placed image is a frame with an `<Image>` element inside it. The frame is an
 ordinary [page item](/docs/geometry-coordinates/item-transform) — most often a
@@ -107,3 +118,27 @@ not a live render. What it shows is the *shape* of a placed image: the frame, th
 nested `<Image>`, the link, and the image's own transform. How the picture would
 actually be found, decoded, and cropped is the subject of
 [formats & clipping](/docs/images-graphics/formats-and-clipping).
+
+## Frequently asked questions
+
+**How is an image linked to a file in IDML?**
+The reference is a `LinkResourceURI` string, which can sit directly on the
+`<Image>` element or on a `<Link>` child of it — both are read, and when both are
+present the outer `<Image>`'s value wins (first-write-wins). Our parser also
+accepts an `href` attribute as an alias; whatever the spelling, it captures the
+string and defers resolving it to real bytes until render time.
+
+**What is the difference between a linked and an embedded image?**
+A *linked* image stores a URI pointing at a file on disk, while an *embedded*
+image stores the picture's bytes inline as base64 inside a `<Contents>` element.
+They differ on disk, but converge at the parser: both become properties on the
+same frame and end at the same render-time image slot, and a single template can
+mix the two freely. When both a URI and inline bytes are present, the inline bytes
+take precedence.
+
+**How does the renderer tell a missing graphic frame from a plain colour swatch?**
+The parser records *that* a frame nests an image element separately from whether
+its link resolved. That lets the renderer distinguish a plain colour swatch (no
+image element, just a fill) from a graphic frame whose link is unresolvable (an
+image element, but no usable bytes) — so it can draw a missing-image placeholder
+in the second case instead of falling back to the frame's fill.

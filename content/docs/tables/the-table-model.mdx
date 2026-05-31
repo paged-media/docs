@@ -7,6 +7,16 @@ status: published
 owner: paged-docs
 ---
 
+**The `<Table>` element is the root of a table: it declares the grid's dimensions as counts and carries the table's own paint directly as attributes.**
+
+**In short:** A `<Table>` defines a grid with four counts — `HeaderRowCount`,
+`BodyRowCount`, `FooterRowCount`, and `ColumnCount` — and carries the table's own
+borders as attributes: the four outer-edge strokes and the alternating row and
+column dividers. Its `<Row>`, `<Column>`, and `<Cell>` children fill the grid in.
+A `<Table>` always lives inside a `<CharacterStyleRange>`, inside a
+`<ParagraphStyleRange>`, inside a story. This page is the attribute reference for
+the `<Table>` element itself.
+
 The `<Table>` element is the root of a table. It declares the grid's dimensions
 as counts, and it carries the table's own paint — the four outer border strokes
 and the alternating row / column dividers — directly as attributes. Its `<Row>`,
@@ -126,3 +136,28 @@ The `StrokeOrder` attribute — which stroke wins where a row divider crosses a
 column divider — and the skip-first / skip-last alternating counts are stored by
 IDML on the `<Table>` but are not read here.
 <SupportBadge status="not-yet-parsed" note="StrokeOrder, skip-alternating counts" />
+
+## Frequently asked questions
+
+**How does a `<Table>` define how many rows and columns it has?**
+The total number of rows is `HeaderRowCount + BodyRowCount + FooterRowCount`, and
+the column count is `ColumnCount`. The renderer expects exactly that many `<Row>`
+children and `ColumnCount` `<Column>` children; each count defaults to 0 when the
+attribute is absent.
+
+**Does the renderer get a table's geometry from `AppliedTableStyle`?**
+No. `AppliedTableStyle` is recorded and resolved only for region cell-style lookup
+— so a cell with no `AppliedCellStyle` can inherit a header, body, or footer
+default. The table's measured layout — insets, row heights, and the strokes
+actually drawn — is read from the row, column, and cell elements directly.
+
+**Why do gridlines still appear when the table-level divider attributes are left at their defaults?**
+When a divider style comes from a table style, InDesign also serialises the
+resulting stroke on each `<Cell>`'s matching edge. The renderer draws those
+per-cell edge strokes, so ordinary gridlines appear even without any explicit
+table-level divider attributes.
+
+**Are dashed or striped table borders drawn as authored?**
+Not yet. The per-edge `StrokeType` attributes are captured but the renderer draws a
+solid stroke today, and the dashed-style gap colours (`StrokeGapColor` / `GapTint`)
+are read past but not acted on.

@@ -7,7 +7,16 @@ status: published
 owner: paged-docs
 ---
 
-The full style guide lives in the repo; these five rules are its spine, and a
+**This style guide is the short list of rules every page in the reference is held to.**
+
+**In short:** It captures the house voice and page shape so that a hundred pages
+written by different hands still read as one reference. The rules are deliberately
+few — short sentences, one concept per page, examples before explanation, no
+marketing voice, an honest difficulty label, and a fixed page shape — so a reviewer
+can hold any page to them at a glance. This page lists those rules, the visual
+identity, and the one positioning line we always keep straight.
+
+The full style guide lives in the repo; these rules are its spine, and a
 reviewer can hold any page to them.
 
 1. **Short sentences.** If a sentence has two ideas, it is two sentences.
@@ -19,6 +28,11 @@ reviewer can hold any page to them.
    one reader tier (🟢/🟡/🔴) and one mode (tutorial / how-to / reference /
    explanation), set in frontmatter and shown as the difficulty label. The label is
    derived from the frontmatter, so the two can never disagree.
+6. **Open with a summary, close with FAQs.** Every page opens with a one-line
+   bold definition followed by an **"In short:"** summary of two to five sentences,
+   and ends with a **"Frequently asked questions"** section of at least three
+   question-and-answer pairs. The summary orients the reader (and the search engine)
+   in seconds; the FAQs answer what they will ask next, in their own words.
 
 ## Visual identity
 
@@ -31,3 +45,27 @@ major concept gets one.
 Paged is a native renderer for paged media, starting with IDML — a separate
 project from the CSS-based Paged.js polyfill. We credit Paged.js and the CSS Paged
 Media work where relevant and never imply a fork or affiliation.
+
+## Frequently asked questions
+
+**What is the required shape of a page?**
+Every page opens with a one-line bold definition, then an **"In short:"** summary of
+two to five sentences, and ends with a **"Frequently asked questions"** section of at
+least three Q&A pairs. In between, the body follows the page's declared Diátaxis mode
+— tutorial, how-to, reference, or explanation.
+
+**Why does every page need a summary and FAQs?**
+The summary lets a reader (and a search engine) understand the page in seconds before
+committing to the whole thing, and the FAQs answer the questions a reader most
+naturally asks next. Together they make each page useful on its own, even when someone
+arrives mid-reference from a search result.
+
+**How are the tier and difficulty label kept honest?**
+The difficulty label is derived directly from the page's frontmatter `tier`, so it can
+never silently disagree with what the page claims to be. A reviewer sets one tier and
+one Diátaxis mode per page and the rest follows automatically.
+
+**Is Paged the same project as Paged.js?**
+No. Paged is a native renderer for paged media starting with IDML, while Paged.js is a
+CSS-based polyfill. We credit Paged.js and the CSS Paged Media work where relevant and
+never imply a fork or affiliation.

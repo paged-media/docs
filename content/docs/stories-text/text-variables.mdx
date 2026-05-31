@@ -1,11 +1,21 @@
 ---
 title: Text variables
-description: How TextVariableInstance and auto-page-number markers turn into characters in a run.
+description: How TextVariableInstance and auto-page-number markers become characters in a run — frozen ResultText snapshots and private-use placeholder markers.
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
 ---
+
+**Text variables and page-number markers are computed characters that the parser inlines into a story's run text.**
+
+**In short:** Not every character in a story is typed — a running header, a chapter
+number, a file name, or the current page number is *computed*. InDesign stores these
+as **text variables** (`TextVariableInstance`, carrying a frozen `ResultText`) and
+**page-number markers** (processing instructions inside `Content`). Our parser inlines
+the variable's value and substitutes private-use placeholders for the page-number
+markers, so by the time you have a run string a variable is just more characters. This
+page is the reference for both.
 
 Some of the characters in a story aren't typed — they're computed. A running
 header, a chapter number, a file name, the current page number: InDesign stores
@@ -88,3 +98,30 @@ When you [extract all text](/docs/stories-text/extract-all-text), a
 running header shows up in your output as the frozen header string. The page-number
 markers, by contrast, come through as the U+E018 / U+E019 placeholders — decide per
 export whether to resolve them, leave them, or drop them.
+
+## Frequently asked questions
+
+**What is a text variable in IDML?**
+A text variable is a computed piece of text — a running header, chapter number, file
+name, and the like. It has a `TextVariable` *definition* in the design map and one or
+more `TextVariableInstance` *instances* in the stories, each carrying the value in
+`ResultText`.
+
+**Does the renderer recompute a text variable's value?**
+No. `ResultText` is a snapshot of whatever InDesign computed at the last export, and
+the renderer inlines that snapshot rather than re-deriving it. A running header won't
+update if you move the paragraph it tracks, and a baked page-number variable won't
+follow repagination.
+
+**Why does extracted text contain U+E018 or U+E019?**
+Those are the private-use placeholders the parser substitutes for the current-page
+(`<?ACE 18?>`) and next-page (`<?ACE 19?>`) markers, since the real number depends on
+where the frame lands. They are chosen from a Unicode tag block no real text produces,
+so seeing one means a live page-number marker, not stray data — map it to a page number
+or strip it for plain-text export.
+
+**How are auto-page-number markers different from other text variables?**
+Auto-page numbers aren't stored as `TextVariableInstance`. InDesign writes them as
+processing instructions inside `Content`, and because the value depends on layout the
+parser can't inline a literal — it writes the U+E018 / U+E019 placeholder, which the
+renderer replaces with the live page number at emit time.

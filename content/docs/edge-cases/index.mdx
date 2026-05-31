@@ -52,3 +52,32 @@ The two pages under this section split the topic along its natural seam:
 Read the error model first if you want to know what will make a load fail outright;
 read graceful degradation if you want to know what will quietly change what you
 see on the page.
+
+## Frequently asked questions
+
+**What is the difference between a recoverable and a fatal IDML problem in Paged?**
+A **fatal** problem is one that stops the load: the renderer returns a single typed
+error from `Document::open` and hands back no document at all. A **recoverable**
+problem is one the renderer reads past *inside* a load that otherwise succeeds — a
+missing attribute, an unknown value, a capped cycle, a broken image link. The line
+is structural: a part the manifest explicitly promised must exist and parse, but
+almost everything an *open* document leaves unsaid or says oddly is forgiven. The
+[error model](/docs/edge-cases/the-error-model) is the catalogue of fatal failures;
+[graceful degradation](/docs/edge-cases/graceful-degradation) is the catalogue of
+recoverable ones.
+
+**Why does this section describe renderer behavior instead of just the IDML format?**
+Because the format definition is mostly quiet about invalid documents, and that
+silence is exactly where two tools that both "support IDML" diverge — one drops a
+bad story, one substitutes a default, one stops. None of that is in the format; all
+of it is in the renderer's code. So these pages are pinned to what the Paged
+renderer actually does at `Document::open` and the parse layer beneath it, not to a
+reading of the spec.
+
+**Is it safe to feed untrusted or user-uploaded IDML to the Paged renderer?**
+Yes, in the sense that malformed input is returned as a typed error value rather
+than crashing the renderer: a broken archive, a non-IDML mimetype, or a dangling
+manifest reference each surface as a named failure a caller can act on. What this
+section adds is the rest of the picture — which imperfections will *not* stop a load
+but will quietly change the rendered page — so you can decide what "rendered
+successfully" should mean in your pipeline.

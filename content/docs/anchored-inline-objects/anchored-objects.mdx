@@ -1,11 +1,23 @@
 ---
 title: Anchored objects
-description: The element model of an anchored object — a frame nested inside a CharacterStyleRange, plus every attribute of its AnchoredObjectSetting.
+description: The element model of an anchored object — a frame nested inside a CharacterStyleRange, plus every attribute of its AnchoredObjectSetting and our parser's support status.
 tier: pro
 diataxis: reference
 status: published
 owner: paged-docs
 ---
+
+**An anchored object is a `<Rectangle>`, `<TextFrame>`, or `<Group>` written as a child of a `CharacterStyleRange`, carrying one `<AnchoredObjectSetting>`.**
+
+**In short:** An anchored object is built from two parts in IDML. The first is an
+ordinary frame element — a `<Rectangle>`, a `<TextFrame>`, or a `<Group>`, the same
+elements you would find on a spread — but written *inside* a run of text rather than
+on the spread. The second is a single extra child, `<AnchoredObjectSetting>`, that
+records where the frame should land relative to the anchor character. Our parser
+reads the frame's geometry and styling onto the host paragraph and reads the setting
+alongside it. This page is the reference for both: the frame element's attributes
+and every attribute of `<AnchoredObjectSetting>`, each with its honest support
+status.
 
 An anchored object is a frame written as a child of a `CharacterStyleRange`. The
 frame is one of three familiar elements — a `<Rectangle>`, a `<TextFrame>`, or a
@@ -85,3 +97,31 @@ frame; the anchored rectangle is data hanging off the paragraph within it.
 What `AnchoredPosition`, `AnchorPoint`, and the reference/alignment attributes
 actually *do* — and how much of it the renderer carries today — is the subject of
 [inline vs anchored positioning](/docs/anchored-inline-objects/inline-vs-anchored).
+
+## Frequently asked questions
+
+**Which elements can be an anchored object?**
+Exactly three: a `<Rectangle>`, a `<TextFrame>`, or a `<Group>`, written directly
+inside a `CharacterStyleRange`. These are the same elements you would find on a
+spread; the parser records which one it is as the frame's *kind* and reads the rest
+of its attributes the way it reads them at spread level.
+
+**What does `<AnchoredObjectSetting>` do?**
+It is the placement block nested inside the frame element. It records *intent* —
+where the object should land relative to the anchor, via attributes like
+`AnchoredPosition`, `AnchorPoint`, and the offset and reference/alignment pairs —
+without itself moving anything. The parser stores each attribute verbatim, and an
+absent attribute falls back to its cascaded default.
+
+**Why doesn't adding an anchored object change the frame, paragraph, or run count?**
+Because the object is recorded on its host paragraph rather than promoted to a
+spread-level frame. The frame count reflects the page's text frame, the paragraph
+still has one paragraph, and the run that hosts the object is still one run — so the
+renderer reports `frames: 1`, `paragraphs: 1`, `runs: 1` even though a whole
+`<Rectangle>` was added to the story.
+
+**Does the parser read everything inside an anchored frame?**
+No. It deliberately skips nested transparency settings and, beyond a nested
+`<Image>`'s link URI and transform on an anchored `<Rectangle>`, image styling. A
+`<Group>` records its child frames in z-order, and a `<TextFrame>` records its
+`ParentStory` so the renderer can chase the story content once placement lands.

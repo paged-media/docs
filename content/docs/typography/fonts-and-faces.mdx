@@ -7,6 +7,17 @@ status: published
 owner: paged-docs
 ---
 
+**A run names its typeface in two halves — `AppliedFont` is the family and `FontStyle` is the face — and the renderer resolves that pair against fonts the host supplies, not against anything inside the package.**
+
+**In short:** In IDML, a text run picks a typeface with two values: `AppliedFont`
+names the family (such as `Minion Pro`) and `FontStyle` names the face within it
+(such as `Bold` or `Bold Italic`). The renderer turns that pair into a lookup key
+and resolves it against the fonts its host registered, falling back from the exact
+styled face to the bare family to a configured default. The package's `Fonts.xml`
+part is only a *manifest* of which faces a document referenced — IDML embeds no
+font data, and the renderer does not read fonts from it. That is why a missing
+font is a host concern, not a package concern.
+
 A run names its typeface in two halves. `AppliedFont` is the **family** (for
 example `Minion Pro`); `FontStyle` is the **face** within that family (for
 example `Bold`, `Italic`, or `Bold Italic`). Both ride on the
@@ -95,3 +106,32 @@ which maps different scripts in one run to different physical faces), of weight
 interpolation, or of synthesising a bold/italic face when only the regular is
 present. Runs that lean on those features resolve through the same exact-then-bare
 fallback as everything else.
+
+## Frequently asked questions
+
+**What is the difference between `AppliedFont` and `FontStyle`?**
+`AppliedFont` is the type **family** (for example `Minion Pro`); `FontStyle` is the
+**face** within that family (for example `Bold`, `Italic`, or `Bold Italic`). The
+renderer joins them with a single space to form a lookup key like `Minion Pro
+Bold`, with `Regular` or an empty style collapsing to the bare family.
+
+**Does an IDML file contain the actual font files?**
+No. IDML does not embed font data. Each package carries a `Fonts.xml` manifest that
+records, per face, the family it belongs to and metadata like its PostScript name
+and install status — enough for InDesign to warn about missing fonts on import, but
+not the font itself. The renderer resolves faces against fonts the host supplies
+separately, so today it does not read `Fonts.xml` at all.
+
+**What happens if the requested font is not available to the renderer?**
+The page still composes. The lookup falls back from the exact `family + style`
+entry to the bare-family entry to a host-configured default font (or, with none,
+the renderer's own fallback). One practical consequence: if a host registers only
+one weight of a family, every run in that family resolves to it, because the styled
+lookup misses and the bare-family fallback catches it.
+
+**Does the renderer synthesise a bold or italic face, or handle composite fonts?**
+Not yet. The resolution path is one family-plus-style key with two fallbacks. It
+has no notion of synthesising a bold or italic from the regular face, of weight
+interpolation, or of IDML's `CompositeFont` (which maps different scripts in one
+run to different physical faces); runs using those features resolve through the same
+exact-then-bare fallback as everything else.

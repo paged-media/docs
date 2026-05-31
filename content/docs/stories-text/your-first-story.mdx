@@ -1,11 +1,20 @@
 ---
 title: Your first story
-description: Build the smallest story that renders one line of text.
+description: The smallest story that renders one line of text — three nested ranges around a single line of Content, walked from the inside out.
 tier: beginner
 diataxis: tutorial
 status: draft
 owner: paged-docs
 ---
+
+**The smallest story that renders a line of text is three nested ranges wrapped around one line of `Content`.**
+
+**In short:** A story is the smallest interesting thing in an IDML document — the
+text itself. The minimal version is a `Story` element containing one
+`ParagraphStyleRange`, containing one `CharacterStyleRange`, containing one `Content`
+element with a single line of text. Reading it from the inside out shows the spine
+that every IDML story shares; longer stories just add more ranges. This page walks
+that minimal story line by line.
 
 A story is the smallest interesting thing in an IDML document: the text itself.
 Here is the complete story from the smallest valid package — three nested ranges
@@ -31,3 +40,22 @@ of all IDML text. Longer stories just have more ranges.
 
 > 🚧 The next steps (adding a second paragraph, changing the style) are being
 > written; the example above is real and validated against the renderer.
+
+## Frequently asked questions
+
+**What is the minimum a story needs to render a line of text?**
+A `Story` element wrapping one `ParagraphStyleRange`, wrapping one
+`CharacterStyleRange`, wrapping one `Content` element with the text. The example
+above is exactly that — the complete story from the smallest valid package.
+
+**Why are there three nested elements around a single line of text?**
+Each level carries a different kind of meaning: the `ParagraphStyleRange` says which
+paragraph the text belongs to, the `CharacterStyleRange` says how those characters
+are styled, and the `Content` holds the literal characters. The outer `Story` carries
+the `Self` id a frame points at to display the text.
+
+**How does a story grow beyond one line?**
+By adding more ranges. A second paragraph is another `ParagraphStyleRange` sibling;
+a change in character formatting is another `CharacterStyleRange`. The story › paragraph
+range › character range › content nesting stays the same — see
+[story structure](/docs/stories-text/story-structure) for the full model.

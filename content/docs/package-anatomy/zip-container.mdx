@@ -1,14 +1,21 @@
 ---
 title: The ZIP container
-description: The archive shape, the mimetype entry, and the entry that names the document.
+description: An IDML file is an ordinary ZIP archive with two conventions that make it self-identifying — a leading uncompressed mimetype entry and a META-INF/container.xml that names the document's root.
 tier: beginner
 diataxis: reference
 status: published
 owner: paged-docs
 ---
 
-The outermost layer is an ordinary ZIP archive — but with one convention borrowed
-from other open document formats that makes the archive *self-identifying*.
+**An IDML file is an ordinary ZIP archive made self-identifying by two reserved entries.**
+
+**In short:** The outermost layer of an IDML document is a plain ZIP archive, but
+it follows two conventions borrowed from other open document formats. A tiny
+`mimetype` entry comes first and is stored uncompressed, so a tool can read the
+archive's opening bytes and know it is holding an IDML package without
+decompressing anything. A `META-INF/container.xml` then points at the document's
+root manifest, `designmap.xml`. This page covers the archive's shape, the
+`mimetype` entry, and the entry that names the document's starting point.
 
 **The `mimetype` entry comes first, and is stored uncompressed.** The very first
 entry in the archive is a tiny file named `mimetype` whose contents are exactly the
@@ -25,3 +32,23 @@ follows it to the design map, and the design map names everything else.
 Everything after those two is the document itself: the design map, a `Resources`
 folder, `Spreads`, `Stories`, and so on. The next page reads the design map, which
 is where the document's structure begins.
+
+## Frequently asked questions
+
+**Is an IDML file just a renamed ZIP file?**
+Essentially, yes — an IDML file is an ordinary ZIP archive, and you can unzip it
+with any ZIP tool to see the XML parts inside. The only twist is the two
+conventions it follows: a leading, uncompressed `mimetype` entry and a
+`META-INF/container.xml`, both borrowed from other open document formats.
+
+**Why is the `mimetype` entry stored first and uncompressed?**
+So the archive is self-identifying. Because the `mimetype` entry comes first and
+is stored rather than deflated, a tool can read the first few bytes of the file
+and confirm it is an IDML package without decompressing anything. Our renderer
+checks this entry when it opens a package.
+
+**What does `META-INF/container.xml` do?**
+It is the "start here" pointer: a small XML file that names the document's root
+manifest, `designmap.xml`. A consumer reads the container, follows it to the
+design map, and the design map names everything else. (Our parser goes straight to
+`designmap.xml` at its fixed path rather than reading the container first.)

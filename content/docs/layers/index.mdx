@@ -1,11 +1,22 @@
 ---
 title: Layers
-description: What a layer is in an IDML document, and why a page item points back at one.
+description: A layer in IDML is a named organizational plane that page items are assigned to — it records membership and a few document-wide switches, not position.
 tier: beginner
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
+
+**A layer in IDML is an organizational plane that page items belong to — not a thing you can see on the page.**
+
+**In short:** A layer in an IDML document is a named, document-wide plane that
+page items are *assigned* to, much as folders group files. The layer says nothing
+about where an item sits — position comes from the item's own geometry — it only
+records membership, the stacking order between layers, and a few on/off switches.
+Two of those switches, *visible* and *printable*, decide whether a layer's items
+are drawn at all; the rest are authoring conveniences a renderer can ignore. This
+chapter explains what a layer is, where its definition and membership live in the
+package, and the one behavior layers actually drive at render time.
 
 A layer in IDML is not a thing you can see. It is an *organizational overlay*: a
 named plane that page items are assigned to, the way folders group files. A
@@ -44,3 +55,25 @@ IDML and a frame you can plainly see in the XML does not appear in the rendered
 page, the answer is almost always a hidden layer. Knowing where to look — the
 item's `ItemLayer`, then that layer's `Visible` in the design map — turns a
 mystery into a one-line check.
+
+## Frequently asked questions
+
+**What is a layer in an IDML document?**
+A layer is a named, document-wide organizational plane that page items are
+assigned to — comparable to how folders group files. It records which items belong
+to it and a few on/off switches, but it does not hold position; an item's place on
+the page comes from the item's own geometry, not its layer.
+
+**Where are layers defined in an IDML package?**
+Layer definitions live in `designmap.xml`, alongside the document's other
+top-level settings — each `<Layer>` element gives a layer an id, a name, and its
+switches. The *membership* lives out on the page items: each item may carry an
+`ItemLayer` attribute naming the layer it belongs to, so the link runs from the
+item back to the layer, not the other way.
+
+**Why would an item I can see in the XML not appear on the rendered page?**
+The usual cause is a hidden or non-printing layer. Follow the item's `ItemLayer`
+to the matching `<Layer>` in the design map and check its `Visible` and
+`Printable` switches — if either is `false`, the renderer drops the item before it
+paints. See [visibility and printing](/docs/layers/visibility-and-printing) for
+the full rule.

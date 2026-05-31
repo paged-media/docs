@@ -7,6 +7,17 @@ status: published
 owner: paged-docs
 ---
 
+**Stamping is the render-time pass that copies a master's items onto each body page that names it, beneath the page's own content.**
+
+**In short:** A master item never appears in a body page's XML — it lives in the
+master file, and the renderer reconstructs the page by *stamping* the master's
+items onto it. The pass resolves the page's `AppliedMaster`, picks the matching
+master page, routes each item to the page it belongs to, and offsets it onto the
+body page's origin. It runs *before* the page's own items, so master furniture
+lands at the back of the display list and body content paints on top. This page is
+the reference for that pass: what it copies, where it puts it, and which attributes
+steer it.
+
 A master item never appears in a body page's XML. When you open a
 `Spreads/Spread_*.xml` you see only the items the user drew *on that page*; the
 header rule that visibly sits behind them lives in the `MasterSpreads/*.xml` file
@@ -164,3 +175,29 @@ spread XML; they are stamped in.
 Once you can predict what stamping *adds*, the next page covers what an
 [override](/docs/master-spreads-overrides/override-resolution) tells it to leave
 out.
+
+## Frequently asked questions
+
+**Why don't master items appear in the body page's XML?**
+Because masters are inherited, not copied. A `Spreads/Spread_*.xml` part holds only
+the items drawn on that page; the master's items stay in the `MasterSpreads/*.xml`
+file the page's `AppliedMaster` points at, and the renderer stamps them onto the
+page at render time. This keeps the repeating furniture authored in one place.
+
+**Why do master items render behind a page's own content?**
+The stamping pass runs before the renderer emits a page's own items, so master
+items land at the back of the page's display list and the page's own items, emitted
+afterwards, paint on top. The back-to-front order does the work — no explicit
+z-index is needed.
+
+**Does the ShowMasterItems flag hide a page's master items?**
+Not currently. `ShowMasterItems` is parsed but not honored: any page with an
+`AppliedMaster` gets its master items stamped regardless of the flag's value. To
+suppress a specific master item on a page, list its `Self` id in the page's
+`OverrideList` instead.
+
+**Are grouped master items stamped onto body pages?**
+No. The stamping pass walks each shape type — text frames, rectangles, ovals,
+graphic lines, and polygons — but has no arm for `Group`, so a cluster grouped on
+the master does not reach the body page. Author master furniture as top-level
+shapes until grouping is wired.

@@ -1,11 +1,22 @@
 ---
 title: Images & graphics
-description: How placed pictures live inside frames — the link the parser captures, and the asset lookup it defers to render time.
+description: In an IDML layout a picture is always placed inside a frame — the parser captures the frame, the image reference, and the transform, and defers the asset lookup to render time.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
+
+**A picture in an IDML layout is never free-floating — it is always *placed* inside a frame.**
+
+**In short:** A graphic in an InDesign layout lives inside a frame, the same kind
+of frame that can hold a colour or a story. The frame owns the geometry — where
+the picture sits, how big it is, and what shape crops it — while the picture adds
+only a pointer to some image data and a small transform that says how its pixels
+land inside that frame. Our parser reads all of that and then stops: it does not
+load the image bytes, leaving the file lookup and decoding to a separate component
+at render time. This chapter explains how placed images are structured, what the
+parser captures, and why the asset lookup is deferred.
 
 A picture in an InDesign layout is never a free-floating thing. It is always
 *placed* — it lives inside a frame, the same kind of frame that can hold a colour
@@ -50,3 +61,23 @@ slots simply left for the resolver to fill or leave empty.
 Throughout, "graphic frame" just means a frame with a picture in it. The frame
 machinery is unchanged from the frames chapter; everything new here is the
 picture and how it attaches.
+
+## Frequently asked questions
+
+**What is a placed image in IDML?**
+A placed image is a frame — usually a `Rectangle`, but also an `Oval` or
+`Polygon` — that nests an `<Image>` element. The frame owns the geometry and the
+crop shape, while the nested image carries a reference to the picture data and its
+own transform; the presence of that nested image element is what turns an ordinary
+frame into a graphic frame.
+
+**Does the IDML parser load and decode the picture?**
+No. The parser reads the frame, the reference string (a URI or inline bytes), and
+the image's transform, then stops. Finding the file and decoding the JPEG, PNG, or
+other format happens later at render time, through a separate component called the
+asset resolver.
+
+**What happens when a placed image's file is missing?**
+Nothing fails. Because the parser never tries to load the bytes, parsing a package
+whose images are missing still produces a complete description of every frame; the
+picture slots are simply left for the resolver to fill or leave empty.

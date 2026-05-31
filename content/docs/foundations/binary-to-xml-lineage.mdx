@@ -1,11 +1,21 @@
 ---
 title: The binary-to-XML lineage
-description: Why an XML interchange form exists alongside the native binary document.
+description: Why IDML's open XML interchange form exists alongside InDesign's native binary document — same document, different audience.
 tier: beginner
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
+
+**IDML and the native binary carry the same document — they differ only in who they are for.**
+
+**In short:** A page-layout document has two faces. The native Adobe® InDesign®
+file is a packed binary: compact, fast for the application to load, and tightly
+bound to that application's internals — great for the app, opaque to everyone else.
+IDML is the same document written out as XML so that *any* tool, not just the one
+that made it, can read, diff, generate, or transform it. This page explains why
+that second form exists, what it faithfully preserves, and what it deliberately
+leaves behind.
 
 The native document format is a packed binary: compact, fast for the application
 to load, and tightly coupled to that application's internals. That is good for the
@@ -48,3 +58,23 @@ stories the manifest enumerates — each fetched by the path the design map gave
 The lineage shows here in the order of reading: identify the package, read the
 manifest, follow it to the parts. The XML exists precisely so a tool other than
 the original application can do exactly that.
+
+## Frequently asked questions
+
+**Why does an XML interchange format exist alongside the native binary?**
+The native binary is built for one application: it is compact and fast to load, but
+tied to that app's internals and not safely readable by anything else. The XML
+interchange form exists so that other software can reliably read, diff, generate,
+and transform the same document without reverse-engineering a private byte layout.
+
+**Does the XML form contain everything the binary does?**
+No, and that is by design. The interchange form keeps what a second tool needs to
+reconstruct the document — page geometry, text and its flow, styles, colors, and
+the references that tie them together. Application-only state such as live caches
+and undo history stays in the binary.
+
+**Why are some values, like text variables, stored as fixed results instead of live instructions?**
+The interchange form records certain values as facts rather than as instructions to
+recompute. A text variable, for example, carries the text it resolved to at export
+time; whatever opens the file decides whether to refresh it. Our reader honors that
+by capturing the resolved result faithfully rather than recomputing it.

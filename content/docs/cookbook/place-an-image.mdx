@@ -7,10 +7,13 @@ status: published
 owner: paged-docs
 ---
 
-There's no "image frame" element in IDML. You place a picture by nesting an
-`<Image>` inside an ordinary `Rectangle` — the same rectangle a colored shape uses.
-The `Image` carries its own transform and a `<Link>` that names the file on disk.
-This recipe places a linked photo in a frame on a page.
+**An image in IDML is a `Rectangle` with an `<Image>` nested inside it — there is no dedicated "image frame" element.**
+
+**In short:** you place a picture by nesting an `<Image>` inside an ordinary
+`Rectangle`, the same rectangle a colored shape uses. The presence of the `Image`
+child is what turns the rectangle into a graphic frame; the image carries its own
+`ItemTransform` and `GraphicBounds`, plus a `<Link>` whose `LinkResourceURI` names
+the file on disk. This recipe places a linked photo in a frame on a page.
 
 ## The recipe
 
@@ -61,3 +64,28 @@ that points at the file. Read it top to bottom and the recipe is right there.
 For the full picture — supported formats, clipping, and how the asset resolver
 works at render time — see [Images & graphics](/docs/images-graphics) and the
 [placed images](/docs/images-graphics/placed-images) reference.
+
+## Frequently asked questions
+
+**What makes a `Rectangle` an image frame rather than a shape?**
+The nested `<Image>` child, and nothing else. A bare `Rectangle` is a shape; the
+same rectangle with an `<Image>` inside it is a graphic frame. There is no
+`ContentType` attribute or frame flag to set — don't look for one.
+
+**Why does an image have two transforms?**
+The image's own `ItemTransform` maps its natural pixel space into the frame's
+coordinate space (the example uses `0.5 0 0 0.5 0 0`, a half-scale), while the
+frame's `ItemTransform` places the frame on the page. They compose: edit the frame's
+transform to move the whole thing, and the image's transform to crop or scale the
+picture within it.
+
+**Does a missing image file break the parse?**
+No. `LinkResourceURI` is captured as a plain string, so the document opens fine even
+when the asset isn't present. The parser defers the actual lookup to an asset
+resolver at render time — the path only needs to resolve when you render, not when
+you author.
+
+**Can the picture be embedded instead of linked?**
+Yes. A picture can be linked by URI or embedded as a `<Contents>` payload, and both
+reach the parser the same way. This recipe uses a link; the
+[placed images](/docs/images-graphics/placed-images) reference covers embedding.

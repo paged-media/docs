@@ -7,6 +7,18 @@ status: published
 owner: paged-docs
 ---
 
+**A paragraph's `Justification` sets how its lines align in the column; the composer then breaks the whole paragraph with a Knuth–Plass total-fit pass, while penalty-weight and hyphenation calibration against InDesign is still ongoing.**
+
+**In short:** `Justification` chooses a paragraph's alignment — left, centre, right,
+or one of the justified modes that stretch inter-word space to fill the line. The
+composer feeds that choice into the harder question of *where* to break each line,
+building a Knuth–Plass item stream and running a total-fit pass that minimises
+badness across the entire paragraph at once, the way InDesign's Paragraph Composer
+does. The shape of the algorithm matches InDesign, but the exact penalty weights —
+and the TeX-pattern hyphenation that stands in for InDesign's licensed dictionaries
+— are still being calibrated, so line breaks are close but not yet guaranteed
+identical on every paragraph.
+
 A paragraph's `Justification` says how its lines align in the column, and that
 choice feeds into a harder question the composer answers next: *where* to break
 each line so the chosen alignment looks good. This page covers both — the
@@ -86,3 +98,32 @@ hard *kinsoku* (line-break-forbidden) rules — roughly the characters that may 
 start or end a line — but it does not consult IDML's named `KinsokuSet` tables or
 the full JIS X 4051 line-composition rules. The paragraph's `KinsokuType` toggles
 the built-in enforcement on; the finer per-set flavour is not yet wired. <SupportBadge status="parsed-not-rendered" note="KinsokuSet / MojikumiTable references parsed onto the paragraph; only a built-in hard-kinsoku heuristic is enforced, not the named tables. core/crates/paged-parse/src/story.rs" />
+
+## Frequently asked questions
+
+**Does the composer break lines greedily, one line at a time?**
+No. It builds a Knuth–Plass item stream for the whole paragraph — boxes, glue, and
+penalties — and runs a total-fit pass that minimises badness across the entire
+paragraph at once, the way InDesign's Paragraph Composer does. That is why moving
+one word can re-flow lines above it.
+
+**Will Paged's line breaks match InDesign's exactly?**
+Not yet on every paragraph. The shape of the algorithm matches InDesign, but the
+exact weights — tolerance, looseness, and the glue stretch/shrink ratios — are
+still being calibrated against InDesign's output on a reference corpus. Expect
+breaks that are close but occasionally diverge until the penalty weights are locked
+in.
+
+**Why might a word hyphenate at a slightly different point than in InDesign?**
+Paged hyphenates using embedded TeX (Liang) patterns by language, while InDesign
+uses Proximity's licensed dictionaries, which we do not ship. The two are the same
+family of algorithm and agree most of the time, but on some words they place a
+break one syllable differently — a small, known divergence in *where* a word breaks,
+not in whether the paragraph is correct.
+
+**Are all the `Justification` values rendered as InDesign composes them?**
+Most are. Left, centre, and right alignment and `LeftJustified` are honoured;
+`CenterJustified` and `RightJustified` map to centre and right alignment.
+`FullyJustified` round-trips losslessly but is currently composed the same as
+`LeftJustified`, and the binding-aware `ToBindingSide` / `AwayFromBindingSide`
+values fall back to plain left/right until binding side is plumbed through.

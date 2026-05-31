@@ -7,6 +7,17 @@ status: published
 owner: paged-docs
 ---
 
+**The tagged-XML layer is built from a small vocabulary — `<XMLTag>`, `<XMLElement>`, the maps in `Mapping.xml`, and the backing `<XMLStory>` — spread across three parts of the package.**
+
+**In short:** This page is the format reference for IDML's tagged-XML layer. It
+documents the element vocabulary: `<XMLTag>` for tag names, `<XMLElement>` for the
+structure tree, `<XMLAttribute>` / `<XMLComment>` / `<XMLInstruction>` for the
+nodes inside it, `<XMLStory>` for the backing store of tagged-but-unplaced content,
+and `<XMLExportMap>` / `<XMLImportMap>` for the tag-to-style maps. The element and
+attribute names are facts drawn from the IDML vocabulary; the descriptions and the
+ordering are ours. The Paged renderer reads **none** of it — every construct here
+is **Not yet parsed**, so this page describes the format, not current behaviour.
+
 This page is a **format reference** for the tagged-XML layer. Every element and
 attribute name below is a fact drawn from the IDML element vocabulary; the
 descriptions and the order are ours, arranged so the parts build on each other.
@@ -176,3 +187,28 @@ embed for this chapter, because there is no rendered output to validate against:
 the renderer produces identical pages whether or not these parts are present. The
 [next page](/docs/tagged-xml/why-its-not-parsed-yet) shows exactly where in the
 engine that boundary sits.
+
+## Frequently asked questions
+
+**What is the difference between an `<XMLElement>` and an `<XMLTag>`?**
+An `<XMLTag>` in `Tags.xml` is just a named, optionally coloured label — the
+vocabulary. An `<XMLElement>` in `BackingStory.xml` is a node in the structure
+tree that *applies* a tag (via its `MarkupTag` reference) to some content. Many
+elements can use the same tag.
+
+**How does a tagged element connect to the text or frame it labels?**
+Either by reference or by containment. When the content is already placed in the
+layout, the element sets `XMLContent` to that item's `Self` id (a `Story`,
+`Rectangle`, or `TextFrame`); when the content is tagged but not yet placed, the
+element holds it directly inside the backing `<XMLStory>`.
+
+**Does Paged read any of these elements or attributes?**
+No. Every row in every table on this page is marked **Not yet parsed**, and the
+support column reads the same all the way down. The names are accurate IDML facts,
+but the renderer acts on none of them.
+
+**Why is there no example to embed for this chapter?**
+Because there is no rendered output to validate an example against — the renderer
+produces identical pages whether or not these parts are present. Our examples are
+checked against the real renderer in CI, and a layer it does not parse has nothing
+to check.

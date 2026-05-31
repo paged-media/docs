@@ -7,6 +7,17 @@ status: published
 owner: paged-docs
 ---
 
+**`<Color>` holds the actual channel values; `<Swatch>` is the named handle that points at one.**
+
+**In short:** `<Color>` and `<Swatch>` are the two leaf entries of the IDML
+palette in `Resources/Graphic.xml`. A `<Color>` carries a color model, a color
+space, and the channel values for that space — CMYK, RGB, Lab, or Gray. A
+`<Swatch>` is a thin named wrapper that usually just references a `<Color>`. Both
+are keyed by their `Self` id, and that id is exactly what a shape or run of text
+names in its `FillColor` or `StrokeColor`. This page is the attribute-level
+reference for both, including the four color spaces and the built-ins every
+document carries.
+
 `<Color>` and `<Swatch>` are the two leaf entries of the palette in
 `Resources/Graphic.xml`. A `<Color>` holds actual channel values; a `<Swatch>`
 is a named handle that usually points at one. Both are keyed by their `Self` id,
@@ -100,3 +111,29 @@ text and no font; it is pure fill, so the live view renders it directly.
 
 Change `ColorValue` in the palette and the rectangle's color follows, because the
 shape only ever names the swatch — the channel values live in one place.
+
+## Frequently asked questions
+
+**What is the difference between a `<Color>` and a `<Swatch>`?**
+A `<Color>` carries the real channel values — a model, a space, and the numbers
+for that space. A `<Swatch>` is a named handle that usually just references a
+`<Color>`, so a `FillColor` naming a swatch resolves through to the underlying
+color in one hop. The reserved `Swatch/None` is the common exception: it wraps no
+color and means "no fill."
+
+**Which color spaces does the renderer support for a `<Color>`?**
+`Space` can be CMYK, RGB, Lab, or Gray. CMYK, RGB, and Gray all convert to device
+color; CMYK is the primary print path and goes through ICC conversion. Lab is
+parsed and stored, but the renderer only produces a visible color for it when it
+arrives through a spot color's CMYK alternate.
+
+**What is `Swatch/None`, and is it an error?**
+`Swatch/None` is the reserved "no paint" handle. A frame with
+`FillColor="Swatch/None"` is simply transparent there — it is not an error and not
+a color, just the explicit absence of one.
+
+**Does a document have to define every color it references?**
+No. InDesign® guarantees a fixed set of built-ins exist whether or not they appear
+in `Graphic.xml` — None, Paper, Black, and Registration — and the format also
+reserves the hidden process primaries Cyan, Magenta, and Yellow. The renderer keys
+these by name, so an example that omits them still resolves correctly.

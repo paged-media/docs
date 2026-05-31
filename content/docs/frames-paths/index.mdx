@@ -1,17 +1,22 @@
 ---
 title: Frames & paths
-description: The page-item family — the rectangles, ovals, lines, polygons, text frames, and groups that hold every mark on a page.
+description: The page-item family in IDML — the rectangles, ovals, lines, polygons, text frames, and groups that hold every mark on a page.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
 
-Everything you see on an IDML page is a *page item*. A block of body copy, a
-photo, a tinted background panel, a hairline rule, a logo cluster — each is one
-of a small family of elements that live as direct children of a
+**Everything you see on an IDML page is a *page item* — one of a small family of elements that hold every mark on a spread.**
+
+**In short:** A *page item* is the IDML element that places content on a page: a
+block of body copy, a photo, a tinted background panel, a hairline rule, a logo
+cluster. They are a small, closed family — text frames, rectangles, ovals,
+graphic lines, polygons, and groups — and each lives as a direct child of a
 [`Spread`](/docs/package-anatomy/the-design-map). Learn the family and you can
-read any spread: the rest is which attributes each member carries.
+read any spread; the rest is just which attributes each member carries. This
+page introduces the family, the two jobs it splits into, and the skeleton every
+member shares.
 
 ## One family, two jobs
 
@@ -83,3 +88,23 @@ where it pays off.
   first baseline.
 - **[Groups](/docs/frames-paths/groups)** — how membership and group-level
   transparency work, and one thing the renderer does not yet do inside them.
+
+## Frequently asked questions
+
+**What is a page item in IDML?**
+A page item is any element that places content on a page — a `TextFrame`,
+`Rectangle`, `Oval`, `GraphicLine`, `Polygon`, or `Group`. Each is written as a
+direct child of a `Spread` and carries its own placement, outline, and paint.
+
+**What is the difference between a text frame and a graphic frame?**
+A `TextFrame` points at a story through its `ParentStory`, and the composer flows
+that story's paragraphs into the frame's outline. A graphic frame — a
+`Rectangle`, `Oval`, `GraphicLine`, or `Polygon` — holds a vector shape that
+paints as a colour panel (with a `FillColor`), a picture frame (with a nested
+`<Image>`), or an empty outline (with neither).
+
+**How does the parser know what kind of page item it is reading?**
+It dispatches on the *element name* and on whether a `ParentStory` or image link
+is present, not on the `ContentType` attribute. A `<TextFrame>` with a
+`ParentStory` is treated as text; a `<Rectangle>` with a `FillColor` and no story
+is treated as a graphic.

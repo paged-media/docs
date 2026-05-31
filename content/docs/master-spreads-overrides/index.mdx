@@ -1,11 +1,24 @@
 ---
 title: Master spreads & overrides
-description: Why masters and overrides exist, and how a body page mixes inherited master items with its own — the deep companion to the layout model's introduction.
+description: How a body page mixes inherited master items with its own — masters supply repeating layout by inheritance, and an OverrideList lets a single page swap one item out.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
+
+**A master spread is layout authored once and inherited by many body pages; an override is how one page keeps most of that master while replacing a single item.**
+
+**In short:** A long document repeats itself — the same header rule, the same
+folio, the same column frame, page after page. In IDML, a **master spread** holds
+that repeating layout once, and every body page that names it **inherits** its
+items at render time. An **override** is the escape hatch: a body page lists the
+`Self` id of a master item it wants to take over, and the renderer leaves that one
+item out so the page's own version can stand in. This chapter is the deep
+companion to the [Layout model](/docs/layout-model)'s introduction — it takes
+apart the two mechanics underneath masters and overrides: stamping (how a master
+item reaches a body page) and resolution (how a page suppresses the ones it
+replaces).
 
 A long document repeats itself. The same header rule sits at the top of every
 chapter page; the same folio sits in the same corner of every spread; the same
@@ -62,3 +75,28 @@ The master and body elements themselves — `MasterSpread`, `Spread`, `Page`, an
 the page-item shapes they hold — are the [Layout model](/docs/layout-model)'s
 subject. This chapter is about the *relationship* between a master and the pages
 that borrow from it.
+
+## Frequently asked questions
+
+**What is a master spread in IDML?**
+A master spread is a reusable layout that other pages inherit from. Structurally
+it is just a `Spread` — the same parser reads both — but body pages can name it
+via `AppliedMaster`, and its items are stamped onto each of those pages at render
+time so repeating furniture (headers, folios, background panels) is authored once
+rather than redrawn on every page.
+
+**What is the difference between stamping and override resolution?**
+**Stamping** is the inheritance half: the renderer copies a master's eligible
+items onto each body page that names the master, offset onto that page's origin.
+**Override resolution** is the exception half: a body page's `OverrideList` records
+which master-item ids it has taken over, and the stamping pass skips exactly those
+ids so the page's own replacement can stand in. Stamping adds; resolution
+subtracts.
+
+**Why does this chapter exist if the layout model already covers masters?**
+The [Layout model](/docs/layout-model) introduces masters and overrides at the
+level you need to read a layout: a `MasterSpread` is a `Spread`, and an override
+swaps one item. This chapter is the deeper companion for when a page renders too
+much, too little, or the wrong thing from its master — it documents the two
+mechanics underneath, including the attributes the renderer reads and the parts it
+does not yet honor.

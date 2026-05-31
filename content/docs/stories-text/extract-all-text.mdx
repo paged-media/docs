@@ -1,11 +1,21 @@
 ---
 title: Extract all text from a document
-description: A recipe for pulling the plain text out of every story, in reading order.
+description: A recipe for pulling the plain text out of every story in reading order — walk StoryList, then each story tree, concatenating Content.
 tier: intermediate
 diataxis: how-to
 status: published
 owner: paged-docs
 ---
+
+**To extract a document's plain text, walk its stories in `StoryList` order and concatenate the `Content` of every range.**
+
+**In short:** Getting the plain text out of an IDML document means visiting its
+stories in reading order and concatenating the text of every `Content` element. You
+take the order from `StoryList` on the `Document` element, then walk each story tree
+`Story` → `ParagraphStyleRange` → `CharacterStyleRange` → `Content`, treating `Br` and
+`Tab` as whitespace. No styling needs to be resolved — extraction only cares about
+which characters appear and where the boundaries are. This page gives the recipe and
+the cases to get right.
 
 To get the plain text of a document you walk its stories and concatenate the
 `Content` of every range, in document order. You do not need to resolve any
@@ -62,3 +72,25 @@ attribute — extraction ignores it.
   display it. See [threading and overset](/docs/stories-text/threading-and-overset).
 - **Tables hold their text in cells.** A `Table` nested in a run carries its own
   `Content` inside `Cell` elements; include them if you want the full copy.
+
+## Frequently asked questions
+
+**What order should I extract stories in?**
+The order given by `StoryList` on the `Document` element — a space-separated list of
+story ids that is the reading order. Don't sort by story id or file name; within each
+story, follow document order through the tree.
+
+**Do I need to resolve styles to extract text?**
+No. Extraction only cares about which characters appear and where the boundaries are,
+so you can walk `Story` → `ParagraphStyleRange` → `CharacterStyleRange` → `Content`
+and concatenate the text without touching `Styles.xml`.
+
+**How do I handle threaded stories that span several frames?**
+Extract them once. Text that flows across several frames is still a single `Story`
+part, so the number of frames that display it doesn't change the extraction — see
+[threading and overset](/docs/stories-text/threading-and-overset).
+
+**Why does my extracted text contain copy the reader never sees?**
+Probably because you walked the raw XML without skipping metadata subtrees. Our parser
+drops `HiddenText`, `Note`, and `Index` / `IndexEntry` from the flowed text; if you
+walk the XML yourself, skip those subtrees too, or they'll end up in your output.

@@ -7,6 +7,17 @@ status: published
 owner: paged-docs
 ---
 
+**Two paragraph-level constructs move individual glyphs without touching the run model: a drop cap enlarges and hangs the opening characters, and a tab snaps the text after it to a stop in the paragraph's `TabList`.**
+
+**In short:** Both drop caps and tabs are configured on the `ParagraphStyleRange`.
+A drop cap uses `DropCapCharacters` (how many leading characters) and `DropCapLines`
+(how many lines tall) to lift the opening characters into an enlarged initial that
+the rest of the paragraph flows around. A tab needs a `Tab` marker in the run; at
+layout time the engine snaps the text after it to the next `TabStop` in the
+paragraph's `TabList`, honouring the stop's `Position`, `Alignment`, optional
+`AlignmentCharacter`, and optional `Leader`. When a tab passes every explicit stop,
+the engine falls back to a default 36 pt tab grid.
+
 Two paragraph-level constructs change where individual glyphs land without
 touching the run model: a **drop cap** enlarges the opening characters and hangs
 them down several lines, and a **tab** snaps the text after it to a position set
@@ -85,3 +96,31 @@ single run, so the package reports one paragraph and one run.
 <ExampleEmbed example="tab-stops">
   A table-of-contents-style line: a left tab, then a right tab with dot leaders.
 </ExampleEmbed>
+
+## Frequently asked questions
+
+**How do you make a drop cap in IDML, and what controls its size?**
+A drop cap is set on the `ParagraphStyleRange` with two counts: `DropCapCharacters`
+is how many leading characters become the drop cap, and `DropCapLines` is how many
+lines tall it is. `DropCapDetail` carries InDesign's sizing and side-bearing detail,
+read alongside the two counts. A `DropCapCharacters` of 0 means no drop cap.
+
+**Is a drop cap a separate text run?**
+No. The drop cap is a property of the paragraph, not a separate run. In the
+example, a paragraph that turns its first character into a three-line drop cap
+parses to one paragraph and one run; the renderer enlarges and hangs the leading
+characters at layout time.
+
+**What does a `Tab` snap to when the paragraph has no tab stops?**
+When a tab's pen position has passed every explicit `TabStop` — or the paragraph
+defines none — the engine falls back to a **default tab grid** at every 36 pt. Each
+explicit stop's `Alignment` maps directly: `LeftAlign` starts the segment at the
+stop, `RightAlign` ends it there, `CenterAlign` centres it, and `CharacterAlign`
+lands the alignment character (a decimal point by default) on the stop.
+
+**What is a tab leader, and how is it rendered?**
+A `Leader` is a string tiled across the gap a tab opens up — the dot leaders in a
+table of contents, for instance. The engine emits whole copies only: a leader wider
+than the gap emits none, and an empty or absent `Leader` produces no leader. If an
+alignment can't be honoured without glyphs colliding, that one tab falls through to
+left alignment so text never overlaps.

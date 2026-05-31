@@ -1,18 +1,22 @@
 ---
 title: Resource parts
-description: The Resources/* parts — colors and gradients, the font manifest, the style groups, and preferences.
+description: The Resources folder holds an IDML document's shared definitions — colors and gradients in Graphic.xml, named styles in Styles.xml, the font manifest in Fonts.xml, and document preferences in Preferences.xml.
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
 ---
 
-The `Resources` folder holds the definitions the rest of the document refers to
-by id. A text frame names a `FillColor`, a paragraph names an
-`AppliedParagraphStyle`, a run names an `AppliedFont` — and the value each of
-those names points at is defined once, here, so it can be shared across every
-spread and story. Four parts live in this folder: `Graphic.xml`, `Fonts.xml`,
-`Styles.xml`, and `Preferences.xml`.
+**The `Resources` folder holds the shared definitions — colors, styles, fonts, preferences — that the rest of an IDML document refers to by id.**
+
+**In short:** The `Resources` folder is an IDML document's shared vocabulary. A
+text frame names a `FillColor`, a paragraph names an `AppliedParagraphStyle`, a run
+names an `AppliedFont` — and the value behind each of those names is defined once,
+here, so it can be reused across every spread and story. Four parts live in the
+folder: `Graphic.xml` (colors, swatches, and gradients), `Styles.xml` (the named
+style groups), `Fonts.xml` (a font manifest), and `Preferences.xml` (document
+preferences). This page covers what each part holds and how much of it our parser
+reads today.
 
 Our parser does not discover these parts from the design map's `idPkg:*`
 elements — it opens `Resources/Graphic.xml` and `Resources/Styles.xml` directly,
@@ -116,3 +120,25 @@ from this part. <SupportBadge status="not-yet-parsed" note="Resources/Preference
 Together these four parts are the shared vocabulary. The next page covers the
 parts that *use* that vocabulary — the [content parts](/docs/package-anatomy/content-parts)
 that hold the pages and the text.
+
+## Frequently asked questions
+
+**What is stored in the `Resources` folder of an IDML package?**
+The `Resources` folder holds the document's shared definitions: `Graphic.xml` for
+colors, swatches, and gradients; `Styles.xml` for the named paragraph, character,
+object, cell, and table styles; `Fonts.xml` as a font manifest; and
+`Preferences.xml` for document- and application-level preferences. The rest of the
+document references these by id rather than repeating them.
+
+**Does an IDML document store its actual fonts in `Fonts.xml`?**
+No. `Fonts.xml` is a manifest, not a font store — it lists the faces a document
+expects (PostScript name, style, type, and installed status), but the actual font
+outlines come from the host system or the renderer's own font set. Our parser does
+not open `Fonts.xml` today; styles and runs name fonts by name, and the renderer
+matches that name against the fonts it has been given.
+
+**What happens if `Graphic.xml` or `Styles.xml` is missing?**
+The document still opens. Our parser reads `Graphic.xml` and `Styles.xml` directly
+at their fixed paths and parses each if present; if either is absent, it
+substitutes an empty palette or empty style sheet rather than failing, and
+references that find no match simply fall back.

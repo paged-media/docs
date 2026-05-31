@@ -1,11 +1,22 @@
 ---
 title: Typography
-description: What the renderer does with type — fonts, spacing, line-breaking, drop caps, and tabs — and an honest map of where each construct stands.
+description: What the renderer does with type once the parser hands it text runs — resolving fonts, shaping and spacing glyphs, breaking lines, and placing drop caps and tabs — with an honest map of where each construct stands.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
+
+**Typography in Paged is what the renderer does with a text run after the parser has read it — resolve a font, shape and space the glyphs, break the lines, and place the special cases.**
+
+**In short:** This chapter covers the renderer's typographic pipeline for IDML:
+how a run's `AppliedFont` and `FontStyle` resolve to a real face, how `Tracking`,
+`Leading`, and kerning space the glyphs, how the composer breaks paragraphs into
+lines, and how drop caps and tabs are placed. Parsing an attribute and *honouring*
+it are different things, so every page marks which constructs are laid out today,
+which are read but not yet acted on, and which are read past. The throughline is
+practical: each topic is explained from the angle of what the renderer actually
+has to *do* with it.
 
 [Stories and text](/docs/stories-text/story-structure) covered the *shape* of a
 story: the `Story → ParagraphStyleRange → CharacterStyleRange → Content` tree and
@@ -68,3 +79,23 @@ attributes sit in the IDML schema — the reason of record is reader progression
   — the `Justification` values and how the line-breaker and hyphenator behave.
 - **[Drop caps and tabs](/docs/typography/drop-caps-and-tabs)** — the drop-cap
   counts and the `TabList` of `TabStop`s a `Tab` snaps to.
+
+## Frequently asked questions
+
+**Does the renderer support every IDML typography attribute?**
+No — and that is the point of this chapter. A construct can be perfectly parsed
+into the model and still be a no-op at layout time. Each page carries a support
+status, and anything short of full support gets a `<SupportBadge>`, so you always
+know whether an attribute is laid out, parsed-not-rendered, or not yet parsed.
+
+**What order are the typography pages in, and why?**
+They follow the path a run of text actually takes through the engine: resolve a
+face, shape and space the glyphs, break the paragraph into lines, then place
+special cases like drop caps and tabs. The ordering is reader progression along
+that pipeline, not the order attributes happen to sit in the IDML schema.
+
+**Does Paged read fonts out of the IDML package?**
+No. The renderer resolves each face against fonts the host supplies, by family and
+style name; it does not load font data from the package. IDML's `Fonts.xml` is a
+manifest of which faces a document referenced, not a source of embedded fonts —
+see [fonts and faces](/docs/typography/fonts-and-faces).

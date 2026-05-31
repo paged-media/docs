@@ -1,11 +1,21 @@
 ---
 title: How the renderer reads it
-description: A high-level walk from open to pixels, naming the crates that do each step.
+description: A high-level walk from open to pixels — the four pipeline stages and the engine crate that owns each one.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
+
+**Turning an IDML package into pixels is a four-stage pipeline: open, parse, resolve, build.**
+
+**In short:** An IDML package describes a document's structure and intent, not
+pixels. Producing a rendered page means running that intent through a pipeline of
+distinct steps — open the container, parse each part, resolve styles and text flow,
+then build and rasterize — with each step owned by a different crate in the engine.
+This page walks the whole path at altitude so the rest of the reference has a shape
+to hang on. The deeper mechanics live in [the renderer](/docs/the-renderer) and
+[parser internals](/docs/parser-internals).
 
 An IDML package describes a document's structure and intent, not pixels. Turning
 that intent into a rendered page is a pipeline of distinct steps, each owned by a
@@ -67,3 +77,24 @@ it, but live per-page recomputation is a future task.
 Where a page in this reference describes a construct we read but do not fully
 render, it says so and links forward to the status detail. The pipeline above is
 the spine; the gaps are noted in place rather than hidden.
+
+## Frequently asked questions
+
+**What are the stages of the rendering pipeline?**
+Four. *Open* treats the package as a container and reads the manifest; *parse*
+turns each named part into typed structures; *resolve* assembles them into a
+coherent document, applying the style cascade and story threading; *build* shapes
+and lines the text, composes a display list, and rasterizes it into pixels.
+
+**Which engine crate handles each stage?**
+`paged-parse` handles open and parse. `paged-scene` handles resolve via
+`Document::open`. `paged-text` shapes and lines the text and `paged-compose` builds
+the display list, with `paged-renderer` driving the whole chain and rasterizing the
+result.
+
+**If the renderer parses something, does that mean it renders it?**
+Not always. Some constructs are parsed and held faithfully but do not yet change
+the rendered output. Text variables are the clear example: the resolved
+`ResultText` is captured exactly as the document recorded it, while live per-page
+recomputation is still a future task. Pages flag these gaps in place rather than
+hiding them.

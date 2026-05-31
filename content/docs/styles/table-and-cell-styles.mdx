@@ -1,11 +1,23 @@
 ---
 title: Table and cell styles
-description: The TableStyle and CellStyle elements — how a table style nominates a default cell style per region and sets its border strokes and alternating fills, and how a cell style carries per-edge strokes, insets, and fill.
+description: The TableStyle and CellStyle elements — how a table style nominates a default cell style per region and sets its border strokes and alternating fills, and how a cell style carries per-edge strokes and fill.
 tier: pro
 diataxis: reference
 status: published
 owner: paged-docs
 ---
+
+**Tables get two style kinds: a cell style formats one cell, and a table style sits above it, nominating a default cell style per region and dressing the table itself.**
+
+**In short:** A cell style formats a single cell — its fill, its four edge strokes,
+its vertical justification. A table style sits a level above it: it nominates a
+default cell style for each *region* of the table (header, body, footer, and the
+left and right columns) and carries the table's own border strokes and
+alternating-row fills. `<TableStyle>` lives in `<RootTableStyleGroup>` and
+`<CellStyle>` in `<RootCellStyleGroup>`; both cascade through `BasedOn` with the
+same first-setter-wins fold as the text styles. For the table structure these
+styles dress — rows, columns, header and footer regions, merged cells — see the
+[Tables chapter](/docs/tables).
 
 Tables get their own two style kinds. A **cell style** formats a single cell —
 its fill, its four edge strokes, its insets. A **table style** sits a level above:
@@ -84,3 +96,27 @@ padding today comes from the cell element rather than its style.
 How a cell's effective formatting is built — its own attributes, then its cell
 style's chain, then the table style's region default — follows the same layered
 logic as text; see [conflict resolution](/docs/styles/conflict-resolution).
+
+## Frequently asked questions
+
+**What is the difference between a table style and a cell style?**
+A cell style formats a single cell — its fill, four edge strokes, and vertical
+justification. A table style sits above it: it nominates a default cell style for
+each region of the table and carries the table's own border strokes and
+alternating-row fills.
+
+**How does a table style apply formatting to different parts of a table?**
+Its region attributes — `BodyRegionCellStyle`, `HeaderRegionCellStyle`,
+`FooterRegionCellStyle`, and the left and right column region attributes — are
+*references to cell styles*, naming the cell style to apply to cells in that region
+unless a cell overrides it.
+
+**How do a table and a cell reference their styles?**
+A `<Table>` names its table style with `AppliedTableStyle` and a `<Cell>` names its
+cell style with `AppliedCellStyle`; each value is the style's `Self` id.
+
+**Are there table or cell style attributes the parser does not yet read?**
+Yes. On `<TableStyle>`, `StrokeOrder`, gap colours, column fills, and
+skip-alternating counts are stored but not yet read; on `<CellStyle>`, the cell
+insets, `AppliedParagraphStyle`, diagonal lines, and gap colours are not yet read —
+cell padding today comes from the cell element rather than its style.

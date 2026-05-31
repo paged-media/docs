@@ -405,3 +405,37 @@ CPU rasteriser (tiny-skia) remains as a headless, GPU-free fallback. See
 uses to measure, per pixel and per page, how far the renderer's output drifts from
 InDesign's reference export; together with SSIM it is the pass/fail number behind a
 fidelity claim. See [/docs/test-corpus](/docs/test-corpus).
+
+## Frequently asked questions
+
+**What's the difference between a spread and a page?**
+A **Page** is one side of paper — a single leaf with its own size and bounds. A
+**Spread** is the unit of layout that holds one or more facing pages *and* every
+page item placed across them; the document is a sequence of spreads. The
+distinction matters because items sit on the spread, not on a page: our parser
+reads each item's position against the spread, then resolves which page it falls
+on. See [/docs/layout-model/spreads-and-pages](/docs/layout-model/spreads-and-pages).
+
+**What is a story in IDML?**
+A **Story** is the container that holds a body of text independently of how it is
+displayed — one `Stories/Story_*.xml` part made of paragraphs and runs. The text
+lives in the story; a `TextFrame` does not contain it but references it through
+`ParentStory` and supplies a box for it to flow into. One story can thread through
+several frames across the layout. See
+[/docs/stories-text/story-structure](/docs/stories-text/story-structure).
+
+**What does overset mean?**
+**Overset** is text that does not fit in its frame chain — the leftover lines past
+the end of the last frame. The text is still fully present in the story part, so
+nothing is lost from the document; but our renderer drops the overset lines from
+the rendered page rather than spilling them outside the frame. See
+[/docs/stories-text/threading-and-overset](/docs/stories-text/threading-and-overset).
+
+**Why do these definitions sometimes differ from Adobe's spec glossary?**
+Because they are ours. Each definition here describes how the Paged parser and
+renderer actually treat a construct — what we read, what we resolve, and what we
+deliberately skip (`BackingStory`, for instance, or tagged XML). Element and
+attribute names like `GeometricBounds` or `ParentStory` are facts of the format
+and are used as written, but the explanations are written from the renderer's
+point of view rather than restated from the specification. See
+[/docs/foundations/what-is-idml](/docs/foundations/what-is-idml).

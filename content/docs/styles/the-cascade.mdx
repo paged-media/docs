@@ -1,11 +1,23 @@
 ---
 title: The cascade
-description: How BasedOn links a style to a parent, how the parser folds a chain of styles into one resolved set of values, the depth cap that keeps cycles from looping forever, and why a local override on a range still wins.
+description: BasedOn links a style to a parent; the parser folds that chain into one resolved set of values, bounds cycles with a depth cap, and lets a local override on a range still win.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
+
+**The cascade is how the parser folds a style and its `BasedOn` parents into one resolved set of values.**
+
+**In short:** A style in IDML rarely sets everything it needs. It inherits from a
+parent through the `BasedOn` attribute, which names another style of the same kind,
+all the way down to a root sentinel. When something applies a style, the parser
+walks that chain upward and merges the styles together so that the first style in
+the walk to set an attribute wins and the walk only continues to fill what is still
+unset. The walk is bounded at sixteen hops so a cyclic or corrupt file degrades
+gracefully, and a value set directly on a range still sits above the whole cascade.
+This page explains how `BasedOn` resolution works; how a local override layers on
+top of it is covered in [conflict resolution](/docs/styles/conflict-resolution).
 
 A style rarely says everything. A "Body Indented" style might set only a
 first-line indent and leave its font, size, and colour to be inherited from
@@ -102,3 +114,30 @@ layers 1 and 2 combine for a real run, attribute by attribute, is the subject of
 [conflict resolution](/docs/styles/conflict-resolution). The
 [local-override example](/docs/styles/character-styles) there shows a range that
 applies a character style and then overrides one of its attributes.
+
+## Frequently asked questions
+
+**What does `BasedOn` do in an IDML style?**
+`BasedOn` names the parent a style inherits from — another style of the same kind,
+or a root sentinel like `ParagraphStyle/$ID/[No paragraph style]`. The parser
+accepts it either as an attribute or as a `<BasedOn>` child inside `<Properties>`,
+and a style with no `BasedOn` is its own root.
+
+**How does the parser resolve a chain of styles?**
+It starts an empty accumulator at the applied style and walks the `BasedOn` chain
+upward, filling each attribute from the first style in the walk that sets it and
+leaving already-filled attributes alone. There is no separate "later rule
+overrides earlier rule" step the way CSS has — the chain order *is* the precedence
+order.
+
+**What happens if a `BasedOn` chain has a cycle or a missing parent?**
+The walk is bounded at `MAX_BASED_ON_DEPTH = 16` hops, so a cycle stops after
+sixteen hops and returns whatever was accumulated; a `BasedOn` pointing at an id
+not in the style sheet ends the walk the same way. Either case resolves gracefully
+instead of looping forever or erroring.
+
+**Does the cascade override a value set directly on a range?**
+No. A value set directly on a `<ParagraphStyleRange>` or `<CharacterStyleRange>` is
+not part of the style sheet and is not touched by `BasedOn` resolution; it sits
+above the whole cascade and the resolved style only fills what the local value left
+blank.

@@ -7,6 +7,17 @@ status: published
 owner: paged-docs
 ---
 
+**This is an independent, living reference for the IDML file format and the Paged renderer that reads it.**
+
+**In short:** IDML is the format an InDesign document takes when it travels as
+text — an open, inspectable package instead of a sealed binary — and Paged is the
+open-source renderer we build to turn that package back into real, bounded pages.
+This reference explains the format for humans, from first principles: from small
+files we author ourselves, and from what the renderer actually learns as it reads
+them. It is not the normative specification — it points to the authoritative spec
+where a normative answer is needed — and it runs roughly beginner to pro so you can
+enter wherever your question lives.
+
 This is a reference for **IDML** — the format an InDesign document takes when it
 travels as text — and for the **Paged** renderer we build around it. It is written
 from first principles: from small files we author ourselves, and from what the
@@ -32,3 +43,24 @@ still being written are excluded from search until they reach real depth.
 - **[Foundations](/docs/foundations)** — what IDML is and how to read one by hand.
 - **[Package anatomy](/docs/package-anatomy)** — what is actually inside the ZIP.
 - **[Stories & text](/docs/stories-text)** — where the words live.
+
+## Frequently asked questions
+
+**What is this reference?**
+It is an independent, community-minded reference for the IDML file format and the
+open-source Paged renderer. Every page is written from first principles — from small
+files we author ourselves and from how our own parser behaves — rather than copied
+from any specification.
+
+**Is this the official IDML specification?**
+No. This is an explanatory reference for humans, not the normative spec. Where a
+strictly normative answer matters, we say so and point you to the authoritative
+specification; element and attribute names themselves are simple facts and are used
+freely throughout.
+
+**Where should I start?**
+If you are new to the format, begin with [Foundations](/docs/foundations) to learn
+what IDML is and read one by hand, then move to
+[Package anatomy](/docs/package-anatomy) to see what is inside the ZIP. The
+reference runs beginner → intermediate → pro, and each page declares its tier so you
+can enter wherever your question lives.

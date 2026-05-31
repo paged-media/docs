@@ -1,15 +1,21 @@
 ---
 title: Units & origin
-description: Points as the unit, the origin at the page's top-left, and why Y grows downward.
+description: IDML geometry is measured in points (1/72 inch) from an origin at the page's top-left, with Y growing downward instead of upward.
 tier: beginner
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
 
-Every coordinate in an IDML page item — its bounds, its transform, the anchor
-points of its outline — is a number with two implicit conventions behind it: a
-*unit* and an *origin*. Get those two right and the numbers stop being mysterious.
+**Every IDML coordinate is a point, measured from the page's top-left, with Y growing downward.**
+
+**In short:** Every coordinate in an IDML page item — its bounds, its transform,
+the anchor points of its outline — is a plain number with two implicit
+conventions behind it: a *unit* and an *origin*. The unit is always the **point**
+(1/72 of an inch), so a value like `595.276` is simply 210 mm expressed in
+points. The origin is the page's **top-left corner**, and unlike the math-class
+plane, **Y grows downward** — moving down the page gives a larger Y. Get those
+two conventions right and the numbers stop being mysterious.
 
 ## The unit is the point
 
@@ -63,3 +69,20 @@ that whole little space onto the page. So a shape's anchor points are not page
 coordinates — they are the shape's *inner* coordinates, waiting to be moved into
 place. The unit (points) and the orientation (Y down) are the same in both
 spaces; only the origin shifts.
+
+## Frequently asked questions
+
+**What unit does IDML use for coordinates?**
+IDML geometry uses the **point**, defined as 1/72 of an inch, as its only unit.
+Nothing in the file labels a value as points — the parser reads every geometry
+attribute as a plain number and treats it as points throughout.
+
+**Where is the origin in an IDML page?**
+The origin `(0, 0)` is the page's **top-left corner**. X grows to the right as
+usual, but Y grows *downward*, so a point further down the page has a larger Y
+value — the opposite of the math-class convention where up is positive.
+
+**Why is a value like 595.276 so common in IDML files?**
+`595.276` is 210 mm — the width of A4 — expressed in points (210 × 72 / 25.4).
+Likewise `841.89` is the A4 height of 297 mm in points. Metric page sizes show up
+as these non-round numbers because the format's underlying unit is the point.

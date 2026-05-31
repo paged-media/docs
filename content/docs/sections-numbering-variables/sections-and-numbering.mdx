@@ -1,11 +1,25 @@
 ---
 title: Sections and numbering
-description: How Page.Name drives the displayed page number, what the Section element would add, and the naive fallback when no name is present.
+description: How the resolved Page.Name attribute drives the displayed page number in IDML, what the unparsed Section element would add, and the naive fallback when no name is present.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
+
+**In IDML the displayed page number is already resolved into each page's `Name` attribute, so the renderer trusts that label and never reads the `Section` element that produced it.**
+
+**In short:** In InDesign, **sections** decide what a page is called — a section
+breaks the page range into runs with their own start number, numbering style, and
+prefix, turning a raw count into labels like "iv" or "B-3". But the IDML a reader
+opens does not require re-running that logic: InDesign bakes the resolved label onto
+every page as a `Name` attribute. Our renderer reads `Page.Name` and substitutes it
+wherever an auto-page-number marker appears, which is how it produces correct Roman
+numerals and prefixes without implementing a numbering engine. The `Section` element
+that defines those rules is therefore not parsed, and the only consequence is that a
+page missing `Name` — rare outside synthetic fixtures — falls back to naive 1-based
+counting. This page explains how `Page.Name` drives the number, what `Section` would
+otherwise contribute, and what happens when the label is missing.
 
 When a footer prints "page iv" or a cross-reference says "see page B-3", something
 had to decide that the page is called "iv" or "B-3" rather than "4" or "27". In
@@ -100,3 +114,28 @@ exports always carry it.
 For where page-number variables come from in the text, and the markers that get
 substituted, see [text variables](/docs/sections-numbering-variables/text-variables)
 and [stories & text → text variables](/docs/stories-text/text-variables).
+
+## Frequently asked questions
+
+**Where does the displayed page number come from in IDML?**
+It comes from each `Page` element's `Name` attribute. InDesign applies the section's
+numbering style and prefix when it exports, so `Name` is already the user-visible
+label — `"1"`, `"iv"`, or `"B-3"` — and the renderer uses it directly.
+
+**Does the renderer parse the `Section` element?**
+No. `Section` defines the numbering rules — start number, style, prefix, whether to
+continue the previous count — but the renderer never reads them, because the output
+of applying those rules is already present as `Page.Name`. Parsing `Section` would
+only matter if we wanted to recompute labels instead of trusting the baked ones.
+
+**How does an auto-page-number marker become an actual number?**
+The parser turns the marker into a private-use placeholder character, and the renderer
+replaces that placeholder with the page's `Name` label. For the current page it uses
+that page's `Name`; for the next-page marker it reads the following page's `Name`,
+falling back to a numeric increment when there is no next page.
+
+**What happens if a page has no `Name` attribute?**
+The renderer falls back to a plain 1-based count — the page's position in the
+document, plus one — with no section awareness, so it cannot produce Roman numerals,
+restarts, or prefixes. This only surfaces with synthetic packages and hand-written
+fixtures; real InDesign exports always carry `Name`.

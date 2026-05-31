@@ -7,10 +7,14 @@ status: published
 owner: paged-docs
 ---
 
-A gradient in IDML is a named swatch, defined once alongside the document's colors,
-and applied the same way a flat color is — a shape's `FillColor` just points at the
-gradient's id instead of a color's. This recipe defines a two-stop linear gradient
-and fills a rectangle with it.
+**A gradient in IDML is a named swatch, applied to a shape exactly the way a flat color is.**
+
+**In short:** a `Gradient` is defined once alongside the document's colors, with two
+or more `GradientStop` children that each reference an existing `<Color>` swatch by
+id. A shape uses it by pointing its `FillColor` at the gradient's `Self` id — the
+same attribute you'd set to a color — and orients a linear blend with
+`GradientFillAngle` on the shape itself. This recipe defines a two-stop linear
+gradient and fills a rectangle with it.
 
 ## The recipe
 
@@ -64,3 +68,30 @@ spread then applies it with a single `FillColor`.
 
 For how the palette is structured — named colors, process vs. spot, and where
 swatches are defined — see [Color & swatches](/docs/color-swatches).
+
+## Frequently asked questions
+
+**How does a shape reference a gradient?**
+A shape points its `FillColor` at the gradient's `Self` id — exactly as it would
+point at a color. In the example the rectangle carries `FillColor="Gradient/SkySun"`.
+There is no separate gradient-fill attribute; the same `FillColor` slot takes either
+a color id or a gradient id.
+
+**Do gradient stops store their own colors?**
+No. A gradient holds no color of its own — each `<GradientStop>` references an
+existing `<Color>` swatch through its `StopColor` attribute. You can't inline a CMYK
+value on a stop; you write a `<Color>` swatch (the example defines `Color/Sun` and
+`Color/Sky`) and reference its id. That indirection is why editing one swatch updates
+every gradient that uses it.
+
+**How do I control the direction of a linear gradient?**
+Set `GradientFillAngle` on the shape, not on the gradient definition. The example
+uses `90`, running the blend top-to-bottom. Because the angle lives on the shape, one
+gradient swatch can fill several shapes at different angles. A `Radial` gradient
+ignores `GradientFillAngle` and always runs from its center outward.
+
+**What's the difference between a gradient and a tint?**
+A gradient blends between two or more colors across a shape; a tint is a lighter
+version of a single color. If you want one color at reduced strength rather than a
+blend, that's a tint — see
+[gradients & tints](/docs/color-swatches/gradients-and-tints).

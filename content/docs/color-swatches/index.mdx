@@ -7,6 +7,17 @@ status: published
 owner: paged-docs
 ---
 
+**In an IDML document, color lives in one shared palette — every fill and stroke just points at it by name.**
+
+**In short:** An IDML document keeps all of its color in a single part,
+`Resources/Graphic.xml` — a flat palette of named colors, gradients, and tints.
+Nothing on a page carries its own raw channel values; a rectangle, a run of text,
+or a frame border simply names a swatch by id, and the swatch holds the actual
+color. That one indirection is the whole idea: change a swatch once and everything
+that references it follows. This chapter explains how that palette is built, how a
+fill resolves to a real color, and where Paged's renderer is faithful or still
+approximate.
+
 Every visible fill and stroke in an IDML document points at the *palette*: a
 shared table of named colors, gradients, and tints that lives in one part,
 `Resources/Graphic.xml`. Nothing on a page carries its own raw color. A
@@ -69,3 +80,23 @@ applied to one rectangle.
 The ordering here follows a reader building up from a flat color to gradients to
 the press-oriented spot/process distinction — not the source spec's section
 order (clean-room §6.1).
+
+## Frequently asked questions
+
+**Where does an IDML document store its colors?**
+All of them live in one part, `Resources/Graphic.xml`, as a flat palette of
+`<Color>`, `<Swatch>`, and `<Gradient>` entries. The pages and shapes themselves
+hold no channel values — they reference palette entries by their `Self` id.
+
+**How does a shape's fill turn into an actual color?**
+A shape names a swatch in its `FillColor` (or `StrokeColor`), and the renderer
+looks that id up in the palette. If it resolves to a `<Color>`, the channel values
+are converted to device color; if it resolves to a `<Gradient>`, each stop's
+referenced color is resolved and a gradient paint is built; if it resolves to
+`Swatch/None`, that is the explicit "no fill" case.
+
+**Why is color a separate chapter rather than part of shapes or text?**
+Because the palette is cross-cutting: the same `Color/Red` can fill a rectangle,
+tint a run of text, and seed a gradient stop. The parts that describe shapes and
+text take the palette as given, so it makes sense to define the palette itself
+once, in its own place.

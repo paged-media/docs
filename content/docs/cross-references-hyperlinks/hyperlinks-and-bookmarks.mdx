@@ -7,6 +7,17 @@ status: published
 owner: paged-docs
 ---
 
+**A hyperlink is a source/destination pair joined by id, and a bookmark is a source-less navigation anchor — both kept by the parser, neither drawn on the page yet.**
+
+**In short:** In IDML a hyperlink is two elements, not one: a **source** — the
+stretch of text or the frame a reader interacts with — and a **destination** — the
+URL, page, or text anchor it jumps to. The `Hyperlink` element in the design map
+joins them by id, so a single destination can be reached from many sources. A
+**bookmark** is the source-less cousin: a named anchor that appears in a PDF's
+navigation outline with no clickable region in the body. Paged's parser keeps the
+fields it needs to follow each link or bookmark, while the renderer does not yet
+draw link regions, make them interactive, or emit a navigation structure.
+
 A hyperlink is a pair: a **source** — the stretch of text or the frame the
 reader interacts with — and a **destination** — the place it jumps to. IDML
 splits the two into separate elements and joins them by id, so the same
@@ -124,3 +135,33 @@ document model, but nothing here reaches the page:
 - The in-story `HyperlinkTextSource` wrapper is not surfaced onto the run, so the
   linked span is not marked. <SupportBadge status="not-yet-parsed" note="paged-parse/src/story.rs" />
 - Bookmarks are not emitted into any navigation structure. <SupportBadge status="parsed-not-rendered" note="paged-parse/src/designmap.rs:267" />
+
+## Frequently asked questions
+
+**How does IDML store a hyperlink?**
+As a pair of elements joined by id. The `Hyperlink` element in the design map
+names a `Source` and points at a `Destination`; the source's anchor lives back in
+the story, while the destination is its own element (a URL, page, or external-page
+destination) also listed in the design map. Splitting source from destination lets
+the same destination be reached from many sources.
+
+**What is the difference between a hyperlink and a bookmark?**
+A **hyperlink** has a source — a span of text or a whole frame the reader
+interacts with — that jumps to a destination. A **bookmark** has no visible
+source: it is a named anchor that shows up in a PDF's navigation outline and jumps
+to a destination, with no clickable region in the body text. The parser keeps a
+bookmark's id, name, and destination ref.
+
+**What hyperlink destinations does the parser read?**
+A hyperlink jumps to one of three destination elements: a `HyperlinkURLDestination`
+(a web address), a `HyperlinkPageDestination` (a page in this document), or a
+`HyperlinkExternalPageDestination` (a page in another document via a `DocumentPath`
+and `DestinationPageIndex`). The parser reads each destination's id, name, key, and
+target; the appearance and view-setting attributes are read past.
+
+**Does Paged make hyperlinks clickable?**
+No. The whole chain — source anchor, join element, and destination — is read into
+the document model, but the renderer does not draw the link region, make it
+interactive, surface the in-story `HyperlinkTextSource` wrapper onto the run, or
+emit bookmarks into a navigation structure. These features are **parsed, not
+rendered** for this phase.

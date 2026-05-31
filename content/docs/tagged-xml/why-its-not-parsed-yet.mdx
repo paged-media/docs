@@ -7,6 +7,17 @@ status: published
 owner: paged-docs
 ---
 
+**Paged is a layout renderer: it reads the layout view and never walks the tagged-XML tree, so a document renders identically with or without XML tags.**
+
+**In short:** The [structured-content layer](/docs/tagged-xml/the-structured-content-layer)
+is a real part of every IDML package, yet the Paged renderer ignores it. Paged
+turns documents into pages, and everything it needs lives in the *layout* view —
+spreads, stories, and styles — not in the tagged-XML tree, which organizes the
+same content by meaning rather than position. This page explains why that is true,
+points at the two exact places in the parser where the layer is skipped, and
+sketches what supporting it would take. It describes a deliberate scoping decision,
+not a bug — and a format the renderer does not act on today.
+
 The [structured-content layer](/docs/tagged-xml/the-structured-content-layer) is
 a real part of every IDML package, and yet the Paged renderer produces the same
 pages whether or not a document carries any XML tags. This page explains why that
@@ -81,3 +92,28 @@ would look roughly like this:
 Until those steps exist, the chapter stays honest about its status: the format is
 [documented in full](/docs/tagged-xml/the-structured-content-layer), and the
 renderer reads none of it.
+
+## Frequently asked questions
+
+**Why doesn't Paged parse the tagged-XML layer?**
+Because nothing in it affects layout. Paged turns a document into pages, and the
+position of every glyph and frame is decided entirely by the layout view —
+spreads, stories, and styles. The tagged-XML tree is a second view organized by
+meaning, so skipping it is a deliberate scoping decision, not a bug.
+
+**Where in the parser is the layer skipped?**
+In two places. The design-map parser matches only the references it acts on
+(`idPkg:Spread`, `idPkg:Story`, `idPkg:MasterSpread`) and lets `idPkg:BackingStory`
+fall through its catch-all arm; and although `Container::open` decompresses every
+archive entry into memory, only `designmap.xml` is turned into a typed tree, so the
+`XML/` parts are never read. Both spots carry a **Not yet parsed** badge above.
+
+**Will tagged XML ever be supported?**
+It is not on a committed timeline here. Because the bytes are already retained in
+memory, adding support would be purely additive — but the open question is what a
+layout renderer should *do* with structure that does not affect layout, which
+points toward introspection or round-tripping rather than the page rasteriser.
+
+**Does ignoring the layer ever change the rendered pages?**
+No. A document renders identically whether or not it carries any XML tags, since
+the renderer never reads the backing story, the tag list, or the mapping table.

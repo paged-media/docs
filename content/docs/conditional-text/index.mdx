@@ -1,11 +1,23 @@
 ---
 title: Conditional text
-description: Text that is shown or hidden depending on whether a named condition is visible — and what our renderer does with it.
+description: Conditional text lets one IDML document carry several versions of its words, with runs shown or hidden depending on whether a named condition is visible.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
+
+**Conditional text lets one IDML document carry several versions of its words, showing or hiding runs by toggling named conditions.**
+
+**In short:** Conditional text is the IDML mechanism for keeping more than one
+version of a document's wording inside a single file. A phrase, a sentence, or a
+whole paragraph is tagged with a named *condition*, and that text appears only
+when the condition is switched on — a draft watermark that never reaches print, a
+price line that differs between regions, an instructor's answer key hidden in the
+student edition. The text always stays in the file; what changes is whether the
+condition governing it is visible. This page explains what conditional text is,
+the two pieces that make it work, and the line our renderer draws between what it
+composes onto the page and what it leaves to the editor.
 
 Conditional text lets one document carry more than one version of its words. A
 phrase, a sentence, or a whole paragraph can be tagged so that it appears in some
@@ -52,3 +64,24 @@ renderer reads them and moves on.
   a run names them.
 - [Visibility resolution](/docs/conditional-text/visibility) explains exactly when
   a run is kept or dropped, and which pieces are parsed-not-rendered.
+
+## Frequently asked questions
+
+**What is conditional text in IDML?**
+Conditional text is a way to keep several versions of a document's wording in one
+IDML file. Runs of text are tagged with named conditions, and a run is laid out
+only when every condition it names is visible — so the same file can produce a
+draft, a regional variant, or a student edition depending on which conditions are
+switched on.
+
+**What does Paged's renderer actually do with conditional text?**
+It enforces run-level visibility: a run governed by a condition that resolves to
+hidden is dropped before layout, contributing no glyphs and no width, and the
+visible text closes up around the gap. The editor-facing pieces — how a condition
+flags its text on screen, and how conditions are grouped into sets — are parsed
+for round-trip but never drawn.
+
+**Where are conditions defined in an IDML file?**
+A `<Condition>` and any `<ConditionSet>` are declared once at the document level,
+in `Resources/Styles.xml`. A run opts in to one or more conditions through an
+`AppliedConditions` attribute on its `<CharacterStyleRange>` inside a story.

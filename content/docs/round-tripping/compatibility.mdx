@@ -1,11 +1,21 @@
 ---
 title: Compatibility
-description: What survives a round trip, what is left to the application to recompute, and why our reader targets one modern DOM without version negotiation.
+description: Compatibility is what survives an IDML round trip, what the format leaves for the application to recompute, and why our reader targets one modern DOM without version negotiation.
 tier: pro
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
+
+**Compatibility is the dividing line between what survives an IDML round trip and what the format hands back to the application to recompute.**
+
+**In short:** A round trip preserves whatever the XML writes down and loses whatever
+it does not. Structural facts — page and spread geometry, text and its flow order,
+styles, colors, references — cross intact; results-of-the-moment like resolved text
+variables and the application's private working state do not. The format's version
+is data stamped into each package rather than a single dial, and the vocabulary grows
+additively as the format gains capabilities. Our reader targets one modern DOM and
+does no version negotiation — an honest limitation this page is precise about.
 
 A round trip preserves whatever the XML writes down and loses whatever it does not.
 That sounds obvious, but the dividing line is specific, and knowing where it falls
@@ -93,3 +103,33 @@ a single self-contained package, not a set of cross-linked ones.
 None of these is a claim that the file is malformed — only that our reader, today,
 treats the version markers as facts to record rather than instructions to obey, and
 scopes itself to one modern, single-document DOM.
+
+## Frequently asked questions
+
+**What survives an IDML round trip?**
+The structural facts the interchange form writes down explicitly: page and spread
+geometry, the text and the order it flows in, the styles and how they cascade, the
+colors and swatches, and the references that bind the parts together. These are what
+a second tool needs to reconstruct the document, so they make the full trip out and
+back without loss.
+
+**What does not survive a round trip?**
+Two kinds of things. First, results recorded as values rather than live instructions
+— for example, a text variable is stored as the text it resolved to at export, not as
+a standing order to recompute it. Second, the application's private working state —
+caches, undo history, selection, and editor-only bookkeeping — which never enters the
+XML because it belongs to one session, not to the document.
+
+**Does Paged do version negotiation when reading IDML?**
+No. The parser targets one modern DOM and reads every package through the same path,
+whatever version it claims. It never reads `DOMVersion`, never decodes the
+`featureSet` bitmask, and never compares `readerVersion` against a supported floor.
+In practice this works because the format grows additively — the structure we target
+is present in the files we care about — but it is a real limitation we are precise
+about.
+
+**Can Paged open a book or multi-document project?**
+No. A document assembled from several linked documents — a book — is outside what our
+parser and scene builder handle today. We read a single self-contained package, not a
+set of cross-linked ones. This is not a claim that such a file is malformed, only
+that we scope ourselves to one modern, single-document DOM.

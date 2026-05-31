@@ -85,3 +85,13 @@ exercises are simply untested visually. The examples gate only proves the render
 *accepts and models* each example; it never checks that the result looks right. A
 construct can be green on both gates and still have a rendering bug in a case
 neither corpus covers. The corpus narrows the unknowns; it does not eliminate them.
+
+**What is the difference between the fidelity loop and the examples loop?**
+They guard different things and measure at different depths. The **fidelity loop**
+lives in the engine (`core`): it diffs the renderer's rasterised pages against
+InDesign's own reference PDFs using ΔE2000 and SSIM, so it is *pixel-deep* but only
+covers the generated fixtures. The **examples loop** lives in these docs: it runs
+every embedded IDML example through the renderer's introspection tool, checking the
+package still parses and builds — a *structural* test that is broad across
+documented constructs but never rasterises, so it says nothing about pixels. One
+proves the pages look right; the other proves the docs stay honest.

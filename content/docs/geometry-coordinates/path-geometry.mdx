@@ -1,17 +1,23 @@
 ---
 title: PathGeometry
-description: The anchor-point outline — GeometryPathType, PathPointArray, PathPointType, and PathOpen.
+description: PathGeometry is the anchor-point outline of an IDML page item — nested GeometryPathType, PathPointArray, and PathPointType elements with Bézier handles, plus the PathOpen flag.
 tier: pro
 diataxis: reference
 status: published
 owner: paged-docs
 ---
 
-`PathGeometry` is how IDML records the *actual outline* of a page item. While
-[`GeometricBounds`](/docs/geometry-coordinates/geometric-bounds) gives only the
-bounding box, `PathGeometry` carries the real shape — anchor by anchor, with
-Bézier control points — and real InDesign exports serialise it for every shape,
-including plain rectangles. It lives inside the item's `<Properties>` element.
+**`PathGeometry` is how IDML records a page item's actual outline — anchor by anchor, with Bézier handles.**
+
+**In short:** `PathGeometry` is how IDML records the *actual outline* of a page
+item. While [`GeometricBounds`](/docs/geometry-coordinates/geometric-bounds)
+gives only the bounding box, `PathGeometry` carries the real shape — anchor by
+anchor, with Bézier control points — and real InDesign exports serialise it for
+every shape, including plain rectangles. It nests four elements deep:
+`PathGeometry` holds one or more `GeometryPathType` contours, each contour holds
+a `PathPointArray`, and each array holds `PathPointType` points with an on-curve
+anchor and two Bézier handles. A per-contour `PathOpen` flag decides whether each
+loop is sealed. It lives inside the item's `<Properties>` element.
 
 ## The element nesting
 
@@ -111,3 +117,26 @@ plain rounded corner for now:
 A second, related gap: decorative *path* and *stroke* treatments beyond the plain
 outline are not generated either — the path you get is the anchor outline as
 written, closed or open per `PathOpen`.
+
+## Frequently asked questions
+
+**How are PathGeometry elements nested?**
+The outline is four elements deep: `PathGeometry` holds one or more
+`GeometryPathType` contours, each `GeometryPathType` holds a `PathPointArray`,
+and each `PathPointArray` holds `PathPointType` points. Every `PathPointType`
+carries an `Anchor` and two Bézier handles, `LeftDirection` and `RightDirection`.
+
+**What coordinate order do PathPointType anchors use?**
+Each of `Anchor`, `LeftDirection`, and `RightDirection` is written `x y` — plain
+horizontal-then-vertical order, *unlike*
+[`GeometricBounds`](/docs/geometry-coordinates/geometric-bounds), which puts Y
+first. The parser reads `Anchor` first and drops the point if it is missing; an
+absent handle defaults to the anchor itself, which the renderer reads as a
+straight corner.
+
+**What does the PathOpen attribute do?**
+`PathOpen` is a per-contour boolean on `GeometryPathType`. When it is `false` (or
+absent, the default) the renderer closes the contour by joining the last anchor
+back to the first; when it is `true` the closing segment is omitted and the
+contour stays an open stroke. The parser lifts the flag onto a per-contour
+`subpath_open` record so each contour can be closed on its own terms.

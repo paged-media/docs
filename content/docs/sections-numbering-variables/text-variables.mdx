@@ -1,11 +1,24 @@
 ---
 title: Text variables
-description: The document-level TextVariable definition, its VariableType kinds, and the frozen ResultText an instance carries.
+description: The document-level TextVariable definition in IDML, its VariableType kinds, and the frozen ResultText each TextVariableInstance carries.
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
 ---
+
+**A text variable is a named, computed string — like a file name or chapter number — that IDML splits into a `TextVariable` definition under `Document` and a `TextVariableInstance` carrying the baked value where it appears.**
+
+**In short:** A text variable is a named, computed string — a file name, a chapter
+number, a running header, a date — that InDesign places into the flowing text and
+re-derives whenever the document changes. IDML records it at two altitudes: a
+`TextVariable` **definition** that lives once under `Document` in the design map, and
+one or more `TextVariableInstance` **instances** that sit in the stories where the
+value actually appears. Each instance carries its evaluated value frozen in a
+`ResultText` attribute — a snapshot from the last export. This page is the
+document-level reference for the definition, the `VariableType` kinds it can take,
+and the shape of the value an instance carries; our parser records the definition
+and inlines the instance's `ResultText` verbatim without ever recomputing it.
 
 A text variable is a named, computed string — a file name, a chapter number, a
 running header, a date — that InDesign places into the flowing text and re-derives
@@ -102,3 +115,28 @@ not change if the document's place in a book changes.
   [sections and numbering](/docs/sections-numbering-variables/sections-and-numbering).
 - **For extraction**, a `TextVariableInstance` contributes its `ResultText` like any
   other characters; see [extract all text](/docs/stories-text/extract-all-text).
+
+## Frequently asked questions
+
+**What is a text variable in IDML?**
+A text variable is a named, computed string — such as a file name, chapter number,
+running header, or date — that InDesign places into the flowing text. IDML stores it
+as a `TextVariable` definition under `Document` plus a `TextVariableInstance` in each
+story where the value appears.
+
+**What does the `ResultText` attribute hold?**
+`ResultText` holds the variable's value as a literal string, computed as of the last
+export and inlined into the run text exactly as written. It is a frozen snapshot, so
+our renderer reproduces what InDesign last showed but never re-derives the value from
+the current layout.
+
+**Does the renderer recompute a chapter number or running header?**
+No. The `VariableType` is recorded so a consumer can tell *what* kind of variable it
+is, but the rule it names is never executed — the parsed value is always the frozen
+`ResultText`, not a recomputed chapter count or a re-tracked header.
+
+**Is the current page number stored as a text variable?**
+No. The current- and next-page numbers are not `TextVariableInstance` elements; they
+are processing instructions (`<?ACE 18?>` / `<?ACE 19?>`) that resolve to the live
+page label at render time. That separate path is detailed in
+[stories & text → text variables](/docs/stories-text/text-variables).

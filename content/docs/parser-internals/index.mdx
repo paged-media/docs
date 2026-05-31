@@ -49,6 +49,23 @@ references and cascades into a coherent document. The split matters: the parser 
 about *reading faithfully*, the scene layer is about *making sense of what was read*,
 and the renderer is about *turning sense into pixels*.
 
+Two ideas are worth holding onto from the start, because everything else in this
+chapter follows from them.
+
+**It reads, and only reads.** The parser never decides what a document *means*. It
+turns `"11"` into an `f32` and `"CenterAlign"` into an enum variant, and there it
+stops — no layout, no color resolution, no style cascade flattened into place.
+Interpreting that faithful record is the next layer's job. Keeping reading and
+interpreting apart is what lets the layer that mirrors the file's bytes stay small,
+auditable, and easy to trust.
+
+**It is forgiving, not strict.** A file is rejected at exactly two gates — it isn't a
+readable ZIP, or it isn't IDML — and almost nothing else is fatal. A missing attribute
+becomes `None`, an unrecognised value becomes `None`, an absent resource falls back to
+a default, and a looping reference is capped rather than chased forever. The guiding
+instinct is that a malformed or unfamiliar document should still render as much as it
+faithfully can, rather than fail outright.
+
 ## Why read this chapter
 
 You do not need to understand the parser to read an IDML file by hand, and most of
@@ -81,6 +98,12 @@ single file through it:
 It pairs naturally with two neighbouring chapters: [The renderer](/docs/the-renderer)
 picks up where the parser leaves off, and [Edge cases](/docs/edge-cases) catalogues
 the malformed and unusual documents whose handling the recovery model defines.
+
+That's the whole shape of the thing: a deliberately thin layer that opens the
+container, confirms it really is IDML, and turns each part it is asked for into typed
+Rust — reading faithfully, recovering where it can, and leaving every question of
+meaning to the layers above. The pages that follow trace that path one piece at a
+time.
 
 ## Frequently asked questions
 

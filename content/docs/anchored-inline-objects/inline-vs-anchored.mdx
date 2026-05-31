@@ -1,11 +1,21 @@
 ---
 title: Inline vs anchored positioning
-description: What inline, above-the-line, and custom placement each mean — and exactly how far our renderer carries an anchored object today.
+description: What inline, above-the-line, and custom placement each mean for an anchored object — and exactly how far our renderer carries each one today.
 tier: pro
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
+
+**`AnchoredPosition` picks one of three placement modes — inline, above the line, or custom — and the renderer treats all three the same way today.**
+
+**In short:** The `AnchoredPosition` attribute on `<AnchoredObjectSetting>` chooses
+how an anchored object relates to the line it lives in. *Inline* treats it as an
+oversized glyph on the baseline; *above the line* parks it on its own line between
+text lines; *custom* cuts it loose to float against a reference rectangle you
+choose. The three sound similar but answer different questions about where the
+object goes. This page explains the distinction, then states the honest support
+gap: our parser reads all three modes, and the renderer positions none of them yet.
 
 The `AnchoredPosition` attribute on `<AnchoredObjectSetting>` picks one of three
 placement modes. They sound similar, but they answer different questions about
@@ -77,3 +87,30 @@ but where it lands on the page is still a refinement in progress.
 
 For the element model these attributes hang off, see
 [anchored objects](/docs/anchored-inline-objects/anchored-objects).
+
+## Frequently asked questions
+
+**What are the three anchored-object placement modes?**
+`InlinePosition` (inline) sits the object on the baseline as an oversized glyph;
+`AboveLine` (above the line) parks it on its own line between the host line and the
+next; and `Anchored` (custom) measures its position from a reference rectangle — the
+column, text frame, page margins, or page edge — that you choose.
+
+**What does *inline* positioning mean for an anchored object?**
+Inline (`InlinePosition`) treats the object like a single oversized character. It
+sits on the baseline of its line, occupies horizontal advance the way a glyph does,
+pushes following text along, and grows the line's height to fit — at least, that is
+the intent the setting records.
+
+**Does Paged position anchored objects yet?**
+No. The parser reads every mode and its attributes, but the renderer draws none of
+them as *positioned* text: it does not reserve inline advance, resolve custom or
+above-the-line placement, wrap surrounding text, or place a frame at the anchor
+baseline. A frame that does draw is treated as free-floating at its own bounds.
+
+**If nothing is positioned, why parse the settings at all?**
+So the data is ready when the placement pass lands. Each anchored-frame record
+already carries its bounds, its full `<AnchoredObjectSetting>`, and — for a
+`<TextFrame>` — a reference back to the story it hosts, so nothing in the package has
+to be re-read once the renderer can place it. Until then, treat an anchored object as
+structurally present but not yet positioned.

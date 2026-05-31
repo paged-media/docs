@@ -7,6 +7,16 @@ status: published
 owner: paged-docs
 ---
 
+**An IDML table is part of the text flow: it draws where its host paragraph lands, breaks across threaded frames, and can repeat its header and footer rows.**
+
+**In short:** A `<Table>` is an inline element anchored in a story's paragraph, so
+it has no position of its own — it draws wherever the host paragraph lands as the
+story flows down its text frame. When a table is taller than the frame it starts
+in, it splits across the threaded frame chain, filling each frame and continuing
+the remaining rows in the next. Its header rows can reappear at the top of each
+continuation frame and its footer rows at the bottom of each frame but the last.
+This page explains where a table goes, as opposed to what it is.
+
 The [table model](/docs/tables/the-table-model) and its
 [rows, columns, and cells](/docs/tables/rows-columns-cells) describe what a table
 *is*. This page is about where it *goes* — and the answer is the thread that ties
@@ -77,3 +87,30 @@ about stories applies to it. Its width follows the text column. Its vertical
 position follows the paragraphs above it. Its continuation follows the frame
 chain. The grid, the cells, and the borders from the other pages are *what* draws;
 the flow is *where*. The two together are the whole picture of an IDML table.
+
+## Frequently asked questions
+
+**How is a table positioned on the page?**
+A table is not positioned directly. It rides on a host paragraph and draws where
+that paragraph lands — at the left edge of the text column, running down from the
+current vertical cursor. Move the host paragraph and the table moves with it.
+
+**What happens when a table is taller than its frame?**
+If the story is threaded through a chain of frames, the table splits: the renderer
+fills the first frame with as many rows as fit, then continues the remaining rows
+at the top of the next frame, and so on down the chain. A single row taller than a
+whole frame is not itself split, and the table only advances when there is a next
+frame to advance into.
+
+**Do header and footer rows repeat when a table breaks across frames?**
+Yes, by default. The `RepeatingHeader` and `RepeatingFooter` booleans on the
+`<Table>` control it; both default to repeating when absent, and an explicit
+`false` makes the header or footer appear only once. The renderer redraws the
+header at the top of each continuation frame and reserves space for the footer at
+the bottom of each non-last frame.
+
+**Is `KeepWithNextRow` honoured when choosing where a table breaks?**
+No. The break splitter is deliberately simple and does not consult a row's
+`KeepWithNextRow` constraint, nor the finer `BreakHeaders` / `BreakFooters`
+placement modes or `SkipFirstHeader` / `SkipLastFooter` flags, when deciding where
+to break.

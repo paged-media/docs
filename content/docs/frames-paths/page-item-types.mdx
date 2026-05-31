@@ -1,16 +1,21 @@
 ---
 title: Page-item types
-description: TextFrame, Rectangle, Oval, GraphicLine, Polygon, and Group — the key attributes of each, and which ones the renderer honours.
+description: The six IDML page-item elements — TextFrame, Rectangle, Oval, GraphicLine, Polygon, and Group — the key attributes of each, and which ones the renderer honours.
 tier: pro
 diataxis: reference
 status: published
 owner: paged-docs
 ---
 
-The six page-item elements share one skeleton — a `Self` id, an `ItemTransform`,
-a `PathGeometry`, paint attributes, an `AppliedObjectStyle` — and differ only in
-a few fields. This page lists the key attributes per element and marks, from the
-parser, what our renderer does with each.
+**IDML has six page-item elements, and they all share one skeleton — they differ only in a handful of fields.**
+
+**In short:** The six page-item elements are `TextFrame`, `Rectangle`, `Oval`,
+`GraphicLine`, `Polygon`, and `Group`. Every one of them carries the same
+skeleton — a `Self` id, an `ItemTransform`, a `PathGeometry`, paint attributes,
+and an `AppliedObjectStyle` — and the differences between them come down to a few
+extra fields each. This page is the reference: one attribute table per element,
+with each attribute marked, from the parser, for exactly what our renderer does
+with it.
 
 The two filled shapes below — a `Rectangle` with a red fill and an `Oval` with a
 blue fill — are the smallest example that exercises this page. Neither carries
@@ -145,3 +150,23 @@ own.
 
 Group membership and the group-level transparency block get a fuller treatment
 on the [Groups page](/docs/frames-paths/groups).
+
+## Frequently asked questions
+
+**Which attributes do all six page items share?**
+Every page item carries a `Self` id, an `ItemTransform`, a `PathGeometry`, paint
+attributes (`FillColor`, `FillTint`, `StrokeColor`, `StrokeWeight`, `StrokeType`),
+an `AppliedObjectStyle`, and an `ItemLayer` reference. The renderer honours all of
+these; the per-element tables above cover only the fields that differ.
+
+**What is the difference between a Rectangle and an Oval in IDML?**
+Both share the same fill-and-stroke story, but their geometry differs: a
+`Rectangle` paints the path outline directly, while an `Oval` paints the ellipse
+*inscribed* in the path's bounding box — so a square `Oval` outline yields a
+circle.
+
+**Are corner options and line arrowheads rendered?**
+Not fully. `CornerOption` is parsed but every non-square variant (Rounded, Bevel,
+Inset, and so on) is drawn as Rounded for now, and `GraphicLine` arrowheads
+(`LeftLineEnd` / `RightLineEnd`) are parsed but not yet drawn — the line renders as
+a plain stroke.

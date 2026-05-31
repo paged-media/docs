@@ -7,6 +7,17 @@ status: published
 owner: paged-docs
 ---
 
+**Conditional text is wired through a `<Condition>` toggle, an optional `<ConditionSet>` that groups toggles, and an `AppliedConditions` attribute that attaches a run to one or more conditions.**
+
+**In short:** Three named pieces make conditional text work in IDML. A
+`<Condition>` defines an on/off visibility toggle, an optional `<ConditionSet>`
+groups several toggles for an editor, and an `AppliedConditions` attribute on a
+run names the conditions that govern it. The `<Condition>` and `<ConditionSet>`
+elements live once at the document level in `Resources/Styles.xml`; the
+`AppliedConditions` attribute lives on a `<CharacterStyleRange>` inside a story.
+This page is the reference for each of these — the attributes our parser reads,
+which ones drive layout, and how a run opts in.
+
 Conditional text is wired through three named pieces: a `<Condition>` that defines
 a toggle, an optional `<ConditionSet>` that groups toggles, and an
 `AppliedConditions` attribute that attaches a run to one or more conditions. The
@@ -86,3 +97,27 @@ is gated by the individual conditions it names, never by which set is "active". 
 With the three pieces in hand — a condition that defines a toggle, a run that names
 it, and the visibility value that decides the outcome — the next page walks the
 resolution rule end to end and pins down which parts are drawn and which are not.
+
+## Frequently asked questions
+
+**Which attribute on `<Condition>` decides whether text is shown?**
+`Visible` is the only attribute the layout pass reads. When it is `false`, every
+run that names the condition is removed; when it is `true` or absent, those runs
+are kept. There is no inheritance or cascade — the value on the element is the
+whole story.
+
+**How does a run reference more than one condition?**
+Through a single `AppliedConditions` attribute holding a space-separated list of
+`<Condition>` references. The combination is AND: the run survives only when every
+referenced condition resolves to visible, so naming two conditions means both must
+be on for the run to be laid out.
+
+**What happens if `AppliedConditions` names a condition that does not exist?**
+An unresolved reference is treated as visible, so a stray or mistyped condition id
+never silently removes text. It takes a declared `<Condition>` with `Visible="false"`
+to hide a run.
+
+**Does a `<ConditionSet>` control what gets rendered?**
+No. Our parser reads `<ConditionSet>` for round-trip fidelity, but the layout pass
+never branches on set membership. A run is gated only by the individual conditions
+it names, never by which set an editor considers "active".

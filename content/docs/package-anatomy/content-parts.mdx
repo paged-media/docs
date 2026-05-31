@@ -1,16 +1,22 @@
 ---
 title: Content parts
-description: The Spreads, MasterSpreads, and Stories parts — what each holds and how Self ids tie them to the design map.
+description: The Spreads, MasterSpreads, and Stories parts hold an IDML document itself — the pages, the shapes that sit on them, and the text — each tied to the design map by a Self id derived from its file name.
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
 ---
 
-If the resource parts are the document's shared vocabulary, the content parts are
-the document itself: where the pages are, what shapes sit on them, and what text
-those shapes hold. Three folders carry it — `Spreads`, `MasterSpreads`, and
-`Stories` — and each part is one file, named so the design map can point at it.
+**The content parts — `Spreads`, `MasterSpreads`, and `Stories` — hold the document itself: its pages, the shapes on them, and the text.**
+
+**In short:** If the resource parts are an IDML document's shared vocabulary, the
+content parts are the document itself: where the pages are, what shapes sit on
+them, and what text those shapes hold. Three folders carry it — `Spreads` (pages
+and the items on them), `MasterSpreads` (the template pages they inherit from), and
+`Stories` (the text and its formatting). Each part is one file, named so the design
+map can point at it and so the parser can derive its `Self` id back from the file
+name. This page covers what each folder holds and how those ids tie the parts to
+the design map.
 
 The design map lists these parts with `idPkg:Spread`, `idPkg:MasterSpread`, and
 `idPkg:Story` elements, each carrying a `src` path. The embed below shows that
@@ -99,3 +105,24 @@ story's `Self` id back from that file name (`Stories/Story_ustory1.xml` →
 That triple — listed in the manifest, named on a frame, carried on the story
 element — is what places a story's text on a page. Following those ids from part
 to part is the subject of [how the parts reference each other](/docs/package-anatomy/how-parts-reference).
+
+## Frequently asked questions
+
+**What is the difference between a spread, a master spread, and a story?**
+A *spread* part holds the pages and the page items (text frames, rectangles, and
+the like) that sit on them. A *master spread* is the template a body page inherits
+from, written in the same shape as a regular spread. A *story* holds the text and
+its formatting, with no geometry — a text frame in a spread links to a story by
+naming it in `ParentStory`.
+
+**How does a `TextFrame` connect to the text it displays?**
+A `TextFrame` does not contain words; it names a story in its `ParentStory`
+attribute. The story part holds the actual text, and the frame supplies the box the
+text composes into — which is why a frame is the bridge from a spread to a story.
+
+**How is a content part's `Self` id related to its file name?**
+For spreads, master spreads, and stories, the parser derives the part's `Self` id
+from its file name — `Stories/Story_ustory1.xml` yields `ustory1`, and
+`MasterSpreads/MasterSpread_umaster.xml` yields `umaster`. That id is what the
+design map's `StoryList`, a frame's `ParentStory`, and a page's `AppliedMaster`
+resolve against.

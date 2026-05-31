@@ -1,15 +1,21 @@
 ---
 title: GeometricBounds
-description: The axis-aligned bounding box — and its surprising y-before-x axis order.
+description: GeometricBounds is the axis-aligned bounding box of an IDML page item, given as four points in the surprising y-before-x order y1 x1 y2 x2 (top, left, bottom, right).
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
 ---
 
-`GeometricBounds` is the axis-aligned bounding rectangle of a page item, given as
-four numbers in points. It is the quickest way to know how big a frame is and
-where its box sits, and it appears on both `Page` elements and page items.
+**`GeometricBounds` is the axis-aligned bounding box of a page item, written in the y-before-x order `y1 x1 y2 x2`.**
+
+**In short:** `GeometricBounds` is the axis-aligned bounding rectangle of a page
+item, given as four numbers in points. It is the quickest way to know how big a
+frame is and where its box sits, and it appears on both `Page` elements and page
+items. The catch is the axis order: the four numbers are `y1 x1 y2 x2` — that is
+**top, left, bottom, right**, with the *vertical* coordinate first, the opposite
+of the `(x, y)` ordering used almost everywhere else. From those four numbers the
+renderer derives width as `right − left` and height as `bottom − top`.
 
 ## The axis order is y before x
 
@@ -76,3 +82,23 @@ The bounds are always in the element's own *inner* coordinate space — the same
 space the path anchors live in — and the item's
 [`ItemTransform`](/docs/geometry-coordinates/item-transform) maps that space onto
 the page.
+
+## Frequently asked questions
+
+**What is the axis order of GeometricBounds?**
+The four numbers are `y1 x1 y2 x2`, meaning **top, left, bottom, right** — the
+vertical coordinate comes first. This is the reverse of the `(x, y)` ordering
+used in most other IDML geometry, so it is the one thing worth memorizing.
+
+**How are a frame's width and height computed from GeometricBounds?**
+Width is `right − left` (`x2 − x1`) and height is `bottom − top` (`y2 − y1`).
+Because Y grows downward, `y2` (bottom) is the larger number, so the height
+subtraction comes out positive. The parser requires exactly four numbers; any
+other count is rejected.
+
+**What happens when a page item has no GeometricBounds?**
+Real InDesign exports often omit `GeometricBounds` on page items and serialise
+only the [`PathGeometry`](/docs/geometry-coordinates/path-geometry). When the
+attribute is absent, the parser derives the box from the path's anchor points —
+taking the minimum and maximum X and Y — so the item ends up with the same
+`Bounds` record either way.

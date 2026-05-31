@@ -1,11 +1,21 @@
 ---
 title: Text frames
-description: The TextFramePreference block — InsetSpacing, VerticalJustification, FirstBaselineOffset, and AutoSizingType.
+description: The IDML TextFramePreference block — InsetSpacing, VerticalJustification, FirstBaselineOffset, and AutoSizingType.
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
 ---
+
+**A `TextFrame` is the page item that holds text, and its `TextFramePreference` child controls how that text sits inside the frame.**
+
+**In short:** A `TextFrame` is the IDML page item bound to a story: it points at
+the story through its `ParentStory`, and the frame's outline sets where the text
+can go. A single optional child element, `TextFramePreference`, controls *how*
+the text sits inside that outline — through four attributes: `InsetSpacing` (the
+text inset box), `VerticalJustification` (where the block sits in the column
+height), `FirstBaselineOffset` (where the first line lands), and `AutoSizingType`
+(whether the frame may grow). This page is the reference for all four.
 
 A `TextFrame` is the page item that holds text: it points at a story through its
 `ParentStory`, and its `ContentType` is `TextType`. The frame's *outline* (from
@@ -107,3 +117,23 @@ baseline stack up in that order: the outline is the room, the insets pull a
 margin in, the first-baseline policy places the top line, and vertical
 justification distributes whatever slack is left. Get the inset wrong and every
 later number shifts with it.
+
+## Frequently asked questions
+
+**What is the TextFramePreference element in IDML?**
+`TextFramePreference` is an optional child of a `TextFrame` that controls how text
+sits inside the frame outline. It carries four attributes — `InsetSpacing`,
+`VerticalJustification`, `FirstBaselineOffset`, and `AutoSizingType` — and when it
+is absent the frame falls back to InDesign's defaults.
+
+**What order does InsetSpacing use?**
+`InsetSpacing` is a space-separated list of four points in IDML's
+`top left bottom right` order. The parser stores them as a
+`(top, left, bottom, right)` tuple, and the composer lays text out against the
+resulting inset box rather than the raw frame outline.
+
+**Does the renderer support auto-sizing text frames?**
+Only partially. `WidthOnly` is honoured — the renderer estimates the longest line
+and widens the wrap column to fit — but the height-growth variants (`HeightOnly`,
+`HeightAndWidth`, `HeightAndWidthProportionally`) are parsed and only their width
+component is applied; vertical growth is still on the roadmap.

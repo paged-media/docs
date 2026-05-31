@@ -1,11 +1,22 @@
 ---
 title: The companion formats
-description: Snippets, libraries, story-only/InCopy files, and assignment files — what each contains and how it differs from a full IDML package.
+description: A fact-by-fact reference for the four IDML companion formats — InDesign Snippets, libraries, story-only/InCopy files, and assignment files — covering what each contains and how it differs from a full IDML package.
 tier: pro
 diataxis: reference
 status: published
 owner: paged-docs
 ---
+
+**The companion formats are four standalone XML files that reuse IDML's vocabulary but are not packages.**
+
+**In short:** Four file kinds borrow IDML's element vocabulary outside the
+package: **InDesign Snippets** (`.idms`), **libraries**, **story-only / InCopy
+files** (`.icml`), and **assignment files** (`.icma`). Each is a single, standalone
+XML file rather than a ZIP archive, and most announce themselves with an `aid`
+processing instruction at the top. This reference page states each one as a fact —
+its name and extension, the marker that identifies it, what it carries, and the
+precise way it differs from a full `.idml` package. None of them is something Paged
+can open.
 
 Four file kinds reuse IDML's element vocabulary outside the package. This page
 states each as a fact: its name and extension, the marker that identifies it,
@@ -110,3 +121,27 @@ here for a renderer to draw.
 
 Why each companion format is unsupported, and what supporting it would require, is
 the subject of [when each applies](/docs/companion-formats/when-each-applies).
+
+## Frequently asked questions
+
+**What is the difference between an `.idms` snippet and an `.icml` story file?**
+An `.idms` **snippet** captures the page items of a single page plus the styles,
+colors, and layers needed to re-create their formatting when placed into a
+document; it is marked `<?aid SnippetType="PageItem"?>`. An `.icml` **story-only /
+InCopy file** carries one story's text and formatting with no page or spread
+geometry around it, and is marked `<?aid SnippetType="InCopyInterchange"?>`. One is
+a layout fragment, the other is text with no place to sit.
+
+**How can I tell which companion format a standalone XML file is?**
+Three of the four announce themselves with a processing instruction at the top of
+the file: `<?aid SnippetType="PageItem"?>` marks a snippet (and a library item),
+`<?aid SnippetType="InCopyInterchange"?>` marks an ICML story file, and
+`<?aid type="assignment"?>` marks an assignment file. These markers are facts of
+the format, so you can identify a file by inspection.
+
+**Can Paged open any of these companion formats?**
+No. Every format on this page is a standalone XML file with no ZIP archive wrapper
+and no `designmap.xml` root, which is exactly the shape Paged's reader cannot enter
+— so all of them carry a not-yet-parsed status. The one form Paged does open is the
+full IDML package: a ZIP archive with a mimetype, a design map, and the parts the
+design map references.

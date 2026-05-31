@@ -1,18 +1,22 @@
 ---
 title: How the parts reference each other
-description: The id-and-reference graph that turns separate XML parts into one document, resolved by id lookup.
+description: An IDML document's separate XML parts become one document through id references — almost every cross-part link is a Self id looked up in a table the parser builds at open time.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
 
-An IDML package is deliberately split: colors in one file, styles in another,
-each spread and each story in its own. That split only works because the parts
-point at each other. Almost every cross-part link is the same move — an attribute
-holds the `Self` id of something defined elsewhere, and reading the document means
-*resolving* those ids: looking each one up in the table of things with that id.
-Nothing is nested across files; everything is referenced.
+**An IDML document's separate parts become one document through id references, each resolved by a table lookup.**
+
+**In short:** An IDML package is deliberately split — colors in one file, styles
+in another, each spread and each story in its own. That split only works because
+the parts point at each other, and almost every cross-part link is the same move:
+an attribute holds the `Self` id of something defined elsewhere, and reading the
+document means *resolving* that id by looking it up in a table the parser built at
+open time. Nothing is nested across files; everything is referenced. This page
+walks the one mechanism behind every link, why missing targets don't crash the
+parse, and the two references that chain rather than resolve in a single hop.
 
 <PackageGraph />
 
@@ -85,3 +89,28 @@ rest of the graph still resolves. The cost is that you can't read any one part i
 isolation and know what it will look like — you have to resolve its references
 first. That resolution, an id at a time, is the whole job of opening an IDML
 document.
+
+## Frequently asked questions
+
+**How do the separate parts of an IDML document connect to each other?**
+Through id references. An attribute in one part holds the `Self` id of something
+defined in another — a `FillColor` names a `Color`, a `ParentStory` names a
+`Story`, an `AppliedParagraphStyle` names a style — and the parser resolves each by
+looking the id up in a table it built once at open time. The ids are global within
+the package, so a `Self` value defined in one file can be referenced from any
+other.
+
+**What happens when a reference points at something that doesn't exist?**
+The parse does not crash; the lookup simply returns nothing and the consumer falls
+back. A `FillColor` naming a missing color resolves to no paint, and an
+`AppliedParagraphStyle` with no match yields an empty set so the cascade falls
+through to its defaults. This forgiving resolution is deliberate, because real
+documents drift and a reader that resolves what it can is more useful than one that
+refuses the whole file over a single dangling id.
+
+**Which references need more than a single lookup to resolve?**
+Two. Style resolution walks the `BasedOn` chain, with each hop filling in only the
+attributes still unset, down to the document's `$ID/[No … style]` defaults. Story
+threading walks `NextTextFrame` from the head frame through each continuation
+frame. Both walks are depth-bounded, so a cyclic chain stops rather than loops
+forever.

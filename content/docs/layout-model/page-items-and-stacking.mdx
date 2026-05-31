@@ -1,16 +1,21 @@
 ---
 title: Page items and stacking
-description: What a spread contains, and how document order becomes back-to-front z-order at render time.
+description: What an IDML spread contains, and how the document order of its page items becomes back-to-front z-order at render time.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
 
-Inside a `<Spread>`, after its pages, come the **page items**: the visible
-shapes. The parser recognises five shape types as top-level page items, plus the
-`<Group>` that bundles several of them. The order they appear in the XML is not
-incidental — it is the stacking order.
+**Page items are the visible shapes inside a spread, and the order they appear in the XML is their back-to-front stacking order.**
+
+**In short:** Inside a `<Spread>`, after its pages, come the **page items** — the
+visible shapes. The parser recognises five shape types as top-level page items
+(`TextFrame`, `Rectangle`, `Oval`, `GraphicLine`, `Polygon`), plus the `<Group>`
+that bundles several of them. The order they appear in the XML is not incidental:
+the first item is painted first and sits at the back, the last is painted last and
+sits at the front. That single rule — document order is z-order — is what lets a
+coloured rectangle act as a backdrop for a text frame declared after it.
 
 ## The page-item types
 
@@ -71,3 +76,23 @@ master that contributes a header rule to each page. Read the spread part: the tw
   A two-page spread. Each page applies the same master by its Self id, and each
   carries one text frame; document order within the spread sets the stacking.
 </ExampleEmbed>
+
+## Frequently asked questions
+
+**What are page items in IDML?**
+Page items are the visible shapes inside a spread. The parser recognises five
+top-level types — `TextFrame`, `Rectangle`, `Oval`, `GraphicLine`, and `Polygon`
+— plus the `<Group>` element that bundles several of them so one opacity, blend
+mode, or drop shadow applies to the whole cluster.
+
+**How is the stacking order of page items determined?**
+By document order. The parser keeps a single flat list of the spread's top-level
+items in the exact order it met them in the XML; the first is painted first and
+sits at the back, the last is painted last and sits at the front. There is no
+separate z-index attribute — position in the XML is the stacking order.
+
+**Do layers change the stacking order?**
+Yes. When items carry an `ItemLayer` reference, layer stacking takes precedence:
+everything on a back layer paints before everything on a front layer, regardless
+of per-shape XML order. Layer *groups* (nested layer folders) are currently
+flattened rather than honored as a hierarchy.

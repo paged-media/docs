@@ -12,13 +12,13 @@ page, and fails the build if the pixels drift.**
 
 **In short:** Paged proves visual correctness with a closed loop. A deterministic
 generator emits IDML fixtures where each page exercises exactly one renderable
-feature variant. Adobe InDesign exports a reference PDF from each of those same
-documents. In CI, the renderer rasterises its own version of every page through the
-CPU backend, the reference PDF is rasterised alongside it, and an image-diff tool
-compares the two using **ΔE2000** (perceptual colour difference) and **SSIM**
-(structural similarity). Every gated page must stay under a per-fixture tolerance,
-or the merge is blocked. This page walks the loop end to end and explains the one
-rule that keeps it honest: never loosen a threshold to make a failure go away.
+feature variant, and Adobe InDesign exports a reference PDF from each of those same
+documents. In CI, the renderer rasterises every page through the CPU backend, the
+reference PDF is rasterised alongside it, and an image-diff tool compares the two
+using **ΔE2000** (perceptual colour difference) and **SSIM** (structural
+similarity), with every gated page held under a per-fixture tolerance or the merge
+is blocked. This page walks the loop end to end and explains the one rule that
+keeps it honest: never loosen a threshold to make a failure go away.
 
 ## The generator: one feature per page
 

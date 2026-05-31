@@ -1,19 +1,23 @@
 ---
 title: Layout model
-description: How a document's pages are grouped into spreads, how page items stack within them, and how master spreads supply repeating layout.
+description: IDML's layout model is the nest of containers that places content — a document of spreads, each holding pages, each filled by page items, with master spreads supplying repeating layout.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
 
-A story holds text, but text has to land *somewhere*. The layout model is the
-set of containers that decide where: a document is a sequence of **spreads**,
-each spread holds one or more **pages**, and each page is filled by **page
-items** — the frames, rectangles, ovals, lines, and polygons that carry the
-visible content. Layered on top, a **master spread** supplies items that repeat
-across many pages, and a body page can selectively **override** any master item
-it wants to replace.
+**IDML's layout model is the nest of containers that decides where content lands on the page.**
+
+**In short:** A story holds text, but the text has to land *somewhere*, and the
+layout model is the set of containers that decide where. An IDML document is a
+sequence of **spreads**; each spread holds one or more **pages**; each page is
+filled by **page items** — the frames, rectangles, ovals, lines, and polygons
+that carry the visible content. Layered on top, a **master spread** supplies
+items that repeat across many pages, and a body page can selectively
+**override** any master item it wants to replace. This chapter walks that nesting
+from the outside in, explaining what the renderer needs from each layer to
+predict what appears on a given page.
 
 This chapter follows that nesting from the outside in: the spread, then its
 pages, then the items inside them, then the master layer that feeds them.
@@ -45,3 +49,24 @@ The frame *types* themselves — `TextFrame`, `Rectangle`, `Oval`, `GraphicLine`
 [Frames & paths](/docs/frames-paths). The point coordinates those frames use are
 explained under [Geometry & coordinates](/docs/geometry-coordinates). This
 chapter is about the containers and the stacking, not the shapes.
+
+## Frequently asked questions
+
+**What is the layout model in IDML?**
+The layout model is the nesting of containers that positions content: a document
+is a sequence of spreads, each spread holds one or more pages, and each page is
+filled by page items. Master spreads sit on top of this, supplying repeating
+items that body pages can selectively override.
+
+**What is the difference between a spread, a page, and a page item?**
+A **spread** is the outer container — the pasteboard that holds the pages of one
+opening. A **page** is a bounded rectangle within a spread that maps its own
+coordinates into spread space. A **page item** is a visible shape — a text frame,
+rectangle, oval, line, or polygon — that sits on a spread and carries the actual
+content.
+
+**How does a master spread relate to a body page?**
+A master spread holds repeating layout — headers, footers, page-number
+placeholders — and a body page links to it through its `AppliedMaster` attribute.
+At render time the master's items are stamped onto each page that names it, and a
+page can use its `OverrideList` to replace individual master items with its own.

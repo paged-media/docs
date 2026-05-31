@@ -7,6 +7,17 @@ status: published
 owner: paged-docs
 ---
 
+**Process colors are built on press from C, M, Y, and K; a spot color is a single named ink the renderer can only *preview*.**
+
+**In short:** A `<Color>` carries a `Model` that is either `Process` or `Spot`,
+and the difference is a printing one. A process color is built on press from the
+cyan, magenta, yellow, and black inks; a spot color is a single named ink — a
+PANTONE, say — mixed to a specific recipe. On a screen there is no physical ink, so
+Paged's renderer previews a spot color through its CMYK alternate, scaled by any
+swatch tint and run through ICC conversion. This page explains how that preview
+works, how ICC color management fits in, and exactly where the renderer is honest
+about the limits of what it can reproduce.
+
 A `<Color>` carries a `Model` that is either `Process` or `Spot`. The difference
 is a printing one — process colors are built on press from the C, M, Y, and K
 inks, while a spot color is a single named ink (a PANTONE, say) mixed to a
@@ -90,3 +101,28 @@ None of these change how the common case behaves: a process color or a spot colo
 with a CMYK alternate previews correctly. The badges mark exactly where the
 preview stops being faithful, so you always know which side of the line a given
 document sits on.
+
+## Frequently asked questions
+
+**What is the difference between spot and process color?**
+A process color is built on press from the four C, M, Y, and K inks; a spot color
+is a single named ink mixed to a specific recipe, such as a PANTONE. In IDML this
+shows up as a `<Color>` whose `Model` is `Process` or `Spot`.
+
+**How does the renderer preview a spot color on screen?**
+Through the spot color's CMYK alternate. End to end it is: take the
+`AlternateColorValue`, scale each channel by any swatch `TintValue / 100`, then run
+the result through the document's CMYK ICC profile to reach the screen. The
+renderer deliberately does not interpret the spot's own primary space (usually
+Lab), because doing so without a spectral model would be a guess.
+
+**What happens to a spot color with no CMYK alternate?**
+There is nothing to preview through, so the renderer cannot resolve it to a visible
+color and leaves it unresolved.
+
+**Why might color look off in the browser preview?**
+On a native build, ICC conversion uses a real engine (Little CMS) keyed to the
+document's `CMYKProfile`. In the WebGPU live preview, compiled to wasm, that native
+engine is not available, so a naive CMYK→RGB approximation is substituted. It is
+close enough to read a layout by, but it is not color-accurate, and saturated or
+profile-sensitive colors can drift.

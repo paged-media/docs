@@ -1,11 +1,21 @@
 ---
 title: Groups
-description: How a Group clusters page items, how its transform and transparency reach the members, and what the renderer does inside one.
+description: How an IDML Group clusters page items, how its transform and transparency reach the members, and what the renderer does inside one.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
+
+**A `Group` is the one page item that holds no marks of its own — it is a container that clusters other page items so they move as one.**
+
+**In short:** A `Group` is the IDML page item that holds no marks of its own. It
+is a *container*: its children are the page items it clusters so they can be
+moved, scaled, rotated, or made translucent as a single object. On disk a group's
+members are written as child elements of the `<Group>`, and the group's
+`ItemTransform` composes onto each of them. This page explains how membership and
+the composed transform work, how group-level transparency is captured, and what
+our renderer does inside a group today.
 
 A `Group` is the one page item that holds no marks of its own. It is a
 *container*: its children are the page items it clusters so they can be moved,
@@ -74,3 +84,23 @@ earlier pass that dropped group-nested text frames; the current parser lifts
 those frames out instead, so the counter stays `0` (spread.rs:116–119). If you
 see it report a non-zero value, that is a signal worth investigating, not the
 expected case.
+
+## Frequently asked questions
+
+**What does a Group do in IDML?**
+A `Group` clusters several page items so a single transform, opacity, or effect
+can apply to all of them at once. It holds no fill or stroke of its own — its only
+content is the members written as child elements of the `<Group>`.
+
+**How does a group's transform reach its members?**
+When the parser meets a `<Group>` it lifts each member out onto the spread's
+normal page-item lists with the group's `ItemTransform` already *composed* onto
+the member's own transform. Nesting composes through every level, so a member two
+groups deep ends up with `outer ∘ inner ∘ member` — and downstream layers never
+have to special-case groups to place things correctly.
+
+**Does the renderer apply group-level opacity and drop shadows?**
+Not yet. A group's `Opacity`, `BlendMode`, and drop shadow are parsed and attached
+to the `Group` record, but the whole-group composite that would apply them is
+still on the roadmap; the members themselves render at their correct composed
+positions today.
