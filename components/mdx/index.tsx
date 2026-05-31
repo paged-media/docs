@@ -1,5 +1,6 @@
 import defaultComponents from 'fumadocs-ui/mdx';
 import type { MDXComponents } from 'mdx/types';
+import { DynamicCodeBlock } from 'fumadocs-ui/components/dynamic-codeblock';
 import { RawView } from './raw-view';
 import { AnnotatedView } from './annotated-view';
 import { TreeView } from './tree-view';
@@ -12,6 +13,9 @@ import { PackageGraph, CoordinateSpace, StyleCascade, StoryThreading } from '@/c
 /**
  * Custom components available in every MDX page. `ExampleEmbed` is the one
  * authors reach for most; the individual views are exposed too for one-off use.
+ * `DynamicCodeBlock` highlights arbitrary `code`/`lang` with Shiki at runtime —
+ * for snippets whose content isn't known at authoring time (the static fenced
+ * code blocks keep using build-time Shiki via rehype).
  */
 export function getMDXComponents(extra?: MDXComponents): MDXComponents {
   return {
@@ -27,6 +31,7 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     CoordinateSpace,
     StyleCascade,
     StoryThreading,
+    DynamicCodeBlock,
     ...extra,
   };
 }

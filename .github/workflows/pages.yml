@@ -74,6 +74,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: build static export (out/)
         run: pnpm build
+        # GithubInfo (nav) fetches repo stars at build time. Authenticate so the
+        # shared-runner IP doesn't hit the 60/hr unauthenticated rate limit.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
