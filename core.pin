@@ -4,4 +4,4 @@
 # core@main still passes. Format: a single commit SHA on the first non-comment line.
 # Also the commit the Pages deploy builds the WebGPU paged-sdk (ViewerSession)
 # from for the live preview — this commit carries both paged-inspect and paged-sdk.
-08a0d8f8e8c440b8b0d7a53c6d429b8b7ee070bf
+d4de59e938987273c79941ec43dca418dfac67d8
