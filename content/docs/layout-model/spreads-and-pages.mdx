@@ -41,7 +41,7 @@ are not consulted while building the document.
 `ItemTransform` is stored on the spread but, in practice, InDesign limits it to
 translation plus rotation in 90° steps, and each page already carries its own
 transform into spread space — so per-page output is correct even while a rotated
-whole-spread pasteboard is still on the roadmap. <SupportBadge status="parsed-not-rendered" note="Spread ItemTransform" />
+whole-spread pasteboard is still on the roadmap. <SupportBadge status="parsed-not-rendered" note="Spread ItemTransform: translation faithful (cancels per-page); rotation/scale deferred" />
 
 ## The `Page` element
 
@@ -80,10 +80,10 @@ points compose with these transforms — lives under
 `Name` is the label InDesign already resolved for the page, including any
 section-driven style (Roman numerals, prefixed labels, and so on). The renderer
 substitutes it directly for auto-page-number markers. When a page omits `Name`,
-the renderer falls back to a naive 1-based body-page index — InDesign `<Section>`
-elements are not parsed, so section-driven numbering is only honored to the
-extent it has already been baked into each page's `Name`.
-<SupportBadge status="parsed-not-rendered" note="Section-driven numbering (sections not parsed; naive 1-based fallback)" />
+the renderer computes the label from the document's `<Section>` numbering rules
+(falling back to a 1-based body-page index only when no section applies), so
+section-driven numbering is honored even for `Name`-less pages.
+<SupportBadge status="supported" note="Section numbering rules applied; Page.Name authoritative when present" />
 Section numbering proper is covered under
 [Sections, numbering & variables](/docs/sections-numbering-variables).
 

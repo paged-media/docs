@@ -79,12 +79,12 @@ section's count. Its attributes name a starting number (`PageNumberStart`, 1 to
 continue the prior section (`ContinueNumbering`), and the page the section starts on
 (`PageStart`, referencing a `Page` `Self`).
 
-Our parser does not read any of it. We never need those rules, because the *output*
-of applying them — the per-page label — is already present as `Page.Name`. Parsing
-`Section` would only matter if we wanted to *recompute* labels rather than trust the
-baked ones, which we currently do not.
+Our parser reads it. `Page.Name` — the baked label InDesign already computed —
+stays authoritative when present; the `Section` rules (`PageNumberStart`,
+`PageNumberStyle`, `SectionPrefix`, `ContinueNumbering`, `PageStart`) drive the
+label only when a page carries no `Name`, so numbering still reflows correctly.
 
-<SupportBadge status="not-yet-parsed" note="The Section element and its numbering rules (PageNumberStart, PageNumberStyle, SectionPrefix, ContinueNumbering, PageStart) are skipped; the renderer trusts Page.Name instead." />
+<SupportBadge status="supported" note="Section numbering rules parsed and applied; Page.Name stays authoritative when present" />
 
 The practical consequence is narrow: as long as `Page.Name` is present — which it is
 in every real InDesign export — sections are invisible to us in the right way,
@@ -92,15 +92,14 @@ because their effect is already in the names.
 
 ## The naive fallback
 
-When a page has *no* `Name` attribute, the renderer cannot trust a label, so it falls
-back to a plain 1-based count: the page's position in the document, plus one
-(`paged-renderer/src/pipeline.rs:615`). This fallback has no section awareness — it
-cannot produce Roman numerals, restarts, or prefixes, because the information that
-would drive them lives in the unparsed `Section` element. In practice this only
-surfaces with synthetic packages and hand-written fixtures that omit `Name`; real
-exports always carry it.
+When a page has *no* `Name` attribute, the renderer now consults the document's
+`Section` definitions: it computes the label from the active section's numbering
+style, start value, and prefix (Roman numerals, restarts, and prefixes included).
+Only when no section applies does it fall back to a plain 1-based count. In
+practice the `Name`-absent path surfaces with synthetic packages and hand-written
+fixtures; real exports carry `Name` and that wins.
 
-<SupportBadge status="not-yet-parsed" note="No-name fallback is naive 1-based numbering with no section awareness — paged-renderer/src/pipeline.rs:615" />
+<SupportBadge status="supported" note="Section-rule labels computed for Name-less pages; 1-based fallback only when no section applies" />
 
 ## Summary
 

@@ -77,15 +77,14 @@ pixels around.
 
 ## Layer folders are flattened
 
-InDesign's Layers panel can nest layers inside *layer groups* (folders) for
-tidiness. That nesting is purely organizational, and the model here does not carry
-it: layers are kept as a single flat, ordered list, with no parent/child
-relationship between them. Every `<Layer>` is a peer. In practice this costs
-nothing for rendering — a folder never affected whether its layers' items draw,
-only how they were grouped in the panel — but it does mean you cannot ask this
-model "which folder is this layer in." There is no folder to ask about.
+InDesign's Layers panel can nest layers inside *layer groups* (folders). The
+model carries that nesting: each `<Layer>` records its parent group, and the
+render-time visibility / lock resolution walks the ancestor chain — an item on a
+visible child layer inside a *hidden* (or locked) group resolves hidden (or
+locked), matching the panel. A top-level layer simply has no parent, so flat
+documents behave exactly as before.
 
-<SupportBadge status="not-yet-parsed" note="Layer folders / nested layer groups — flattened to a single peer list; no grouping is retained" />
+<SupportBadge status="supported" note="Layer-group nesting parsed; a child inside a hidden/locked group inherits that state" />
 
 ## What to check when content goes missing
 

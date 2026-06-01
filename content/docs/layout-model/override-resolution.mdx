@@ -41,10 +41,10 @@ being a normal top-level page item, paints on its own. The net effect is a
 one-for-one swap with no double-stamping.
 
 `MasterPageTransform` participates in the same stamping pass: it positions the
-master overlay on the specific body page. The renderer applies its translation
-component when offsetting master items onto the page; the full matrix is parsed,
-but only the offset is currently consumed.
-<SupportBadge status="parsed-not-rendered" note="MasterPageTransform: translation applied, full matrix not yet" />
+master overlay on the specific body page. The renderer applies the full affine —
+not just the translation component — so a master transform carrying rotation or
+scale is honored when stamping.
+<SupportBadge status="supported" note="MasterPageTransform full matrix applied at stamp time" />
 
 ## A worked example
 

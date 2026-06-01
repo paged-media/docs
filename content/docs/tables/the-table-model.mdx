@@ -121,7 +121,7 @@ the next run, cycling across the table. They live directly on the `<Table>`.
     { attr: 'StartRowStrokeWeight / EndRowStrokeWeight', type: 'double (pt)', support: 'supported', note: 'Row-divider weight for each phase.' },
     { attr: 'StartRowStrokeTint / EndRowStrokeTint', type: 'double (0–100%)', support: 'supported', note: 'Row-divider tint for each phase.' },
     { attr: 'StartRowStrokeType / EndRowStrokeType', type: 'string (stroke-style id)', support: 'parsed-not-rendered', note: 'Row-divider stroke style; captured, drawn solid today.' },
-    { attr: 'StartColumnStrokeCount / Color / Weight / Tint / Type (and End* equivalents)', type: 'mixed', support: 'parsed-not-rendered', note: 'The column-divider analogue of the row-stroke family. Parsed into the same structure; column-divider drawing is not yet emitted.' },
+    { attr: 'StartColumnStrokeCount / Color / Weight / Tint / Type (and End* equivalents)', type: 'mixed', support: 'supported', note: 'The column-divider analogue of the row-stroke family. Interior column dividers are drawn from this decl; row strokes win at crossings (StrokeOrder precedence is the remaining piece).' },
   ]}
 />
 

@@ -106,8 +106,9 @@ about:
   apply a character style to a *leading portion* of each paragraph, bounded by a
   delimiter (N words, a literal character, "to the first colon", and so on). The
   parser reads the full list — applied style, delimiter, repetition, inclusive flag
-  — but the renderer does not yet split runs along those boundaries.
-  <SupportBadge status="parsed-not-rendered" note="NestedStyle on ParagraphStyle / ParagraphStyleRange" />
+  — and the renderer splits each paragraph's runs along those boundaries,
+  overriding each fragment's character style.
+  <SupportBadge status="supported" note="NestedStyle runs split per delimiter and restyled" />
 - **Conditional styles.** `<Condition>` definitions and a run's
   `AppliedConditions` (a space-separated list of condition references) are parsed
   and stored. The intent is that a run is shown only when every referenced

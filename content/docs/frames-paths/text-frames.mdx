@@ -102,13 +102,13 @@ is the default — a static frame whose bounds are authoritative.
   rows={[
     { attr: 'Off', type: 'enum', support: 'supported', note: 'Default. Static frame; the authored bounds win.' },
     { attr: 'WidthOnly', type: 'enum', support: 'supported', note: 'The renderer estimates the longest line and widens the wrap column to fit (honouring MinimumWidthForAutoSizing).' },
-    { attr: 'HeightOnly', type: 'enum', support: 'parsed-not-rendered', note: 'Parsed; the width-growth pass does not act on height-only growth yet.' },
-    { attr: 'HeightAndWidth', type: 'enum', support: 'parsed-not-rendered', note: 'Only the width component is applied; height growth is not yet honoured.' },
-    { attr: 'HeightAndWidthProportionally', type: 'enum', support: 'parsed-not-rendered', note: 'As HeightAndWidth — only width growth takes effect today.' },
+    { attr: 'HeightOnly', type: 'enum', support: 'supported', note: 'A height-growing frame grows to fit its text instead of clipping overset lines.' },
+    { attr: 'HeightAndWidth', type: 'enum', support: 'supported', note: 'Both the width estimate and height growth apply.' },
+    { attr: 'HeightAndWidthProportionally', type: 'enum', support: 'supported', note: 'As HeightAndWidth.' },
   ]}
 />
 
-<SupportBadge status="parsed-not-rendered" note="Only width growth is applied. The companion AutoSizingReferencePoint and MinimumHeightForAutoSizing are parsed but not yet acted on for vertical growth." />
+<SupportBadge status="supported" note="Width + height growth applied — a height-growing frame grows to fit rather than dropping overset. The visible fill/stroke box stretch and the text-wrap cascade for neighbouring frames are the remaining piece." />
 
 ## Insets, justification, and the first baseline together
 

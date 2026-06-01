@@ -139,8 +139,11 @@ reads but the renderer does not yet fully lay out. They are detailed on the
 [threading and overset](/docs/stories-text/threading-and-overset) and
 [text variables](/docs/stories-text/text-variables) pages; in short:
 
-- **Footnotes** are parsed and distributed to the page that hosts their anchor,
-  but the footnote bodies are not yet drawn. <SupportBadge status="parsed-not-rendered" note="footnote bodies not yet drawn — paged-renderer/src/pipeline.rs:356" />
+- **Footnotes** are parsed, distributed to the page that hosts their anchor, and
+  their bodies are drawn at the bottom of the host frame. Reserving that space
+  *before* the main text fills (so bodies don't overlap the last lines) and
+  cross-frame continuation are the remaining work; a pool taller than its frame
+  is reported via a diagnostic. <SupportBadge status="supported" note="footnote bodies drawn; space-reservation + cross-frame flow pending" />
 - **Ruby** (`RubyFlag` / `RubyString` / `RubyType`) is parsed and a GroupRuby MVP
   is drawn above the base run; per-character distribution is not yet exact. <SupportBadge status="parsed-not-rendered" note="GroupRuby MVP only — paged-renderer/src/pipeline.rs:4208" />
 - **Hyperlinks inside a story** (`HyperlinkTextSource`) are not wired through to

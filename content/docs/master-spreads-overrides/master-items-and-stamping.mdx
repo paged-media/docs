@@ -133,20 +133,20 @@ page's origin and shifts every stamped item by it. `MasterPageTransform` is the
 extra nudge that lets one specific body page slide its master overlay — InDesign's
 "master page overlay" control.
 
-The current pass reads the full six-number matrix but consumes only its
-translation `(tx, ty)`, adding it to the master→body offset. For the overwhelmingly
-common case the matrix is identity and there is nothing to add; a master overlay
-that was scaled or rotated relative to its page is not yet reproduced.
-<SupportBadge status="parsed-not-rendered" note="MasterPageTransform: translation applied, full matrix not yet" />
+The pass reads the full six-number matrix and applies all of it, composing
+`translate(live origin) ∘ MasterPageTransform ∘ translate(-master origin)` so a
+master overlay that was scaled or rotated relative to its page is reproduced, not
+just translated.
+<SupportBadge status="supported" note="MasterPageTransform full matrix applied at stamp time" />
 
-## `ShowMasterItems`: parsed, not honored
+## `ShowMasterItems`: honored
 
 The format carries a `ShowMasterItems` boolean — on both the body `Spread` and the
-`MasterSpread` — to toggle whether master items display. The stamping pass does not
-consult it: any page with an `AppliedMaster` gets its master items stamped. A
-spread that sets `ShowMasterItems="false"` to hide its master layer is **not yet
-honored**, and its master items will still appear.
-<SupportBadge status="parsed-not-rendered" note="ShowMasterItems toggle not honored — master items stamp regardless" />
+`MasterSpread` — to toggle whether master items display. The stamping pass
+consults it: a page with an `AppliedMaster` stamps its master items, but a spread
+that sets `ShowMasterItems="false"` to hide its master layer is honored and those
+master items are suppressed.
+<SupportBadge status="supported" note="ShowMasterItems honored — master items suppressed when false" />
 
 This matters more than it looks. The example below ships with a master spread that
 declares `ShowMasterItems="false"`, yet its master rectangle is still a live

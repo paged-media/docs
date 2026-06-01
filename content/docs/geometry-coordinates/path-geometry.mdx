@@ -108,11 +108,12 @@ plain rounded corner for now:
   rows={[
     { attr: 'None', type: 'enum', support: 'supported', note: 'Square corner. The default.' },
     { attr: 'Rounded', type: 'enum', support: 'supported', note: 'Rounded corner — rendered as drawn.' },
-    { attr: 'Inverse / Inset / Bevel / Fancy', type: 'enum', support: 'parsed-not-rendered', note: 'Recognised and treated as a rounded corner; the bespoke decorative shapes are not yet generated.' },
+    { attr: 'Inverse / Bevel', type: 'enum', support: 'supported', note: 'Bespoke geometry — concave quarter-circle (Inverse) and straight chamfer (Bevel) — generated per corner.' },
+    { attr: 'Inset / Fancy', type: 'enum', support: 'supported', note: 'Drawn with bespoke geometry (square notch / ogee); these two are approximations pending reference-PDF calibration.' },
   ]}
 />
 
-<SupportBadge status="parsed-not-rendered" note="Decorative corner shapes (Fancy / Bevel / Inset / Inverse) fall back to Rounded." />
+<SupportBadge status="supported" note="Decorative corners drawn per-variant; Inset/Fancy approximate pending calibration" />
 
 A second, related gap: decorative *path* and *stroke* treatments beyond the plain
 outline are not generated either — the path you get is the anchor outline as

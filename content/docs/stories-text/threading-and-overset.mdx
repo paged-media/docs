@@ -69,7 +69,7 @@ frame. At the last frame, lines whose baseline falls past the frame's bottom are
 hides overset behind the frame's clip, which keeps the rendered page faithful, but
 it means:
 
-<SupportBadge status="parsed-not-rendered" note="overset lines are dropped at the end of the chain, not surfaced or flagged — paged-renderer/src/pipeline.rs:3909" />
+<SupportBadge status="supported" note="overset clipped to match InDesign, and now reported on BuiltDocument.diagnostics; an auto-height frame grows to fit instead of clipping" />
 
 The text is still fully present in the story part — extraction (see
 [extract all text](/docs/stories-text/extract-all-text)) returns it all. Only the

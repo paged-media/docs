@@ -78,10 +78,10 @@ page.
 ### `ShowMasterItems`
 
 The format carries a `ShowMasterItems` flag on the spread to toggle whether
-master items display. The current pass stamps master items for pages that apply a
-master regardless of this flag, so a spread that sets `ShowMasterItems="false"`
-to hide its master layer is not yet honored.
-<SupportBadge status="parsed-not-rendered" note="ShowMasterItems toggle not yet honored" />
+master items display. The renderer honors it: a page that applies a master still
+stamps its master items, but a spread that sets `ShowMasterItems="false"` hides
+that master layer.
+<SupportBadge status="supported" note="ShowMasterItems honored — master items suppressed when false" />
 
 The two-page spread example on the
 [Page items and stacking](/docs/layout-model/page-items-and-stacking) page shows

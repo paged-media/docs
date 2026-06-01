@@ -1,4 +1,4 @@
 {
   "title": "The renderer",
-  "pages": ["index", "the-pipeline", "the-display-list", "rendering-backends"]
+  "pages": ["index", "the-pipeline", "the-display-list", "rendering-backends", "capabilities-matrix"]
 }

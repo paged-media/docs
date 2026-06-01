@@ -76,9 +76,10 @@ When the stops are CMYK (process, or spot with a CMYK alternate), the renderer
 interpolates *in CMYK* and converts each interpolated point through the ICC
 transform — matching how a press-oriented preview blends, rather than averaging
 in screen RGB, which would over-saturate the midtones. Stops in other spaces get
-a naive conversion into that path. Because `Midpoint` is not yet honored, the
-halfway color always sits at the geometric middle between two stops.
-<SupportBadge status="parsed-not-rendered" note="GradientStop Midpoint" />
+a naive conversion into that path. `Midpoint` is honored: the per-segment blend
+follows the midpoint power curve, so the halfway color lands where the stop's
+`Midpoint` places it rather than always at the geometric middle.
+<SupportBadge status="supported" note="GradientStop Midpoint applied (midpoint-skewed interpolation)" />
 
 ## A gradient, defined and applied
 

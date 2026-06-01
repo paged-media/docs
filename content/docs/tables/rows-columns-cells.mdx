@@ -163,10 +163,11 @@ that is drawn.
   ]}
 />
 
-`VerticalJustification` (`TopAlign`, `CenterAlign`, `BottomAlign`, `JustifyAlign`)
-and `RotationAngle` are stored on a `<Cell>` but are not read here — cell content
-sits at the top of the cell and is not rotated.
-<SupportBadge status="not-yet-parsed" note="VerticalJustification, RotationAngle on Cell" />
+`VerticalJustification` (`TopAlign`, `CenterAlign`, `BottomAlign`) positions cell
+content vertically, and `RotationAngle` rotates the content about the cell centre
+(the borders and fill stay unrotated). Both are honored; cardinal angles
+(0/90/180/270) are the exact case.
+<SupportBadge status="supported" note="Cell VerticalJustification + RotationAngle applied" />
 
 ## Frequently asked questions
 

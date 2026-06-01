@@ -144,13 +144,13 @@ rendered page match the reference page those templates were designed against. (A
 caller that wants the placeholder suppressed can opt out; `paged-inspect` exposes
 this as a flag.)
 
-<SupportBadge status="supported" note="A missing image link is replaced by InDesign’s placeholder visual, but the resolution failure itself is not reported — the placeholder is the only signal." />
+<SupportBadge status="supported" note="A missing image link is replaced by InDesign’s placeholder visual, and the resolution failure is also reported as a render diagnostic — so a consumer reading structured output learns the link broke." />
 
-This is the third honest gap. The placeholder is a faithful *visual* result, but
-the failure that produced it is not separately reported: there is no diagnostic
-saying "the link `X` did not resolve." The placeholder on the page is the only
-signal that a link was broken — visible if you look at the render, invisible to a
-consumer that only reads structured output.
+The placeholder is a faithful *visual* result, and the failure that produced it is
+now **reported** as well: the renderer records an `ImageLinkMissing` (or
+`ImageDecodeFailed`) diagnostic carrying the frame and link URI on
+`BuiltDocument.diagnostics`. So a broken link is visible both on the render *and*
+to a consumer that only reads structured output — no longer a silent gap.
 
 ## What degrades vs. what hard-fails
 
@@ -173,11 +173,14 @@ Pulling it together, the line is consistent:
 - A referenced part present but not well-formed XML → wrapped `ParseError`.
 - A missing or wrong `mimetype`, or a non-ZIP archive → `ParseError`.
 
-The honest summary of the gaps: three of the degradations above are **silent** —
-unknown values, capped cycles, and unresolved image links all change the result
-without leaving a machine-readable trace. The skipped-nested-frame counter shows
-the better pattern, where the lossy behavior reports itself; closing the silent
-gaps toward that pattern is a known direction, not a finished one. We badge them
+The honest summary of the gaps: a **render diagnostics channel**
+(`BuiltDocument.diagnostics`) now reports the lossy outcomes that used to be
+invisible — unresolved/undecodable image links, overset text clipped at the last
+frame, a footnote pool taller than its frame, and section-numbering fallback —
+each with the page, frame, story, or URI it pertains to, alongside the
+skipped-nested-frame counter. Two degradations remain **silent**: an unknown enum
+value dropped to its default, and a `BasedOn` / frame-thread cycle cut at its cap.
+Routing those through the same channel is the remaining direction. We badge them
 honestly so that "the page rendered" is never mistaken for "the page rendered
 everything the document asked for."
 
