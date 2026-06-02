@@ -1,4 +1,9 @@
 {
   "title": "Conditional text",
-  "pages": ["index", "conditions-and-sets", "visibility"]
+  "icon": "paragraph",
+  "pages": [
+    "index",
+    "conditions-and-sets",
+    "visibility"
+  ]
 }

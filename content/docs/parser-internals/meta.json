@@ -1,4 +1,10 @@
 {
   "title": "Parser internals",
-  "pages": ["index", "the-reader", "validation-and-recovery", "performance-and-memory"]
+  "icon": "parser",
+  "pages": [
+    "index",
+    "the-reader",
+    "validation-and-recovery",
+    "performance-and-memory"
+  ]
 }

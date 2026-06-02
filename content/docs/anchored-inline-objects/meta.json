@@ -1,4 +1,9 @@
 {
   "title": "Anchored & inline objects",
-  "pages": ["index", "anchored-objects", "inline-vs-anchored"]
+  "icon": "imageFrame",
+  "pages": [
+    "index",
+    "anchored-objects",
+    "inline-vs-anchored"
+  ]
 }

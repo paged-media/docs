@@ -1,4 +1,13 @@
 {
   "title": "Stories & text",
-  "pages": ["index", "your-first-story", "story-structure", "threading-and-overset", "text-variables", "extract-all-text", "why-ranges-not-spans"]
+  "icon": "story",
+  "pages": [
+    "index",
+    "your-first-story",
+    "story-structure",
+    "threading-and-overset",
+    "text-variables",
+    "extract-all-text",
+    "why-ranges-not-spans"
+  ]
 }

@@ -1,26 +1,243 @@
 @import 'tailwindcss';
 @import 'fumadocs-ui/css/neutral.css';
 @import 'fumadocs-ui/css/preset.css';
+@import './brand.css';
 
 /* Tailwind v4 needs to scan Fumadocs UI's prebuilt components (node_modules is
  * not auto-scanned). Our own app/, components/, content/ are auto-detected. */
 @source '../node_modules/fumadocs-ui/dist/**/*.js';
 
-/*
- * Reserved, restrained technical-reference identity (briefing §6.6).
- * Dual-theme Shiki output for the custom example views (rendered with
- * defaultColor:false in lib/shiki.ts): Fumadocs toggles `.dark` on <html>.
- */
+/* =============================================================================
+   PAGED BRAND ↔ FUMADOCS BRIDGE
+   The Paged design system (app/brand.css) is the source of truth. Here we
+   repoint Fumadocs' own `--color-fd-*` theme variables at the brand tokens so
+   all of Fumadocs' chrome (sidebar, nav, TOC, search, prose, cards) renders in
+   paper / ink / oxblood. Light-only — no `.dark` overrides (the brand ships no
+   dark palette; "never a dark developer dashboard").
+   ========================================================================== */
+:root {
+  --color-fd-background: var(--color-paper);
+  --color-fd-foreground: var(--color-ink);
+  --color-fd-muted: var(--color-paper-soft);
+  --color-fd-muted-foreground: var(--color-muted);
+  --color-fd-card: var(--color-paper-soft);
+  --color-fd-card-foreground: var(--color-ink);
+  --color-fd-popover: var(--color-paper-soft);
+  --color-fd-popover-foreground: var(--color-ink);
+  --color-fd-border: var(--color-rule);
+  --color-fd-primary: var(--color-accent);
+  --color-fd-primary-foreground: var(--color-paper-soft);
+  --color-fd-secondary: var(--color-paper-soft);
+  --color-fd-secondary-foreground: var(--color-ink);
+  --color-fd-accent: var(--color-accent-soft);
+  --color-fd-accent-foreground: var(--color-ink);
+  --color-fd-ring: var(--color-accent);
+
+  /* Fumadocs / Tailwind font tokens → brand four-role families. */
+  --font-sans: var(--font-ibm-plex-sans), "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-ibm-plex-mono), "SFMono-Regular", ui-monospace, Consolas, monospace;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+/* Honor reduced-motion: the rebrand's only motion is a few short color
+   transitions (copy action, start-here hover); drop them when asked. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* =============================================================================
+   READING COLUMN — map Fumadocs prose to the brand type scale.
+   Long-form reading is Source Serif 4 at the 66ch measure / 1.6 leading;
+   display headings are Newsreader; labels/captions/tables are IBM Plex Sans;
+   code is IBM Plex Mono. (Brand: app/brand.css type-scale classes.)
+   ========================================================================== */
+.prose {
+  font-family: var(--font-text-serif);
+  color: var(--color-ink);
+}
+.prose p,
+.prose li {
+  font-family: var(--font-text-serif);
+  font-size: 1.075rem;
+  line-height: 1.6;
+  letter-spacing: -0.004em;
+  color: var(--color-ink);
+  text-wrap: pretty;
+}
+.prose h1 {
+  font-family: var(--font-display-serif);
+  font-size: clamp(36px, 4.5vw, 60px);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  font-weight: var(--weight-display-strong);
+  color: var(--color-ink);
+}
+.prose h2 {
+  font-family: var(--font-display-serif);
+  font-size: clamp(26px, 3vw, 40px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  font-weight: var(--weight-display-strong);
+  color: var(--color-ink);
+}
+.prose h3 {
+  font-family: var(--font-text-serif);
+  font-size: clamp(20px, 2.2vw, 27px);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  font-weight: 650;
+  color: var(--color-ink);
+}
+.prose h4 {
+  font-family: var(--font-sans);
+  font-weight: var(--weight-sans-strong);
+  font-size: 1.05rem;
+  color: var(--color-ink);
+}
+.prose code {
+  font-family: var(--font-mono);
+  color: var(--color-ink);
+}
+.prose a {
+  color: var(--color-accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.14em;
+}
+/* Headings carry auto-anchor links in Fumadocs; oxblood is reserved for inline
+   body links + accents, so heading links keep the heading's ink color. */
+.prose :is(h1, h2, h3, h4, h5, h6) a {
+  color: inherit;
+  text-decoration: none;
+}
+.prose strong {
+  font-weight: var(--weight-text-strong);
+  color: var(--color-ink);
+}
+.prose blockquote {
+  border-left: var(--rule-heavy);
+  color: var(--color-ink-soft);
+  font-style: normal;
+}
+/* Tables: hairline rules, paper-soft header, mono numerics. */
+.prose table {
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+}
+.prose th {
+  background: var(--color-paper-soft);
+  border-bottom: var(--rule-medium);
+  font-weight: var(--weight-sans-strong);
+}
+.prose td,
+.prose th {
+  border-color: var(--color-rule);
+}
+
+/* Selected / active nav: an oxblood left rule, never a heavy filled block. */
+#nd-sidebar a[data-active='true'] {
+  color: var(--color-accent);
+}
+
+/* =============================================================================
+   CODE — editorial XML syntax (Shiki single light theme; see lib/shiki.ts).
+   "Never neon IDE." Background is transparent so the Source Code Panel's
+   paper-soft sheet shows through.
+   ========================================================================== */
 .shiki,
 .shiki span {
   color: var(--shiki-light);
-  background-color: var(--shiki-light-bg);
-}
-.dark .shiki,
-.dark .shiki span {
-  color: var(--shiki-dark);
-  background-color: var(--shiki-dark-bg);
 }
 .shiki {
-  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  background-color: transparent !important;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  margin: 0;
+  padding: 18px 20px;
+  tab-size: 2;
+}
+.shiki .line {
+  display: block;
+}
+/* Annotated view: a line carrying a callout marker is flagged with the brand
+   highlight — a 2px oxblood left rule + an 8% accent tint, full-bleed to the
+   panel padding (SourcePanel.jsx). */
+.shiki .line[data-callout] {
+  margin: 0 -20px;
+  padding: 0 20px;
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  box-shadow: inset 2px 0 0 var(--color-accent);
+}
+
+/* The Source Code Panel's two-column annotated layout — code + rule-left
+   marginalia — collapses to a single column on narrow screens. */
+.paged-annotated {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(190px, 260px);
+}
+@media (max-width: 720px) {
+  .paged-annotated {
+    grid-template-columns: 1fr;
+  }
+  .paged-annotated .paged-marginalia {
+    border-left: 0;
+    border-top: 1px solid var(--color-rule);
+  }
+}
+
+/* =============================================================================
+   HOME — landing grids (the brand home.jsx layout classes, which lived inline
+   in the mockup). Two-column hero (text + Gutenberg frontispiece), and the
+   three-up tier / start-here grids; all collapse on narrow screens.
+   ========================================================================== */
+.home-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-7);
+  align-items: center;
+}
+.tiers-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-5);
+}
+.start-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+}
+.start-card {
+  text-decoration: none;
+  display: block;
+  padding-top: var(--space-4);
+  border-top: 2px solid var(--color-ink);
+}
+.start-card h3 {
+  transition: color var(--dur-fast);
+}
+.start-card:hover h3 {
+  color: var(--color-accent);
+}
+@media (max-width: 860px) {
+  .home-hero,
+  .tiers-grid,
+  .start-grid {
+    grid-template-columns: 1fr;
+  }
+  .tiers-grid > * {
+    padding-left: 0 !important;
+    border-left: 0 !important;
+  }
 }

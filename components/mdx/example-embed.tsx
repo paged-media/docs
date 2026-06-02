@@ -12,12 +12,18 @@ import { ExampleTabs } from './example-tabs';
  * shared `examples/` directory — never inlined — so the docs page can never
  * drift from what the renderer actually accepts in CI. The tab set is driven by
  * the manifest's `views`; the `live` tab is the reserved WebGPU slot (§6.2.1).
+ *
+ * The chrome (the mono file-path strip, the tabs, the copy action, the
+ * paper-soft sheet) is the brand Source Code Panel — see `ExampleTabs`. The
+ * Shiki-highlighted view panels are rendered here (server) and handed to it.
  */
 export async function ExampleEmbed({
   example,
+  feature,
   children,
 }: {
   example: string;
+  feature?: boolean;
   children?: ReactNode;
 }) {
   const { manifest, editableSource, editablePart } = getExample(example);
@@ -34,12 +40,13 @@ export async function ExampleEmbed({
   };
 
   return (
-    <figure className="not-prose my-6 overflow-hidden rounded-xl border border-fd-border">
-      <figcaption className="flex items-baseline justify-between gap-3 border-b border-fd-border bg-fd-card px-4 py-2 text-sm">
-        <span>{children ?? manifest.concept ?? manifest.title}</span>
-        <span className="font-mono text-xs text-fd-muted-foreground">{manifest.editable.label}</span>
-      </figcaption>
-      <ExampleTabs tabs={manifest.views} panels={panels} />
-    </figure>
+    <ExampleTabs
+      caption={children ?? manifest.concept ?? manifest.title}
+      path={manifest.editable.label}
+      code={editableSource}
+      tabs={manifest.views}
+      panels={panels}
+      feature={feature}
+    />
   );
 }

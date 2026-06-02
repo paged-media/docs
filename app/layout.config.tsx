@@ -1,10 +1,14 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import { GithubInfo } from 'fumadocs-ui/components/github-info';
+import { Wordmark } from '@/components/wordmark';
 
 export const baseOptions: BaseLayoutProps = {
   nav: {
-    title: 'Paged · IDML Reference',
+    title: <Wordmark />,
   },
+  // Light-only (paper): the brand ships no dark palette, so the nav's
+  // light/dark toggle is removed entirely.
+  themeSwitch: { enabled: false },
   links: [
     {
       type: 'custom',

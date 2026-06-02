@@ -1,5 +1,6 @@
 {
   "title": "Geometry & coordinates",
+  "icon": "margin",
   "pages": [
     "index",
     "units-and-origin",

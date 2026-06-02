@@ -1,4 +1,10 @@
 {
   "title": "Color & swatches",
-  "pages": ["index", "colors-and-swatches", "gradients-and-tints", "spot-and-process"]
+  "icon": "glyph",
+  "pages": [
+    "index",
+    "colors-and-swatches",
+    "gradients-and-tints",
+    "spot-and-process"
+  ]
 }

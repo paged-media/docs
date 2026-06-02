@@ -1,4 +1,9 @@
 {
   "title": "Tagged XML inside IDML",
-  "pages": ["index", "the-structured-content-layer", "why-its-not-parsed-yet"]
+  "icon": "xml",
+  "pages": [
+    "index",
+    "the-structured-content-layer",
+    "why-its-not-parsed-yet"
+  ]
 }

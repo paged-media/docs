@@ -1,4 +1,9 @@
 {
   "title": "Layers",
-  "pages": ["index", "the-layer-model", "visibility-and-printing"]
+  "icon": "spread",
+  "pages": [
+    "index",
+    "the-layer-model",
+    "visibility-and-printing"
+  ]
 }

@@ -1,4 +1,11 @@
 {
   "title": "The renderer",
-  "pages": ["index", "the-pipeline", "the-display-list", "rendering-backends", "capabilities-matrix"]
+  "icon": "renderer",
+  "pages": [
+    "index",
+    "the-pipeline",
+    "the-display-list",
+    "rendering-backends",
+    "capabilities-matrix"
+  ]
 }

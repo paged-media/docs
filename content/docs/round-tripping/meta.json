@@ -1,4 +1,9 @@
 {
   "title": "Round-tripping & version compatibility",
-  "pages": ["index", "version-markers", "compatibility"]
+  "icon": "package",
+  "pages": [
+    "index",
+    "version-markers",
+    "compatibility"
+  ]
 }

@@ -1,4 +1,12 @@
 {
   "title": "Package anatomy",
-  "pages": ["index", "zip-container", "the-design-map", "resource-parts", "content-parts", "how-parts-reference"]
+  "icon": "package",
+  "pages": [
+    "index",
+    "zip-container",
+    "the-design-map",
+    "resource-parts",
+    "content-parts",
+    "how-parts-reference"
+  ]
 }

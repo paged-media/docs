@@ -1,4 +1,13 @@
 {
   "title": "Foundations",
-  "pages": ["index", "what-is-paged-media", "what-is-idml", "binary-to-xml-lineage", "why-a-package", "read-one-by-hand", "how-the-renderer-reads-it"]
+  "icon": "page",
+  "pages": [
+    "index",
+    "what-is-paged-media",
+    "what-is-idml",
+    "binary-to-xml-lineage",
+    "why-a-package",
+    "read-one-by-hand",
+    "how-the-renderer-reads-it"
+  ]
 }

@@ -1,4 +1,9 @@
 {
   "title": "Comparisons",
-  "pages": ["index", "idml-vs-other-formats", "where-idml-fits"]
+  "icon": "book",
+  "pages": [
+    "index",
+    "idml-vs-other-formats",
+    "where-idml-fits"
+  ]
 }

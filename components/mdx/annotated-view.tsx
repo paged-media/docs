@@ -3,9 +3,10 @@ import type { ExampleAnnotation } from '@/lib/examples';
 
 /**
  * The "annotated" view (briefing §6.2): the same source with line-by-line
- * callouts. Callouts are anchored to lines carrying a trailing `<!--#N-->`
- * marker (stripped at highlight time, see lib/shiki.ts), and listed beside the
- * code. The two-column layout collapses on narrow screens.
+ * callouts. Lines carrying a trailing `<!--#N-->` marker (stripped at highlight
+ * time, see lib/shiki.ts) get the brand highlight; the notes sit in a rule-left
+ * marginalia column — mono line ref + IBM Plex Sans note — matching the Source
+ * Code Panel's annotated mode (SourcePanel.jsx). Collapses on narrow screens.
  */
 export async function AnnotatedView({
   code,
@@ -16,16 +17,41 @@ export async function AnnotatedView({
 }) {
   const html = await highlight(code, 'xml', true);
   return (
-    <div className="not-prose grid gap-4 md:grid-cols-[minmax(0,1fr)_18rem]">
-      <div
-        className="overflow-x-auto rounded-lg border border-fd-border p-4 text-sm [&_[data-callout]]:bg-fd-accent/40"
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
-      <ol className="space-y-2 text-sm">
+    <div className="paged-annotated">
+      <div dangerouslySetInnerHTML={{ __html: html }} />
+      <ol
+        className="paged-marginalia"
+        style={{
+          listStyle: 'none',
+          margin: 0,
+          padding: '18px 20px',
+          borderLeft: '1px solid var(--color-rule)',
+        }}
+      >
         {annotations.map((a, i) => (
-          <li key={i} className="flex gap-2">
-            <span className="font-mono text-fd-muted-foreground">L{a.lines}</span>
-            <span>{a.note}</span>
+          <li key={i} style={{ marginBottom: 'var(--space-3)' }}>
+            <span
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 11,
+                letterSpacing: '-0.01em',
+                color: 'var(--color-accent)',
+                marginRight: 8,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              L{a.lines}
+            </span>
+            <span
+              style={{
+                fontFamily: 'var(--font-sans)',
+                fontSize: 12,
+                lineHeight: 1.45,
+                color: 'var(--color-muted)',
+              }}
+            >
+              {a.note}
+            </span>
           </li>
         ))}
       </ol>
