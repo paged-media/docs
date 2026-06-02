@@ -88,30 +88,10 @@ export function SiteFooter() {
           <em style={{ color: 'var(--color-accent)' }}>reference</em> for the format.
         </p>
 
-        {/* colophon */}
-        <div
-          style={{
-            margin: 'var(--space-6) 0 0',
-            paddingTop: 'var(--space-4)',
-            borderTop: '1px solid var(--color-rule)',
-            fontFamily: 'var(--font-mono)',
-            fontSize: 12,
-            lineHeight: 1.7,
-            color: 'var(--color-muted)',
-          }}
-        >
-          <div className="section-label" style={{ marginBottom: 'var(--space-2)' }}>
-            Colophon
-          </div>
-          Set in Newsreader, Source Serif 4 &amp; IBM Plex Sans · code in IBM Plex Mono
-          <br />
-          Reading measure 66 characters · baseline 8 px · oxblood accent #8F1D1F
-        </div>
-
         {/* attribution / disclaimer / licensing */}
         <div
           style={{
-            marginTop: 'var(--space-5)',
+            marginTop: 'var(--space-6)',
             paddingTop: 'var(--space-4)',
             borderTop: '1px solid var(--color-rule)',
             display: 'grid',

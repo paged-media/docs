@@ -56,6 +56,20 @@ body {
   }
 }
 
+/* Page title (Fumadocs DocsTitle, a bare <h1> outside .prose): the brand
+   `.docs-title` clamp(42px,6vw,92px) is too large for the docs page header, so
+   bring it to a calmer editorial scale. The home hero (.hero-title) and in-body
+   headings (.prose h*) keep their own sizes; only the page <h1> is affected.
+   Unlayered + later in source order than brand.css, so it wins the cascade. */
+h1 {
+  font-size: clamp(30px, 3.4vw, 48px);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+.prose h1 {
+  font-size: clamp(30px, 3.4vw, 48px);
+}
+
 /* =============================================================================
    READING COLUMN — map Fumadocs prose to the brand type scale.
    Long-form reading is Source Serif 4 at the 66ch measure / 1.6 leading;
@@ -150,6 +164,83 @@ body {
 }
 
 /* =============================================================================
+   "In short" panel — the brand styleguide DefinitionBlock applied to the
+   recurring "In short:" lead (marked by the rehypeInShort transform): a
+   paper-soft sheet with a 2px ink left rule, the lead set as a section label.
+   ========================================================================== */
+.prose .paged-inshort {
+  background: var(--color-paper-soft);
+  border: 1px solid var(--color-rule);
+  border-left: 2px solid var(--color-ink);
+  border-radius: 2px;
+  padding: var(--space-4) var(--space-5);
+  margin: var(--space-5) 0;
+  font-family: var(--font-text-serif);
+  color: var(--color-ink);
+}
+.prose .paged-inshort > strong:first-child {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin-bottom: var(--space-3);
+}
+
+/* =============================================================================
+   Card list — navigation bullet lists (marked by rehypeCardList) rendered as
+   the brand "where to begin" card grid: a 2px ink top rule, a serif card head
+   that turns oxblood on hover, and a sans description.
+   ========================================================================== */
+.prose ul.paged-cardlist {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-5) var(--space-6);
+  padding: 0;
+  margin: var(--space-5) 0;
+}
+.prose ul.paged-cardlist > li {
+  margin: 0;
+  padding: var(--space-3) 0 0;
+  border-top: 2px solid var(--color-ink);
+}
+.prose ul.paged-cardlist > li::marker {
+  content: none;
+}
+.prose ul.paged-cardlist > li :is(p) {
+  margin: 0;
+}
+.prose ul.paged-cardlist :is(a, strong:first-child > a) {
+  font-family: var(--font-text-serif);
+  font-weight: 650;
+  font-size: 1.2rem;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: var(--space-2);
+  transition: color var(--dur-fast);
+}
+.prose ul.paged-cardlist :is(a, strong:first-child > a):hover {
+  color: var(--color-accent);
+}
+.prose ul.paged-cardlist > li strong:first-child {
+  font-weight: inherit;
+}
+.prose ul.paged-cardlist .paged-card-desc {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--color-ink-soft);
+}
+
+/* =============================================================================
    CODE — editorial XML syntax (Shiki single light theme; see lib/shiki.ts).
    "Never neon IDE." Background is transparent so the Source Code Panel's
    paper-soft sheet shows through.
@@ -168,8 +259,13 @@ body {
   padding: 18px 20px;
   tab-size: 2;
 }
-.shiki .line {
-  display: block;
+/* Lines as grid rows — the standard Shiki pattern: each `.line` becomes a
+   full-width row (so callout lines can be highlighted edge-to-edge) AND the
+   literal "\n" whitespace nodes between lines collapse, so there is no double
+   line-spacing. (Plain `display:block` on `.line` would leave those newlines,
+   producing a blank line between every code line.) */
+.shiki code {
+  display: grid;
 }
 /* Annotated view: a line carrying a callout marker is flagged with the brand
    highlight — a 2px oxblood left rule + an 8% accent tint, full-bleed to the
@@ -195,6 +291,23 @@ body {
     border-left: 0;
     border-top: 1px solid var(--color-rule);
   }
+}
+/* In the annotated view the code shares the row with rule-left marginalia, so
+   long IDML lines must WRAP (pre-wrap + break) rather than run on — otherwise
+   they overflow the code column and collide with the notes. The brand's
+   annotated mode wraps for the same reason (SourcePanel.jsx). */
+.paged-annotated {
+  align-items: start;
+}
+.paged-annotated > :first-child {
+  min-width: 0;
+}
+.paged-annotated .shiki,
+.paged-annotated .shiki code,
+.paged-annotated .shiki .line {
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 /* =============================================================================
