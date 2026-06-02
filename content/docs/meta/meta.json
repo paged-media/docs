@@ -1,4 +1,8 @@
 {
   "title": "Reference notes",
-  "pages": ["style-guide", "clean-room-protocol"]
+  "icon": "book",
+  "pages": [
+    "style-guide",
+    "clean-room-protocol"
+  ]
 }

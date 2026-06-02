@@ -1,5 +1,6 @@
 {
   "title": "Tables",
+  "icon": "columns",
   "pages": [
     "index",
     "the-table-model",

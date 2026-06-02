@@ -8,6 +8,8 @@ import { DifficultyLabel } from './difficulty-label';
 import { ExampleEmbed } from './example-embed';
 import { SupportBadge } from './support-badge';
 import { AttrTable } from './attr-table';
+import { Callout, Note } from './callout';
+import { GutenbergAside } from './gutenberg-aside';
 import { PackageGraph, CoordinateSpace, StyleCascade, StoryThreading } from '@/components/diagrams';
 
 /**
@@ -27,6 +29,10 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     ExampleEmbed,
     SupportBadge,
     AttrTable,
+    // Brand Note replaces the Fumadocs Callout (and is also exposed as <Note>).
+    Callout,
+    Note,
+    GutenbergAside,
     PackageGraph,
     CoordinateSpace,
     StyleCascade,

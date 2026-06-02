@@ -1,4 +1,9 @@
 {
   "title": "Images & graphics",
-  "pages": ["index", "placed-images", "formats-and-clipping"]
+  "icon": "imageFrame",
+  "pages": [
+    "index",
+    "placed-images",
+    "formats-and-clipping"
+  ]
 }

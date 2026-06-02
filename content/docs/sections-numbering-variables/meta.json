@@ -1,4 +1,9 @@
 {
   "title": "Sections, numbering & variables",
-  "pages": ["index", "text-variables", "sections-and-numbering"]
+  "icon": "paragraph",
+  "pages": [
+    "index",
+    "text-variables",
+    "sections-and-numbering"
+  ]
 }

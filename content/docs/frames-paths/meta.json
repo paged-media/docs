@@ -1,4 +1,10 @@
 {
   "title": "Frames & paths",
-  "pages": ["index", "page-item-types", "text-frames", "groups"]
+  "icon": "imageFrame",
+  "pages": [
+    "index",
+    "page-item-types",
+    "text-frames",
+    "groups"
+  ]
 }

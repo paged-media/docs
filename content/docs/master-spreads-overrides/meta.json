@@ -1,4 +1,9 @@
 {
   "title": "Master spreads & overrides",
-  "pages": ["index", "master-items-and-stamping", "override-resolution"]
+  "icon": "spread",
+  "pages": [
+    "index",
+    "master-items-and-stamping",
+    "override-resolution"
+  ]
 }

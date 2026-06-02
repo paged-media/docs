@@ -112,10 +112,10 @@ export function LivePreview({ example, idmlBase64 }: { example: string; part: st
       <canvas
         ref={canvasRef}
         aria-label={`Live WebGPU render of ${example}`}
-        className="block h-[480px] w-full rounded-md bg-fd-muted"
+        className="block h-[480px] w-full rounded-[2px] bg-fd-muted"
       />
       {status !== 'ready' && (
-        <div className="absolute inset-0 flex items-center justify-center rounded-md border border-dashed border-fd-border bg-fd-card/85 p-6 text-center text-sm text-fd-muted-foreground">
+        <div className="absolute inset-0 flex items-center justify-center rounded-[2px] border border-dashed border-fd-border bg-fd-card/85 p-6 text-center text-sm text-fd-muted-foreground">
           {status === 'loading' && <span>Rendering with WebGPU…</span>}
           {status === 'no-webgpu' && (
             <span>

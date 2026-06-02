@@ -1,4 +1,9 @@
 {
   "title": "Test corpus",
-  "pages": ["index", "how-we-test", "the-docs-examples-loop"]
+  "icon": "package",
+  "pages": [
+    "index",
+    "how-we-test",
+    "the-docs-examples-loop"
+  ]
 }

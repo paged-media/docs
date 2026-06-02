@@ -1,4 +1,7 @@
 {
   "title": "Glossary",
-  "pages": ["index"]
+  "icon": "book",
+  "pages": [
+    "index"
+  ]
 }

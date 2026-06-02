@@ -5,22 +5,18 @@
  * constructs the Paged renderer does not yet fully handle. Every such feature
  * carries one of these badges so readers always know where they stand. The same
  * statuses are tracked privately in thoughts/docs/paged/renderer-gaps.md.
+ *
+ * Styling uses the brand's app-status palette (`--valid` / `--warn`, the one
+ * doc-chrome place that legitimately shows renderer status) on a hairline rule.
+ * The label text carries the meaning — the color only reinforces it — so it
+ * survives greyscale (form, not color).
  */
 export type SupportStatus = 'supported' | 'parsed-not-rendered' | 'not-yet-parsed';
 
-const STYLES: Record<SupportStatus, { label: string; cls: string }> = {
-  supported: {
-    label: 'Supported',
-    cls: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
-  },
-  'parsed-not-rendered': {
-    label: 'Parsed, not yet rendered',
-    cls: 'border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300',
-  },
-  'not-yet-parsed': {
-    label: 'Not yet parsed',
-    cls: 'border-fd-border bg-fd-muted text-fd-muted-foreground',
-  },
+const STYLES: Record<SupportStatus, { label: string; color: string }> = {
+  supported: { label: 'Supported', color: 'var(--valid)' },
+  'parsed-not-rendered': { label: 'Parsed, not yet rendered', color: 'var(--warn)' },
+  'not-yet-parsed': { label: 'Not yet parsed', color: 'var(--color-muted)' },
 };
 
 export function SupportBadge({
@@ -34,13 +30,32 @@ export function SupportBadge({
 }) {
   const s = STYLES[status];
   return (
-    <span className="not-prose inline-flex items-baseline gap-1.5 align-middle">
+    <span
+      className="not-prose"
+      style={{ display: 'inline-flex', alignItems: 'baseline', gap: 8, verticalAlign: 'middle' }}
+    >
       <span
-        className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${s.cls}`}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          borderRadius: 2,
+          border: `1px solid color-mix(in srgb, ${s.color} 45%, var(--color-rule))`,
+          background: `color-mix(in srgb, ${s.color} 8%, transparent)`,
+          padding: '2px 7px',
+          fontFamily: 'var(--font-sans)',
+          fontSize: 10.5,
+          fontWeight: 640,
+          letterSpacing: '0.07em',
+          textTransform: 'uppercase',
+          color: s.color,
+          whiteSpace: 'nowrap',
+        }}
       >
         {s.label}
       </span>
-      {!compact && note ? <span className="text-xs text-fd-muted-foreground">{note}</span> : null}
+      {!compact && note ? (
+        <span style={{ fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--color-muted)' }}>{note}</span>
+      ) : null}
     </span>
   );
 }

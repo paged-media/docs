@@ -1,4 +1,9 @@
 {
   "title": "Companion formats",
-  "pages": ["index", "the-companion-formats", "when-each-applies"]
+  "icon": "package",
+  "pages": [
+    "index",
+    "the-companion-formats",
+    "when-each-applies"
+  ]
 }

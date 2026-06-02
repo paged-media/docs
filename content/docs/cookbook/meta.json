@@ -1,4 +1,10 @@
 {
   "title": "Cookbook",
-  "pages": ["index", "build-a-table", "apply-a-gradient", "place-an-image"]
+  "icon": "book",
+  "pages": [
+    "index",
+    "build-a-table",
+    "apply-a-gradient",
+    "place-an-image"
+  ]
 }
