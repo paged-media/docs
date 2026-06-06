@@ -102,9 +102,10 @@ host.overlay.setToolPreview(null);
 
 ## Registering the tool
 
-`contributeTool` registers the rail entry, its activation command, **and** the
-text-suppressed keyboard shortcut in one disposable — typing "m" in a story
-must never switch tools, and the guard that prevents it is included:
+`contributeTool` registers the rail entry; the **host derives** the activation
+command (`paged.tool.activate.<id>`) and the text-suppressed keyboard shortcut
+from the registry for every registration path — typing "m" in a story never
+switches tools, and you write none of that wiring:
 
 ```ts
 import { contributeTool } from "@paged-media/plugin-sdk";

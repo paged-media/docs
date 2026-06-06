@@ -25,8 +25,8 @@ structural teardown. All return `Disposable`.
 
 | Method | Registers | Notes |
 |---|---|---|
-| `tool(c)` | a tool-rail entry | `ToolContribution`: id, title, icon, shortcut, flyout `group`, rail `section`, cursor, and the `gesture()` handler factory the host mounts when the tool activates. Prefer the SDK's [`contributeTool`](/docs/plugin-sdk/the-gesture-kit#registering-the-tool), which also wires the activation command + guarded shortcut. |
-| `panel(c)` | a panel | `PanelContribution`: id, title, React component, default dock/group, icon. Panels compose the host UI kit so they read as native. |
+| `tool(c)` | a tool-rail entry | `ToolContribution`: id, title, icon, shortcut, flyout `group`, rail `section`, cursor, and the `gesture()` handler factory the host mounts when the tool activates. The host derives the activation command + guarded shortcut from the registry; [`contributeTool`](/docs/plugin-sdk/the-gesture-kit#registering-the-tool) is the recommended door. |
+| `panel(c)` | a panel | `PanelContribution`: id, title, React component, default dock/group, icon. The host derives `paged.panel.show/hide.<id>` commands; panels compose the host UI kit so they read as native. |
 | `command(c)` | a command | id, title, category, `handler(paged, payload?)`. Reachable from the command palette and keybindings. |
 | `keybinding(c)` | a key binding | `{ key: "cmd+shift+h", command, when? }`. The `when` predicate receives live editor state (e.g. suppress single-key tool shortcuts while a text caret is active). |
 | `overlay(c)` | a canvas overlay | Renders into the shared camera-transformed SVG above the page. |
