@@ -1,0 +1,97 @@
+---
+title: The bundle model
+description: Why a Paged plugin is a manifest plus one activate(host) call — types from the API, values from the host, disposal by construction, and a contract designed to survive the move to process isolation unchanged.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+**A bundle is a manifest plus one function.** Everything else about the plugin
+model follows from four design rules — and each rule exists because of a
+failure mode it prevents.
+
+## Rule 1 — Types from the API, values from the host
+
+`@paged-media/plugin-api` is **type-only**: every export is `export type`, so
+nothing from the contract exists in your bundle at runtime. All runtime values
+— registries, the document surface, storage — arrive through the `BundleHost`
+parameter of `activate`.
+
+What this prevents: a bundle whose module graph drags in editor internals
+(React, the engine's wasm loader) can never run outside the editor — not in a
+unit test, not in a worker, not in the future isolate. Keeping values out of
+the import graph is what makes a bundle a *portable artifact* rather than a
+patch on the host. It is also why the same bundle source will run behind an
+RPC boundary later: the host object is the thing that gets proxied, not your
+code.
+
+## Rule 2 — Facades, not object graphs
+
+The host never hands a bundle its raw registries or its raw engine client. It
+hands *facades* that do three jobs:
+
+1. **Enforce the namespace rule.** Every contributed id must start with
+   `<manifest.id>.`. Registering `paged.tool.select` from a third-party bundle
+   throws. This single chokepoint is also where capability enforcement will
+   attach — same door, stricter policy, no new API.
+2. **Track every registration** for automatic teardown (rule 3).
+3. **Define the freeze candidate.** What's reachable through the facades is
+   the API; what isn't, isn't. Exposing the raw client would freeze a hundred
+   methods by accident.
+
+## Rule 3 — Disposal is structural, not conventional
+
+Every facade call returns a `Disposable`, and the host *also* tracks it. When
+a bundle is unloaded, the host tears down everything it registered — in
+reverse order, even if the bundle's own `dispose` throws. The platform's
+standing smoke test ("activate, dispose, assert the shell is exactly as
+found") is therefore enforced by construction. A plugin cannot leak a tool
+into the rail.
+
+## Rule 4 — Snapshots and events, never live objects
+
+Host state crosses the boundary as serializable snapshots (`selection.get()`
+returns ids, `viewport.camera()` returns numbers) and changes arrive through
+`onDid*` subscriptions. Expected failures are *results*, not exceptions:
+`document.mutate()` resolves to `{ applied: false, error }` rather than
+throwing, mirroring the engine's own convention.
+
+This is the RPC-readiness rule. The contract has exactly three members that
+could not cross a `structuredClone` boundary today — tool gesture factories,
+panel React components, and the `host.editor` escape hatch — and each has a
+written migration path. Everything else proxies one-to-one.
+
+## One history, one write door
+
+A bundle never mutates document state directly. It emits `Mutation`s through
+`host.document.mutate`; the engine validates and applies them on the same
+undoable Operation channel every native edit uses. Plugin edits and native
+edits interleave in **one linear undo history** — there is no plugin-local
+undo stack, deliberately: two histories is how collaborative editing dies.
+
+## The escape hatch, marked
+
+`host.editor` exposes the raw editor handle in v0 — by design, not by
+accident. Gesture handlers receive it from the host's tool spine anyway, and
+pretending otherwise would push bundles to smuggle it. The rule that keeps it
+honest: any use of `host.editor` not reachable through a facade is, by
+definition, an API gap — it gets recorded on the punch list that feeds v1, and
+the member itself does not survive the isolate boundary.
+
+## Lifecycle, end to end
+
+```text
+manifest.json ──validate──▶ loadBundle(getEditor, bundle)
+                              │  id + apiVersion negotiation
+                              │  createBundleHost(…)
+                              ▼
+                        bundle.activate(host)
+                              │  contribute.* (namespaced, tracked)
+                              ▼
+                        … the plugin is live …
+                              ▼
+                        loaded.dispose()
+                              │  bundle teardown (yours)
+                              └─ host teardown (structural, always runs)
+```

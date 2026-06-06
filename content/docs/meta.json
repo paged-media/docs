@@ -27,6 +27,7 @@
     "the-renderer",
     "parser-internals",
     "test-corpus",
+    "plugin-sdk",
     "cookbook",
     "glossary",
     "meta"

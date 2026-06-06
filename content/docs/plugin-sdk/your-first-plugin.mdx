@@ -1,0 +1,131 @@
+---
+title: Your first plugin
+description: Build a working Paged plugin from scratch — manifest, activate entry point, a command with a keyboard shortcut, and a clean teardown — in about forty lines.
+tier: intermediate
+diataxis: tutorial
+status: published
+owner: paged-docs
+---
+
+**Forty lines from empty file to a working, removable plugin.** This tutorial
+builds a minimal bundle: it contributes one command with a keyboard shortcut
+that inspects the current selection and reports through the plugin's logger.
+Small, but it exercises the whole lifecycle — manifest, activation, namespaced
+contribution, and structural teardown.
+
+## 1 · The manifest
+
+A plugin's identity is a `manifest.json` — serializable, schema-validated, and
+honest about what the plugin intends to do:
+
+```json
+{
+  "id": "com.example.hello",
+  "name": "Hello Paged",
+  "version": "0.1.0",
+  "apiVersion": "^0.2",
+  "capabilities": {
+    "document": { "read": "broad", "write": "scoped" }
+  },
+  "contributes": {
+    "commands": ["com.example.hello.command.report"]
+  }
+}
+```
+
+Three things matter here:
+
+- **`id` is reverse-DNS** and doubles as the namespace: every id this bundle
+  registers must start with `com.example.hello.` — the host enforces it.
+- **`apiVersion`** is a range against `@paged-media/plugin-api`. The host
+  refuses to load a bundle whose range it cannot satisfy — loudly, at load.
+- **`contributes` declares, code registers.** The manifest is the reviewable
+  claim; `activate` is the implementation. The CLI checks they agree.
+
+Validate it any time:
+
+```bash
+paged-plugin validate manifest.json
+```
+
+## 2 · The bundle
+
+```ts
+import { defineBundle } from "@paged-media/plugin-sdk";
+import type { PluginManifest } from "@paged-media/plugin-api";
+import manifest from "./manifest.json";
+
+export const helloBundle = defineBundle({
+  manifest: manifest as PluginManifest,
+  activate(host) {
+    host.contribute.command({
+      id: "com.example.hello.command.report",
+      title: "Report selection",
+      category: "Hello",
+      handler: async () => {
+        const ids = host.selection.get();
+        const meta = await host.document.meta();
+        host.log.info(
+          `${ids.length} selected · ${meta.pageCount} pages in "${meta.documentName}"`,
+        );
+      },
+    });
+    host.contribute.keybinding({
+      key: "cmd+shift+h",
+      command: "com.example.hello.command.report",
+    });
+    host.log.info("hello activated");
+    return { dispose() {} };
+  },
+});
+```
+
+Note what you did **not** write: no unregistration bookkeeping. Every facade
+call is tracked by the host; when the bundle is unloaded, everything it
+registered disappears. The `dispose()` you return only needs to release things
+you allocated *outside* the host (timers, caches) — returning a no-op is
+legitimate and common.
+
+Note also the import discipline: **types from `@paged-media/plugin-api`,
+values from the host.** The API package is type-only; your module graph stays
+free of editor code, which is what keeps bundles unit-testable without a
+browser and portable to the future isolate runtime unchanged.
+
+## 3 · Loading it
+
+The host application loads a bundle with one call:
+
+```ts
+import { loadBundle } from "@paged-media/plugin-sdk";
+import { helloBundle } from "@example/hello-paged";
+
+const loaded = loadBundle(() => editor, helloBundle);
+// …later:
+loaded.dispose(); // the editor is exactly as it was
+```
+
+`loadBundle` validates the manifest id, negotiates `apiVersion`, constructs the
+host, and calls your `activate`. The returned handle's `dispose` runs your
+teardown *and* the host's structural teardown — and the host's half runs even
+if yours throws.
+
+## 4 · The honesty test
+
+The platform's standing smoke test, worth adopting in your own suite: activate,
+then dispose, then assert the editor's registries are exactly as you found
+them. With the SDK this is a unit test — the host implementation runs against a
+fake editor handle, no browser required:
+
+```ts
+const loaded = loadBundle(() => fakeEditor, helloBundle);
+loaded.dispose();
+expect(fakeEditor.registries.commands.list()).toHaveLength(0);
+```
+
+## Where to go next
+
+A command is the smallest contribution. The same `activate` door registers
+[tools with gesture handlers](/docs/plugin-sdk/the-gesture-kit) — that is how
+Paged's own pen tool ships — and panels, overlays, and keybindings. Read
+[The BundleHost](/docs/plugin-sdk/the-bundle-host) for everything the `host`
+object carries.

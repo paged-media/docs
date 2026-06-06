@@ -1,0 +1,13 @@
+{
+  "title": "Plugin SDK",
+  "icon": "package",
+  "pages": [
+    "index",
+    "your-first-plugin",
+    "the-bundle-model",
+    "the-manifest",
+    "the-bundle-host",
+    "the-gesture-kit",
+    "versioning"
+  ]
+}

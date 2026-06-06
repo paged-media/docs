@@ -1,0 +1,91 @@
+---
+title: Versioning & compatibility
+description: How the plugin API is versioned — apiVersion ranges and the 0.x caret rule, runtime capability detection with host.supports, the freeze policy for v1, and what plugin authors should pin.
+tier: intermediate
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+**Two questions, two mechanisms.** *"May this bundle load?"* is answered once,
+at load time, by the manifest's `apiVersion` range. *"Can I use this feature?"*
+is answered at runtime by `host.supports()`. They fail differently on purpose:
+the range fails loudly at install, `supports()` degrades gracefully in code.
+
+## `apiVersion` ranges
+
+The manifest declares a range against `@paged-media/plugin-api`; the host
+refuses to load a bundle whose range it cannot satisfy. Three forms:
+
+| Form | Example | Satisfied when |
+|---|---|---|
+| wildcard | `*` | always |
+| exact | `0.2.0` (or `0.2`) | exactly that version |
+| caret | `^0.2` / `^1.2.3` | see below |
+
+**The 0.x caret rule** (npm semantics, kept deliberately): during incubation,
+minors are breaking — `^0.2` accepts `0.2.x` only, never `0.3.0`. After v1,
+`^1.2.3` accepts any `1.x ≥ 1.2.3`. This is why a bundle built today declares
+`"apiVersion": "^0.2"` and *expects* to be refused by a future 0.3 host until
+it is updated — a loud refusal at load beats a subtle breakage at runtime.
+
+The SDK exports the implemented version and the checker, so your own tooling
+can negotiate the same way the host does:
+
+```ts
+import { API_VERSION, satisfiesApiVersion } from "@paged-media/plugin-sdk";
+satisfiesApiVersion("^0.2");          // against the SDK's own version
+satisfiesApiVersion("^0.2", "0.3.0"); // against an explicit version
+```
+
+## Capability detection
+
+Prefer feature detection over version comparison for anything optional:
+
+```ts
+if (host.supports("document.hitTest@1")) {
+  // precise pick path
+} else {
+  // selection-based fallback
+}
+```
+
+Feature strings have the form `"area.member@major"` — the major bumps only
+when that member changes incompatibly, independent of package versions. The
+implemented set is exported as `HOST_FEATURES` from `@paged-media/plugin-sdk`;
+`supports()` answers from that same set, so documentation and behavior cannot
+drift apart.
+
+## What is frozen when
+
+| Surface | 0.x status | v1 commitment |
+|---|---|---|
+| Bundle lifecycle (`PagedBundle`, `activate`, disposal semantics) | stable in practice | frozen |
+| `host.contribute` (tool/panel/command/keybinding/overlay) | stable in practice | frozen |
+| `host.document` / `selection` / `viewport` / `overlay` / `storage` / `diagnostics` | stable in practice | frozen |
+| Reserved members (`editContext`, `objectType`, scene layers) | throw `PluginApiNotImplemented` | land before or at v1, shaped by the first-party plugins that need them |
+| `host.editor` escape hatch | available, discouraged | removed at the isolate boundary; deprecated from birth |
+
+**The freeze criteria for v1** are concrete, not calendar-driven: the
+first-party plugins run fully through the public surface, the second
+first-party plugin (a foreign-content-model plugin, far more demanding than a
+tool) ships its first phase against it, and the punch list of recorded API
+gaps has drained. Nothing enters the v1 surface that a real plugin did not
+prove necessary — speculative API is how a decade of compatibility debt
+starts.
+
+## Deprecation policy
+
+A member leaves the surface only at a major version, with at least one
+intermediate release carrying a `@deprecated` marker and a migration note.
+The one pre-declared removal is `host.editor`, which by design cannot cross
+the process-isolation boundary; everything a bundle legitimately needs from
+it is owed a facade first.
+
+## What plugin authors should pin
+
+- **`apiVersion`** in the manifest — caret on the minor during 0.x (`^0.2`).
+- **Your own `version`** — ordinary semver for your users.
+- Nothing else: engine versions, protocol versions, and editor releases are
+  the host's concern. If your plugin works only against a specific editor
+  build, that is an API gap worth reporting, not a constraint worth encoding.

@@ -1,0 +1,134 @@
+---
+title: Building a drawing tool
+description: How to ship a canvas tool from a plugin — the GestureHandler contract, the gesture kit's page-anchored drag helpers, preview publishing, and committing one undoable mutation. The pattern behind Paged's own pen tool.
+tier: pro
+diataxis: how-to
+status: published
+owner: paged-docs
+---
+
+**This is the pattern Paged's own pen tool ships with.** A drawing tool is
+three parts: a *state machine* (pure logic, host-free, unit-tested), a thin
+*gesture handler* (the host glue), and a *tool contribution* (the rail entry +
+shortcut). The SDK's gesture kit carries the bookkeeping every tool repeats.
+
+## The GestureHandler contract
+
+When your tool is active, the host mounts the object your `gesture()` factory
+returns and feeds it pointer events that are already page-resolved and
+camera-inverted — handlers never touch camera math:
+
+```ts
+interface GestureHandler {
+  onActivate(paged): void;            // tool became active
+  onDeactivate(reason): void;         // "switch" = commit/cancel; "suspend" = keep in-flight state
+  onPointerDown(e: CanvasPointerEvent): void;
+  onPointerMove(e): void;             // drag AND hover moves
+  onPointerUp(e): void;
+  onKey?(e: KeyboardEvent): void;     // e.g. Enter commits, Escape cancels
+  cursorAt?(e): CursorSpec | undefined;
+}
+```
+
+`CanvasPointerEvent` carries `pageId`, `pagePoint` (page-local pt),
+`docPoint`, a modifier snapshot, `maxDelta` (for click-vs-drag decisions), and
+the button. The invariant to respect: **render previews imperatively, mutate
+only through the document door** — never reach into model state.
+
+## The gesture kit
+
+```ts
+import {
+  beginPageDrag, endLocalFor, pxToPt,
+  commitAndSelect, CLICK_DRAG_THRESHOLD_PX,
+} from "@paged-media/plugin-sdk";
+```
+
+| Helper | What it does |
+|---|---|
+| `beginPageDrag(e)` | Anchors a drag to the page under pointer-down. Returns `null` on the pasteboard or non-primary buttons. |
+| `endLocalFor(drag, e)` | Resolves *any* later event into the **start** page's local space — correct even when the pointer releases over another page. |
+| `pxToPt(scale, px)` | Screen px → document pt, so tolerances stay screen-constant at every zoom. |
+| `commitAndSelect(paged, mutation, label)` | Fires the mutation, warns on rejection, and selects the created element so it immediately carries selection chrome — the post-insert flow users expect. |
+| `CLICK_DRAG_THRESHOLD_PX` | The shared click-vs-drag boundary (4 px). |
+
+## A minimal tool, end to end
+
+A click-to-place-marker tool — the full shape of the pattern without the pen's
+modifier matrix:
+
+```ts
+import type { GestureHandler, PagedEditor } from "@paged-media/plugin-api";
+import { beginPageDrag, commitAndSelect } from "@paged-media/plugin-sdk";
+
+function createMarkerHandler(): GestureHandler {
+  let paged: PagedEditor | null = null;
+  return {
+    onActivate(p) { paged = p; },
+    onDeactivate() {},
+    onPointerDown() {},
+    onPointerMove() {},
+    onPointerUp(e) {
+      if (!paged) return;
+      const page = beginPageDrag(e);   // null on pasteboard
+      if (!page) return;
+      const [x, y] = page.startLocal;
+      void commitAndSelect(paged, {
+        op: "insertFrame",
+        args: { pageId: page.pageId, bounds: [y - 4, x - 4, y + 4, x + 4] },
+      }, "insertFrame");
+    },
+  };
+}
+```
+
+For anything stateful — a pen placing anchors across many clicks, a freehand
+stroke — keep the logic in a **host-free state machine** (events in, snapshots
+and a final commit out) and let the handler be glue. The machine is
+unit-testable without a browser, and it is the part that survives unchanged
+when tool handlers move behind the isolate boundary, where pointer events
+stream as messages.
+
+## Previews
+
+Publish the in-progress gesture through the overlay surface; clear it on
+commit, cancel, and deactivate:
+
+```ts
+host.overlay.setToolPreview({ pageId, points, close: false });
+// …
+host.overlay.setToolPreview(null);
+```
+
+## Registering the tool
+
+`contributeTool` registers the rail entry, its activation command, **and** the
+text-suppressed keyboard shortcut in one disposable — typing "m" in a story
+must never switch tools, and the guard that prevents it is included:
+
+```ts
+import { contributeTool } from "@paged-media/plugin-sdk";
+
+contributeTool(host, {
+  id: "com.example.marker.tool.place",
+  title: "Marker",
+  icon: "tool-pen",
+  shortcut: "m",
+  group: "marker",          // one rail slot; shared group = shared flyout
+  section: "drawType",
+  isGroupDefault: true,
+  cursor: { kind: "css", token: "crosshair" },
+  gesture: createMarkerHandler,
+});
+```
+
+## The checklist
+
+1. Logic in a pure machine; handler is glue. Unit-test the machine.
+2. Anchor every drag with `beginPageDrag`; resolve with `endLocalFor`.
+3. Convert every screen tolerance with `pxToPt`.
+4. Preview via `setToolPreview`; always clear it.
+5. Commit **one** mutation (use `batch` for multi-op edits — one undo step).
+6. Register with `contributeTool`.
+7. E2E-test through the real viewport: activate from the rail, drive the
+   mouse, assert on the document, undo, assert again.
