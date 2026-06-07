@@ -90,7 +90,7 @@ document's defaults.
     { attr: 'CellStyle', type: 'in RootCellStyleGroup', support: 'supported', note: 'Per-cell fill, vertical justification, and per-edge strokes. Referenced by AppliedCellStyle.' },
     { attr: 'TableStyle', type: 'in RootTableStyleGroup', support: 'supported', note: 'Region → cell-style map plus table border strokes and alternating-row fills. Referenced by AppliedTableStyle.' },
     { attr: 'TOCStyle', type: 'TOC style + entries', support: 'parsed-not-rendered', note: 'Title, title style, and the ordered list of included paragraph styles. Captured; TOC resolution is a separate pass.' },
-    { attr: 'DashedStrokeStyle (+ Dotted/Striped/Wavy)', type: 'custom stroke styles', support: 'parsed-not-rendered', note: 'Custom stroke patterns referenced via StrokeType. The Dashed pattern is consumed; the others are captured for round-trip.' },
+    { attr: 'DashedStrokeStyle (+ Dotted/Striped/Wavy)', type: 'custom stroke styles', support: 'supported', note: 'Custom stroke patterns referenced via StrokeType. Dashed and dotted patterns render from their pattern; striped renders as parallel rules and wavy as a sine ribbon.' },
     { attr: 'Condition / ConditionSet', type: 'conditional text', support: 'parsed-not-rendered', note: 'Visibility toggles applied to text ranges. The renderer resolves individual conditions but does not branch on sets.' },
   ]}
 />

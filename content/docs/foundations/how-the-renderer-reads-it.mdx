@@ -68,11 +68,14 @@ rasterizing the display list into pixels.
 ## Honest gaps
 
 Reading a construct is not the same as rendering it. Some things are parsed and
-held faithfully but do not yet change the rendered output. Text variables are a
-clear case: the resolved `ResultText` is captured exactly as the document recorded
-it, but live per-page recomputation is a future task.
+held faithfully but do not yet change the rendered output — and where a feature
+is only partially honoured, this reference says so in place. Text variables are a
+good example of progress: the baked `ResultText` is captured, and the renderer
+now re-derives most variable kinds (dates, chapter number, running header, file
+name, page count) against the current layout, leaving only a few kinds on the
+baked fallback.
 
-<SupportBadge status="parsed-not-rendered" note="text variables (ResultText captured; live recomputation pending)" />
+<SupportBadge status="supported" note="text variables: known kinds re-resolved at render; baked ResultText is the fallback for the rest" />
 
 Where a page in this reference describes a construct we read but do not fully
 render, it says so and links forward to the status detail. The pipeline above is

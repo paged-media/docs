@@ -56,23 +56,24 @@ enumeration covers the variable families InDesign offers:
 <AttrTable
   element="VariableType values"
   rows={[
-    { attr: 'CustomTextType', type: 'enum', support: 'parsed-not-rendered', note: 'A fixed user-supplied string.' },
-    { attr: 'FileNameType', type: 'enum', support: 'parsed-not-rendered', note: 'The document’s file name.' },
-    { attr: 'ChapterNumberType', type: 'enum', support: 'parsed-not-rendered', note: 'The chapter number for the document (book context).' },
-    { attr: 'LastPageNumberType', type: 'enum', support: 'parsed-not-rendered', note: 'The last page number — e.g. for "page 3 of 12" footers.' },
-    { attr: 'OutputDateType / CreationDateType / ModificationDateType', type: 'enum', support: 'parsed-not-rendered', note: 'A date stamp (output, creation, or last-modified).' },
-    { attr: 'MatchParagraphStyleType / MatchCharacterStyleType', type: 'enum', support: 'parsed-not-rendered', note: 'Running header / footer: the text of the nearest paragraph or character run in a named style.' },
-    { attr: 'XrefPageNumberType / XrefChapterNumberType', type: 'enum', support: 'parsed-not-rendered', note: 'The page or chapter number of a cross-reference target.' },
-    { attr: 'LiveCaptionType', type: 'enum', support: 'parsed-not-rendered', note: 'A caption derived from a placed image’s metadata.' },
+    { attr: 'CustomTextType', type: 'enum', support: 'supported', note: 'A fixed user-supplied string (TextBefore + Contents + TextAfter), re-composed at render.' },
+    { attr: 'FileNameType', type: 'enum', support: 'supported', note: 'The document’s file name, taken from the document Name.' },
+    { attr: 'ChapterNumberType', type: 'enum', support: 'supported', note: 'The section’s chapter number, styled per the <Section> numbering rules.' },
+    { attr: 'PageCountType / LastPageNumberType', type: 'enum', support: 'supported', note: 'The real total body-page count — e.g. for "page 3 of 12" footers.' },
+    { attr: 'OutputDateType / CreationDateType / ModificationDateType', type: 'enum', support: 'supported', note: 'A date stamp (output, creation, or last-modified), formatted from a deterministic render-time clock.' },
+    { attr: 'MatchParagraphStyleType / MatchCharacterStyleType', type: 'enum', support: 'supported', note: 'Running header / footer: the text of the nearest paragraph or character run in a named style on the same page, resolved post-layout.' },
+    { attr: 'XrefPageNumberType / XrefChapterNumberType', type: 'enum', support: 'parsed-not-rendered', note: 'The page or chapter number of a cross-reference target. Falls back to the baked value.' },
+    { attr: 'LiveCaptionType', type: 'enum', support: 'parsed-not-rendered', note: 'A caption derived from a placed image’s metadata. Falls back to the baked value.' },
   ]}
 />
 
-We record `VariableType` so a consumer can tell *what* a variable is, but the
-renderer never acts on it: it does not run the rule. A `ChapterNumberType` variable
-is parsed, but its number is not re-derived from the book — the parsed value is the
-frozen `ResultText` on the instance, not a recomputed chapter count.
+For most kinds the renderer now **runs the rule** at emit time instead of trusting
+the baked snapshot: a `ChapterNumberType` re-derives the section's chapter number,
+a date stamp re-formats from a deterministic clock, and a running-header variable
+picks up the live heading text on its page. The remaining kinds (cross-reference
+page/chapter numbers, live captions) fall back to the baked `ResultText`.
 
-<SupportBadge status="parsed-not-rendered" note="VariableType is recorded but never executed; chapter-number and running-header rules are parsed-not-acted — paged-parse/src/designmap.rs:227" />
+<SupportBadge status="supported" note="VariableType is executed at emit for custom / file-name / page-count / dates / chapter-number / running-header; cross-ref-number + live-caption fall back to baked ResultText" />
 
 ## The instance: `TextVariableInstance` and `ResultText`
 
@@ -92,14 +93,15 @@ the variable is just more characters.
   ]}
 />
 
-`ResultText` is a **snapshot** — whatever InDesign computed the last time it composed
-the document. A "Running Header" instance carries the header text as of export; a
-"File Name" instance carries the file name as of export. The renderer inlines that
-snapshot; it does not re-derive the value from the current layout. So a running
-header will not update if you move the paragraph it tracks, and a chapter number will
-not change if the document's place in a book changes.
+`ResultText` is the **snapshot** InDesign computed the last time it composed the
+document — but the renderer no longer trusts it blindly. For the kinds it knows
+how to run (above), it re-derives the value from the current model and layout and
+substitutes that for the snapshot, so a running header *does* update when you move
+the paragraph it tracks, and a chapter number reflects the current section. The
+baked `ResultText` survives only as the fallback for kinds the renderer does not
+yet recompute.
 
-<SupportBadge status="parsed-not-rendered" note="ResultText is the frozen value from the last export; it is not recomputed at render time — paged-parse/src/story.rs:1643" />
+<SupportBadge status="supported" note="known VariableTypes re-resolve against the current model/layout at render; ResultText is the fallback for the rest — paged-renderer/src/pipeline/links.rs" />
 
 ## What this means in practice
 

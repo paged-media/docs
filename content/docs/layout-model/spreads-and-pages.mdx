@@ -38,10 +38,11 @@ are not consulted while building the document.
   ]}
 />
 
-`ItemTransform` is stored on the spread but, in practice, InDesign limits it to
-translation plus rotation in 90° steps, and each page already carries its own
-transform into spread space — so per-page output is correct even while a rotated
-whole-spread pasteboard is still on the roadmap. <SupportBadge status="parsed-not-rendered" note="Spread ItemTransform: translation faithful (cancels per-page); rotation/scale deferred" />
+`ItemTransform` is stored on the spread and now applied. Translation cancels
+against each page's own transform into spread space, and the spread's rotation
+and scale (the linear part — InDesign limits it to rotation in 90° steps) are
+applied about the page origin, so a rotated spread rotates its rendered frames.
+<SupportBadge status="supported" note="Spread / MasterSpread ItemTransform: translation cancels per-page; rotation/scale applied about the page origin" />
 
 ## The `Page` element
 

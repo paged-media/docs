@@ -140,14 +140,17 @@ reads but the renderer does not yet fully lay out. They are detailed on the
 [text variables](/docs/stories-text/text-variables) pages; in short:
 
 - **Footnotes** are parsed, distributed to the page that hosts their anchor, and
-  their bodies are drawn at the bottom of the host frame. Reserving that space
-  *before* the main text fills (so bodies don't overlap the last lines) and
-  cross-frame continuation are the remaining work; a pool taller than its frame
-  is reported via a diagnostic. <SupportBadge status="supported" note="footnote bodies drawn; space-reservation + cross-frame flow pending" />
+  their bodies are drawn at the bottom of the host frame — with the separator
+  rule above the pool, per-run styling within a footnote, and space reserved
+  *before* the main text fills (so bodies don't overlap the last lines). The one
+  remaining piece is **cross-frame continuation**: a single footnote taller than
+  its frame is reported via a diagnostic rather than split across frames.
+  <SupportBadge status="supported" note="footnote bodies + separator rule + per-run styling + space reservation; cross-frame split of an oversized footnote pending" />
 - **Ruby** (`RubyFlag` / `RubyString` / `RubyType`) is parsed and a GroupRuby MVP
   is drawn above the base run; per-character distribution is not yet exact. <SupportBadge status="parsed-not-rendered" note="GroupRuby MVP only — paged-renderer/src/pipeline.rs:4208" />
-- **Hyperlinks inside a story** (`HyperlinkTextSource`) are not wired through to
-  the run, so link regions aren't emitted. <SupportBadge status="not-yet-parsed" note="in-story hyperlink sources not surfaced on runs — paged-parse/src/story.rs" />
+- **Hyperlinks inside a story** (`HyperlinkTextSource`) are now recorded on the
+  runs they cover, so the renderer can emit a PDF link annotation over the linked
+  span. <SupportBadge status="supported" note="in-story hyperlink/cross-ref source spans recorded on runs + emitted as link annotations — paged-parse/src/story.rs:913" />
 
 ## Frequently asked questions
 

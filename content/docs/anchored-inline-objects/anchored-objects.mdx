@@ -57,8 +57,11 @@ of the attributes it reads mirror how the same element is read at spread level.
 A few things the parser deliberately does **not** recurse into on an anchored
 frame: nested transparency settings, and — beyond a nested `<Image>`'s link URI
 and transform on an anchored `<Rectangle>` — image styling. A `<Group>` records its
-child frames in z-order; a `<TextFrame>` records its `ParentStory` so the renderer
-can chase the story content once placement lands. <SupportBadge status="parsed-not-rendered" note="anchored frames read but not flowed — paged-parse/src/story.rs:264" />
+child frames in z-order; a `<TextFrame>` records its `ParentStory`, and the
+renderer now chases that story content and places the frame at the anchor.
+What is not yet flowed is the inline advance reservation (an `InlinePosition`
+object does not push following text along) and text wrap around the object.
+<SupportBadge status="parsed-not-rendered" note="placed at the anchor (above/below + custom position); inline advance reservation and text-wrap around the object are the remaining flow integration — paged-parse/src/story.rs:264" />
 
 ## `AnchoredObjectSetting`
 

@@ -18,6 +18,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: manifest integrity (cheap, no renderer)
         run: pnpm examples:index
+      - name: support-badge ↔ renderer-gaps drift check
+        run: pnpm check:badges
       - run: pnpm typecheck
       - name: build (also fails on broken example imports / MDX)
         run: pnpm build

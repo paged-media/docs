@@ -121,21 +121,26 @@ shape's path, so the picture takes the frame's silhouette.
   ]}
 />
 
-A note on precision: the clip is the frame's geometric path, which matches
-InDesign for the ordinary case where the crop *is* the frame. A separate,
-independent clipping path drawn around the image inside the frame — InDesign's
-detached image clip — is a finer feature that the current pipeline does not model
-separately from the frame outline. <SupportBadge status="parsed-not-rendered" note="independent image clipping-path precision: the frame outline is the clip; a separate detached image clip is not modelled yet" />
+A note on precision: beyond the frame outline, IDML can attach a separate
+clipping path to the placed image via `<ClippingPathSettings>`. When that path is
+a hand-edited `UserModifiedPath`, InDesign serialises its resolved geometry as a
+nested `<PathGeometry>`, and the renderer now applies it as an extra clip on top
+of the frame crop — so the picture takes the detached silhouette, not just the
+frame. The other clipping types (`PhotoshopPath`, `AlphaChannel`, `DetectEdges`)
+need the linked image's own bytes, which are not extracted yet; those emit a
+diagnostic and fall back to the frame outline. <SupportBadge status="supported" note="UserModifiedPath clip applied from the inline PathGeometry; PhotoshopPath / AlphaChannel / DetectEdges fall back to the frame outline with a diagnostic" />
 
 ## Where this leaves you
 
 For the common case — a linked or embedded raster picture in a rectangular or
 shaped frame, with the file available to the resolver — placed images render
-faithfully: found, decoded, transformed, and clipped to the frame. The open edges
-are the vector and page-description formats (EPS, PDF, imported pages), which parse
-uniformly but are not yet rasterised, and the detached image clipping path, which
-the frame outline currently stands in for. In every one of those cases the
-*parse* is complete and correct; what is deferred is purely the drawing.
+faithfully: found, decoded, transformed, and clipped to the frame (and to a
+`UserModifiedPath` detached clip when one is present). The open edges are the
+vector and page-description formats (EPS, PDF, imported pages), which parse
+uniformly but are not yet rasterised, and the metadata-derived clipping types
+(`PhotoshopPath`, `AlphaChannel`, `DetectEdges`), which need the image's own bytes
+and fall back to the frame outline. In every one of those cases the *parse* is
+complete and correct; what is deferred is purely the drawing.
 
 ## Frequently asked questions
 

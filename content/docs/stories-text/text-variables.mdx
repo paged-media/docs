@@ -49,19 +49,21 @@ run — `paged-parse/src/story.rs:1643`.
 <AttrTable
   element="TextVariableInstance (inside a CharacterStyleRange)"
   rows={[
-    { attr: 'ResultText', type: 'string', support: 'supported', note: 'The computed value, inlined into the run text exactly as written.' },
-    { attr: 'AssociatedTextVariable', type: 'string ref (TextVariable/…)', support: 'parsed-not-rendered', note: 'Points back at the definition. Read, but not used to recompute the value.' },
+    { attr: 'ResultText', type: 'string', support: 'supported', note: 'The baked value from the last export; the renderer re-derives it for the variable kinds it knows, and keeps this as the fallback.' },
+    { attr: 'AssociatedTextVariable', type: 'string ref (TextVariable/…)', support: 'supported', note: 'Points back at the definition; used to recompute the value for the supported VariableType kinds.' },
   ]}
 />
 
-<SupportBadge status="parsed-not-rendered" note="ResultText is the frozen value from the last export; it is not recomputed at render time — paged-parse/src/story.rs:1643" />
+<SupportBadge status="supported" note="known VariableTypes (custom / file-name / page-count / dates / chapter-number / running-header) re-resolve at render; ResultText is the fallback for the rest — paged-renderer/src/pipeline/links.rs" />
 
-`ResultText` is a snapshot. It is whatever InDesign computed the last time it
-composed the document — so a "Running Header" instance carries the header text as
-of export, and a "File Name" instance carries the file name as of export. The
-renderer inlines that snapshot; it does not re-derive the value from the current
-layout. A running header won't update if you move the paragraph it tracks, and a
-page-number variable baked as text won't follow repagination.
+`ResultText` is the baked snapshot — whatever InDesign computed the last time it
+composed the document. For the variable kinds the renderer knows how to run, it
+re-derives the value from the current model and layout instead of trusting that
+snapshot: a "Running Header" instance picks up the live heading on its page, a
+"File Name" instance reads the document name, and a date stamp re-formats from a
+deterministic render clock. So a running header *does* update when you move the
+paragraph it tracks. Only the kinds the renderer does not yet recompute fall back
+to the baked text.
 
 ## Auto-page-number markers
 

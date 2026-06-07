@@ -35,10 +35,10 @@ metadata rides alongside without changing the count.
 
 <ExampleEmbed example="with-hyperlink">
   One Hyperlink joining a text source to a URL destination — parsed into the
-  model, not drawn on the page.
+  model and emitted as a PDF link annotation over the source span.
 </ExampleEmbed>
 
-<SupportBadge status="parsed-not-rendered" note="hyperlink interaction and link drawing are not wired — paged-parse/src/designmap.rs:256" />
+<SupportBadge status="supported" note="hyperlink source spans emit PDF link annotations (URL + go-to-page); an on-page visual underline/highlight is an editor affordance, not a render output" />
 
 ## `Hyperlink`
 
@@ -71,10 +71,10 @@ document level; the text kind also leaves a wrapper inside the story.
 
 - A **`HyperlinkTextSource`** wraps a stretch of text inside a
   `CharacterStyleRange`. In the example, it surrounds the words "paged media
-  docs" between two plain `Content` chunks. Today the parser does not surface
-  this wrapper onto the run — the linked region is not marked on the run text —
-  so the run is read exactly as if the wrapper were absent, and the text flows
-  unbroken. <SupportBadge status="not-yet-parsed" note="in-story hyperlink sources not surfaced on runs — paged-parse/src/story.rs" />
+  docs" between two plain `Content` chunks. The parser now records the enclosing
+  source span's id on each run it covers, so the linked region is known and the
+  renderer can place a PDF link annotation over exactly those glyphs.
+  <SupportBadge status="supported" note="in-story hyperlink/cross-reference source spans are recorded on the runs they cover and emitted as link annotations" />
 - A **`HyperlinkPageItemSource`** makes a whole page item (a frame) the source
   via its `SourcePageItem` attribute, with no in-text wrapper.
 
@@ -125,16 +125,20 @@ body text. The parser keeps its id, name, and destination ref.
   ]}
 />
 
-## What is not wired yet
+## What reaches the page, and what does not
 
 The whole chain — source anchor, join element, destination — is read into the
-document model, but nothing here reaches the page:
+document model and the navigation half of it now reaches a PDF export:
 
-- Hyperlink regions are not drawn and not made interactive; the link box,
-  highlight, and border attributes are read past. <SupportBadge status="parsed-not-rendered" note="paged-parse/src/designmap.rs:256" />
-- The in-story `HyperlinkTextSource` wrapper is not surfaced onto the run, so the
-  linked span is not marked. <SupportBadge status="not-yet-parsed" note="paged-parse/src/story.rs" />
-- Bookmarks are not emitted into any navigation structure. <SupportBadge status="parsed-not-rendered" note="paged-parse/src/designmap.rs:267" />
+- Hyperlink and cross-reference source spans emit **PDF link annotations**
+  (URL and go-to-page); the in-story source wrapper is recorded on the runs it
+  covers. <SupportBadge status="supported" note="link annotations emitted over source spans" />
+- Bookmarks emit **PDF navigation destinations** (the outline entries).
+  <SupportBadge status="supported" note="bookmarks become PDF go-to destinations" />
+- What is still *not* drawn is the on-page **visual decoration** — the link box,
+  highlight, and border attributes are read past, because an underline or tint
+  on the live page is an editor affordance rather than a faithful-render output.
+  <SupportBadge status="parsed-not-rendered" note="link box / highlight / border appearance read past; no on-page decoration" />
 
 ## Frequently asked questions
 

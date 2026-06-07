@@ -96,24 +96,24 @@ three anchors and does *not* add a third segment closing the "V" into a triangle
 Flip `PathOpen` to `false` and the contour seals — the chevron would close into a
 triangle. That single boolean is the whole difference between a line and a region.
 
-## Corner options render as rounded
+## Corner options render per variant
 
 IDML can ask for decorative corner treatments on a rectangle via `CornerOption`
 (and the per-corner `TopLeftCornerOption` and siblings). The parser recognises
-the full set of names, but the renderer collapses every non-square variant to a
-plain rounded corner for now:
+the full set of names, and the renderer now emits bespoke geometry for each one
+— per corner, honouring the per-corner radius and the frame's join/miter/cap:
 
 <AttrTable
   element="CornerOption values"
   rows={[
     { attr: 'None', type: 'enum', support: 'supported', note: 'Square corner. The default.' },
     { attr: 'Rounded', type: 'enum', support: 'supported', note: 'Rounded corner — rendered as drawn.' },
-    { attr: 'Inverse / Bevel', type: 'enum', support: 'supported', note: 'Bespoke geometry — concave quarter-circle (Inverse) and straight chamfer (Bevel) — generated per corner.' },
-    { attr: 'Inset / Fancy', type: 'enum', support: 'supported', note: 'Drawn with bespoke geometry (square notch / ogee); these two are approximations pending reference-PDF calibration.' },
+    { attr: 'Inverse / Bevel', type: 'enum', support: 'supported', note: 'Concave quarter-circle (Inverse) and straight chamfer (Bevel), generated per corner.' },
+    { attr: 'Inset / Fancy', type: 'enum', support: 'supported', note: 'Inset is a fold-in notch; Fancy is a three-arc scallop. Both emit real geometry (calibrated).' },
   ]}
 />
 
-<SupportBadge status="supported" note="Decorative corners drawn per-variant; Inset/Fancy approximate pending calibration" />
+<SupportBadge status="supported" note="all five corner options emit per-corner geometry (Fancy = 3-arc scallop, Inset = fold-in notch); per-corner radii + join/miter/cap honoured" />
 
 A second, related gap: decorative *path* and *stroke* treatments beyond the plain
 outline are not generated either — the path you get is the anchor outline as

@@ -67,17 +67,19 @@ and an anchor in the prose, joined by an id.
 
 ## What the renderer does with them today
 
-Nothing visible — and that is by design for this phase. The parser reads every
-construct in this chapter into the document model so that an editor and the SDK
-can list, follow, and rewrite them. But the page renderer does not draw link
-underlines, make regions clickable, resolve a cross-reference's display text, or
-generate an index story. Each reference is **parsed, not rendered**: present in
-the model, absent from the page.
+Most of this chapter now resolves at render time. The parser reads every
+construct into the document model, and the renderer follows it: **hyperlinks**
+and **bookmarks** emit PDF link annotations (URL and go-to-page), and a
+**cross-reference** resolves to its destination's current page and
+re-resolves when that destination moves — so the displayed text stays correct
+after a reflow. **Index** topics aggregate and de-duplicate into page lists.
 
-That is the honest state of the engine, and every page here flags it with a
+The one thing the renderer still does not do is paint visual link *decorations*
+(an on-page underline or highlight is an editor affordance, not a render
+output), and a couple of source-side cases remain. Each page here flags exactly
+where it stands with a <SupportBadge status="supported" compact /> or
 <SupportBadge status="parsed-not-rendered" compact /> badge so you always know
-which side of the line a feature sits on. Interactivity and index generation are
-SDK Phase 5 work; the format coverage is here now.
+which side of the line a feature sits on.
 
 ## Frequently asked questions
 

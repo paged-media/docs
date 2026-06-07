@@ -61,10 +61,13 @@ attributes paint the table itself.
 
 (`crates/paged-parse/src/styles.rs` defines `TableStyleDef`, mirrored above.)
 
-The `StrokeOrder` attribute — which strokes win at a crossing (`RowOnTop`,
-`ColumnOnTop`, `BestJoins`, `Indesign2Compatibility`) — and the gap-colour,
-skip-alternating, and column-fill families are stored by IDML on `<TableStyle>`
-but are not yet read here. <SupportBadge status="not-yet-parsed" note="StrokeOrder, gap colours, column fills, skip-alternating counts" />
+The skip-alternating counts and the column-fill family (`StartColumnFill*` /
+`EndColumnFill*`) *are* now read from `<TableStyle>` and honoured, alongside the
+row-fill family above. What is still not read at the style level is the
+`StrokeOrder` attribute — which strokes win at a crossing (`RowOnTop`,
+`ColumnOnTop`, `BestJoins`, `Indesign2Compatibility`); the row divider wins
+today — and the divider gap-colour family.
+<SupportBadge status="not-yet-parsed" note="StrokeOrder crossing precedence + divider gap colours on TableStyle (row-fill, column-fill, and skip-alternating counts are now read)" />
 
 ## CellStyle
 

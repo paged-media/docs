@@ -33,7 +33,7 @@ stay honest about each other.
 | `<Section>` page numbering | <SupportBadge status="supported" compact /> roman/alpha/Arabic + prefix labels | [Sections & numbering](/docs/sections-numbering-variables) |
 | `ShowMasterItems` | <SupportBadge status="supported" compact /> master items suppressed when false | [Master spreads](/docs/master-spreads-overrides) |
 | `MasterPageTransform` | <SupportBadge status="supported" compact /> full affine applied | [Layout model](/docs/layout-model) |
-| `Spread` / `MasterSpread` `ItemTransform` | <SupportBadge status="parsed-not-rendered" compact /> translation faithful; rotation/scale deferred | [Layout model](/docs/layout-model) |
+| `Spread` / `MasterSpread` `ItemTransform` | <SupportBadge status="supported" compact /> rotation/scale applied about the page origin | [Layout model](/docs/layout-model) |
 | Nested layer groups (folders) | <SupportBadge status="supported" compact /> child inherits a hidden/locked parent | [Layers](/docs/layers) |
 | Tagged XML (`XMLElement`/`XMLStory`/`Mapping`) | <SupportBadge status="not-yet-parsed" compact /> backing store skipped | [Tagged XML](/docs/tagged-xml) |
 
@@ -45,13 +45,15 @@ stay honest about each other.
 | `NestedStyle` run splitting | <SupportBadge status="supported" compact /> per-delimiter fragments restyled | [Styles](/docs/styles) |
 | Conditional-text visibility | <SupportBadge status="supported" compact /> hidden runs filtered pre-layout | [Conditional text](/docs/conditional-text) |
 | `Position` (super/subscript), `VerticalScale` | <SupportBadge status="supported" compact /> baseline shift + y-scale applied | [Typography](/docs/typography) |
-| Footnote bodies | <SupportBadge status="supported" compact /> drawn at frame bottom; reservation pending | [Stories & text](/docs/stories-text) |
+| Footnote bodies | <SupportBadge status="supported" compact /> drawn at frame bottom; separator rule + per-run styling + space reservation; cross-frame split pending | [Stories & text](/docs/stories-text) |
 | Overset (last-frame overflow) | <SupportBadge status="supported" compact /> clipped to match InDesign; now reported | [Stories & text](/docs/stories-text) |
 | Ruby | <SupportBadge status="parsed-not-rendered" compact /> GroupRuby MVP; per-character pending | [Stories & text](/docs/stories-text) |
 | CJK vertical writing | <SupportBadge status="parsed-not-rendered" compact /> direction captured; layout pending | [The renderer](/docs/the-renderer) |
 | Optical kerning | <SupportBadge status="parsed-not-rendered" compact /> Metrics fallback | [Typography](/docs/typography) |
 | Kinsoku CJK rules | <SupportBadge status="parsed-not-rendered" compact /> heuristic only | [Typography](/docs/typography) |
-| In-story hyperlink regions | <SupportBadge status="not-yet-parsed" compact /> not surfaced on runs | [Cross-references & hyperlinks](/docs/cross-references-hyperlinks) |
+| In-story hyperlink / cross-ref regions | <SupportBadge status="supported" compact /> source spans recorded on runs; emitted as PDF link annotations | [Cross-references & hyperlinks](/docs/cross-references-hyperlinks) |
+| Cross-reference resolution | <SupportBadge status="supported" compact /> destination → current page, re-resolved on reflow | [Cross-references & hyperlinks](/docs/cross-references-hyperlinks) |
+| Index generation | <SupportBadge status="supported" compact /> topics grouped, page lists deduped + sorted, story emitted | [Cross-references & hyperlinks](/docs/cross-references-hyperlinks) |
 
 ## Color & swatches
 
@@ -72,9 +74,9 @@ stay honest about each other.
 | Table / cell style cascade | <SupportBadge status="supported" compact /> region defaults; `StrokeOrder` pending | [Styles](/docs/styles) |
 | `GraphicLine` multi-segment / open | <SupportBadge status="supported" compact /> | [Frames & paths](/docs/frames-paths) |
 | `GraphicLine` arrowheads | <SupportBadge status="supported" compact /> triangle/circle/bar; calibration pending | [Frames & paths](/docs/frames-paths) |
-| Decorative corner options | <SupportBadge status="supported" compact /> Rounded/Inverse/Bevel exact; Inset/Fancy approx | [Path geometry](/docs/geometry-coordinates) |
+| Decorative corner options | <SupportBadge status="supported" compact /> all five emit per-corner geometry (Fancy scallop, Inset notch) | [Path geometry](/docs/geometry-coordinates) |
 | Dotted strokes | <SupportBadge status="supported" compact /> 12 variants + custom defs | [Frames & paths](/docs/frames-paths) |
-| Striped / Wavy strokes | <SupportBadge status="parsed-not-rendered" compact /> solid-stroke fallback | [Frames & paths](/docs/frames-paths) |
+| Striped / Wavy strokes | <SupportBadge status="supported" compact /> striped = N parallel rules; wavy = sine ribbon | [Frames & paths](/docs/frames-paths) |
 | AutoSizing growth | <SupportBadge status="supported" compact /> grows to fit; box stretch + wrap pending | [Frames & paths](/docs/frames-paths) |
 
 ## Images, diagnostics & out-of-scope

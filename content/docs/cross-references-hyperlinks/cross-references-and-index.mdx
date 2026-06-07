@@ -54,7 +54,7 @@ text — carries a `CrossReferenceType` drawn from a fixed vocabulary
 `CustomTypeString` for the custom variants, and a `ReferencedTopic`. The parser
 folds these into the same cross-reference record.
 
-<SupportBadge status="parsed-not-rendered" note="cross-reference target resolution is deferred — paged-parse/src/designmap.rs:276" />
+<SupportBadge status="supported" note="a cross-reference resolves to its destination's current page and re-resolves when the destination moves, so its page number stays correct after a reflow" />
 
 ## `Topic` and the index entries
 
@@ -96,20 +96,20 @@ the run, so the body text flows past it untouched.
 A marker with neither `TopicName` nor `AppliedTopic` has nothing to index and is
 dropped.
 
-## Why nothing prints yet
+## How they resolve
 
-Both constructs need a whole-document pass that the engine does not run:
+Both constructs run a whole-document pass that turns the captured markers into
+output:
 
-- A cross-reference's display text would come from applying its `AppliedFormat`
-  to its resolved `Destination`. That resolution is deferred, so the phrase is
-  not produced. <SupportBadge status="parsed-not-rendered" note="paged-parse/src/designmap.rs:276" />
-- An index would come from collecting every marker, grouping by topic,
-  alphabetising (honouring `SortOrder`), and emitting a generated story. The
-  markers and topics are captured; the generation pass is not implemented, so no
-  index story is rendered. <SupportBadge status="parsed-not-rendered" note="markers captured at paged-parse/src/story.rs:317; topics at paged-parse/src/designmap.rs:286" />
-
-The inputs are all in the model, ready for the SDK Phase 5 resolution work to
-consume.
+- A cross-reference resolves its `Destination` to that destination's current
+  page and produces the page number, re-resolving on every render so the value
+  survives a reflow. The full `AppliedFormat` template prose (heading-text and
+  "See also" building blocks beyond the page number) is the remaining nuance.
+  <SupportBadge status="supported" note="destination → current page resolved and re-resolved; page-number building block produced" />
+- An index collects every `<PageReference>` / `<IndexEntry>` marker, groups them
+  case-insensitively by topic, deduplicates and sorts each topic's page list,
+  and emits a generated index story (topic + tab + page list).
+  <SupportBadge status="supported" note="markers grouped by topic, page lists deduplicated + sorted, generated index paragraphs emitted" />
 
 ## Frequently asked questions
 

@@ -13,7 +13,8 @@
     "postinstall": "fumadocs-mdx",
     "examples:assemble": "tsx scripts/examples/assemble-cli.ts",
     "examples:index": "tsx scripts/examples/index.ts",
-    "validate:examples": "tsx scripts/examples/validate.ts"
+    "validate:examples": "tsx scripts/examples/validate.ts",
+    "check:badges": "node scripts/check-support-badges.mjs"
   },
   "dependencies": {
     "fflate": "^0.8.2",

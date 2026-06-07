@@ -132,10 +132,12 @@ draws those per-cell edge strokes (covered on the
 gridlines appear even when the table-level divider attributes are left at their
 defaults.
 
-The `StrokeOrder` attribute — which stroke wins where a row divider crosses a
-column divider — and the skip-first / skip-last alternating counts are stored by
-IDML on the `<Table>` but are not read here.
-<SupportBadge status="not-yet-parsed" note="StrokeOrder, skip-alternating counts" />
+The skip-first / skip-last alternating counts *are* now read and honoured (a
+table can skip the first or last N rows or columns before the alternation
+begins). The one attribute still not read is `StrokeOrder` — which stroke wins
+where a row divider crosses a column divider — so today the row divider always
+wins at a crossing.
+<SupportBadge status="not-yet-parsed" note="StrokeOrder crossing precedence (row divider wins today); skip-first/last alternating counts are now honoured" />
 
 ## Frequently asked questions
 
