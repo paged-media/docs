@@ -23,3 +23,8 @@ jobs:
       - run: pnpm typecheck
       - name: build (also fails on broken example imports / MDX)
         run: pnpm build
+        env:
+          # GithubInfo (layout.config.tsx) fetches repo stats during SSG —
+          # 126 prerendered pages on a shared runner IP blow the anonymous
+          # rate limit without it (pages.yml already sets this).
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

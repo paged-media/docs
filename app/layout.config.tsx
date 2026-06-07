@@ -1,5 +1,5 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
-import { GithubInfo } from 'fumadocs-ui/components/github-info';
+import { GithubInfoSafe } from '@/components/github-info-safe';
 import { Wordmark } from '@/components/wordmark';
 
 export const baseOptions: BaseLayoutProps = {
@@ -12,11 +12,12 @@ export const baseOptions: BaseLayoutProps = {
   links: [
     {
       type: 'custom',
-      // Stars/forks for the public renderer engine. GithubInfo fetches at build
-      // time (output: 'export' renders it once), so the count is baked into the
-      // static HTML; GITHUB_TOKEN (set in CI) lifts the API rate limit.
+      // Stars/forks for the public renderer engine. Fetched at build time
+      // (output: 'export' renders it once) and baked into the static HTML;
+      // GITHUB_TOKEN (set in CI) lifts the API rate limit, and the Safe
+      // wrapper degrades to a plain repo link if the API is unreachable.
       children: (
-        <GithubInfo owner="paged-media" repo="core" token={process.env.GITHUB_TOKEN} />
+        <GithubInfoSafe owner="paged-media" repo="core" token={process.env.GITHUB_TOKEN} />
       ),
     },
   ],
