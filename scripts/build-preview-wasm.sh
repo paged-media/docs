@@ -2,10 +2,12 @@
 # build-preview-wasm.sh — build the WebGPU paged-sdk (ViewerSession) wasm that
 # powers the docs <live preview>, from a sibling `core` checkout.
 #
-# Interim build-from-core bridge (Decision B not yet done; mirrors the editor's
-# apps/canvas/build-wasm.sh and ~/paged/sync-wasm.sh). Once @paged-media/sdk is
-# published to npm, the preview should consume the published package instead and
-# this script can be retired.
+# SUPERSEDED for the normal path: the live preview now consumes the PUBLISHED
+# `@paged-media/idml-viewer` package, whose bundled wasm `scripts/prepare-preview-wasm.mjs`
+# stages into public/preview (run by `pnpm build`). CI (pages.yml) uses that path —
+# no core checkout. This script is kept only as a build-from-core ESCAPE HATCH for
+# iterating on UNPUBLISHED engine changes before a release: run it to overwrite
+# public/preview with a locally-built paged-sdk (mirrors ~/paged/sync-wasm.sh).
 #
 # Output (docs/public/preview/ — served statically, loaded on demand by the
 # LivePreview client component):

@@ -1,7 +1,16 @@
 # The paged-media/core commit that the example-validation gate builds
 # `paged-inspect` from (briefing §6.2 / §7 "docs version to the renderer's minor
-# version"). Bump deliberately via a PR; the weekly core-drift job opens one when
-# core@main still passes. Format: a single commit SHA on the first non-comment line.
-# Also the commit the Pages deploy builds the WebGPU paged-sdk (ViewerSession)
-# from for the live preview — this commit carries both paged-inspect and paged-sdk.
-d4de59e938987273c79941ec43dca418dfac67d8
+# version"). Format: a single commit SHA on the first non-comment line.
+#
+# PIN POLICY: this pin tracks the LATEST core RELEASE TAG, not core@main. Bump it
+# to the new tag's commit on every core release (e.g. v0.35.0 → the commit
+# `git -C core rev-list -n1 v0.35.0` resolves to), via a deliberate PR. This keeps
+# the docs gate building paged-inspect from the exact engine the published
+# @paged-media packages ship from — so a validated example is one a released
+# renderer accepts, never a main-only or pre-release one. The weekly core-drift job
+# may surface a newer green main, but the pin only moves when a release is cut.
+#
+# Currently: v0.35.0 (tag commit 9e78005). The WebGPU live preview no longer builds
+# from this commit — it consumes the published npm `@paged-media/idml-viewer` at the
+# matching release (its bundled wasm), so this pin governs the CI example gate only.
+9e780059540dbac5e6b1640220e8d17f3c9cbb0b

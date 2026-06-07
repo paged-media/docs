@@ -54,17 +54,22 @@ pnpm validate:examples  # full gate; needs paged-inspect (see examples/README.md
 
 ## Engine consumption
 
-Interim build-from-core (Decision B open): the example gate builds `paged-inspect`
-from `core` at `core.pin`. The WebGPU live preview comes later from
-`@paged-media/viewer` (the slim renderer-core viewer) — `ExampleEmbed` already
-reserves the `live` slot, so wiring it needs no page edits.
+The example gate builds `paged-inspect` from `core` at `core.pin` (interim
+build-from-core; Decision B open for the inspector). `core.pin` tracks the latest
+core RELEASE TAG — bump it per release, not to main (policy lives in the pin's
+header comment). The WebGPU live preview is WIRED: `ExampleEmbed`'s `live` slot
+renders the assembled package via the PUBLISHED `@paged-media/idml-viewer`
+(`createViewer`); its bundled wasm is staged into `public/preview` by
+`scripts/prepare-preview-wasm.mjs` (run by `pnpm build`/`prepare:preview`), loaded
+lazily client-side with a no-WebGPU fallback. No core checkout for the preview.
 
 ## Phase-0 scope / out of scope
 
 In: static example views (raw/annotated/tree), difficulty label, ExampleEmbed,
 ~5 cornerstone pages, style guide v1, clean-room v1, the IA, CI, analytics
-baseline. OUT: the WebGPU `<LivePreview>` (needs the WebGPU `paged-sdk`), the
-hosted search upgrade, and the bulk of the ~200-page content.
+baseline, and the WebGPU `<LivePreview>` (now shipped via the published
+`@paged-media/idml-viewer`). OUT: the hosted search upgrade, and the bulk of the
+~200-page content.
 
 ## Licensing
 

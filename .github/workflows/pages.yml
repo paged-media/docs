@@ -1,8 +1,9 @@
 name: pages
 
 # Build the static export (Next.js output: 'export') and deploy to GitHub Pages
-# at docs.paged.media. The WebGPU live-preview wasm is built from paged-media/core
-# (the commit pinned in core.pin) as part of the build.
+# at docs.paged.media. The WebGPU live-preview wasm is staged from the published
+# @paged-media/idml-viewer npm package (its bundled wasm) by the build's
+# prepare:preview step — no core checkout, no Rust toolchain in this workflow.
 on:
   push:
     branches: [main]
@@ -24,55 +25,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: resolve core pin
-        id: core
-        run: echo "sha=$(grep -v '^#' core.pin | head -1 | tr -d '[:space:]')" >> "$GITHUB_OUTPUT"
-
-      - name: checkout core (WebGPU paged-sdk for the live preview)
-        uses: actions/checkout@v4
-        with:
-          repository: paged-media/core
-          ref: ${{ steps.core.outputs.sha }}
-          path: core
-
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32-unknown-unknown
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: core
-          key: ${{ steps.core.outputs.sha }}
-
-      - name: toolchain — wasm-bindgen-cli (pinned) + binaryen (pinned)
-        run: |
-          WB=$(awk '/^name = "wasm-bindgen"$/{getline; gsub(/version = "|"/,""); print; exit}' core/Cargo.lock)
-          echo "wasm-bindgen pin: $WB"
-          if ! command -v wasm-bindgen >/dev/null || [ "$(wasm-bindgen --version | awk '{print $2}')" != "$WB" ]; then
-            cargo install wasm-bindgen-cli --version "$WB"
-          fi
-          # Do NOT use apt's binaryen: on ubuntu-latest it is v116, which
-          # miscompiles wasm-bindgen's reference-types tables and binds the
-          # exported __wbindgen_externrefs table to the fixed-size funcref table.
-          # The live preview then dies at runtime with
-          # "WebAssembly.Table.grow(): failed to grow table by 4". Pin a known-good
-          # release (matches the local toolchain; verify-preview-wasm.mjs guards it).
-          BINARYEN=126
-          curl -fsSL -o /tmp/binaryen.tgz \
-            "https://github.com/WebAssembly/binaryen/releases/download/version_${BINARYEN}/binaryen-version_${BINARYEN}-x86_64-linux.tar.gz"
-          tar -xzf /tmp/binaryen.tgz -C /tmp
-          echo "/tmp/binaryen-version_${BINARYEN}/bin" >> "$GITHUB_PATH"
-          "/tmp/binaryen-version_${BINARYEN}/bin/wasm-opt" --version
-
-      - name: build the WebGPU preview wasm (paged-sdk → public/preview)
-        run: CORE_DIR="$PWD/core" bash scripts/build-preview-wasm.sh
-
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+
       - name: build static export (out/)
+        # `pnpm build` runs prepare:preview first — it copies the live-preview
+        # wasm out of the installed @paged-media/idml-viewer package into
+        # public/preview and runs the binaryen externref-growable guard, then
+        # `next build` emits the static export.
         run: pnpm build
         # GithubInfo (nav) fetches repo stars at build time. Authenticate so the
         # shared-runner IP doesn't hit the 60/hr unauthenticated rate limit.
