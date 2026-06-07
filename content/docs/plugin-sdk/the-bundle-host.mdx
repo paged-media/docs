@@ -47,6 +47,8 @@ pathAnchors(id): Promise<PathAnchorsResult | null>   // Bézier anchor table
 hitTest(pageId, [x, y], filter?): Promise<HitResult | null>
 elementGeometry(ids): Promise<ElementGeometryItem[]>
 tree(): Promise<SceneTreeNode[]>
+getMetadata(id): Promise<PluginMetadataEnvelope | null>
+setMetadata(id, envelope | null): Promise<MutationOutcome>
 onDidChange(l): Disposable
 //  fires { kind: "mutationApplied" | "undoApplied" | "redoApplied", pageIds }
 ```
@@ -60,6 +62,44 @@ layers, pathfinder booleans, batches, …) is re-exported by
 Coordinate convention for `pathAnchors` and `hitTest`: anchor tables are in
 the element's local frame (apply the result's `itemTransform` to reach
 page-local space); hit-test points are page-local pt.
+
+### Plugin metadata
+
+`getMetadata`/`setMetadata` attach a JSON envelope —
+`{ v: number, data: object, engine?: Record<string, string> }` — to a leaf
+page item. It persists **in the document** as an IDML `Properties/Label`
+`KeyValuePair`, so it round-trips through save/reopen and survives opens in
+other IDML tooling (InDesign preserves Labels verbatim). The key is derived
+from your manifest id (`x-paged:<id>`) — a bundle reads and writes **its own
+namespace only**, enforced at the host door and again for raw `mutate`
+calls. The engine adds its own gates: a 64 KiB cap per entry and the
+envelope shape. `setMetadata` is an ordinary undoable mutation; `v` is
+*your* schema version (migrations are plugin-owned), and `engine` carries
+determinism pins where relevant.
+
+To create an element and attach metadata as **one undo step**, batch the
+insert with a `setPluginMetadata` whose element id is the literal
+`"$created"` — inside a batch it resolves to the element minted by the most
+recent creating member, and the whole batch applies atomically:
+
+```ts
+await host.document.mutate({
+  op: "batch",
+  args: {
+    ops: [
+      { op: "insertFrame", args: { pageId, bounds } },
+      {
+        op: "setPluginMetadata",
+        args: {
+          elementId: { kind: "rectangle", id: "$created" },
+          key: "x-paged:my.plugin",       // must be YOUR derived key
+          value: JSON.stringify({ v: 1, data: { … } }),
+        },
+      },
+    ],
+  },
+});
+```
 
 ## `host.selection`
 
