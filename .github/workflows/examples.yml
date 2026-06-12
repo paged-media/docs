@@ -14,6 +14,37 @@ on:
     - cron: '0 6 * * 1'
 
 jobs:
+  # PIN-FRESHNESS NUDGE (audit 11062026 / 05 D5 + 01 A7): the pin policy in
+  # core.pin is "bump to the latest core RELEASE TAG on every release". Nothing
+  # enforced it, so the pin lagged 5 releases (v0.35.0 while core was at v0.40.0).
+  # This job warns — never hard-fails a docs PR (a release may be cut between the
+  # tag and the pin PR) — when core.pin != the commit of core's latest v* tag.
+  # Runs on push-to-main and the weekly drift cron; skipped on PRs to keep them
+  # green. Promote `::warning` → a failing `exit 1` if the cadence keeps slipping.
+  pin-freshness:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: checkout core (tags only)
+        uses: actions/checkout@v4
+        with:
+          repository: paged-media/core
+          fetch-depth: 0
+          path: core
+      - name: compare core.pin to latest release tag
+        run: |
+          pinned="$(grep -v '^#' core.pin | head -1 | tr -d '[:space:]')"
+          latest_tag="$(git -C core tag --list 'v*' --sort=-v:refname | head -1)"
+          latest_sha="$(git -C core rev-list -n1 "$latest_tag")"
+          echo "core.pin       = $pinned"
+          echo "latest tag     = $latest_tag ($latest_sha)"
+          if [ "$pinned" != "$latest_sha" ]; then
+            echo "::warning title=core.pin stale::core.pin ($pinned) is not the latest release tag $latest_tag ($latest_sha). Per the pin policy in core.pin, bump it on every core release: git -C core rev-list -n1 $latest_tag"
+          else
+            echo "core.pin is current with $latest_tag."
+          fi
+
   validate:
     runs-on: ubuntu-latest
     steps:

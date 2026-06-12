@@ -10,7 +10,7 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.35.0 (tag commit 9e78005). The WebGPU live preview no longer builds
+# Currently: v0.40.0 (tag commit 3320477). The WebGPU live preview no longer builds
 # from this commit — it consumes the published npm `@paged-media/idml-viewer` at the
 # matching release (its bundled wasm), so this pin governs the CI example gate only.
-9e780059540dbac5e6b1640220e8d17f3c9cbb0b
+33204774b0bc65861b3e584012d1a9a984eba1a3
