@@ -10,7 +10,7 @@ import {
 } from 'next/font/google';
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import { WipBanner } from '@/components/wip-banner';
-import { Analytics } from '@/components/analytics';
+import { Analytics, GoogleAnalytics } from '@/components/analytics';
 
 // The brand four-role type system, self-hosted by next/font (no CDN @import):
 // Newsreader (display serif) · Source Serif 4 (reading serif) · IBM Plex Sans
@@ -84,6 +84,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           {children}
         </RootProvider>
         <Analytics />
+        <GoogleAnalytics />
       </body>
     </html>
   );
