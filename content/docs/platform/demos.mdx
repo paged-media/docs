@@ -23,7 +23,18 @@ addon carries those rendered frames into the replay. The result plays back with
 this static site. See [how the capability state works](/docs/platform/state/how-it-works)
 for the same generate-from-the-real-thing principle applied to status.
 
-<Demo caption="A synthetic sample session — the real captures replace this once the CI pipeline runs." />
+## Draw and fill a frame
 
-Feature and plugin pages embed these inline, e.g. a `gradient` workflow or a
-`sheet` edit, each pulled from the released app's captured sessions.
+<Demo demo="draw-fill" caption="Draw a rectangle, fill it, and move it — every interaction is real pointer input against the real editor." />
+
+## Build a gradient
+
+<Demo demo="gradient" caption="Two swatches → a linear gradient → applied to a frame." />
+
+## Start a document
+
+<Demo demo="new-document" caption="A blank Letter document from File ▸ New." />
+
+These are captured by the editor's `demo-capture` Playwright project (the
+showcase journeys) and pulled in at build time, so each refreshes with the app.
+Feature and plugin pages embed the same `<Demo>` inline.

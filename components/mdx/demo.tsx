@@ -28,7 +28,7 @@ export function Demo({
   height?: number;
   autoPlay?: boolean;
 }) {
-  const resolvedSrc = src ?? (demo ? `/demos/${demo}.json` : undefined);
+  const resolvedSrc = src ?? (demo ? `/demos/${demo}.rrweb.json` : undefined);
   // No src and no demo id → play the bundled synthetic sample so the component is
   // demonstrable before the CI capture pipeline produces real sessions.
   const events = resolvedSrc ? undefined : ((sample as { events: unknown[] }).events as unknown[]);

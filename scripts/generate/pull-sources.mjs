@@ -24,7 +24,7 @@
  * Usage: node scripts/generate/pull-sources.mjs [--remote] [--strict]
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync, copyFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync, copyFileSync, rmSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -147,18 +147,30 @@ for (const repo of act.repos) {
 }
 writeFileSync(join(OUT, 'activity.json'), JSON.stringify(activity, null, 2));
 
-// ── live-app demo sessions (rrweb JSON release assets) ───────────────────────
-// Dormant until the editor capture pipeline ships its first release with
-// `*.rrweb.json` assets. Downloads into public/demos/ (served statically) so
-// <Demo demo="id"/> can fetch /demos/id.json. Non-fatal: a missing release just
-// leaves the bundled synthetic sample in place.
+// ── live-app demo sessions (rrweb JSON) ──────────────────────────────────────
+// Served from public/demos/ so <Demo demo="id"/> fetches /demos/id.rrweb.json.
+// Two sources, in order: (1) committed SEED sessions in docs/demos/ (real
+// captures that ship today, before any release), then (2) the editor release
+// assets (when demos.enabled) which OVERRIDE the seeds. So the site always has
+// real demos, and goes fully self-updating once the capture workflow publishes.
+const demosOut = join(ROOT, 'public', 'demos');
+ensureDir(demosOut);
+const seedDir = join(ROOT, 'demos');
+if (existsSync(seedDir)) {
+  let seeded = 0;
+  for (const f of readdirSync(seedDir)) {
+    if (f.endsWith('.rrweb.json')) {
+      copyFileSync(join(seedDir, f), join(demosOut, f));
+      seeded++;
+    }
+  }
+  if (seeded) console.log(`  ✓ demos: ${seeded} committed seed session(s) → public/demos/`);
+}
 const demos = PIN.demos;
 if (demos?.enabled) {
-  const dest = join(ROOT, 'public', 'demos');
-  ensureDir(dest);
   try {
     const tagArgs = demos.tag && demos.tag !== 'latest' ? [demos.tag] : [];
-    execFileSync('gh', ['release', 'download', ...tagArgs, '-R', `${ORG}/${demos.repo}`, '-p', demos.pattern, '-D', dest, '--clobber'], {
+    execFileSync('gh', ['release', 'download', ...tagArgs, '-R', `${ORG}/${demos.repo}`, '-p', demos.pattern, '-D', demosOut, '--clobber'], {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     console.log(`  ✓ demos ← ${ORG}/${demos.repo} release ${demos.tag} (${demos.pattern})`);
