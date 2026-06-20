@@ -43,9 +43,12 @@ function warn(msg) {
   console.warn(`  ! ${msg}`);
 }
 
+// state.json is multi-MB; the default 1 MB stdout buffer overflows (ENOBUFS).
+const MAX_BUFFER = 256 * 1024 * 1024;
+
 /** Run a command, returning stdout (trimmed) or throwing. */
 function sh(cmd, args) {
-  return execFileSync(cmd, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  return execFileSync(cmd, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: MAX_BUFFER }).trim();
 }
 
 /** Resolve a git ref to a commit SHA on GitHub (or null if unreachable). */
@@ -62,7 +65,7 @@ function fetchRemote(repo, path, ref) {
   return execFileSync(
     'gh',
     ['api', `repos/${ORG}/${repo}/contents/${path}?ref=${ref}`, '-H', 'Accept: application/vnd.github.raw'],
-    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
+    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: MAX_BUFFER },
   );
 }
 
