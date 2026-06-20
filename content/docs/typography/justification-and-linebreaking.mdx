@@ -91,7 +91,7 @@ InDesign uses Proximity's licensed hyphenation dictionaries, which we do not shi
 The TeX patterns are the same family of algorithm and agree the vast majority of
 the time, but on some words they place a break one syllable differently. The
 result is a small, known divergence in *where* a word hyphenates — not in whether
-the paragraph is correct. <SupportBadge status="supported" note="Hyphenation via TeX patterns (hypher); Proximity dictionary not licensed — minor break-position divergence vs InDesign. core/crates/paged-text/src/hyphenate.rs" />
+the paragraph is correct. <SupportBadge feature="typography.hyphenation" note="Hyphenation via TeX patterns (hypher); Proximity dictionary not licensed — minor break-position divergence vs InDesign. core/crates/paged-text/src/hyphenate.rs" />
 
 A related gap sits on the CJK side. The composer enforces a small built-in set of
 hard *kinsoku* (line-break-forbidden) rules — roughly the characters that may not

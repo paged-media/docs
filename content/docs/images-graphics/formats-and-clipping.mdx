@@ -76,7 +76,7 @@ marks its host frame as an image frame and (where present) captures the link. Wh
 the elements share at the parser level is exactly what matters here — they all
 produce a graphic frame with a deferred reference. Whether the *bytes* behind that
 reference can be decoded is the renderer's concern, and that is where EPS, PDF, and
-imported pages currently fall short. <SupportBadge status="parsed-not-rendered" note="EPSImage / PDF / ImportedPage: recognised uniformly by the parser; the vector/page-description payload is not yet rasterised" />
+imported pages currently fall short. <SupportBadge feature="images-graphics.eps-decode" note="EPSImage / PDF / ImportedPage: recognised uniformly by the parser; the vector/page-description payload is not yet rasterised" />
 
 There is one deliberate special case. A placed `<PDF>` that carries its content
 inline (rather than a link) is flagged so the renderer falls back to the frame's
@@ -128,7 +128,7 @@ nested `<PathGeometry>`, and the renderer now applies it as an extra clip on top
 of the frame crop — so the picture takes the detached silhouette, not just the
 frame. The other clipping types (`PhotoshopPath`, `AlphaChannel`, `DetectEdges`)
 need the linked image's own bytes, which are not extracted yet; those emit a
-diagnostic and fall back to the frame outline. <SupportBadge status="supported" note="UserModifiedPath clip applied from the inline PathGeometry; PhotoshopPath / AlphaChannel / DetectEdges fall back to the frame outline with a diagnostic" />
+diagnostic and fall back to the frame outline. <SupportBadge feature="images-graphics.image-clipping" note="UserModifiedPath clip applied from the inline PathGeometry; PhotoshopPath / AlphaChannel / DetectEdges fall back to the frame outline with a diagnostic" />
 
 ## Where this leaves you
 

@@ -84,7 +84,7 @@ keep for two reasons that the GPU path can't match:
   the real per-pixel work. When we ask "does our render match InDesign?", the answer
   is measured against the CPU backend's output.
 
-<SupportBadge status="supported" note="tiny-skia CPU: headless CI + the fidelity reference. Not the product's forward path." />
+<SupportBadge feature="the-renderer.cpu-backend" note="tiny-skia CPU: headless CI + the fidelity reference. Not the product's forward path." />
 
 This is why the engine keeps both. The fidelity harness (`paged-fidelity`) diffs the
 CPU render against an InDesign-exported reference PDF using ΔE2000 colour difference
