@@ -1,0 +1,29 @@
+---
+title: Live demos
+description: Scrubbable replays of the real editor doing real workflows — captured from the journey tests in CI, not hand-recorded, so they never go stale.
+tier: beginner
+diataxis: explanation
+status: draft
+owner: paged-docs
+---
+
+**In short:** these demos are **recordings of the real editor**, captured by
+running paged's own journey tests in CI and replayed here with rrweb. They're not
+screencasts anyone films — they regenerate every release from the same tests that
+gate the app, so what you see is always the current product. You can scrub the
+timeline, and the captions follow the workflow step by step.
+
+## How it works
+
+rrweb records the editor's actual DOM — panels, menus, cursor, real selectable
+text — while a journey drives it. paged's document is drawn on a WebGPU canvas in
+a worker (which ordinary session-replay can't capture), so a small frame-bridge
+addon carries those rendered frames into the replay. The result plays back with
+**no WebGPU required** — it's just images over a faithful DOM — so it works on
+this static site. See [how the capability state works](/docs/platform/state/how-it-works)
+for the same generate-from-the-real-thing principle applied to status.
+
+<Demo caption="A synthetic sample session — the real captures replace this once the CI pipeline runs." />
+
+Feature and plugin pages embed these inline, e.g. a `gradient` workflow or a
+`sheet` edit, each pulled from the released app's captured sessions.

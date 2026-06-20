@@ -34,3 +34,6 @@ cleanroom/.baseline/
 
 # Built WebGPU preview wasm (built by scripts/build-preview-wasm.sh from a core checkout)
 public/preview/
+
+# Live-app demo sessions pulled from editor release assets (scripts/generate/pull-sources.mjs)
+public/demos/

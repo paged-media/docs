@@ -147,6 +147,29 @@ for (const repo of act.repos) {
 }
 writeFileSync(join(OUT, 'activity.json'), JSON.stringify(activity, null, 2));
 
+// ── live-app demo sessions (rrweb JSON release assets) ───────────────────────
+// Dormant until the editor capture pipeline ships its first release with
+// `*.rrweb.json` assets. Downloads into public/demos/ (served statically) so
+// <Demo demo="id"/> can fetch /demos/id.json. Non-fatal: a missing release just
+// leaves the bundled synthetic sample in place.
+const demos = PIN.demos;
+if (demos?.enabled) {
+  const dest = join(ROOT, 'public', 'demos');
+  ensureDir(dest);
+  try {
+    const tagArgs = demos.tag && demos.tag !== 'latest' ? [demos.tag] : [];
+    execFileSync('gh', ['release', 'download', ...tagArgs, '-R', `${ORG}/${demos.repo}`, '-p', demos.pattern, '-D', dest, '--clobber'], {
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    console.log(`  ✓ demos ← ${ORG}/${demos.repo} release ${demos.tag} (${demos.pattern})`);
+    lock.demos = { repo: demos.repo, tag: demos.tag };
+  } catch (e) {
+    warn(`demos: ${e.message.split('\n')[0]}`);
+  }
+} else {
+  console.log('  · demos pull disabled (using bundled sample) — flip sources.pin demos.enabled when CI ships sessions');
+}
+
 writeFileSync(join(ROOT, '.generated', 'sources.lock.json'), JSON.stringify(lock, null, 2));
 
 if (warnings.length) {

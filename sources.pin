@@ -42,5 +42,12 @@
       "plugin-sheets", "plugin-data", "plugin-template",
       "viewer", "website", "brand", "thoughts", "corpus"
     ]
+  },
+  "demos": {
+    "$comment": "Live-app demo sessions (rrweb JSON) captured by the editor's journey tests in CI and uploaded as GitHub Release assets. Pulled into public/demos/ so <Demo demo=\"id\"/> can fetch /demos/id.json. DORMANT until the editor capture pipeline ships its first release with `*.rrweb.json` assets — keep enabled:false until then (the bundled synthetic sample covers the meantime).",
+    "enabled": false,
+    "repo": "editor",
+    "tag": "latest",
+    "pattern": "*.rrweb.json"
   }
 }
