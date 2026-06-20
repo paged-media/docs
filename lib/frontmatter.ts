@@ -24,4 +24,11 @@ export const docsFrontmatter = frontmatterSchema.extend({
   status: Status.default('stub'),
   owner: z.string().optional(),
   formatVersion: z.string().optional(),
+  // Freshness guard for AUTHORED prose (scripts/check-freshness.mjs): the
+  // registry feature ids (or source paths) this page describes, and the date its
+  // prose was last checked against them. If a described feature's evidence is
+  // newer than `reviewed`, the build flags the page as stale. Generated pages
+  // omit these (they can't go stale).
+  describes: z.array(z.string()).optional(),
+  reviewed: z.string().optional(),
 });

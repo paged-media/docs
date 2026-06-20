@@ -1,0 +1,42 @@
+---
+title: core — the render engine
+description: The Rust render engine that parses and renders IDML — the parse→scene→text→compose→GPU pipeline, the wasm boundary, and the dual rasterization backends.
+tier: intermediate
+diataxis: explanation
+status: draft
+owner: paged-docs
+---
+
+**In short:** `core` is the heart of paged — a Rust workspace that reads an IDML
+package and renders it pixel-faithfully. It's public (dual-licensed) and is the
+only repo every other consumer depends on, across a wasm/package boundary.
+
+## What it does
+
+- Parses full Adobe IDML — the design map, spreads, frames, stories with
+  threading, cascade-resolved styles, gradients, and placed images.
+- Lays out text with an InDesign-calibrated **Knuth–Plass** composer (hyphenation,
+  tab stops, multi-font runs).
+- Renders through **WebGPU (Vello)** for forward output, with a **tiny-skia** CPU
+  backend kept for headless fidelity testing.
+- Offers a mutation layer (insert/delete/edit, all undoable), a headless
+  `ViewerSession`, PDF export, and byte-faithful round-trip serialization.
+
+## How it's organized
+
+A multi-crate workspace following the pipeline: `paged-parse` → `paged-scene` →
+`paged-text` → `paged-compose` → `paged-gpu`, with `paged-renderer` orchestrating
+and `paged-fidelity` running the ΔE2000/SSIM diff harness. The scripting surface
+lives in `paged-script` (Boa) + `paged-run` (headless CLI), and the public
+scripting catalog in `paged-introspect`.
+
+## How you consume it
+
+Published to npm as `@paged-media/canvas-wasm`, `introspect-wasm`, and
+`idml-viewer` (versioned `0.<protocol>.<patch>`). No consumer takes a source
+dependency. The [renderer reference](/docs/the-renderer) documents its behavior;
+the [scripting layer](/docs/platform/scripting) documents its `paged.*` surface.
+
+## Recent activity
+
+<RepoActivity repo="core" />

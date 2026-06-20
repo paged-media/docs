@@ -6,16 +6,18 @@
   "packageManager": "pnpm@9.0.0",
   "description": "docs.paged.media — the independent IDML living reference (Fumadocs).",
   "scripts": {
-    "dev": "next dev",
+    "dev": "pnpm generate:docs && next dev",
     "prepare:preview": "node scripts/prepare-preview-wasm.mjs",
-    "build": "pnpm prepare:preview && next build",
+    "generate:docs": "node scripts/generate/pull-sources.mjs && node scripts/generate/gen-matrix.mjs && node scripts/generate/gen-scripting.mjs && node scripts/generate/gen-plugin-sdk.mjs && node scripts/generate/gen-api.mjs && node scripts/generate/gen-activity.mjs",
+    "build": "pnpm generate:docs && pnpm prepare:preview && next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "postinstall": "fumadocs-mdx",
     "examples:assemble": "tsx scripts/examples/assemble-cli.ts",
     "examples:index": "tsx scripts/examples/index.ts",
     "validate:examples": "tsx scripts/examples/validate.ts",
-    "check:badges": "node scripts/check-support-badges.mjs"
+    "check:feature-refs": "node scripts/check-feature-refs.mjs",
+    "check:freshness": "node scripts/check-freshness.mjs"
   },
   "dependencies": {
     "@paged-media/idml-viewer": "0.35.0",

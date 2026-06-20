@@ -10,6 +10,10 @@ next-env.d.ts
 # Fumadocs generated source index
 .source/
 
+# Cross-repo data pulled + projected by `pnpm generate:docs` (scripts/generate/).
+# Regenerated on every build from the pinned sources (sources.pin) — never committed.
+.generated/
+
 # generated example barrel + assembled artifacts
 examples/.generated/
 dist/

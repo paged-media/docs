@@ -1,0 +1,34 @@
+---
+title: editor-server — the backend
+description: The TypeScript REST backend for the editor — Fastify + SQLite/Drizzle + better-auth + Stripe — handling accounts, storage, billing, asset proxies, and headless document automation.
+tier: intermediate
+diataxis: explanation
+status: draft
+owner: paged-docs
+---
+
+**In short:** `editor-server` is the backend behind the [editor](/docs/platform/repos/editor) —
+a Fastify 5 modular monolith on SQLite (Drizzle) with better-auth sessions and
+Stripe billing. It's offline-first: every external service is optional and
+env-gated.
+
+## What it does
+
+- **Auth** (better-auth sessions), **account** profiles, **storage** with
+  per-user isolation, **billing** (Stripe webhooks + plan gating), **fonts**
+  (Google Fonts proxy) and **images** (Pexels/Unsplash search) proxies, and a
+  background **jobs** queue (GDPR export/delete, TTL cleanup).
+- **Document automation** — a brief → agent job → engine → export pipeline that
+  drives the [engine](/docs/platform/repos/core)'s headless `paged-run` over a
+  stdio bridge, plus a data-merge bridge to the data plugin.
+
+## How it's organized
+
+`src/modules/*` (one Fastify plugin per domain), `src/contracts/` (Zod schemas —
+the OpenAPI source of truth), `src/db/` (SQLite + migrations). The full REST
+surface is documented, generated from its spec, on the
+[REST API page](/docs/platform/api).
+
+## Recent activity
+
+<RepoActivity repo="editor-server" />

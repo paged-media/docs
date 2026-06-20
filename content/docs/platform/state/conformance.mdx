@@ -1,0 +1,16 @@
+---
+title: Conformance
+description: How far the corpus harness verifies each IDML feature — parsed, rendered, mutatable, round-trips — with claimed versus verified shown side by side. Generated live from the registry.
+tier: intermediate
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+**In short:** the conformance harness runs the corpus (generated fixtures, real
+InDesign exports) through paged at each level and records how far each feature
+gets. This page renders that ladder: **parsed → rendered → mutatable →
+round-trips**, with a solid mark for *verified* and an outline for *claimed but
+not yet verified*.
+
+<ConformanceTable />

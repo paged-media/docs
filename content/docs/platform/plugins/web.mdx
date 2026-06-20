@@ -1,0 +1,35 @@
+---
+title: paged.web — HTML/CSS
+description: The web-content plugin — author HTML/CSS as a content type, with a sandboxed preview and on-canvas rendering via a Blitz/WASM lowering to the engine's scene layer.
+tier: intermediate
+diataxis: explanation
+status: draft
+owner: paged-docs
+---
+
+**In short:** `paged.web` lets HTML/CSS be a content type inside a paged document.
+You author source in a panel, see a sandboxed preview, and the frame renders
+on-canvas through a Blitz/WASM lowering to the engine's scene layer (falling back
+to the sandboxed preview when the wasm isn't available).
+
+## What it does
+
+- A source lane: author HTML/CSS with a diagnostics linter (page JS never
+  executes — `<script>` is flagged as an error by policy).
+- A deterministic template pass (`{{name}}` + a pure-filter whitelist).
+- On-canvas vector rendering via the `web-render` crate (Blitz/WASM →
+  scene layer), with font bytes supplied through the capability-gated asset store.
+- Persists the source into the `.paged` container.
+
+## How it's built
+
+`web-model` (pure source model + linter) + `web-bundle` (manifest, source panel,
+sandboxed preview, render command).
+
+## Capability state
+
+<CapabilityMatrix chapter="plugin-web" />
+
+## Recent activity
+
+<RepoActivity repo="plugin-web" />

@@ -1,0 +1,37 @@
+---
+title: paged.image — raster
+description: The raster-image plugin — a Rust/WASM pipeline of GPU kernels with PSD round-trip, dual processing engines, color management, and in-editor ingest into the engine's image scene layer.
+tier: intermediate
+diataxis: explanation
+status: draft
+owner: paged-docs
+---
+
+**In short:** `paged.image` is a raster-processing subsystem in Rust/WASM —
+GPU-executed adjustment kernels, two processing engines, color management, and
+byte-faithful PSD/PSB round-trip ("paged never destroys a PSD"). It's wired into
+the editor: place → ingest → GPU adjust → in-frame composite.
+
+## What it does
+
+- A library of GPU compute kernels (adjustments, transforms, blurs) with scalar
+  reference twins used only in tests.
+- Two engines — a demand-driven streaming pipeline and a persistent tiled buffer.
+- PSD/PSB parsing + mutation + preservation-safe round-trip; hybrid color
+  management.
+- In-editor ingest: placed-asset bytes → decode → GPU adjust → scene-layer
+  composite → tiles.
+
+## How it's built
+
+A Cargo workspace (`image-core`, `image-kernels`, `image-gpu`, `image-pipeline`,
+`image-psd`, `image-cms`, `image-codecs`, `image-js`) plus a TS bundle. A
+registry-driven coverage gate requires every kernel to have a test.
+
+## Capability state
+
+<CapabilityMatrix chapter="image" />
+
+## Recent activity
+
+<RepoActivity repo="plugin-image" />

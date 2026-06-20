@@ -1,0 +1,18 @@
+{
+  "title": "The Paged Platform",
+  "pages": [
+    "index",
+    "architecture",
+    "---Repositories---",
+    "repos",
+    "plugins",
+    "---Developer reference---",
+    "scripting",
+    "plugin-sdk",
+    "api",
+    "---System state---",
+    "state",
+    "testing",
+    "activity"
+  ]
+}

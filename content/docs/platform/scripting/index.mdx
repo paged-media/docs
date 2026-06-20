@@ -1,0 +1,40 @@
+---
+title: Scripting with paged.*
+description: The Boa-based scripting layer — a sandboxed ECMAScript surface for reading and authoring a paged document through the paged.* host API. The full surface is generated from the engine catalog.
+tier: intermediate
+diataxis: explanation
+status: draft
+owner: paged-docs
+---
+
+**In short:** paged embeds a **Boa** ECMAScript engine and exposes a single
+global, **`paged.*`**, for inspecting and editing the open document. The same
+surface runs in the editor's script panel/REPL and headless via the `paged-run`
+CLI. This reference is **generated from the engine's own catalog**, so it always
+matches the running engine exactly.
+
+## The shape of a script
+
+A script is plain ECMAScript (no modules, no I/O — see [constraints](/docs/platform/scripting/constraints)).
+It addresses elements by id, reads with `paged.inspect` / `paged.get`, and edits
+with `paged.set` and the structural authoring functions. Every write returns a
+boolean so a script can branch on success.
+
+```js
+const frame = paged.selection()[0];
+if (frame) {
+  paged.set(frame, "fillColor", "Color/Red");
+  paged.set(frame, "frameRotation", 12);
+}
+```
+
+## What's here
+
+- **[Host functions](/docs/platform/scripting/host-functions)** — every `paged.*`
+  function, grouped by kind (read, write, author, history, console).
+- **[Settable paths](/docs/platform/scripting/settable-paths)** — the property
+  names you can pass to `paged.set`, plus the id grammar for addressing elements.
+- **[Constraints](/docs/platform/scripting/constraints)** — the sandbox rules and
+  execution budgets.
+
+<ScriptingCatalog section="grammar" />

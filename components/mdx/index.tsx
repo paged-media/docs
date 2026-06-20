@@ -7,6 +7,14 @@ import { TreeView } from './tree-view';
 import { DifficultyLabel } from './difficulty-label';
 import { ExampleEmbed } from './example-embed';
 import { SupportBadge } from './support-badge';
+import { StageRow } from './stage-row';
+import { CapabilityMatrix } from './capability-matrix';
+import { ConformanceTable } from './conformance-table';
+import { StatusHeadline } from './status-headline';
+import { ScriptingCatalog } from './scripting-catalog';
+import { PluginCapabilities } from './plugin-capabilities';
+import { RestApiReference } from './rest-api-reference';
+import { ActivityFeed, RepoActivity } from './activity-feed';
 import { AttrTable } from './attr-table';
 import { Callout, Note } from './callout';
 import { GutenbergAside } from './gutenberg-aside';
@@ -28,6 +36,15 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     DifficultyLabel,
     ExampleEmbed,
     SupportBadge,
+    StageRow,
+    CapabilityMatrix,
+    ConformanceTable,
+    StatusHeadline,
+    ScriptingCatalog,
+    PluginCapabilities,
+    RestApiReference,
+    ActivityFeed,
+    RepoActivity,
     AttrTable,
     // Brand Note replaces the Fumadocs Callout (and is also exposed as <Note>).
     Callout,

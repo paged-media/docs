@@ -1,108 +1,37 @@
 ---
 title: Capabilities matrix
-description: A single-page map of every IDML construct and how far the Paged renderer takes it — parsed, rendered, or not yet — with a link to the chapter that explains each one.
+description: A single-page map of every IDML construct and how far the Paged renderer takes it — parsed, rendered, or not yet. Generated live from the capability registry; the same status as the support badge on each feature's own page.
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
 ---
 
-**This is the one-page map of what the Paged renderer does with each IDML
-construct — the same support badge you see beside each feature in its chapter,
-gathered in one place.**
+**In short:** every IDML construct this reference documents, with how far the
+Paged renderer takes it — the same support badge you see beside each feature in
+its chapter, gathered in one place. This page is **generated from the capability
+registry**: it cannot drift from the engine, because it *is* the engine's
+recorded status. For the full cross-platform view (editor, server, plugins), see
+the [platform capability matrix](/docs/platform/state/matrix).
 
-**In short:** every construct documented in this reference carries a support
-badge on its own page. This page collects them so you can scan the whole surface
-at once. Each row is a feature, its current badge with a one-line note, and a
-link to the chapter that explains it. It does not re-explain the constructs —
-follow the link for that. The same statuses are mirrored in the engine's
-`README` capability table and its internal roadmap, so the badge and the engine
-stay honest about each other.
+<StatusHeadline />
 
 ## How to read this
 
-- <SupportBadge status="supported" compact /> — parsed **and** acted on in output. A note may flag a known edge that's still approximate.
-- <SupportBadge status="parsed-not-rendered" compact /> — read into the model, but the renderer ignores it or only partly honours it (the note says which).
-- <SupportBadge status="not-yet-parsed" compact /> — the parser doesn't read it yet.
+Each cell's glyph carries the meaning, so the grid reads in greyscale:
 
-## Foundations, package & layout
+- <SupportBadge feature="typography.knuth-plass" compact /> — shipped, and a test verifies it.
+- A **partial** cell means the construct is read but only partly acted on; a
+  **planned** cell means it isn't handled yet. The note on each row's chapter
+  page explains the specifics.
 
-| Construct | Status | Where |
-|---|---|---|
-| `DOMVersion` capture | <SupportBadge status="parsed-not-rendered" compact /> captured; parser is version-agnostic | [Round-tripping](/docs/round-tripping) |
-| `<Section>` page numbering | <SupportBadge status="supported" compact /> roman/alpha/Arabic + prefix labels | [Sections & numbering](/docs/sections-numbering-variables) |
-| `ShowMasterItems` | <SupportBadge status="supported" compact /> master items suppressed when false | [Master spreads](/docs/master-spreads-overrides) |
-| `MasterPageTransform` | <SupportBadge status="supported" compact /> full affine applied | [Layout model](/docs/layout-model) |
-| `Spread` / `MasterSpread` `ItemTransform` | <SupportBadge status="supported" compact /> rotation/scale applied about the page origin | [Layout model](/docs/layout-model) |
-| Nested layer groups (folders) | <SupportBadge status="supported" compact /> child inherits a hidden/locked parent | [Layers](/docs/layers) |
-| Tagged XML (`XMLElement`/`XMLStory`/`Mapping`) | <SupportBadge status="not-yet-parsed" compact /> backing store skipped | [Tagged XML](/docs/tagged-xml) |
+The columns are the engine layers each construct touches — most IDML constructs
+live in **Parser** and **Renderer**, with **Mutation** where editing applies.
 
-## Stories, text & typography
-
-| Construct | Status | Where |
-|---|---|---|
-| Knuth–Plass + hyphenation | <SupportBadge status="supported" compact /> calibration ongoing | [Typography](/docs/typography) |
-| `NestedStyle` run splitting | <SupportBadge status="supported" compact /> per-delimiter fragments restyled | [Styles](/docs/styles) |
-| Conditional-text visibility | <SupportBadge status="supported" compact /> hidden runs filtered pre-layout | [Conditional text](/docs/conditional-text) |
-| `Position` (super/subscript), `VerticalScale` | <SupportBadge status="supported" compact /> baseline shift + y-scale applied | [Typography](/docs/typography) |
-| Footnote bodies | <SupportBadge status="supported" compact /> drawn at frame bottom; separator rule + per-run styling + space reservation; cross-frame split pending | [Stories & text](/docs/stories-text) |
-| Overset (last-frame overflow) | <SupportBadge status="supported" compact /> clipped to match InDesign; now reported | [Stories & text](/docs/stories-text) |
-| Ruby | <SupportBadge status="parsed-not-rendered" compact /> GroupRuby MVP; per-character pending | [Stories & text](/docs/stories-text) |
-| CJK vertical writing | <SupportBadge status="parsed-not-rendered" compact /> direction captured; layout pending | [The renderer](/docs/the-renderer) |
-| Optical kerning | <SupportBadge status="parsed-not-rendered" compact /> Metrics fallback | [Typography](/docs/typography) |
-| Kinsoku CJK rules | <SupportBadge status="parsed-not-rendered" compact /> heuristic only | [Typography](/docs/typography) |
-| In-story hyperlink / cross-ref regions | <SupportBadge status="supported" compact /> source spans recorded on runs; emitted as PDF link annotations | [Cross-references & hyperlinks](/docs/cross-references-hyperlinks) |
-| Cross-reference resolution | <SupportBadge status="supported" compact /> destination → current page, re-resolved on reflow | [Cross-references & hyperlinks](/docs/cross-references-hyperlinks) |
-| Index generation | <SupportBadge status="supported" compact /> topics grouped, page lists deduped + sorted, story emitted | [Cross-references & hyperlinks](/docs/cross-references-hyperlinks) |
-
-## Color & swatches
-
-| Construct | Status | Where |
-|---|---|---|
-| `Tint` on color swatches | <SupportBadge status="supported" compact /> TintValue applied | [Color & swatches](/docs/color-swatches) |
-| `GradientStop` midpoint | <SupportBadge status="supported" compact /> midpoint-skewed interpolation | [Color & swatches](/docs/color-swatches) |
-| CMYK overprint | <SupportBadge status="supported" compact /> plane-aware on CPU; RGB approximates | [Color & swatches](/docs/color-swatches) |
-| Mixed-ink / Lab / spot-without-CMYK | <SupportBadge status="parsed-not-rendered" compact /> RGB/CMYK fallback | [Color & swatches](/docs/color-swatches) |
-
-## Tables, frames & strokes
-
-| Construct | Status | Where |
-|---|---|---|
-| Cell `VerticalJustification` | <SupportBadge status="supported" compact /> top/center/bottom | [Tables](/docs/tables) |
-| Cell `RotationAngle` | <SupportBadge status="supported" compact /> content rotated; borders unrotated | [Tables](/docs/tables) |
-| Row + column dividers | <SupportBadge status="supported" compact /> rows win at crossings | [Tables](/docs/tables) |
-| Table / cell style cascade | <SupportBadge status="supported" compact /> region defaults; `StrokeOrder` pending | [Styles](/docs/styles) |
-| `GraphicLine` multi-segment / open | <SupportBadge status="supported" compact /> | [Frames & paths](/docs/frames-paths) |
-| `GraphicLine` arrowheads | <SupportBadge status="supported" compact /> triangle/circle/bar; calibration pending | [Frames & paths](/docs/frames-paths) |
-| Decorative corner options | <SupportBadge status="supported" compact /> all five emit per-corner geometry (Fancy scallop, Inset notch) | [Path geometry](/docs/geometry-coordinates) |
-| Dotted strokes | <SupportBadge status="supported" compact /> 12 variants + custom defs | [Frames & paths](/docs/frames-paths) |
-| Striped / Wavy strokes | <SupportBadge status="supported" compact /> striped = N parallel rules; wavy = sine ribbon | [Frames & paths](/docs/frames-paths) |
-| AutoSizing growth | <SupportBadge status="supported" compact /> grows to fit; box stretch + wrap pending | [Frames & paths](/docs/frames-paths) |
-
-## Images, diagnostics & out-of-scope
-
-| Construct | Status | Where |
-|---|---|---|
-| Placed image (host `AssetResolver`) | <SupportBadge status="supported" compact /> missing links → placeholder + diagnostic | [Images & graphics](/docs/images-graphics) |
-| Vello (WebGPU) Image / Clip / blend | <SupportBadge status="supported" compact /> soft effects approximated | [Rendering backends](/docs/the-renderer/rendering-backends) |
-| Render diagnostics channel | <SupportBadge status="supported" compact /> overset / missing-asset / footnote / section reported | [Graceful degradation](/docs/edge-cases) |
-| EPS / PostScript decode | <SupportBadge status="parsed-not-rendered" compact /> recognised; decode returns nothing | [Images & graphics](/docs/images-graphics) |
-| Companion formats (`.idms`/`.icml`/libraries) | <SupportBadge status="not-yet-parsed" compact /> full-document entry only | [Companion formats](/docs/companion-formats) |
+<CapabilityMatrix group="format" />
 
 ## Questions
 
-**Is the matrix or the per-page badge authoritative?**
-They are the same data. The badge on each construct's own chapter page is
-canonical; this page aggregates them for scanning. If they ever disagree, the
-chapter page wins and this one is stale.
-
-**Why is there no "partial" badge?**
-The badge has three states by design. Where the renderer only partly honours a
-construct, we use the closest honest state and spell out the gap in the note —
-"supported … pending" for a feature that works in the common case with a known
-edge, "parsed, not yet rendered" for one the renderer still ignores.
-
-**Where is the engineering roadmap?**
-The remaining gaps are tracked in the engine's internal roadmap, kept in sync
-with these badges and the `core` `README` capability table. This page shows the
-reader-facing status; it doesn't expose internal scheduling.
+The status here is the registry's, backed by tests — not a hand-kept list. If a
+badge looks wrong, the fix is in the engine or its test coverage, and this page
+follows automatically. See [how the capability state works](/docs/platform/state/how-it-works).

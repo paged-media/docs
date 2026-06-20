@@ -4,10 +4,25 @@ name: pages
 # at docs.paged.media. The WebGPU live-preview wasm is staged from the published
 # @paged-media/idml-viewer npm package (its bundled wasm) by the build's
 # prepare:preview step — no core checkout, no Rust toolchain in this workflow.
+#
+# Freshness (the anti-stall machinery): the docs are generated from cross-repo
+# sources (the capability registry, engine catalog, plugin manifest, server
+# OpenAPI, commit activity). So the live data refreshes even when the docs repo
+# itself doesn't change, this deploys on THREE triggers:
+#   - push to main          (a docs edit)
+#   - schedule (nightly)    (pick up upstream registry/source changes)
+#   - repository_dispatch    (a source repo pushed and pinged us: type source-updated)
 on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    # Nightly refresh of the live capability data + activity feed (05:17 UTC).
+    - cron: '17 5 * * *'
+  repository_dispatch:
+    # Sent by a source repo's CI after it pushes (the on-push freshness trigger).
+    # Sender side is wired per-repo as a small "dispatch docs rebuild" step.
+    types: [source-updated]
 
 permissions:
   contents: read
@@ -38,9 +53,12 @@ jobs:
         # public/preview and runs the binaryen externref-growable guard, then
         # `next build` emits the static export.
         run: pnpm build
-        # GithubInfo (nav) fetches repo stars at build time. Authenticate so the
-        # shared-runner IP doesn't hit the 60/hr unauthenticated rate limit.
+        # GithubInfo (nav) fetches repo stars at build time, and generate:docs
+        # (run by build) pulls the cross-repo sources. DOCS_SOURCES_TOKEN is a PAT
+        # with read access to the PRIVATE source repos (the registry lives in the
+        # private `state` repo); without it the live data would be public-only.
         env:
+          GH_TOKEN: ${{ secrets.DOCS_SOURCES_TOKEN || secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/configure-pages@v5

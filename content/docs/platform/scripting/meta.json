@@ -1,0 +1,4 @@
+{
+  "title": "Scripting (paged.*)",
+  "pages": ["index", "host-functions", "settable-paths", "constraints"]
+}

@@ -1,0 +1,43 @@
+---
+title: Plugin SDK
+description: How third parties extend paged — the plugin contract, the manifest, the capability model, and the lifecycle. The capability and contribution vocabularies are generated from the manifest schema.
+tier: intermediate
+diataxis: explanation
+status: draft
+owner: paged-docs
+describes: []
+reviewed: "2026-06-20"
+---
+
+**In short:** a paged plugin is a **bundle** that declares a **manifest** — an
+identity, the **capabilities** it needs (document access, rendering surfaces,
+network, storage, …), and the **contributions** it adds (tools, panels, commands,
+object types). The host grants only what the manifest declares; capabilities are
+a closed, enforced vocabulary. The five first-party content plugins
+([draw, web, image, sheets, data](/docs/platform/plugins)) are built on this same
+contract.
+
+## The packages
+
+- **`@paged-media/plugin-api`** — the type-only contract: the editor-host handles
+  and the manifest types. No runtime code; a plugin compiles against it.
+- **`plugin-sdk`** — runtime helpers: the `BundleHost` adapter, the loader, the
+  gesture kit.
+- **`plugin-cli`** — a zero-dependency manifest validator (`paged-plugin validate`).
+
+## The manifest
+
+Every bundle ships a `manifest.json`. Its fields, capability vocabulary, and
+contribution kinds are a **single source of truth** (a JSON Schema, per ADR-019);
+the pages here are generated from it.
+
+<PluginCapabilities section="manifest" />
+
+## Where to go next
+
+- **[Capabilities](/docs/platform/plugin-sdk/capabilities)** — the closed set a
+  manifest may request, and what each grants.
+- **[Contributions](/docs/platform/plugin-sdk/contributions)** — the surfaces a
+  plugin can add to the editor.
+- **[Build a plugin](/docs/platform/plugin-sdk/build-a-plugin)** — start from the
+  template and ship.

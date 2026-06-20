@@ -1,0 +1,36 @@
+---
+title: state — the capability registry
+description: The capability registry, test-evidence ingest, and dashboard — the single source of truth for what works across every paged repo, and the data behind this documentation's live status.
+tier: intermediate
+diataxis: explanation
+status: draft
+owner: paged-docs
+---
+
+**In short:** `state` is the system's source of truth for status. One row per
+capability, structured by the same chapter taxonomy as this site, carrying a
+per-layer implementation status and a test-evidence overlay. It's what powers the
+[capability state](/docs/platform/state) pages and the support badges across the
+[IDML reference](/docs).
+
+## What it does
+
+- A **registry** (`registry/features/*.yaml`) of ~430 capability rows across 18
+  implementation stages (engine, editor, server, plugins).
+- An **evidence ingest**: every repo's tests publish results that route to stages
+  and features (`ingest/suites.yaml`, `ingest/test-map.yaml`); a conformance
+  harness runs the corpus per level.
+- A **generator** (`paged-state`) that joins claims + evidence into `state.json`,
+  and a **dashboard** that renders the matrix.
+
+## How this site uses it
+
+The docs pull `state.json` at build time and project it into the
+[matrix](/docs/platform/state/matrix), [conformance](/docs/platform/state/conformance),
+and every `<SupportBadge>`. The registry claims; the tests verify; the docs render
+both. See [how it works](/docs/platform/state/how-it-works) and
+[how it's tested](/docs/platform/testing).
+
+## Recent activity
+
+<RepoActivity repo="state" />

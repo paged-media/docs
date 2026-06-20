@@ -1,0 +1,33 @@
+---
+title: Plugins
+description: The five first-party content plugins that extend paged beyond native IDML — vector drawing, web content, raster images, spreadsheets, and database publishing — all built on the Plugin SDK.
+tier: beginner
+diataxis: explanation
+status: draft
+owner: paged-docs
+---
+
+**In short:** plugins add new *kinds of content* to a paged document. The five
+first-party plugins are built on the same [Plugin SDK](/docs/platform/plugin-sdk)
+contract any third party uses — they're the worked examples. Each renders into the
+document through the engine's scene-layer surfaces and persists into the `.paged`
+container.
+
+- **[paged.draw](/docs/platform/plugins/draw)** — vector drawing (pen, paths,
+  pathfinder, SVG I/O).
+- **[paged.web](/docs/platform/plugins/web)** — HTML/CSS as a content type.
+- **[paged.image](/docs/platform/plugins/image)** — raster processing + PSD
+  round-trip (Rust/WASM, GPU kernels).
+- **[paged.sheet](/docs/platform/plugins/sheets)** — a spreadsheet engine with
+  print-grade layout (Rust/WASM, XLSX round-trip).
+- **[paged.data](/docs/platform/plugins/data)** — database publishing + automation
+  (Rust/WASM, DuckDB).
+
+Plus **[plugin-template](/docs/platform/plugins/template)** — the fork-and-go
+starter.
+
+## Plugin capability state
+
+The live status of each plugin's capabilities, from the registry:
+
+<CapabilityMatrix group="plugin" />

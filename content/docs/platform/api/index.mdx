@@ -1,0 +1,19 @@
+---
+title: REST API
+description: The editor-server REST surface — authentication, files, account, billing, fonts, and image search — generated from the server's OpenAPI specification.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+**In short:** the [editor-server](/docs/platform/repos/editor-server) exposes a
+REST API for the editor's account, storage, billing, and asset features. The
+endpoints below are **generated from the server's OpenAPI spec** (which is itself
+generated from the server's Zod contracts), so this reference matches the running
+service.
+
+Authentication is cookie-based (a better-auth session). All routes live under
+`/api/*`; the spec is also served live at the server's `/openapi.json`.
+
+<RestApiReference />

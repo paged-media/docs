@@ -1,7 +1,8 @@
 {
-  "title": "IDML Reference",
+  "title": "Documentation",
   "pages": [
     "index",
+    "---IDML Reference---",
     "foundations",
     "package-anatomy",
     "geometry-coordinates",
@@ -30,6 +31,8 @@
     "plugin-sdk",
     "cookbook",
     "glossary",
-    "meta"
+    "meta",
+    "---The Paged Platform---",
+    "platform"
   ]
 }

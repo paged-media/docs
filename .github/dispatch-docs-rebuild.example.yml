@@ -1,0 +1,25 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# TEMPLATE — copy this STEP into each SOURCE repo's CI (the repos the docs are
+# generated from: state, core, plugin-sdk, editor-server, plugin-draw,
+# plugin-web, plugin-image, plugin-sheets, plugin-data). It pings docs to rebuild
+# so the published site picks up the change on push — the "on-push" half of the
+# docs freshness strategy (the other half is the nightly cron in pages.yml).
+#
+# The docs receiver is already wired: pages.yml triggers on
+#   repository_dispatch: { types: [source-updated] }
+#
+# Requirements in the SOURCE repo:
+#   - A secret DOCS_DISPATCH_TOKEN: a PAT (or fine-grained token) with
+#     "contents: write" (or the repository_dispatch permission) on paged-media/docs.
+#
+# Add this as the LAST step of the source repo's main-branch build/publish job:
+# ─────────────────────────────────────────────────────────────────────────────
+
+- name: notify docs to rebuild (freshness on-push)
+  if: github.ref == 'refs/heads/main'
+  run: |
+    curl -sS -X POST \
+      -H "Accept: application/vnd.github+json" \
+      -H "Authorization: Bearer ${{ secrets.DOCS_DISPATCH_TOKEN }}" \
+      https://api.github.com/repos/paged-media/docs/dispatches \
+      -d '{"event_type":"source-updated","client_payload":{"repo":"${{ github.repository }}","sha":"${{ github.sha }}"}}'

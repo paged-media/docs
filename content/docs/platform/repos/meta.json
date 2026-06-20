@@ -1,0 +1,4 @@
+{
+  "title": "Repositories",
+  "pages": ["index", "core", "editor", "editor-server", "viewer", "state", "docs", "brand"]
+}

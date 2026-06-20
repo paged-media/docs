@@ -18,13 +18,28 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: manifest integrity (cheap, no renderer)
         run: pnpm examples:index
-      - name: support-badge ↔ renderer-gaps drift check
-        run: pnpm check:badges
+
+      - name: generate cross-repo docs data (registry, catalogs, activity)
+        # Pulls the pinned sources (sources.pin) into .generated/ via the gh CLI.
+        # DOCS_SOURCES_TOKEN is a PAT with read access to the PRIVATE source repos
+        # (state, plugin-sdk, editor-server, …); the default GITHUB_TOKEN can only
+        # read this repo + public ones. On a PR/fork without the PAT this degrades
+        # to public sources only and the ref/freshness checks skip — the
+        # token-equipped main build (and pages.yml) does the real gating.
+        run: pnpm generate:docs
+        env:
+          GH_TOKEN: ${{ secrets.DOCS_SOURCES_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: feature-ref integrity (every feature=/chapter= resolves in the registry)
+        run: pnpm check:feature-refs
+      - name: prose freshness guard (describes:/reviewed: pages not stale)
+        run: pnpm check:freshness
+
       - run: pnpm typecheck
       - name: build (also fails on broken example imports / MDX)
         run: pnpm build
         env:
-          # GithubInfo (layout.config.tsx) fetches repo stats during SSG —
-          # 126 prerendered pages on a shared runner IP blow the anonymous
-          # rate limit without it (pages.yml already sets this).
+          # GithubInfo (layout.config.tsx) fetches repo stats during SSG, and
+          # generate:docs (re-run by build) pulls the cross-repo sources.
+          GH_TOKEN: ${{ secrets.DOCS_SOURCES_TOKEN || secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

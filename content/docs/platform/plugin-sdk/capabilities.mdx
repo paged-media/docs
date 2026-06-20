@@ -1,0 +1,15 @@
+---
+title: Capabilities
+description: The closed set of capabilities a plugin manifest may request — document access, rendering surfaces, network, storage, workers, and more — generated from the manifest schema.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+**In short:** capabilities are how a plugin asks for power, and how the host
+constrains it. The set is **closed and enforced** — a manifest can only request
+what's listed here, and the host grants exactly that. Generated from the manifest
+schema (ADR-019), so it can't fall out of date with the runtime.
+
+<PluginCapabilities section="capabilities" />

@@ -1,0 +1,46 @@
+{
+  "$comment": "Pinned cross-repo sources for the docs generation pipeline (scripts/generate/pull-sources.mjs). The docs are generated FROM these machine-readable sources so they never go stale by hand. `ref` is the git ref to pull from (default `main` = always-fresh); set an explicit commit SHA to freeze a source for a reproducible build. pull-sources records the RESOLVED sha of each source in .generated/sources.lock.json for provenance. Local runs prefer the sibling working copy under ~/paged/<repo> when present (pass --remote to force GitHub). Bump policy: this file + the nightly re-pull + on-push dispatch are the freshness controls. Same spirit as core.pin.",
+  "org": "paged-media",
+  "sources": {
+    "state": {
+      "repo": "state",
+      "ref": "main",
+      "files": {
+        "state.json": "data/state.json",
+        "meta.json": "data/meta.json",
+        "conformance.json": "data/conformance.public.json"
+      }
+    },
+    "core-catalog": {
+      "repo": "core",
+      "ref": "main",
+      "files": {
+        "catalog.json": "crates/paged-introspect/catalog.json"
+      }
+    },
+    "plugin-sdk": {
+      "repo": "plugin-sdk",
+      "ref": "main",
+      "files": {
+        "manifest.schema.json": "packages/plugin-api/src/manifest.schema.json"
+      }
+    },
+    "editor-server": {
+      "repo": "editor-server",
+      "ref": "main",
+      "files": {
+        "openapi.json": "generated/openapi.json"
+      }
+    }
+  },
+  "activity": {
+    "$comment": "Cross-repo recent-commit feed. Pulled at build time via `gh api` (token-authenticated; private repos included by user decision). perRepo = commits fetched per repo.",
+    "perRepo": 12,
+    "repos": [
+      "core", "editor", "editor-server", "docs", "state",
+      "plugin-sdk", "plugin-draw", "plugin-web", "plugin-image",
+      "plugin-sheets", "plugin-data", "plugin-template",
+      "viewer", "website", "brand", "thoughts", "corpus"
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+---
+title: paged.draw — vector
+description: The vector drawing plugin — pen and path tools, pathfinder booleans, live corners, stroke/fill, and SVG import/export, rendered on-canvas through the engine's vector scene layer.
+tier: intermediate
+diataxis: explanation
+status: draft
+owner: paged-docs
+---
+
+**In short:** `paged.draw` brings Illustrator-class vector editing into paged — a
+pen tool with anchor editing, curvature/pencil tools, a shape builder, pathfinder
+booleans, live corners, and SVG round-trip — all rendered on-canvas via the
+engine's vector scene-layer surface.
+
+## What it does
+
+- Pen / anchor editing (add/delete/convert), curvature and pencil tools, shape
+  builder, select-same.
+- Stroke / fill panels, dash presets, path ops, live corners, gradient
+  annotation.
+- A `vectorGraphic` edit context (double-click into a focused anchor toolset).
+- SVG import + export (the interchange round-trip).
+
+## How it's built
+
+A host-agnostic core (`draw-geometry` pure math, `draw-tools` state machines)
+plus a `draw-bundle` (manifest + `activate` + React panel) — the
+incubate-then-extract pattern. Tested as unit suites and an end-to-end editor
+journey.
+
+## Capability state
+
+<CapabilityMatrix chapter="plugin-draw" />
+
+## Recent activity
+
+<RepoActivity repo="plugin-draw" />
