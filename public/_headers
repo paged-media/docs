@@ -1,0 +1,23 @@
+# Cloudflare Pages response headers (Next copies public/ → out/; CF Pages reads
+# out/_headers). The docs moved off GitHub Pages SO THIS ORIGIN CAN SEND THESE:
+# the live-editor <iframe> (play.paged.media) uses SharedArrayBuffer, and SAB needs
+# the PARENT page cross-origin-isolated too — which GitHub Pages can't do.
+#
+# COEP: credentialless (NOT require-corp) is deliberate — it still makes the page
+# cross-origin-isolated, but lets cross-origin subresources that DON'T send CORP
+# (GA4 / googletagmanager gtag.js, any external image/embed) load credential-less
+# instead of being BLOCKED. require-corp would break GA4 and any third-party asset.
+#
+# ── FIRST-DEPLOY COEP AUDIT (do before cutting docs.paged.media DNS) ───────────
+# Load every page type on the *.pages.dev preview URL with these headers on and
+# watch the console for "blocked by Cross-Origin-Embedder-Policy" — the live
+# preview (same-origin wasm ✓), self-hosted fonts ✓, and GA4 (credentialless ✓)
+# should all load. Add `crossorigin`/CORP only if the audit finds a blocked asset.
+/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: credentialless
+  X-Content-Type-Options: nosniff
+
+# The live-preview wasm must keep its correct MIME for streaming compile.
+/preview/*
+  Cross-Origin-Resource-Policy: same-origin

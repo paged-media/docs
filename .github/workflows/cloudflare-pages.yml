@@ -1,0 +1,61 @@
+name: cloudflare-pages
+
+# Deploy the static export to CLOUDFLARE PAGES (the move off GitHub Pages so the
+# docs origin can send COOP/COEP and host the live-editor <iframe>). Same build
+# as pages.yml — only the publish target changes (Actions builds, wrangler
+# direct-uploads `out/`); the gh CLI + DOCS_SOURCES_TOKEN generate pipeline stays
+# put (the runner has gh; Cloudflare's build image doesn't — which is why we build
+# here and upload, rather than use CF git-integration).
+#
+# Runs alongside pages.yml during the transition; once docs.paged.media DNS points
+# at Cloudflare and this is verified, retire pages.yml.
+#
+# Freshness triggers mirror pages.yml: a docs edit (push), nightly source refresh
+# (cron), and a source repo ping (repository_dispatch: source-updated).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '17 5 * * *'
+  repository_dispatch:
+    types: [source-updated]
+
+permissions:
+  contents: read
+
+# One Cloudflare deploy at a time; don't cancel an in-progress production deploy.
+concurrency:
+  group: cloudflare-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: build static export (out/)
+        # prepare:preview stages the live-preview wasm from @paged-media/idml-viewer;
+        # generate:docs (run by build) pulls cross-repo sources via the gh CLI.
+        run: pnpm build
+        env:
+          GH_TOKEN: ${{ secrets.DOCS_SOURCES_TOKEN || secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # The project (direct-upload type) must exist — create it once:
+          #   wrangler pages project create paged-docs --production-branch=main
+          # --branch=main marks this a PRODUCTION deploy (served at the custom domain).
+          command: pages deploy out --project-name=paged-docs --branch=main
