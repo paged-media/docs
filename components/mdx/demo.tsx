@@ -6,10 +6,10 @@
  *   <Demo demo="gradient" />   loads /demos/gradient.json (pulled from editor release assets)
  *   <Demo />                   the bundled synthetic sample (works before any capture exists)
  *
- * Client-only: rrweb-player is dynamically imported by DemoPlayer; this wrapper
- * owns the 'use client' boundary and the player CSS.
+ * Client-only: DemoPlayer dynamically imports rrweb's core Replayer; this wrapper
+ * owns the 'use client' boundary and the replay CSS.
  */
-import 'rrweb-player/dist/style.css';
+import 'rrweb/dist/style.css';
 import { DemoPlayer } from '@paged-media/demo-replay/player';
 import sample from './sample.demo.json';
 
@@ -18,14 +18,12 @@ export function Demo({
   src,
   caption,
   width,
-  height,
   autoPlay = false,
 }: {
   demo?: string;
   src?: string;
   caption?: string;
   width?: number;
-  height?: number;
   autoPlay?: boolean;
 }) {
   const resolvedSrc = src ?? (demo ? `/demos/${demo}.rrweb.json` : undefined);
@@ -48,7 +46,6 @@ export function Demo({
           events={events}
           autoPlay={autoPlay}
           width={width}
-          height={height}
           showCaptions
         />
       </div>
