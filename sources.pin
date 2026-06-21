@@ -44,8 +44,8 @@
     ]
   },
   "demos": {
-    "$comment": "Live-app demo sessions (rrweb JSON) captured by the editor's journey tests in CI and uploaded as GitHub Release assets. Pulled into public/demos/ so <Demo demo=\"id\"/> can fetch /demos/id.json. DORMANT until the editor capture pipeline ships its first release with `*.rrweb.json` assets — keep enabled:false until then (the bundled synthetic sample covers the meantime).",
-    "enabled": false,
+    "$comment": "Live-app demo sessions (rrweb JSON) captured by the editor's journey tests in CI and uploaded as GitHub Release assets. Committed seeds in docs/demos/ ship today; when enabled, the latest editor release's *.rrweb.json OVERRIDE the seeds (pull-sources copies seeds first, then release-downloads with --clobber). Safe before any release exists — the download just warns and the seeds remain. The editor demo-capture workflow dispatches docs (repository_dispatch source-updated) after each release so this re-pulls automatically.",
+    "enabled": true,
     "repo": "editor",
     "tag": "latest",
     "pattern": "*.rrweb.json"
