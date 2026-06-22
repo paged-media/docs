@@ -1,40 +1,37 @@
 ---
 title: Live demos
-description: Scrubbable replays of the real editor doing real workflows — captured from the journey tests in CI, not hand-recorded, so they never go stale.
+description: The real editor, running inline and driven by its own scripting layer — not a recording. Play, pause, scrub by chapter, and read the script that drives each step.
 tier: beginner
 diataxis: explanation
 status: draft
 owner: paged-docs
 ---
 
-**In short:** these demos are **recordings of the real editor**, captured by
-running paged's own journey tests in CI and replayed here with rrweb. They're not
-screencasts anyone films — they regenerate every release from the same tests that
-gate the app, so what you see is always the current product. You can scrub the
-timeline, and the captions follow the workflow step by step.
+**In short:** these aren't screencasts or recordings — each one is **the actual
+editor**, embedded live and driven by a paged script. Press play and the script
+runs the real app: opening panels, drawing and filling frames, narrating each
+step. You can pause, single-step, scrub by chapter, change speed, and read (or
+edit) the very script that's driving it.
 
 ## How it works
 
-rrweb records the editor's actual DOM — panels, menus, cursor, real selectable
-text — while a journey drives it. paged's document is drawn on a WebGPU canvas in
-a worker (which ordinary session-replay can't capture), so a small frame-bridge
-addon carries those rendered frames into the replay. The result plays back with
-**no WebGPU required** — it's just images over a faithful DOM — so it works on
-this static site. See [how the capability state works](/docs/platform/state/how-it-works)
-for the same generate-from-the-real-thing principle applied to status.
+Every demo is a script over paged's own automation surface — `paged.*` for the
+document, `editor.*` for the UI, `demo.*` to narrate and pace. The
+[playground](https://play.paged.media) runs that script against the real editor
+and shows the source alongside; this page embeds it in an `<iframe>`. Because the
+demo *is* the product driven by its public API, it can never drift from the app —
+and it doubles as runnable [scripting documentation](/docs/platform/scripting).
+
+The live editor renders on **WebGPU** and needs a cross-origin-isolated context,
+so these run on capable desktop browsers.
 
 ## Draw and fill a frame
 
-<Demo demo="draw-fill" caption="Draw a rectangle, fill it, and move it — every interaction is real pointer input against the real editor." />
+<LiveDemo script="draw-fill" caption="Create a document, draw a frame, fill it, and move it — every step is the script driving the real editor." />
 
-## Build a gradient
+## A guided tour
 
-<Demo demo="gradient" caption="Two swatches → a linear gradient → applied to a frame." />
+<LiveDemo script="tour" caption="Open panels and switch workflow modes, narrated step by step — with a spotlight on each target." />
 
-## Start a document
-
-<Demo demo="new-document" caption="A blank Letter document from File ▸ New." />
-
-These are captured by the editor's `demo-capture` Playwright project (the
-showcase journeys) and pulled in at build time, so each refreshes with the app.
-Feature and plugin pages embed the same `<Demo>` inline.
+Feature and plugin pages embed the same `<LiveDemo>` inline. Each script lives in
+the playground's corpus, so it refreshes with the app.

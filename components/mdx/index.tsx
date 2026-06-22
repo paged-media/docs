@@ -16,6 +16,7 @@ import { PluginCapabilities } from './plugin-capabilities';
 import { RestApiReference } from './rest-api-reference';
 import { ActivityFeed, RepoActivity } from './activity-feed';
 import { Demo } from './demo';
+import { LiveDemo } from './live-demo';
 import { AttrTable } from './attr-table';
 import { Callout, Note } from './callout';
 import { GutenbergAside } from './gutenberg-aside';
@@ -47,6 +48,7 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     ActivityFeed,
     RepoActivity,
     Demo,
+    LiveDemo,
     AttrTable,
     // Brand Note replaces the Fumadocs Callout (and is also exposed as <Note>).
     Callout,
