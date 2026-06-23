@@ -35,18 +35,18 @@ Edit the script and press **Run** — it executes in the real Paged editor on th
 right, and the canvas updates live. Console output appears below.
 
 <ScriptingPlayground
-  title="A first paged.* script — recolor and rotate the selected frame"
-  script={`// Inspect the selection, then recolor and rotate the first frame.
-const sel = paged.selection();
-console.log('selected:', sel.length, 'element(s)');
+  title="A first paged.* script — inspect the document, then fill a selected frame"
+  script={`// A blank document is loaded in the editor below. Inspect it…
+console.log(paged.tree());
 
-const frame = sel[0];
-if (frame) {
-  paged.set(frame, 'fillColor', 'Color/Red');
-  paged.set(frame, 'frameRotation', 12);
-  console.log('recolored + rotated', frame);
+// …then fill the selected frame. 'frameFillColor' is a real settable path
+// (see "Settable paths" in the sidebar); the value is a swatch reference.
+const sel = paged.selection();
+if (sel.length) {
+  paged.set(sel[0], 'frameFillColor', 'Color/Red');
+  console.log('filled', sel[0], 'red');
 } else {
-  console.log('Select a frame on the canvas, then Run again.');
+  console.log('Tip: draw a rectangle in the editor, select it, then Run again.');
 }`}
 />
 
