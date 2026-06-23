@@ -22,15 +22,17 @@
     "update:comparison": "node scripts/update-comparison.mjs"
   },
   "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
     "@paged-media/demo-replay": "github:paged-media/demo-replay#685b976af0bbe70a50476ccb2aa12f907b91c7c4",
     "@paged-media/idml-viewer": "0.35.0",
     "fflate": "^0.8.2",
-    "rrweb": "^2.0.0",
     "fumadocs-core": "^16.9.3",
     "fumadocs-ui": "^16.9.3",
+    "monaco-editor": "0.55.1",
     "next": "^16.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "rrweb": "^2.0.0",
     "shiki": "^1.27.0",
     "zod": "^4.4.3"
   },
