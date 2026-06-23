@@ -2,13 +2,15 @@ import type { Metadata } from 'next';
 import type { Status } from '@/lib/frontmatter';
 
 /**
- * `noindex` is derived from `status` in exactly one place — here — and reused by
- * page metadata and the sitemap. Only finished (`published`) pages are indexed
- * (briefing §8). Flip a page to indexable by setting `status: published` in its
- * frontmatter; nothing else to remember.
+ * Whether a page is indexable by search engines — also the sitemap filter.
+ *
+ * Policy: ALL docs pages are indexed and listed in the sitemap, regardless of
+ * `status`. (Previously only `status: published` pages were indexed; that gating
+ * was dropped on request so nothing is excluded from search engines / robots.)
+ * The WIP banner on stubs/drafts is purely visual; it no longer carries noindex.
  */
-export function isIndexable(status: Status | undefined): boolean {
-  return status === 'published';
+export function isIndexable(_status: Status | undefined): boolean {
+  return true;
 }
 
 /** Robots directive for a page given its lifecycle status. */

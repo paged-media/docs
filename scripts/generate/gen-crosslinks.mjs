@@ -67,7 +67,7 @@ const PLUGIN_PAGE = {
 const chapters = {};
 // Reverse index: surface key → idml chapters where that surface is live.
 const surfaces = {
-  sdk: { url: '/docs/paged/sdk', label: 'SDK', chapters: [] },
+  sdk: { url: '/docs/paged/sdk', label: 'Viewer SDK', chapters: [] },
   script: { url: '/docs/paged/scripting', label: 'Scripting', chapters: [] },
   state: { url: '/docs/paged/state', label: 'Capability state', chapters: [] },
 };
@@ -86,7 +86,7 @@ for (const ch of matrix.chapters ?? []) {
   // The Paged surfaces that act on this chapter, in reader-priority order.
   const pagedSurfaces = [];
   if (isLive(shipped.script)) pagedSurfaces.push({ key: 'script', label: 'Script it with paged.*', url: '/docs/paged/scripting' });
-  if (isLive(shipped.sdk) || isLive(shipped.renderer)) pagedSurfaces.push({ key: 'sdk', label: 'Render it with the SDK', url: '/docs/paged/sdk' });
+  if (isLive(shipped.sdk) || isLive(shipped.renderer)) pagedSurfaces.push({ key: 'sdk', label: 'Render it with the Viewer SDK', url: '/docs/paged/sdk' });
   if (isLive(shipped.mutation)) pagedSurfaces.push({ key: 'edit', label: 'Edit it in the editor', url: '/docs/paged' });
   for (const [chId, slug] of Object.entries(PLUGIN_PAGE)) {
     if (ch.chapter === chId) pagedSurfaces.push({ key: 'plugin', label: `The ${slug} plugin`, url: `/docs/paged/plugins/${slug}` });

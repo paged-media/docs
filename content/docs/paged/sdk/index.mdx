@@ -1,6 +1,6 @@
 ---
-title: SDK
-description: The Paged SDK is the WebGPU rendering API — load an IDML document, render its pages, and drive a pan/zoom camera — published as @paged-media/idml-viewer. It is the read-only sibling of the editor.
+title: Paged Viewer SDK
+description: The Paged Viewer SDK is the WebGPU rendering API — load an IDML document, render its pages, and drive a pan/zoom camera — published as @paged-media/idml-viewer. It is the read-only sibling of the editor.
 tier: intermediate
 diataxis: explanation
 status: published
@@ -9,13 +9,13 @@ describes: []
 reviewed: "2026-06-23"
 ---
 
-**The SDK renders; the editor edits.** The Paged SDK is the public,
-WebGPU-only rendering surface of the engine — it loads an `.idml` document,
-lays out its pages, and renders them to a canvas (or to raw pixels), with a
-camera you drive for pan and zoom. It does **not** mutate documents or run
+**The Viewer SDK renders; the editor edits.** The Paged Viewer SDK is the
+public, WebGPU-only rendering surface of the engine — it loads an `.idml`
+document, lays out its pages, and renders them to a canvas (or to raw pixels),
+with a camera you drive for pan and zoom. It does **not** mutate documents or run
 scripts; that is the editor's job.
 
-**In short:** the SDK ships as **`@paged-media/idml-viewer`** — a small
+**In short:** the Viewer SDK ships as **`@paged-media/idml-viewer`** — a small
 TypeScript wrapper over the engine's `paged-sdk` WebGPU session. You call
 `createViewer({ canvas })`, `await viewer.load(bytes)`, and then drive
 `zoom`/`scroll`/`goToPage`/`fit` while the engine renders. The same package
