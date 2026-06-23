@@ -1,0 +1,64 @@
+---
+title: "Open-source desktop publishing software"
+description: The landscape of free and open-source desktop publishing tools — Scribus, Paged, and the alternatives to InDesign — and how to choose between them.
+tier: beginner
+diataxis: explanation
+status: published
+owner: paged-docs
+reviewed: "2026-06-23"
+---
+
+**What open-source desktop publishing software is there, and how do you choose?**
+
+**In short:** the two main open-source desktop publishing tools are **Scribus**
+(mature, GPL, strong on print) and **Paged** (open source, IDML-native,
+scriptable, web-delivered). If you also count "free but proprietary," **Affinity**
+is free of charge yet closed. For an open *format* that round-trips with the
+InDesign ecosystem plus scripting and plugins, Paged is the distinctive option;
+for proven print output today, Scribus leads. *(Snapshot: 2026-06-23.)*
+
+<SoftwareApplicationLd />
+
+## The open options
+
+- **[Scribus](/docs/paged/compare/paged-vs-scribus)** — the long-standing
+  open-source (GPL) DTP application. Mature layout and excellent CMYK/spot color
+  and print production. Desktop-only; partial IDML import; no plugin platform.
+- **[Paged](/docs/paged/)** — open source (MPL-2.0 OR PMEL), built on a valid
+  IDML container, with a [scripting layer](/docs/paged/scripting) and a [plugin
+  SDK](/docs/paged/plugin-sdk). Web/WebGPU and headless delivery. Layout and print
+  depth are emerging.
+
+## "Free" that isn't open
+
+- **[Affinity (by Canva)](/docs/paged/compare/paged-vs-affinity)** — free of
+  charge but proprietary: a closed `.af` format, no scripting, no plugins, and
+  IDML import without export. Free is not the same as open.
+
+## How to choose
+
+- Need **proven print output** today? Scribus.
+- Need an **open format that round-trips with InDesign**, plus **scripting and
+  plugins** and **automation**? Paged.
+- Want a **free, polished single app** and don't need openness or scripting?
+  Affinity.
+
+See the full [comparison matrix](/docs/paged/compare) for the dimension-by-
+dimension breakdown, including the proprietary incumbents
+([InDesign](/docs/paged/compare/paged-vs-indesign),
+[QuarkXPress](/docs/paged/compare/paged-vs-quarkxpress)).
+
+## Frequently asked questions
+
+**What is the best open-source alternative to InDesign?**
+Scribus is the most mature open-source DTP app. Paged is the open option that is
+IDML-compatible (so it round-trips with InDesign) and adds scripting, plugins,
+and automation — at the cost of still-emerging layout depth.
+
+**Is there free desktop publishing software?**
+Yes — Scribus and Paged are free and open source; Affinity is free of charge but
+proprietary.
+
+**Can open-source DTP tools read InDesign files?**
+Via IDML, InDesign's interchange format. Paged reads and writes IDML natively;
+Scribus support is partial.

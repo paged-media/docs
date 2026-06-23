@@ -1,0 +1,61 @@
+---
+title: ViewerSession (low-level)
+description: The wasm session that createViewer wraps — load, set page, present a camera, render to a canvas or to bytes. Use it directly only when you need raw control.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+reviewed: "2026-06-23"
+---
+
+**The wasm session under the `Viewer` — raw renderer-core, no input handling.**
+
+**In short:** `ViewerSession` (from `@paged-media/sdk`) is the WebGPU session that
+the friendly `Viewer` API wraps. It loads IDML, reports load diagnostics, lays
+out pages, and renders — either to a canvas via `present(...)` or to raw RGBA
+bytes via `render_page_to_bytes(...)`. It has no camera state, no event system,
+and no gesture handling; those live in the `Viewer` wrapper. Reach for the
+session directly only when you are building your own viewer shell or rendering
+headlessly.
+
+## When to use it
+
+- **Use the [`Viewer`](/docs/paged/sdk/api-reference) wrapper** for almost
+  everything — it owns the camera, events, input, and lifecycle.
+- **Use `ViewerSession` directly** when you need to drive presentation yourself
+  (your own camera/scroll model), render in a worker over an `OffscreenCanvas`,
+  or produce rasters without any on-screen surface.
+
+## Shape
+
+```ts
+const session = await ViewerSession.new();         // acquires a WebGPU adapter
+const diags = session.load(idmlBytes);             // Diagnostics { ok, messages }
+if (!diags.ok) report(diags.messages);
+
+session.set_page(0);
+session.resize(width, height, devicePixelRatio);
+session.present(zoom, scrollX, scrollY, dpr);      // render the camera to the canvas
+```
+
+`Diagnostics` carry structured `messages` (a severity, a code, and the
+originating IDML part), so a malformed document tells you *which part* failed
+rather than failing opaquely — the same diagnostics the
+[parser](/docs/idml/parser-internals) produces.
+
+## Members
+
+<SdkCatalog group="session" />
+
+## Frequently asked questions
+
+**Should I use this or `createViewer`?**
+`createViewer` for nearly all apps. `ViewerSession` only when you are replacing
+the camera/input layer or rendering headlessly.
+
+**Can it run in a Web Worker?**
+Yes — `render_to_canvas` takes an `OffscreenCanvas`, which is the worker path.
+
+**Does it mutate the document?**
+No. The session is render-only. Mutation and scripting are the editor's job —
+see the [scripting layer](/docs/paged/scripting).

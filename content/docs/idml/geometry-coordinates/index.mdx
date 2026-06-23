@@ -1,0 +1,82 @@
+---
+title: Geometry & coordinates
+description: The coordinate space every IDML page item lives in — points as the unit, a top-left origin with Y growing downward, affine transforms, and anchor-point path anatomy.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+**Every IDML page item is placed and shaped by one shared coordinate space — points, a top-left origin, and a per-item transform.**
+
+**In short:** Before a frame can hold text or a shape can be filled, it has to be
+*somewhere*. This section is about that somewhere: the coordinate space an IDML
+document draws into, and the handful of attributes that place and shape every
+page item. Distances are measured in points, the origin sits at the page's
+top-left with Y growing downward, and each item carries its outline in its own
+inner space that an [`ItemTransform`](/docs/idml/geometry-coordinates/item-transform)
+slides onto the page. Learn that space once here and every later element page —
+`TextFrame`, `Rectangle`, `Oval` — gets shorter, because they all read the same
+geometry the same way.
+
+We put this section ahead of the chapters on visible elements deliberately. A
+`TextFrame`, a `Rectangle`, an `Oval` — they all carry the same geometry
+attributes, read the same way by the parser. Learn the space once here and every
+later element page gets shorter.
+
+## What you need to know
+
+The space itself is simple, and three facts cover most of it:
+
+- **Units are points.** Everything numeric — bounds, transforms, path
+  coordinates — is in points, 72 to the inch. See [units & origin](/docs/idml/geometry-coordinates/units-and-origin).
+- **The origin is the page's top-left, and Y grows downward.** This is flipped
+  from the math-class convention; it trips up everyone once.
+- **Each page item has its own inner coordinate space.** Its shape is authored
+  around its own origin, and an [`ItemTransform`](/docs/idml/geometry-coordinates/item-transform)
+  slides (or rotates, or scales) that whole space into the page.
+
+On top of that sit two ways IDML records where a shape is and what it looks like:
+
+- [`GeometricBounds`](/docs/idml/geometry-coordinates/geometric-bounds) — the
+  axis-aligned bounding rectangle, in an axis order that surprises people:
+  `y1 x1 y2 x2`.
+- [`PathGeometry`](/docs/idml/geometry-coordinates/path-geometry) — the actual
+  outline, as one or more contours of anchor points. This is how real InDesign
+  exports describe every shape, even a plain rectangle.
+
+## Where it gets interesting
+
+Two path constructs earn their own pages because they are easy to get subtly
+wrong:
+
+- [Compound paths](/docs/idml/geometry-coordinates/compound-paths) — more than one
+  contour in a single shape, which is how a hole gets punched.
+- Open paths — contours that are *not* closed, flagged by `PathOpen` and
+  covered alongside the path anatomy on the [`PathGeometry`](/docs/idml/geometry-coordinates/path-geometry)
+  page.
+
+Each page is grounded in what our parser actually does with the attribute, and
+carries a live example you can edit and re-render.
+
+## Frequently asked questions
+
+**What coordinate system does IDML use?**
+IDML geometry uses points (1/72 inch) as its only unit, with the origin at the
+page's top-left corner and Y growing *downward* — so a larger Y is further down
+the page. It is the same orientation throughout the format; only the origin
+shifts between a page's space and an item's own inner space.
+
+**Why does the page space matter before the element pages?**
+Every visible page item — `TextFrame`, `Rectangle`, `Oval`, `GraphicLine`,
+`Polygon` — carries the same geometry attributes and the parser reads them the
+same way. Understanding the units, origin, bounds, and transforms once means the
+later element pages don't have to re-explain placement at all.
+
+**How is a shape's position recorded separately from its outline?**
+A shape's outline (its [`PathGeometry`](/docs/idml/geometry-coordinates/path-geometry)
+or its [`GeometricBounds`](/docs/idml/geometry-coordinates/geometric-bounds)) is
+authored in the item's own inner coordinate space, usually around its own origin.
+Its [`ItemTransform`](/docs/idml/geometry-coordinates/item-transform) — a six-number
+affine matrix — then maps that whole inner space onto the page, so where a shape
+*is* and what it *looks like* are stored independently.

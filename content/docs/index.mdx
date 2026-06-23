@@ -1,66 +1,56 @@
 ---
-title: The IDML reference
-description: An independent, living reference for the IDML file format and the Paged renderer.
+title: Documentation
+description: Two living references in one site — the IDML file format, and Paged, the open-source system that renders and edits it. Start with the format, or start with the platform.
 tier: beginner
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
 
-**This is an independent, living reference for the IDML file format and the Paged renderer that reads it.**
+**Two references, one system: the IDML format, and Paged — the engine, editor, SDK, scripting layer, and plugins built around it.**
 
-**In short:** IDML is the format an InDesign document takes when it travels as
-text — an open, inspectable package instead of a sealed binary — and Paged is the
-open-source renderer we build to turn that package back into real, bounded pages.
-This reference explains the format for humans, from first principles: from small
-files we author ourselves, and from what the renderer actually learns as it reads
-them. It is not the normative specification — it points to the authoritative spec
-where a normative answer is needed — and it runs roughly beginner to pro so you can
-enter wherever your question lives.
+**In short:** this site documents two things that explain each other. **IDML** is
+the open, inspectable format an InDesign document takes when it travels as text.
+**Paged** is the open-source system that reads, renders, and edits IDML — a render
+engine, a browser editor, an SDK, a scripting layer, and plugins. The two
+references cross-link throughout: every format concept points to the Paged surface
+that reads or writes it, and every API points back to the format it acts on. Pick
+the door that matches your question.
 
-This is a reference for **IDML** — the format an InDesign document takes when it
-travels as text — and for the **Paged** renderer we build around it. It is written
-from first principles: from small files we author ourselves, and from what the
-renderer learns as it reads them. It is not the normative specification; it
-explains the format for humans and points to the authoritative spec where a
-normative answer is needed.
+## Choose a reference
 
-## How this is organized
+- **[IDML Reference](/docs/idml/)** — the **format**, from first principles: the
+  package on disk, geometry and layout, stories and styles, tables, color, images,
+  and how the renderer reads each part. Start here to understand IDML itself.
+- **[Paged](/docs/paged/)** — the **platform**: the render engine and its WebGPU
+  SDK, the `paged.*` scripting layer (with a live playground), the plugin SDK, the
+  REST API, and the live capability state. Start here to build with Paged.
 
-The reference runs roughly beginner to pro, ordered by how a reader actually comes
-to understand the format — not by the order any source document happens to list
-things in. Three reader tiers run throughout:
+## How both halves work
 
-- 🟢 **Beginner** — "What is this thing?"
-- 🟡 **Intermediate** — "How do I work with it?"
-- 🔴 **Pro** — "How does it really work, and where are the edges?"
-
-Every page declares one tier and one job, and carries a difficulty label. Pages
-still being written are excluded from search until they reach real depth.
-
-## Start here
-
-- **[Foundations](/docs/foundations)** — what IDML is and how to read one by hand.
-- **[Package anatomy](/docs/package-anatomy)** — what is actually inside the ZIP.
-- **[Stories & text](/docs/stories-text)** — where the words live.
+Every page declares one reader tier (🟢 beginner / 🟡 intermediate / 🔴 pro) and
+one job (tutorial, how-to, reference, or explanation), and carries a difficulty
+label. Both references are **living**: their support badges, capability matrices,
+API catalogs, and cross-links are generated from the system's own artifacts — the
+capability registry, the engine catalog, the manifest schema — so they grow with
+the code instead of going stale. Examples are real files validated against the
+actual renderer in CI.
 
 ## Frequently asked questions
 
-**What is this reference?**
-It is an independent, community-minded reference for the IDML file format and the
-open-source Paged renderer. Every page is written from first principles — from small
-files we author ourselves and from how our own parser behaves — rather than copied
-from any specification.
-
-**Is this the official IDML specification?**
-No. This is an explanatory reference for humans, not the normative spec. Where a
-strictly normative answer matters, we say so and point you to the authoritative
-specification; element and attribute names themselves are simple facts and are used
-freely throughout.
+**What is the difference between IDML and Paged?**
+IDML is the file *format*; Paged is the *software* that reads, renders, and edits
+that format. The IDML Reference explains the document on disk. The Paged reference
+documents the engine, SDK, scripting layer, and plugins that act on it.
 
 **Where should I start?**
-If you are new to the format, begin with [Foundations](/docs/foundations) to learn
-what IDML is and read one by hand, then move to
-[Package anatomy](/docs/package-anatomy) to see what is inside the ZIP. The
-reference runs beginner → intermediate → pro, and each page declares its tier so you
-can enter wherever your question lives.
+If your question is "what does this file contain / how is this document
+structured?", start with the [IDML Reference](/docs/idml/). If your question is
+"how do I render, script, or extend documents?", start with [Paged](/docs/paged/).
+
+**Is this the official IDML specification?**
+No. It is an independent, community-minded reference written for humans from first
+principles. Where a strictly normative answer matters, we say so and point to the
+authoritative specification; element and attribute names are simple facts and are
+used freely.
+

@@ -1,0 +1,100 @@
+---
+title: Clean-room protocol
+description: How we write this reference without copying the source spec — in wording or structure.
+tier: beginner
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+**The clean-room protocol is the rule that this reference is written entirely from our own work, never copied from the source specification — in wording or in structure.**
+
+**In short:** Everything here is our own description of the IDML format, authored
+from first principles: from small files we construct ourselves and from what our own
+renderer does when it reads them. The protocol forbids two things — verbatim or
+close-paraphrased wording from the spec, and mirroring the spec's selection and
+arrangement — while treating element and attribute names as the plain facts they are.
+It is mandatory for every contributor, confirmed on every content change, and backed
+by an automated similarity check in CI. The spec PDF is copyrighted vendor material
+and is never committed to this public repository.
+
+This reference is our own description of the format, authored from first
+principles. The protocol below is mandatory for every contributor and is confirmed
+on every content change.
+
+## Two layers
+
+**Wording.**
+
+- No verbatim text from the authoritative spec, its cookbook, or any application
+  documentation — not even short excerpts.
+- No close paraphrase. Rewriting a paragraph by swapping a few words is
+  reproduction, not paraphrase. If you are writing with the spec open, close it.
+- Element and attribute names are facts, not expression. We use the real XML names
+  because they are functional identifiers; naming the thing is not copying the
+  explanation of the thing.
+
+**Arrangement.**
+
+- No structural mirroring. Copyright protects selection and arrangement, not only
+  sentences. A page can be 100% original prose and still be derivative if its
+  organization tracks the spec's table of contents section by section.
+- Organize by the reader. Our information architecture and every page outline are
+  ordered by reader progression and reader task. When a reviewer asks "why is this
+  here, in this order?", the answer of record is a reader reason — never "because
+  that is the spec's order."
+- Describing the format's intrinsic structure (a package genuinely contains these
+  parts; a story genuinely nests these ranges) is describing a fact, and is fine.
+  The line is between *describing the structure* and *adopting the spec's
+  presentation of it*.
+
+## Sourcing, in order of preference
+
+1. **Our own constructed files** — small packages we author, then describe from
+   what we observe (see [`examples/`](/docs/idml/test-corpus)).
+2. **Observed renderer behavior** — what our code does with real inputs, including
+   edge cases. This is the source no one else has.
+3. **The authoritative spec, for orientation only** — to learn what topics exist
+   and what the canonical element names are. Never as a source of explanatory text
+   or organization. The spec PDF is copyrighted vendor material and is **never**
+   committed to this public repository.
+
+## Enforcement
+
+Every content change carries a confirmation — *"I have not copied, closely
+paraphrased, or structurally mirrored source material in this change"* — which a
+rotating senior reviewer confirms before merge. An automated similarity check runs
+in CI as a backstop, comparing connective prose against the spec with the shared
+technical vocabulary masked.
+
+## Attribution
+
+IDML is a published file format owned by its vendor. This documentation is an
+independent description by the Paged project and is not affiliated with or endorsed
+by the vendor. That single line is the only vendor-related boilerplate on the site.
+
+## Frequently asked questions
+
+**What does "clean-room" mean for documentation?**
+It means we write the reference from our own sources — files we construct and our own
+renderer's observed behavior — without copying the source specification's wording or
+its arrangement. The result is an original description of the same format, not a
+rewrite of someone else's explanation.
+
+**Can you use the real element and attribute names from IDML?**
+Yes. Names like `Story`, `ParagraphStyleRange`, or `ItemTransform` are functional
+identifiers — facts, not protected expression — so we use them freely. The line we
+never cross is adopting the spec's explanatory prose or its section-by-section
+organization.
+
+**Is the IDML specification PDF included in this repository?**
+No. The spec is copyrighted vendor material and is never committed to this public
+repository; an automated similarity check runs in CI as a backstop. We consult the
+spec only for orientation — which topics exist and what the canonical names are —
+never as a source of explanatory text.
+
+**Why organize the reference differently from the specification?**
+Copyright protects selection and arrangement, not just sentences, so mirroring the
+spec's structure would make even original prose derivative. More importantly, ordering
+by reader progression and task simply serves readers better than reproducing a
+reference document's internal order.

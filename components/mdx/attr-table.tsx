@@ -1,10 +1,17 @@
 import type { CSSProperties } from 'react';
+import Link from 'fumadocs-core/link';
 import { SupportBadge, type SupportStatus } from './support-badge';
+import { getIdmlElement } from '@/lib/generated';
 
 /**
- * A consistent element-reference table. A reference page declares an element's
- * attributes once as `rows`; names and value domains are facts (verified against
- * the spec's element reference), and `support` is the renderer's honest status.
+ * A consistent element-reference table. Two modes:
+ *
+ *  - Hand-authored: `<AttrTable element="…" rows={[…]} />` — the reference page
+ *    declares the rows (names/value domains are facts; `support` is honest status).
+ *  - Generated: `<AttrTable element="TextFrame" />` (no `rows`) — pulls the
+ *    element's attributes from the engine catalog (.generated/idml-schema.json),
+ *    so the table grows with the parser and each settable attribute links to the
+ *    `paged.set` path that mutates it.
  *
  * Editorial styling (brand ReferenceTable): a 2px ink header rule, uppercase
  * IBM Plex Sans column labels, hairline row dividers, and a mono first column in
@@ -47,7 +54,11 @@ const tdMono: CSSProperties = {
   letterSpacing: '-0.01em',
 };
 
-export function AttrTable({ element, rows }: { element?: string; rows: AttrRow[] }) {
+export function AttrTable({ element, rows }: { element?: string; rows?: AttrRow[] }) {
+  // Generated mode: no rows + a known element → render from the engine catalog,
+  // with each settable attribute linking to its paged.set path.
+  if (!rows && element) return <GeneratedAttrTable element={element} />;
+  const list = rows ?? [];
   return (
     <figure className="not-prose" style={{ margin: 'var(--space-5) 0', overflowX: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-sans)' }}>
@@ -63,12 +74,59 @@ export function AttrTable({ element, rows }: { element?: string; rows: AttrRow[]
           </tr>
         </thead>
         <tbody>
-          {rows.map((r) => (
+          {list.map((r) => (
             <tr key={r.attr}>
               <td style={{ ...tdMono, color: 'var(--code-tag)' }}>{r.attr}</td>
               <td style={{ ...tdMono, color: 'var(--color-ink-soft)' }}>{r.type}</td>
               <td style={td}>{r.support ? <SupportBadge status={r.support} compact /> : '—'}</td>
               <td style={td}>{r.note ?? ''}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </figure>
+  );
+}
+
+/** Generated element table — attributes from the engine catalog, with a live
+ *  "Script it" column linking settable attributes to their paged.set path. */
+function GeneratedAttrTable({ element }: { element: string }) {
+  const el = getIdmlElement(element);
+  if (!el) {
+    return (
+      <p className="not-prose" style={{ color: 'var(--color-muted)', fontSize: 13 }}>
+        No generated attribute data for <code>{element}</code>. Run <code>pnpm generate:docs</code> (needs the engine catalog).
+      </p>
+    );
+  }
+  return (
+    <figure className="not-prose" style={{ margin: 'var(--space-5) 0', overflowX: 'auto' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-sans)' }}>
+        <thead>
+          <tr>
+            <th style={th}>
+              Attribute<span style={{ color: 'var(--color-muted)', fontWeight: 400 }}> · {el.name}</span>
+            </th>
+            <th style={th}>Type / values</th>
+            <th style={th}>Script it</th>
+            <th style={th}>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {el.attributes.map((a) => (
+            <tr key={a.name}>
+              <td style={{ ...tdMono, color: 'var(--code-tag)' }}>{a.name}</td>
+              <td style={{ ...tdMono, color: 'var(--color-ink-soft)' }}>{a.typeHint}</td>
+              <td style={td}>
+                {a.settablePath ? (
+                  <Link href="/docs/paged/scripting/settable-paths" style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                    {a.settablePath}
+                  </Link>
+                ) : (
+                  <span style={{ color: 'var(--color-muted)' }}>read-only</span>
+                )}
+              </td>
+              <td style={td}>{a.summary}</td>
             </tr>
           ))}
         </tbody>

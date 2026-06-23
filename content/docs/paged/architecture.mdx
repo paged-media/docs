@@ -1,0 +1,63 @@
+---
+title: Architecture
+description: How paged fits together — the render engine at the core, the editor and server above it, the content plugins beside it, and the registry that tracks the whole system's state.
+tier: intermediate
+diataxis: explanation
+status: draft
+owner: paged-docs
+describes: []
+reviewed: "2026-06-20"
+---
+
+**In short:** one **Rust render engine** reads and renders IDML. Everything else
+consumes it across a package boundary: the **editor** (full editing) and the
+**viewer** (read-only) use its wasm; the **server** backs the editor's accounts
+and storage; five **content plugins** add new kinds of content; and a
+**capability registry** tracks what works across all of it.
+
+## The render pipeline
+
+The engine ([core](/docs/paged/repos/core)) turns an IDML package into pixels
+through a fixed pipeline:
+
+```
+parse → scene → text → compose → GPU
+```
+
+Parse reads the ZIP + XML into a model; scene resolves spreads, frames, and story
+threading; text lays out with an InDesign-calibrated Knuth–Plass composer;
+compose emits a display list; and the GPU layer rasterizes it. Forward rendering
+is **WebGPU** (Vello); a CPU backend (tiny-skia) remains for headless fidelity
+testing. The [renderer reference](/docs/idml/the-renderer) covers this in depth.
+
+## Who consumes the engine
+
+The engine publishes wasm packages (`@paged-media/canvas-wasm`,
+`introspect-wasm`, `idml-viewer`). Consumers never take a source dependency:
+
+- **[Editor](/docs/paged/repos/editor)** — the commercial app: full canvas,
+  mutation, gestures, panels, and the `paged.*` [scripting](/docs/paged/scripting)
+  layer, running the engine in a Web Worker on an `OffscreenCanvas`.
+- **[Viewer](/docs/paged/repos/viewer)** — a slim, read-only WebGPU viewer
+  (renderer-core only). It's both the community viewer and the docs live preview.
+- **[Editor-server](/docs/paged/repos/editor-server)** — the backend for
+  accounts, storage, billing, and asset proxies; also drives the engine headlessly
+  for document automation.
+
+## Extending the system
+
+Content beyond IDML's native constructs comes from **[plugins](/docs/paged/plugins)** —
+vector drawing, web (HTML/CSS), raster images, spreadsheets, and database
+publishing — built on the **[Plugin SDK](/docs/paged/plugin-sdk)** contract.
+
+## Keeping everyone honest
+
+The **[capability registry](/docs/paged/state)** holds one row per capability
+with a per-layer status and a test-evidence overlay. Every repo's tests publish
+against it; this documentation reads from it. That's why the support badges
+throughout the [IDML reference](/docs) are live, not hand-kept.
+
+## The repositories
+
+See **[Repositories](/docs/paged/repos)** for a per-repo tour, and
+**[How it's tested](/docs/paged/testing)** for the verification system.

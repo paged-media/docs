@@ -1,0 +1,88 @@
+---
+title: What paged media is
+description: Paged media is content laid out as discrete, bounded pages — a book, a PDF, a brochure — rather than one continuous scroll, where content must break across fixed-size pages.
+tier: beginner
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+**Paged media is content laid out as discrete, bounded pages instead of one continuous scroll.**
+
+**In short:** Paged media is any content composed for fixed, bounded pages — a
+printed book, a PDF, a brochure — rather than the single endless surface of a web
+page. Each page has real edges, a fixed size, and a finite amount of room, so
+content has to be *broken* across pages rather than simply flowing forever. This
+constraint is the whole reason layout is hard and interesting: where a page ends,
+what carries to the next one, and what must stay together are decisions a renderer
+has to make. This page explains what paged media is, how it differs from continuous
+media, and why it sits at the center of everything this reference is about.
+
+Paged media is content built for pages that *end*. A sheet of paper, a PDF page, a
+screen sized to a fixed leaf — each has hard edges and a finite amount of room, and
+that finitude changes everything. Content can't just keep going; when it runs out
+of room, it has to break and continue somewhere else. The page is not a passive
+container. It is a constraint, and most of what makes layout difficult comes from
+respecting it.
+
+<GutenbergAside>
+  Every book Gutenberg printed had edges — a leaf that began, filled, and ended.
+  Paged media is that same discipline of the bounded page; only now the press is a
+  renderer and the leaf is a screen.
+</GutenbergAside>
+
+This is the opposite of **continuous media**, which is the model the web grew up
+on. A web page is one surface of effectively unlimited height; content flows down it
+and you scroll. Nothing has to be *broken* because nothing ever runs out of room —
+the canvas just gets taller. Paged media gives up that infinite room in exchange for
+something continuous media can't offer: a definite, physical shape. Books,
+magazines, invoices, reports, packaging, anything destined for print or PDF — all of
+it is paged, because all of it has to fit somewhere specific.
+
+Two ideas are worth holding onto from the start, because everything else follows
+from them.
+
+**The page is finite, so content must break.** A story that's too long for one page
+doesn't shrink — it spills onto the next, and the next. Deciding *where* those
+breaks fall is the central problem of paged layout: don't strand a heading at the
+bottom of a page, don't split a word across leaves badly, keep a figure with its
+caption, don't leave a single line of a paragraph orphaned on its own page. None of
+these questions even exist in continuous media. All of them are unavoidable here.
+
+**Position is fixed and intentional.** On a page, something sits at a precise spot —
+this margin, this column, this point from the top — and it stays there. There's no
+reflowing to fit a wider window, no responsive rearranging. The layout is composed
+for a known shape and committed to it. That fixity is exactly what lets paged media
+be typeset with care: the designer (or the renderer acting on their intent) knows
+the exact stage every element will stand on.
+
+That's the whole shape of the thing: content with hard edges, finite room, and fixed
+positions — composed to be broken cleanly across pages rather than scrolled through
+forever. It's the older model, and the more demanding one, and it's what a layout
+format like [IDML](/docs/idml/foundations/what-is-idml) exists to describe and what a
+renderer like Paged exists to produce. The next pages look at how that intent is
+captured and turned back into real, bounded pages.
+
+## Frequently asked questions
+
+**What is paged media?**
+Paged media is content laid out for discrete, fixed-size pages — like a printed
+book, a PDF, or a brochure — rather than one continuous scrolling surface. Because
+each page has hard edges and limited room, content must be broken and distributed
+across multiple pages, with careful decisions about where each break falls.
+
+**What is the difference between paged media and continuous media?**
+**Continuous media**, such as a typical web page, is a single surface of unlimited
+height that you scroll through; content simply flows downward and never runs out of
+room. **Paged media** is divided into bounded pages of fixed size, so content must
+break from one page to the next. The key difference is finitude: continuous media
+has infinite room and reflows to fit the viewport, while paged media has fixed
+dimensions and fixed positions, composed for a known page shape.
+
+**Why is paged media harder to lay out than a web page?**
+Paged layout has to solve problems that continuous scrolling never raises: deciding
+where page breaks fall, keeping related content together (a heading with its
+section, a figure with its caption), and avoiding awkward results like orphaned or
+widowed lines. Since the page can't simply grow to fit, every element competes for
+finite space at a fixed position — which makes typesetting for pages a deliberate,
+constraint-driven craft rather than a matter of letting content flow.

@@ -1,0 +1,95 @@
+---
+title: SDK
+description: The Paged SDK is the WebGPU rendering API — load an IDML document, render its pages, and drive a pan/zoom camera — published as @paged-media/idml-viewer. It is the read-only sibling of the editor.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+describes: []
+reviewed: "2026-06-23"
+---
+
+**The SDK renders; the editor edits.** The Paged SDK is the public,
+WebGPU-only rendering surface of the engine — it loads an `.idml` document,
+lays out its pages, and renders them to a canvas (or to raw pixels), with a
+camera you drive for pan and zoom. It does **not** mutate documents or run
+scripts; that is the editor's job.
+
+**In short:** the SDK ships as **`@paged-media/idml-viewer`** — a small
+TypeScript wrapper over the engine's `paged-sdk` WebGPU session. You call
+`createViewer({ canvas })`, `await viewer.load(bytes)`, and then drive
+`zoom`/`scroll`/`goToPage`/`fit` while the engine renders. The same package
+powers the [live preview](/docs/idml/the-renderer) embedded throughout this
+documentation, and the standalone community viewer. Because it is renderer-core
+only — no `paged-mutate`, no `paged-canvas`, no `paged-script` — it is small,
+embeddable, and safe to drop into any page.
+
+## The shape of the API
+
+```ts
+import { createViewer } from '@paged-media/idml-viewer';
+
+const viewer = await createViewer({ canvas });
+await viewer.load(idmlBytes);          // ArrayBuffer | Uint8Array | Blob | URL
+
+viewer.fit('width');                   // fit the page to the viewport
+viewer.goToPage(2);                    // jump to a page
+viewer.setZoom(1.5, { anchor });       // zoom about a point
+
+viewer.on('pageChanged', ({ page }) => updatePager(page));
+```
+
+## What lives where
+
+| Layer | Package | Role |
+|---|---|---|
+| TS wrapper | `@paged-media/idml-viewer` | the ergonomic API: `createViewer`, the `Viewer` interface, the camera helpers. The surface you import. |
+| WebGPU session | `@paged-media/sdk` (`ViewerSession`) | the wasm boundary: load, set page, present a camera, render to a canvas or to bytes. |
+| Introspection | `@paged-media/introspect-wasm` (`Inspector`) | read-only document inspection: scene tree, property descriptors, single-page PNG render. |
+
+## What the SDK does — and does not — do
+
+- **Does:** load IDML, report load diagnostics, lay out pages, render to a
+  `<canvas>`/`OffscreenCanvas` or to RGBA bytes at a chosen DPI, drive a camera
+  (zoom, scroll, fit, page navigation, layout mode), and emit events.
+- **Does not:** change the document, place or restyle content, run `paged.*`
+  scripts, or host plugins. For any of those you want the
+  [scripting layer](/docs/paged/scripting) or the editor.
+
+## Requirements
+
+The SDK renders with **WebGPU** only — there is no CPU fallback in the shipped
+viewer. A browser without WebGPU gets a clear "WebGPU unavailable" signal rather
+than a blank canvas. Embedding the read-only viewer needs nothing special;
+embedding it alongside the editor's `SharedArrayBuffer` path additionally needs
+cross-origin isolation (COOP/COEP) — see the [embedding
+guide](/docs/paged/sdk/embedding-guide).
+
+## Read on
+
+- **[Embedding guide](/docs/paged/sdk/embedding-guide)** — install, mount a
+  canvas, load a document, meet the requirements.
+- **[Camera & navigation](/docs/paged/sdk/camera-and-navigation)** — zoom, fit,
+  page navigation, layout mode — with a live playground.
+- **[Events & errors](/docs/paged/sdk/events-and-errors)** — subscribe with
+  `viewer.on(…)` and branch on typed error codes.
+- **[Rendering to pixels](/docs/paged/sdk/rendering-to-bytes)** — thumbnails and
+  headless rasters.
+- **[ViewerSession](/docs/paged/sdk/viewer-session)** — the low-level wasm session.
+- **[API reference](/docs/paged/sdk/api-reference)** — every member, with a live
+  filter.
+
+## Frequently asked questions
+
+**Is the SDK the same thing as the editor?**
+No. The SDK is renderer-core only: it shows a document. The editor adds mutation,
+scripting, panels, and plugins on top of the same engine.
+
+**Can I edit a document with the SDK?**
+Not through `@paged-media/idml-viewer`. It is read-only by design. Editing flows
+through the editor and the [scripting layer](/docs/paged/scripting).
+
+**Does it work without WebGPU?**
+The shipped viewer is WebGPU-only and reports cleanly when WebGPU is absent. The
+engine retains a CPU path for headless fidelity testing, but it is not part of
+the public viewer.

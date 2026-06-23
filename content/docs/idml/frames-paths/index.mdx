@@ -1,0 +1,110 @@
+---
+title: Frames & paths
+description: The page-item family in IDML — the rectangles, ovals, lines, polygons, text frames, and groups that hold every mark on a page.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+**Everything you see on an IDML page is a *page item* — one of a small family of elements that hold every mark on a spread.**
+
+**In short:** A *page item* is the IDML element that places content on a page: a
+block of body copy, a photo, a tinted background panel, a hairline rule, a logo
+cluster. They are a small, closed family — text frames, rectangles, ovals,
+graphic lines, polygons, and groups — and each lives as a direct child of a
+[`Spread`](/docs/idml/package-anatomy/the-design-map). Learn the family and you can
+read any spread; the rest is just which attributes each member carries. This
+page introduces the family, the two jobs it splits into, and the skeleton every
+member shares.
+
+## One family, two jobs
+
+The page items split cleanly by what they hold:
+
+- **Frames that hold *text*.** A `TextFrame` points at a story (its
+  `ParentStory`) and the composer flows that story's paragraphs into the
+  frame's outline.
+- **Frames that hold *graphics or nothing*.** A `Rectangle`, `Oval`,
+  `GraphicLine`, or `Polygon` is a vector shape. With a `FillColor` it is a
+  colour panel; with a nested `<Image>` it is a picture frame; with neither it
+  is an empty outline.
+
+That split is not rigid in InDesign — the same underlying object becomes a
+graphic frame, a text frame, or an empty shape depending on its content. But in
+the IDML on disk each item is written under a *named* element that tells you its
+current role, and that is the name our parser dispatches on.
+
+## The members
+
+<AttrTable
+  element="Page-item elements"
+  rows={[
+    { attr: 'TextFrame', type: 'element', support: 'supported', note: 'A frame bound to a story via ParentStory. Text flows into its outline.' },
+    { attr: 'Rectangle', type: 'element', support: 'supported', note: 'Four-corner shape. The workhorse: colour panels and most picture frames.' },
+    { attr: 'Oval', type: 'element', support: 'supported', note: 'The ellipse inscribed in the shape’s bounding box.' },
+    { attr: 'GraphicLine', type: 'element', support: 'supported', note: 'A straight stroke — no fill region, just two endpoints.' },
+    { attr: 'Polygon', type: 'element', support: 'supported', note: 'An arbitrary closed outline (charts, stars, cut-outs).' },
+    { attr: 'Group', type: 'element', support: 'parsed-not-rendered', note: 'A container that clusters several items so one transform / opacity applies to all. See below.' },
+  ]}
+/>
+
+The same shape can carry any of three content roles, which IDML records on a
+`ContentType` attribute: `TextType` (a text frame), `GraphicType` (a graphics
+frame), or `Unassigned` (an empty shape). Our parser does not read that
+attribute directly — it infers the role from the *element name* and from
+whether a `ParentStory` or image link is present. A `<TextFrame>` with a
+`ParentStory` is text; a `<Rectangle>` with a `FillColor` and no story is a
+graphic.
+
+## How a page item is built
+
+Every member shares the same skeleton. Strip a `Rectangle` and a `TextFrame`
+down and they look nearly identical — that is by design, and it is why the
+[reference page](/docs/idml/frames-paths/page-item-types) can describe them together:
+
+- a `Self` id, so other parts can point at it;
+- an [`ItemTransform`](/docs/idml/geometry-coordinates/item-transform) that places it
+  on the page;
+- a [`PathGeometry`](/docs/idml/geometry-coordinates/path-geometry) (or, on older
+  exports, a `GeometricBounds`) that gives its outline;
+- paint attributes — `FillColor`, `StrokeColor`, `StrokeWeight`;
+- an [`AppliedObjectStyle`](/docs/idml/styles/object-styles) that supplies defaults
+  for everything left unset.
+
+The shape's outline lives in its *own* inner coordinate space, authored from the
+origin; the `ItemTransform` slides and rotates that outline onto the page. This
+is the same coordinate story the
+[geometry chapter](/docs/idml/geometry-coordinates) tells in full — page items are
+where it pays off.
+
+## Where to go next
+
+- **[Page-item types](/docs/idml/frames-paths/page-item-types)** — the reference:
+  one attribute table per member, with exactly which attributes our renderer
+  honours.
+- **[Text frames](/docs/idml/frames-paths/text-frames)** — the `TextFramePreference`
+  block that controls insets, vertical justification, auto-sizing, and the
+  first baseline.
+- **[Groups](/docs/idml/frames-paths/groups)** — how membership and group-level
+  transparency work, and one thing the renderer does not yet do inside them.
+
+## Frequently asked questions
+
+**What is a page item in IDML?**
+A page item is any element that places content on a page — a `TextFrame`,
+`Rectangle`, `Oval`, `GraphicLine`, `Polygon`, or `Group`. Each is written as a
+direct child of a `Spread` and carries its own placement, outline, and paint.
+
+**What is the difference between a text frame and a graphic frame?**
+A `TextFrame` points at a story through its `ParentStory`, and the composer flows
+that story's paragraphs into the frame's outline. A graphic frame — a
+`Rectangle`, `Oval`, `GraphicLine`, or `Polygon` — holds a vector shape that
+paints as a colour panel (with a `FillColor`), a picture frame (with a nested
+`<Image>`), or an empty outline (with neither).
+
+**How does the parser know what kind of page item it is reading?**
+It dispatches on the *element name* and on whether a `ParentStory` or image link
+is present, not on the `ContentType` attribute. A `<TextFrame>` with a
+`ParentStory` is treated as text; a `<Rectangle>` with a `FillColor` and no story
+is treated as a graphic.

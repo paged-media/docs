@@ -1,0 +1,48 @@
+---
+title: Paged
+description: Paged is the open-source system that reads, renders, and edits IDML — a WebGPU render engine, a browser editor, an SDK, a paged.* scripting layer, a plugin platform, and a REST backend, all tracked by a live capability registry.
+tier: beginner
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+**Paged is the open-source system that reads, renders, and edits IDML.** This is
+the **platform** half of the documentation: the render engine and its WebGPU SDK,
+the `paged.*` scripting layer, the plugin SDK, the REST backend, and the live
+capability state. The other half is the [IDML Reference](/docs/idml/) — the
+**format** these tools act on.
+
+**In short:** the two references cross-link throughout. Every IDML construct
+carries a live badge showing how far Paged takes it — parsed, rendered, mutable,
+scriptable — sourced from the same capability registry surfaced here. Every API on
+this side points back to the format concept it reads or writes. Both are generated
+from the system's own artifacts, so they stay true as the code moves.
+
+<Demo demo="gradient" caption="A live, scrubbable recording of the real editor building a gradient — captured by running the journey tests, not hand-recorded." />
+
+## Developer reference
+
+- **[SDK](/docs/paged/sdk)** — the WebGPU rendering API (`@paged-media/idml-viewer`):
+  load a document, render its pages, drive a pan/zoom camera. Read-only.
+- **[Scripting](/docs/paged/scripting)** — the `paged.*` host surface: read,
+  mutate, and author documents from JavaScript, with a live playground.
+- **[Plugin SDK](/docs/paged/plugin-sdk)** — the contract for extending the editor
+  with tools, panels, commands, and content types.
+- **[REST API](/docs/paged/api)** — the editor backend's HTTP surface, generated
+  from its OpenAPI spec.
+
+## The system
+
+- **[Plugins](/docs/paged/plugins)** — the five first-party content plugins: draw,
+  web, image, sheets, data.
+- **[Repositories](/docs/paged/repos)** — how the engine, editor, server, viewer,
+  and state repos fit together.
+- **[Capability state](/docs/paged/state)** — the live matrix of what works, at
+  which layer, backed by test evidence. The system's source of truth for status.
+
+> The platform documentation is **generated from the system itself** wherever
+> possible — the capability registry, the engine's scripting catalog, the plugin
+> manifest schema, the server's OpenAPI spec, and the repos' commit history.
+> When the software changes, these pages change on the next build. See
+> [how the capability state works](/docs/paged/state/how-it-works).

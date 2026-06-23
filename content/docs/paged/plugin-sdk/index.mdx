@@ -1,0 +1,101 @@
+---
+title: Plugin SDK
+description: Paged's plugin platform lets external bundles contribute tools, panels, commands, and document behavior to the editor through a small, versioned contract — the same surface Paged's own first-party plugins are built on.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+describes: []
+reviewed: "2026-06-23"
+---
+
+**Paged is the engine; plugins are the instruments.** The plugin SDK is the
+contract through which a bundle — a unit of manifest plus code — extends the
+Paged editor: new drawing tools, new panels, new commands, and eventually new
+content types, all registered at runtime and removable without a trace.
+
+**In short:** a plugin is a *bundle* — a serializable **manifest** plus one
+`activate(host)` entry point. The manifest declares the bundle's identity, the
+**capabilities** it needs, and the **contributions** it adds; the host grants
+only what the manifest declares. At runtime the host hands the bundle a single
+object, the `BundleHost`, carrying everything it may touch: contribution
+registration, document reads, the one mutation door, selection, viewport,
+overlays, storage, and diagnostics. Everything a bundle registers is disposable,
+and the host tracks all of it — deactivating a plugin restores the editor
+exactly as it was.
+
+## The packages
+
+| Package | Role |
+|---|---|
+| `@paged-media/plugin-api` | the contract: manifest types and schema, the bundle lifecycle, the full `BundleHost` surface, and curated re-exports of the contribution and wire types. **Type-only** — nothing in it exists at runtime. |
+| `@paged-media/plugin-sdk` | the runtime: `defineBundle`, `loadBundle`, the in-process host implementation, the [gesture kit](/docs/paged/plugin-sdk/the-gesture-kit), version negotiation. |
+| `@paged-media/plugin-cli` | tooling: `paged-plugin validate <manifest.json>` checks a manifest against the schema and the namespace rule. |
+
+> **Status: incubating.** The SDK is at **API v0.2**, published to npm as
+> public **canaries** — `npm install @paged-media/plugin-api@canary
+> @paged-media/plugin-sdk@canary`, and the CLI runs via
+> `npx @paged-media/plugin-cli@canary`. It is being proven by Paged's own
+> first-party plugins (paged.draw and paged.web ship through it today) before
+> the v1 freeze. Expect breaking changes between 0.x minors — caret ranges
+> deliberately lock the minor during 0.x — and note the canaries are
+> `UNLICENSED` pending the licensing pass. This reference tracks the
+> implemented contract, not an aspiration.
+
+## Dogfooding first
+
+The platform's design discipline: **every first-party plugin uses only this
+public surface.** paged.draw's pen and anchor tools register through the same
+`activate(host)` door a third-party bundle will use — no private backdoors. The
+places where the surface fell short of what a real plugin needed are recorded
+in a public punch list, and *that list* decides what enters API v1. Nothing is
+added speculatively. The five first-party content plugins
+([draw, web, image, sheets, data](/docs/paged/plugins)) are all built on this
+same contract.
+
+## What a plugin can do today
+
+- **Contribute tools** to the tool rail — with gesture handlers, cursors,
+  flyout grouping, activation commands, and keyboard shortcuts.
+- **Contribute panels** (React components composed from the host's UI kit, so
+  they are visually indistinguishable from native panels), commands,
+  keybindings, and canvas overlays.
+- **Read the document broadly** — collections (swatches, layers, styles, …),
+  metadata, path geometry, hit-testing, the scene tree.
+- **Write through one door** — every change is a `Mutation` on the editor's
+  single undoable Operation channel. Plugin edits and native edits share one
+  history; `Cmd+Z` does not care who authored a change.
+- **Persist settings** in namespaced storage, **report diagnostics**, and
+  **detect host capabilities** at runtime.
+
+## The manifest
+
+Every bundle ships a `manifest.json`. Its fields, the **capability** vocabulary,
+and the **contribution** kinds are a *single source of truth* — a JSON Schema
+(per ADR-019) that the SDK, the CLI validator, and these pages all read. The
+table below is generated from that schema, so it never drifts from the contract:
+
+<PluginCapabilities section="manifest" />
+
+## What is deliberately not there yet
+
+Edit contexts (double-click into plugin-owned content), plugin-defined object
+types, retained scene layers, and process isolation are *declared* in the
+contract but reserved — calling them throws a visible
+`PluginApiNotImplemented`, never a silent no-op. The platform ships honest
+seams, in its UI and in its API.
+
+## Where to go next
+
+- **[Your first plugin](/docs/paged/plugin-sdk/your-first-plugin)** — scaffold a
+  bundle and ship it.
+- **[The bundle model](/docs/paged/plugin-sdk/the-bundle-model)** — the
+  architecture of manifest + `activate(host)`.
+- **[The BundleHost](/docs/paged/plugin-sdk/the-bundle-host)** — the full
+  runtime surface a bundle is handed.
+- **[Capabilities](/docs/paged/plugin-sdk/capabilities)** — the closed set a
+  manifest may request, and what each grants.
+- **[Contributions](/docs/paged/plugin-sdk/contributions)** — the surfaces a
+  plugin can add to the editor.
+- **[Build a plugin](/docs/paged/plugin-sdk/build-a-plugin)** — start from the
+  template and ship.

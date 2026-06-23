@@ -1,0 +1,58 @@
+---
+title: Rendering to pixels
+description: Produce raster output from the SDK without an on-screen canvas — page thumbnails via the Viewer, or full RGBA/PNG rasters via ViewerSession and Inspector.
+tier: pro
+diataxis: how-to
+status: published
+owner: paged-docs
+reviewed: "2026-06-23"
+---
+
+**Render pages to pixels — for thumbnails, page rails, and headless output.**
+
+**In short:** three paths produce rasters. `Viewer.renderPageThumbnail(index, {
+width })` is the easy one for page rails. For full control, `ViewerSession`
+renders a page to tightly-packed RGBA8 at a target width or DPI, and the
+read-only `Inspector.renderPage(index, dpi)` returns PNG bytes without any canvas
+at all — ideal for tests and tooling.
+
+## Thumbnails (the easy path)
+
+```ts
+const raster = await viewer.renderPageThumbnail(0, { width: 240 });
+// raster: { width, height, rgba: Uint8Array }  — draw into an ImageData / canvas
+```
+
+## Full rasters, headless
+
+```ts
+// RGBA at a target width, from the session:
+const png = await session.render_page_to_bytes(0, 1600);
+
+// Or PNG bytes from the read-only inspector (no canvas, no camera):
+const inspector = new Inspector(idmlBytes);
+const pngBytes = inspector.renderPage(0, 144); // 144 dpi
+```
+
+`SessionRaster`/`RenderedRaster` are `{ width, height, rgba }` — write the `rgba`
+into an `ImageData` and `putImageData`, or encode to PNG yourself. The
+`Inspector` path already returns encoded PNG.
+
+## Members
+
+<SdkCatalog group="rendering" />
+
+## Frequently asked questions
+
+**Thumbnail vs. session render — which should I use?**
+`renderPageThumbnail` for UI rails (it reuses the viewer's device). The session's
+`render_page_to_bytes`/`render_to_bytes` when you need a specific DPI or are
+rendering outside a viewer.
+
+**Can I render without a visible canvas?**
+Yes — the `Inspector.renderPage(index, dpi)` path needs no canvas and returns PNG
+bytes, which is what the [test corpus](/docs/idml/test-corpus) uses.
+
+**Is the output color-managed?**
+The raster is the renderer's RGBA output. Color handling follows the engine; see
+[the renderer](/docs/idml/the-renderer) for what the pipeline does with color.

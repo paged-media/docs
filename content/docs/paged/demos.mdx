@@ -1,0 +1,37 @@
+---
+title: Live demos
+description: The real editor, running inline and driven by its own scripting layer — not a recording. Play, pause, scrub by chapter, and read the script that drives each step.
+tier: beginner
+diataxis: explanation
+status: draft
+owner: paged-docs
+---
+
+**In short:** these aren't screencasts or recordings — each one is **the actual
+editor**, embedded live and driven by a paged script. Press play and the script
+runs the real app: opening panels, drawing and filling frames, narrating each
+step. You can pause, single-step, scrub by chapter, change speed, and read (or
+edit) the very script that's driving it.
+
+## How it works
+
+Every demo is a script over paged's own automation surface — `paged.*` for the
+document, `editor.*` for the UI, `demo.*` to narrate and pace. The
+[playground](https://play.paged.media) runs that script against the real editor
+and shows the source alongside; this page embeds it in an `<iframe>`. Because the
+demo *is* the product driven by its public API, it can never drift from the app —
+and it doubles as runnable [scripting documentation](/docs/paged/scripting).
+
+The live editor renders on **WebGPU** and needs a cross-origin-isolated context,
+so these run on capable desktop browsers.
+
+## Draw and fill a frame
+
+<LiveDemo script="draw-fill" caption="Create a document, draw a frame, fill it, and move it — every step is the script driving the real editor." />
+
+## A guided tour
+
+<LiveDemo script="tour" caption="Open panels and switch workflow modes, narrated step by step — with a spotlight on each target." />
+
+Feature and plugin pages embed the same `<LiveDemo>` inline. Each script lives in
+the playground's corpus, so it refreshes with the app.

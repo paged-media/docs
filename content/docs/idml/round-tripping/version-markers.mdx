@@ -1,0 +1,126 @@
+---
+title: Version markers
+description: Version markers are the two stamps that declare an IDML package's vintage — the <?aid?> processing instruction and Document@DOMVersion — and how much of each our parser acts on.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+**Version markers are the two stamps a package writes to declare its vintage: the `<?aid?>` processing instruction and the `Document@DOMVersion` attribute.**
+
+**In short:** Every IDML package records which format revision it follows and which
+application build wrote it, and it does so in two places at the very top of the
+design map. The `<?aid?>` processing instruction carries pseudo-attributes like
+`readerVersion`, `featureSet`, and `product`; the root `Document` element carries
+`DOMVersion`. This page names each field and is precise about one thing: our parser
+reads all of them and branches on none of them.
+
+A package declares its vintage in two places, both at the very top of the design
+map. The first is a processing instruction; the second is an attribute on the root
+element. Together they say which format revision the package follows and which
+application build wrote it. Open the design map of any real document and they are
+the first two lines you meet.
+
+<ExampleEmbed example="two-stories">
+  The first two lines of a real design map: the <code>{`<?aid?>`}</code> processing instruction, then the <code>Document</code> element carrying <code>DOMVersion</code>.
+</ExampleEmbed>
+
+## The `<?aid?>` processing instruction
+
+Before the root element, the design map carries a processing instruction whose
+target is `aid`. It is a sibling of the XML declaration, not an element, so it has
+no attributes in the XML sense — it is a single pseudo-attribute string the
+application parses itself. An application's IDML reader treats this instruction as
+mandatory: a package without it is rejected as an unrecognized format even when the
+archive is otherwise well-formed and the `DOMVersion` is correct.
+
+<AttrTable
+  element="<?aid …?> (pseudo-attributes)"
+  rows={[
+    { attr: 'style', type: 'integer (e.g. "50")', support: 'parsed-not-rendered', note: 'The IDML format style marker. We read past it; we do not branch on its value.' },
+    { attr: 'type', type: '"document" (vs. snippet / story)', support: 'parsed-not-rendered', note: 'Declares this is a top-level document rather than a fragment.' },
+    { attr: 'readerVersion', type: 'string (e.g. "6.0")', support: 'parsed-not-rendered', note: 'The minimum reader version the producer says is needed. We do not gate parsing on it.' },
+    { attr: 'featureSet', type: 'integer bitmask (e.g. "257")', support: 'parsed-not-rendered', note: 'A bitmask of features the document uses. We do not decode or act on it.' },
+    { attr: 'product', type: 'string (e.g. "20.0(32)")', support: 'parsed-not-rendered', note: 'The exporting application build. Informational.' },
+  ]}
+/>
+
+`readerVersion` is a *floor*: the producer's claim about the oldest reader that can
+make sense of the package. `featureSet` is a *bitmask*: a compact record of which
+optional capabilities the document actually exercises, so a reader can in principle
+tell at a glance whether it will hit something it cannot handle. `product` is the
+exact application build that exported the file, useful as a forensic breadcrumb.
+
+Our parser does none of that gating. It reads the design map straight through to
+the parts it needs and never decodes `featureSet` or compares `readerVersion`
+against anything. The one processing instruction the parser *does* interpret is a
+different one entirely — the `<?ACE?>` markers inside story content that stand in
+for auto page numbers — handled in `core/crates/paged-parse/src/story.rs`. The
+`<?aid?>` instruction on the design map is read past, not acted on.
+
+<SupportBadge status="parsed-not-rendered" note="<?aid?> fields are present and read past; no field changes parsing behavior." />
+
+## `Document@DOMVersion`
+
+The root `Document` element carries a `DOMVersion` attribute naming the scripting
+DOM revision the package follows — for example `20.0`. This is the canonical
+"which version of the format" stamp, distinct from the application `product` build
+in the processing instruction above it.
+
+<AttrTable
+  element="Document"
+  rows={[
+    { attr: 'DOMVersion', type: 'string (e.g. "20.0", "13.1")', support: 'parsed-not-rendered', note: 'The format/DOM revision the package targets. Present on the root Document. Our parser does not branch on it — see below.' },
+  ]}
+/>
+
+This is the same attribute documented on the root element in
+[the design map](/docs/idml/package-anatomy/the-design-map). It is worth seeing in both
+places: there it is one of the document's identity attributes; here it is the
+version stamp that a version-aware reader would key off.
+
+## What our parser does with all of this
+
+It reads them and moves on. There is no version branch anywhere in the parse path:
+`core/crates/paged-parse/src/designmap.rs` extracts the document's identity, color
+settings, layers, and part references from the `Document` element, but it never
+reads `DOMVersion`, and the design-map parser never inspects the `<?aid?>`
+instruction at all. The reader targets one modern DOM and applies the same logic to
+every package, whatever vintage it claims.
+
+You can see that this is intentional rather than accidental: our own fixtures stamp
+`DOMVersion="20.0"`, while parser-level test fixtures in `core` deliberately carry
+`DOMVersion="13.1"`, and both parse through the identical code path with no
+special-casing. The markers are recorded facts about a package's origin; they are
+not switches that change how we read it. The consequences of that choice — and
+where it could bite — are the subject of [compatibility](/docs/idml/round-tripping/compatibility).
+
+## Frequently asked questions
+
+**Where does an IDML package declare its version?**
+In two places, both at the top of the design map. The `<?aid?>` processing
+instruction sits before the root element and carries pseudo-attributes such as
+`readerVersion`, `featureSet`, and `product`; the root `Document` element carries
+the `DOMVersion` attribute. Together they say which format revision the package
+follows and which application build wrote it.
+
+**What is the `<?aid?>` processing instruction?**
+It is a processing instruction whose target is `aid`, sitting as a sibling of the
+XML declaration before the root element. Because it is not an element, it has no XML
+attributes — instead it holds a single pseudo-attribute string the application parses
+itself. An application's IDML reader treats it as mandatory: a package missing it is
+rejected as an unrecognized format even when the archive is otherwise well-formed.
+
+**Does Paged's parser branch on `DOMVersion` or `featureSet`?**
+No. There is no version branch anywhere in the parse path. The design-map parser in
+`core/crates/paged-parse/src/designmap.rs` extracts identity, color settings, layers,
+and part references but never reads `DOMVersion`, and it never inspects the `<?aid?>`
+instruction at all. The reader targets one modern DOM and applies the same logic to
+every package, whatever vintage it claims.
+
+**Is `<?aid?>` the only processing instruction Paged interprets?**
+No — but it is *not* one Paged acts on. The instruction the parser does interpret is
+a different one entirely: the `<?ACE?>` markers inside story content that stand in
+for auto page numbers, handled in `core/crates/paged-parse/src/story.rs`. The
+`<?aid?>` instruction on the design map is read past, not acted on.

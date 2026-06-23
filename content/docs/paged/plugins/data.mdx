@@ -1,0 +1,39 @@
+---
+title: paged.data — database publishing
+description: The database-publishing plugin — a binding DSL, a sync engine, record-flow pagination, and batch automation over DuckDB-WASM, publishing datasets other plugins can consume.
+tier: intermediate
+diataxis: explanation
+status: draft
+owner: paged-docs
+---
+
+**In short:** `paged.data` turns data into pages — a binding-expression DSL, a
+resolution/sync engine, record-flow lowering with grouping and per-group footers,
+and end-to-end print automation, all over a vendored DuckDB-WASM. It also
+publishes governed datasets that other plugins (e.g.
+[paged.sheet](/docs/paged/plugins/sheets)) consume.
+
+## What it does
+
+- A publishing-grammar binding DSL (a registry-driven function library) and a
+  binding/sync engine (Linked / Pinned / Overridden / Stale states).
+- Record flow / pagination: nested grouping, multi-level per-group footers,
+  parent-path on spill.
+- Print automation: per-record / per-group / one-catalog batch plans, plus a CLI
+  and a sandboxed Boa scripting path.
+- A data-provider contract: register as a provider and publish a record set
+  without knowing its consumers; governed extracts with column metadata.
+
+## How it's built
+
+A Cargo workspace (`data-core`, `data-expr`, `data-sources`, `data-query`,
+`data-bind`, `data-lower`, automation crates, `data-js`) plus a TS bundle, with
+DuckDB-WASM vendored behind an Arrow seam.
+
+## Capability state
+
+<CapabilityMatrix chapter="data" />
+
+## Recent activity
+
+<RepoActivity repo="plugin-data" />

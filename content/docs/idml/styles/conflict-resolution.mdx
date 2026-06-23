@@ -1,0 +1,153 @@
+---
+title: Conflict resolution
+description: How the parser computes a run's effective formatting — local range override, then the applied character style's BasedOn chain, then the applied paragraph style's chain — the ambiguous cases, and the style constructs that are parsed but not yet enforced.
+tier: pro
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+**A run's effective formatting is resolved in one pass that layers three sources: the local range value, then the character style's chain, then the paragraph style's chain.**
+
+**In short:** A single glyph's formatting can be specified in four places at once —
+directly on its run, on the character style the run applies, on the paragraph style
+the run sits in, and on the root defaults at the bottom of either chain. The parser
+turns that pile of candidates into one effective value per attribute by seeding the
+value set directly on the range first, then filling what is still unset from the
+applied character style resolved through its `BasedOn` chain, then from the applied
+paragraph style's chain, and finally from the renderer's bottom-of-cascade default.
+Each layer fills only the slots still empty after the layers above it. This page
+traces that order attribute by attribute and is honest about the ambiguous cases
+and the constructs the parser reads but does not yet enforce.
+
+A single glyph's formatting can be specified in four places at once: directly on
+its run, on the character style the run applies, on the paragraph style the run
+sits in, and on the root defaults at the bottom of either chain. They do not
+always agree. This page traces exactly how the parser turns that pile of
+candidates into one effective value per attribute — and is honest about the cases
+where the answer is fuzzier than it looks.
+
+## The order of precedence
+
+The effective character-level attributes of a run are resolved in one pass that
+layers three sources, highest priority first
+(`crates/paged-parse/src/styles.rs` resolvers, applied by the scene layer's
+`resolved_run_attrs`):
+
+1. **The value set directly on the range.** Anything on the
+   `<CharacterStyleRange>` itself — `PointSize="24"`, `FillColor="…"` — is seeded
+   first and is never overwritten by a style.
+2. **The applied character style, resolved through its chain.** Whatever the local
+   range left unset is filled from `resolve_character(AppliedCharacterStyle)` — the
+   character style folded down its `BasedOn` parents (see
+   [the cascade](/docs/idml/styles/the-cascade)).
+3. **The applied paragraph style, resolved through its chain.** Anything still
+   unset is filled from `resolve_paragraph(AppliedParagraphStyle)` — the paragraph
+   style, which carries character defaults, folded down *its* `BasedOn` parents.
+
+Each layer fills only the slots still empty after the layers above it. So a run
+gets its size from itself if it set one; otherwise from its character style (or
+that style's parents); otherwise from its paragraph style (or its parents);
+otherwise from the renderer's bottom-of-cascade default. The same three-layer
+fold, minus the character-style layer, produces the run's *paragraph*-level
+attributes (alignment, indents, spacing): a `<ParagraphStyleRange>` can override
+those directly, then the applied paragraph style's chain fills the rest.
+
+## Worked example
+
+Take the [local-override example](/docs/idml/styles/character-styles). Its second run
+applies `CharacterStyle/Emphasis` (which sets `FontStyle="Bold"` and
+`PointSize="12"`) inside a paragraph using `[No paragraph style]` (which sets
+`AppliedFont="Open Sans"`, `PointSize="12"`, `FillColor="Color/Black"`), and the
+range itself carries `PointSize="24"`:
+
+| Attribute | Effective value | Won at layer |
+| --- | --- | --- |
+| `PointSize` | `24` | 1 — local on the range |
+| `FontStyle` | `Bold` | 2 — the Emphasis character style |
+| `AppliedFont` | `Open Sans` | 3 — the paragraph style |
+| `FillColor` | `Color/Black` | 3 — the paragraph style |
+
+The local `PointSize` shadows the `12` the character style would have supplied;
+the font style comes from the character style; the family and fill fall all the way
+through to the paragraph style because nothing higher set them.
+
+## The ambiguous cases
+
+A few situations do not have a single obviously-correct answer, and it is worth
+knowing how the parser lands on one.
+
+- **`Swatch/None` versus "unset".** On colour attributes (stroke colour on text,
+  fill/stroke on objects and cells) the literal `Swatch/None` is normalised to
+  *unset* rather than kept as a real "no paint" value. This is deliberate: it lets
+  a `BasedOn` parent (or a higher layer) supply a colour instead of the chain
+  dead-ending at "none". The trade-off is that a style cannot use `Swatch/None` to
+  *force* no paint over a parent that sets one — the cascade reads it as silence.
+- **An unknown `Justification` value.** `Justification` is parsed into a typed
+  enum; a value the parser does not recognise yields `None`, which then behaves as
+  "unset" and falls through the cascade (ending at the renderer's left-aligned
+  default) rather than raising an error.
+- **A missing or cyclic `BasedOn`.** A parent id that is not in the style sheet
+  ends the walk where it is; a cycle is bounded by `MAX_BASED_ON_DEPTH`
+  (`crates/paged-parse/src/styles.rs:51`). Either way the run still resolves —
+  with whatever was gathered before the walk stopped.
+- **Boolean defaults at the bottom.** Some booleans default to *true* when no layer
+  sets them — `Ligatures` and `Hyphenation`, for instance — so "absent everywhere"
+  is not the same as "off". A run only loses ligatures or hyphenation when some
+  layer explicitly sets `false`.
+
+## Parsed but not yet enforced
+
+The format reference documents the whole style surface, including constructs the
+renderer reads but does not yet apply. These are the style-side gaps to know
+about:
+
+- **Nested styles.** A `<ParagraphStyle>` can carry `<NestedStyle>` children that
+  apply a character style to a *leading portion* of each paragraph, bounded by a
+  delimiter (N words, a literal character, "to the first colon", and so on). The
+  parser reads the full list — applied style, delimiter, repetition, inclusive flag
+  — and the renderer splits each paragraph's runs along those boundaries,
+  overriding each fragment's character style.
+  <SupportBadge status="supported" note="NestedStyle runs split per delimiter and restyled" />
+- **Conditional styles.** `<Condition>` definitions and a run's
+  `AppliedConditions` (a space-separated list of condition references) are parsed
+  and stored. The intent is that a run is shown only when every referenced
+  condition resolves to `Visible="true"`, but that visibility gating is not yet
+  enforced at render time — conditioned runs render as if always visible.
+  <SupportBadge status="parsed-not-rendered" note="Condition / ConditionSet / AppliedConditions" />
+- **Complex cascade scenarios.** The three-layer fold is well-exercised for the
+  common one-to-three-link chains, but deep chains, chains that mix shadowing at
+  several levels, and styles whose attributes are split between attribute-form and
+  `<Properties>` element-form still warrant case-by-case testing before relying on
+  the resolved value. <SupportBadge status="supported" note="Resolves, but deep / mixed chains merit verification" />
+
+For the broader picture of which IDML features the renderer handles, the
+[conditional text](/docs/idml/conditional-text) chapter goes deeper on conditions, and
+each style page above carries per-attribute support badges.
+
+## Frequently asked questions
+
+**In what order does the parser resolve a run's formatting?**
+Highest priority first: the value set directly on the `<CharacterStyleRange>`, then
+the applied character style resolved through its `BasedOn` chain, then the applied
+paragraph style's chain, then the renderer's bottom-of-cascade default. Each layer
+fills only the attributes still unset after the layers above it.
+
+**Why does `Swatch/None` not force "no paint"?**
+On colour attributes the literal `Swatch/None` is normalised to *unset* rather than
+kept as a real "no paint" value, so a `BasedOn` parent or higher layer can supply a
+colour instead of the chain dead-ending. The trade-off is that a style cannot use
+`Swatch/None` to force no paint over a parent that sets one — the cascade reads it
+as silence.
+
+**Does "absent everywhere" always mean a feature is off?**
+No. Some booleans default to *true* when no layer sets them — `Ligatures` and
+`Hyphenation`, for instance — so a run only loses them when some layer explicitly
+sets `false`.
+
+**Which style constructs does the parser read but not yet apply?**
+Nested styles (`<NestedStyle>` children that would split runs along a delimiter)
+and conditional styles (`<Condition>` definitions and a run's `AppliedConditions`)
+are both parsed and stored, but the renderer does not yet split runs at nested-style
+boundaries or gate visibility on conditions — conditioned runs render as if always
+visible.

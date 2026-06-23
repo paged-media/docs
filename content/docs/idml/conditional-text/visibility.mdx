@@ -1,0 +1,109 @@
+---
+title: Visibility resolution
+description: How our renderer decides whether a conditional run is laid out — the drop-before-layout rule, and the editor-only pieces it deliberately leaves undrawn.
+tier: pro
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+**A conditional run is dropped before layout when any condition it names is hidden, so it contributes no glyphs and no width to the page.**
+
+**In short:** Visibility resolution is the single decision our renderer makes
+about each run before any glyph is measured — is this run governed by a condition
+that is turned off? A run is kept when it names no conditions or when every
+condition it names resolves to visible, and dropped the moment any named condition
+is hidden. A dropped run is removed before line-breaking, not painted over
+afterwards, so the surrounding text composes as though its characters were never
+typed. This page explains that rule end to end and draws the boundary between what
+conditional text *does to the page* and what it only does *for the author*.
+
+When the renderer assembles a paragraph, it makes one decision about each run
+before any glyph is measured: is this run governed by a condition that is turned
+off? If so, the run never enters layout at all. This page explains that decision
+and draws the boundary between what conditional text *does to the page* and what
+it only does *for the author*.
+
+## The rule
+
+For each run, the renderer collects the conditions named in its `AppliedConditions`
+list and checks every one against the document's `<Condition>` table:
+
+- **No conditions named** → the run is kept. This is the overwhelmingly common
+  case, and the check short-circuits — a paragraph in which no run carries any
+  condition is passed straight through untouched.
+- **Every named condition resolves to visible** → the run is kept. A condition
+  counts as visible when its `Visible` attribute is `true`, when it is absent, or
+  when the named id does not match any declared condition. The test is strict
+  AND across the list: all must be visible.
+- **Any named condition is hidden** (`Visible="false"`) → the whole run is
+  dropped.
+
+A dropped run is removed from the paragraph *before* line-breaking and
+measurement, not hidden afterwards. It contributes no width and no glyphs; the
+surrounding visible text composes as though the hidden run's characters were never
+typed. <SupportBadge status="supported" note="runs under a hidden Condition are filtered before layout — paged-renderer/src/pipeline.rs:2765" />
+
+This has a visible consequence in tooling. A story may declare more runs than the
+page shows. In the [worked example](/docs/idml/conditional-text/conditions-and-sets),
+the story holds two `<CharacterStyleRange>` blocks, so the parser reports two
+runs — but the rendered totals report one, because the run under the hidden
+`Condition/Draft` was filtered out. When you compare a story's run count against
+the rendered count, that difference is expected, not a fault: it is exactly the
+conditions doing their job.
+
+## What the renderer leaves to the editor
+
+Conditional text carries two further constructs that are about *authoring* the
+file, not about the page. The renderer parses both so a round-trip preserves them,
+but neither changes a single pixel.
+
+### The indicator is not drawn
+
+A `<Condition>` records an `IndicatorMethod` — `Underline`, `Highlight`, or
+`None` — describing how an editing application should flag conditional text on
+screen so an author can see at a glance which words are governed by a condition.
+That is an editor affordance. The renderer is producing the final composed page,
+where the indicator has no place, so it reads `IndicatorMethod` (and the related
+indicator-colour and underline-appearance attributes) and draws nothing for it.
+<SupportBadge status="parsed-not-rendered" note="IndicatorMethod / indicator appearance are editor-only; never drawn — paged-parse/src/styles.rs:114" />
+
+### Active-set toggling is not honoured
+
+A `<ConditionSet>` groups conditions so an author can flip several at once. You
+might expect a "currently active set" to drive what is shown. Our renderer does
+not work that way: visibility resolution walks the *individual* `Visible` values of
+the conditions a run names, and never consults set membership or any notion of an
+active set. The sets are parsed and preserved for round-trip and for a future
+"show only this set" affordance, but today they do not influence layout.
+<SupportBadge status="parsed-not-rendered" note="ConditionSet membership / active-set toggling parsed, not used in layout — paged-parse/src/styles.rs:119" />
+
+The practical upshot: the only thing that hides text on the page is a
+`<Condition>` whose `Visible` is `false`, named by a run's `AppliedConditions`.
+Everything else in this corner of the format is there to help the person editing
+the document, and our renderer treats it accordingly.
+
+## Frequently asked questions
+
+**When does the renderer drop a conditional run?**
+When any condition named in the run's `AppliedConditions` list resolves to hidden
+(`Visible="false"`). The test is strict AND across the list: every named condition
+must be visible for the run to survive, and a single hidden one removes the whole
+run.
+
+**Is a hidden run painted over, or removed entirely?**
+Removed entirely. The run is filtered out *before* line-breaking and measurement,
+so it contributes no width and no glyphs, and the surrounding visible text composes
+as though the hidden run's characters were never typed.
+
+**Why does a story report more runs than the rendered page?**
+Because the parser counts every `<CharacterStyleRange>` in the story, while the
+rendered totals count only the runs that survived visibility resolution. When a run
+under a hidden condition is filtered out, that difference is expected — it is the
+conditions doing their job, not a fault.
+
+**Does the renderer draw condition indicators or honour the active set?**
+No. `IndicatorMethod` (and its related indicator-colour and underline-appearance
+attributes) and `<ConditionSet>` membership are parsed for round-trip fidelity but
+never affect the page. Visibility is decided solely by the individual `Visible`
+values of the conditions a run names.

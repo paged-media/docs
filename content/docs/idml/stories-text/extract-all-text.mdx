@@ -1,0 +1,96 @@
+---
+title: Extract all text from a document
+description: A recipe for pulling the plain text out of every story in reading order — walk StoryList, then each story tree, concatenating Content.
+tier: intermediate
+diataxis: how-to
+status: published
+owner: paged-docs
+---
+
+**To extract a document's plain text, walk its stories in `StoryList` order and concatenate the `Content` of every range.**
+
+**In short:** Getting the plain text out of an IDML document means visiting its
+stories in reading order and concatenating the text of every `Content` element. You
+take the order from `StoryList` on the `Document` element, then walk each story tree
+`Story` → `ParagraphStyleRange` → `CharacterStyleRange` → `Content`, treating `Br` and
+`Tab` as whitespace. No styling needs to be resolved — extraction only cares about
+which characters appear and where the boundaries are. This page gives the recipe and
+the cases to get right.
+
+To get the plain text of a document you walk its stories and concatenate the
+`Content` of every range, in document order. You do not need to resolve any
+styling — text extraction only cares about which characters appear and where the
+boundaries are.
+
+## The recipe
+
+1. **Open the [design map](/docs/idml/package-anatomy/the-design-map)** and read
+   `StoryList` on the `Document` element. It is a space-separated list of story
+   ids, and it gives you the stories in document order.
+2. **For each id, open its story part** (`Stories/Story_<id>.xml`). One file holds
+   one `Story` element.
+3. **Walk the story tree in order:** `Story` → `ParagraphStyleRange` →
+   `CharacterStyleRange` → `Content`. Append the text of each `Content` element as
+   you reach it.
+4. **Treat the markers as whitespace.** A `Br` is a line break; emit `\n`. A `Tab`
+   is a tab; emit `\t`. Our parser already folds these into the run text this way,
+   so a `CharacterStyleRange`'s text comes out with the breaks in place.
+5. **End each paragraph with a newline.** Each `ParagraphStyleRange` is one
+   paragraph; put a `\n` between consecutive paragraphs so the output reads as
+   paragraphs, not one run-on line.
+
+## Worked over a two-paragraph story
+
+The story below has two paragraphs and one run each. Walking it in order yields:
+
+```text
+The first paragraph stands on its own.
+The second paragraph follows it.
+```
+
+The first paragraph's `Content`, then a paragraph break, then the second
+paragraph's `Content`. The `SpaceBefore` on the second range is a layout
+attribute — extraction ignores it.
+
+<ExampleEmbed example="two-paragraphs">
+  One story, two ParagraphStyleRange blocks — the unit your loop iterates over.
+</ExampleEmbed>
+
+## Things to get right
+
+- **Order comes from `StoryList`, then document order within each story.** Don't
+  sort by story id or file name; the listed order is the reading order.
+- **Some text is metadata, not body copy.** Our parser drops `HiddenText`, `Note`,
+  and `Index` / `IndexEntry` subtrees from the flowed text. If you walk the raw XML
+  yourself, skip those subtrees too, or your output will contain text the reader
+  never sees.
+- **A `TextVariableInstance` contributes its `ResultText`.** Where a story carries
+  a running header, page number, or file-name variable, the visible characters are
+  the frozen `ResultText` — see [text variables](/docs/idml/stories-text/text-variables).
+- **Threaded stories are still one story.** Text that flows across several frames
+  is a single `Story` part; you extract it once, regardless of how many frames
+  display it. See [threading and overset](/docs/idml/stories-text/threading-and-overset).
+- **Tables hold their text in cells.** A `Table` nested in a run carries its own
+  `Content` inside `Cell` elements; include them if you want the full copy.
+
+## Frequently asked questions
+
+**What order should I extract stories in?**
+The order given by `StoryList` on the `Document` element — a space-separated list of
+story ids that is the reading order. Don't sort by story id or file name; within each
+story, follow document order through the tree.
+
+**Do I need to resolve styles to extract text?**
+No. Extraction only cares about which characters appear and where the boundaries are,
+so you can walk `Story` → `ParagraphStyleRange` → `CharacterStyleRange` → `Content`
+and concatenate the text without touching `Styles.xml`.
+
+**How do I handle threaded stories that span several frames?**
+Extract them once. Text that flows across several frames is still a single `Story`
+part, so the number of frames that display it doesn't change the extraction — see
+[threading and overset](/docs/idml/stories-text/threading-and-overset).
+
+**Why does my extracted text contain copy the reader never sees?**
+Probably because you walked the raw XML without skipping metadata subtrees. Our parser
+drops `HiddenText`, `Note`, and `Index` / `IndexEntry` from the flowed text; if you
+walk the XML yourself, skip those subtrees too, or they'll end up in your output.

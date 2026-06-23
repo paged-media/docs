@@ -1,0 +1,72 @@
+---
+title: Camera & navigation
+description: Drive the SDK viewer's camera — zoom, scroll, fit, page navigation, and layout mode — with a live playground that calls each method as you click.
+tier: intermediate
+diataxis: how-to
+status: published
+owner: paged-docs
+reviewed: "2026-06-23"
+---
+
+**The viewer is a camera over a laid-out document; you move the camera.**
+
+**In short:** after `await viewer.load(bytes)` you drive the view with a small,
+imperative API — `fit`, `setZoom`/`zoomIn`/`zoomOut`, `scrollTo`/`scrollBy`,
+`goToPage`, and `layoutMode`. Zoom is clamped to `[minZoom, maxZoom]`; scroll is
+clamped to the content extent. The playground below renders a real two-page
+document — every button calls the method named in its tooltip, and the panel on
+the right logs the viewer's events as they fire.
+
+## Try it
+
+<SdkPlayground example="two-page-spread" />
+
+The toolbar maps one-to-one to the API: **Fit page/width** → `viewer.fit(…)`,
+**−/+** → `viewer.zoomOut()/zoomIn()`, **◀/▶** → `viewer.goToPage(…)`, and
+**layout** → `viewer.layoutMode(…)`. Watch the `viewer.on(…)` panel: driving the
+camera emits `zoomChanged`, `pageChanged`, and friends — the same events your app
+subscribes to.
+
+## In code
+
+```ts
+const viewer = await createViewer({ canvas });
+await viewer.load(bytes);
+
+viewer.fit('width');             // fit the page width to the viewport
+viewer.setZoom(1.5, { anchor }); // zoom about a point so it stays put
+viewer.goToPage(1);              // jump to the second page
+viewer.layoutMode('continuous'); // switch to a continuous scroll of pages
+```
+
+For custom navigation UIs — a page rail, a minimap, a fit-to-selection button —
+the SDK also exports the pure camera math (`fitPage`, `zoomAt`, `scrollToPage`,
+`clampZoom`, `clampScroll`, `contentExtent`, `currentPageAt`) so you can compute
+transforms without a viewer instance.
+
+## The camera API
+
+<SdkCatalog group="camera" />
+
+## Page navigation & layout
+
+<SdkCatalog group="navigation" />
+
+## Camera helpers
+
+<SdkCatalog group="camera-helpers" />
+
+## Frequently asked questions
+
+**Why are my zoom calls being ignored at the extremes?**
+Zoom is clamped to `[minZoom, maxZoom]`. Read those properties to bound your own
+UI, or use `clampZoom(z, { min, max })`.
+
+**How do I keep a point fixed while zooming (zoom-to-cursor)?**
+Pass an `anchor` to `setZoom`, or compute the resulting scroll yourself with
+`zoomAt(point, newZoom, currentZoom, scroll)`.
+
+**What is the difference between `single` and `continuous` layout?**
+`single` shows one page at a time; `continuous` stacks all pages in a scroll. Set
+it at creation via `CreateViewerOptions.layoutMode` or at runtime with
+`viewer.layoutMode('continuous')`.

@@ -1,0 +1,91 @@
+---
+title: Place an image in a frame
+description: A recipe for placing a picture in IDML — turn a Rectangle into a graphic frame by nesting an Image that links an external file via Link/LinkResourceURI.
+tier: intermediate
+diataxis: how-to
+status: published
+owner: paged-docs
+---
+
+**An image in IDML is a `Rectangle` with an `<Image>` nested inside it — there is no dedicated "image frame" element.**
+
+**In short:** you place a picture by nesting an `<Image>` inside an ordinary
+`Rectangle`, the same rectangle a colored shape uses. The presence of the `Image`
+child is what turns the rectangle into a graphic frame; the image carries its own
+`ItemTransform` and `GraphicBounds`, plus a `<Link>` whose `LinkResourceURI` names
+the file on disk. This recipe places a linked photo in a frame on a page.
+
+## The recipe
+
+1. **Draw the frame as a `Rectangle`.** On a spread's `Page`, add a `Rectangle` with
+   an `ItemTransform` that positions it (in the example, `1 0 0 1 150 200` shifts it
+   150 across and 200 down) and a `PathGeometry` whose four `PathPointType` anchors
+   trace the frame's outline. Nothing about the rectangle yet says "image."
+2. **Nest an `<Image>` inside it.** The presence of the `Image` child — not any
+   attribute on the rectangle — is what makes the rectangle a graphic frame.
+3. **Give the image its own `ItemTransform`.** This maps the picture's natural pixel
+   space into the frame's coordinate space. The example uses `0.5 0 0 0.5 0 0`, a
+   half-scale; the frame's own transform then carries that onto the page.
+4. **Declare the image's bounds.** Inside the image's `<Properties>`, a
+   `<GraphicBounds>` gives the picture's extent (`Left`/`Top`/`Right`/`Bottom`) in
+   its own space — here `0 0 600 400`, a 600×400 source.
+5. **Link the file with `<Link>`.** Add a `<Link>` whose `LinkResourceURI` names the
+   external file, e.g. `file:Links/photo.jpg`. The parser captures the URI string and
+   defers the actual lookup to an asset resolver at render time — so the path just
+   has to be resolvable when you render, not when you author.
+
+## Worked over a placed photo
+
+The `Spreads/Spread_uspread.xml` part below holds a `Rectangle` with an `Image`
+nested inside it, the image's `ItemTransform` and `GraphicBounds`, and the `Link`
+that points at the file. Read it top to bottom and the recipe is right there.
+
+<ExampleEmbed example="placed-image">
+  A Rectangle turned into a graphic frame by a nested Image, which carries its own
+  ItemTransform and a Link/LinkResourceURI naming the external file.
+</ExampleEmbed>
+
+## Things to get right
+
+- **The `Image` makes the frame, not an attribute.** A bare `Rectangle` is a shape;
+  the same rectangle with an `<Image>` child is a graphic frame. Don't look for a
+  "ContentType" or frame flag — there isn't one.
+- **Two transforms compose.** The image's `ItemTransform` places the picture inside
+  the frame; the frame's `ItemTransform` places the frame on the page. To move the
+  whole thing, edit the frame's transform; to crop or scale the picture within it,
+  edit the image's.
+- **A missing file doesn't fail the parse.** `LinkResourceURI` is just a captured
+  string — the parser opens the document fine without the asset present. The picture
+  only goes missing at render time, when the resolver can't find it.
+- **Links and embeds parse alike.** Whether the picture is linked by URI or embedded
+  as a `<Contents>` payload, it reaches the parser the same way; the recipe above
+  uses a link.
+
+For the full picture — supported formats, clipping, and how the asset resolver
+works at render time — see [Images & graphics](/docs/idml/images-graphics) and the
+[placed images](/docs/idml/images-graphics/placed-images) reference.
+
+## Frequently asked questions
+
+**What makes a `Rectangle` an image frame rather than a shape?**
+The nested `<Image>` child, and nothing else. A bare `Rectangle` is a shape; the
+same rectangle with an `<Image>` inside it is a graphic frame. There is no
+`ContentType` attribute or frame flag to set — don't look for one.
+
+**Why does an image have two transforms?**
+The image's own `ItemTransform` maps its natural pixel space into the frame's
+coordinate space (the example uses `0.5 0 0 0.5 0 0`, a half-scale), while the
+frame's `ItemTransform` places the frame on the page. They compose: edit the frame's
+transform to move the whole thing, and the image's transform to crop or scale the
+picture within it.
+
+**Does a missing image file break the parse?**
+No. `LinkResourceURI` is captured as a plain string, so the document opens fine even
+when the asset isn't present. The parser defers the actual lookup to an asset
+resolver at render time — the path only needs to resolve when you render, not when
+you author.
+
+**Can the picture be embedded instead of linked?**
+Yes. A picture can be linked by URI or embedded as a `<Contents>` payload, and both
+reach the parser the same way. This recipe uses a link; the
+[placed images](/docs/idml/images-graphics/placed-images) reference covers embedding.

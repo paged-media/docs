@@ -1,0 +1,93 @@
+---
+title: Compound paths
+description: A compound path packs multiple GeometryPathType contours into one IDML shape — how a hole gets punched with opposite winding, and why the parser records contour boundaries.
+tier: pro
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+**A compound path is one IDML shape built from multiple contours — the way a hole gets punched into a fill.**
+
+**In short:** A single
+[`PathGeometry`](/docs/idml/geometry-coordinates/path-geometry) can hold more than one
+`GeometryPathType` contour. When it does, the contours together describe *one*
+shape with multiple loops — a **compound path**. This is how IDML draws a shape
+with a hole: a doughnut, the counter inside an "O", a frame with a window cut out
+of it. Nothing marks a contour as "outer" or "inner"; whether the inner loop
+carves a hole or adds a second blob comes down to its *winding direction* under
+the nonzero winding rule. So the parser records where each contour begins, and
+the renderer closes each one as its own loop.
+
+## Two contours, one shape
+
+The idea is simple: an outer contour defines the filled region, and an inner
+contour carves a hole out of it. Both are ordinary `GeometryPathType` elements
+inside the same `PathGeometry`; nothing marks one as "outer" and one as "inner".
+What decides whether the inner loop is a hole or just a second filled blob is its
+*winding direction*.
+
+InDesign fills paths with the **nonzero winding rule**. Two loops wound in the
+*same* direction reinforce each other (you get a solid shape); two loops wound in
+*opposite* directions cancel where they overlap (you get a hole). So punching a
+hole means winding the inner contour the opposite way from the outer one.
+
+<ExampleEmbed example="compound-path">
+  An outer square with an inner square wound the opposite way — the overlap cancels into a hole.
+</ExampleEmbed>
+
+In the example, the outer contour runs `0,0 → 240,0 → 240,240 → 0,240` and the
+inner contour is wound the reverse way. The result is a red square frame with a
+clean white window in the middle. Reverse the inner contour's points so both wind
+the same way and the hole fills back in.
+
+## Why contour boundaries have to be recorded
+
+The reason compound paths get their own page is a quiet failure mode. The parser
+flattens every contour's anchor points into one list, but it also records, for
+each `GeometryPathType`, the index where that contour's points *begin* — a list
+of subpath start offsets. The renderer uses those offsets to emit a separate
+move-and-close per contour.
+
+Without the boundaries, the renderer would have no way to tell where one loop ends
+and the next begins. It would join the last point of the outer square straight to
+the first point of the inner square with a stray segment, producing a single
+broken polyline instead of two clean loops — and the hole would never form. The
+contour boundaries are what keep the inner loop a distinct, separately-closed
+sub-path.
+
+A shape with a single contour — the common case, every plain rectangle and simple
+polygon — needs none of this: there is one loop, no boundaries to track, and the
+renderer closes it directly. The boundary list only fills in when a second
+`GeometryPathType` appears.
+
+## The same machinery carries open contours
+
+Each contour also carries its own [`PathOpen`](/docs/idml/geometry-coordinates/path-geometry)
+flag, recorded in parallel with the boundary offsets. So a compound path can mix
+open and closed contours — one loop sealed, another left as a stroke — and each is
+closed (or not) on its own terms. The boundaries and the open flags travel
+together, contour for contour.
+
+## Frequently asked questions
+
+**What is a compound path in IDML?**
+A compound path is a single
+[`PathGeometry`](/docs/idml/geometry-coordinates/path-geometry) containing more than
+one `GeometryPathType` contour, where the contours together form *one* shape with
+multiple loops. It is how IDML represents shapes with holes, such as a doughnut
+or the counter inside the letter "O".
+
+**How does a compound path punch a hole?**
+InDesign fills paths with the **nonzero winding rule**: two loops wound in the
+same direction reinforce into a solid shape, while two loops wound in opposite
+directions cancel where they overlap, leaving a hole. Punching a hole therefore
+means winding the inner contour the opposite way from the outer one — nothing
+flags one contour as "inner".
+
+**Why does the parser record contour boundaries?**
+The parser flattens all contour anchor points into one list, so it also records
+the index where each `GeometryPathType` begins — a list of subpath start offsets.
+The renderer uses those offsets to emit a separate move-and-close per contour;
+without them it would join the last point of one loop to the first point of the
+next with a stray segment, and the hole would never form.

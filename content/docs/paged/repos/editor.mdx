@@ -1,0 +1,40 @@
+---
+title: editor — the editing frontend
+description: The commercial desktop-publishing frontend — a React shell driving the engine wasm in a Web Worker on an OffscreenCanvas, with panels, gestures, scripting, and plugin integration.
+tier: intermediate
+diataxis: explanation
+status: draft
+owner: paged-docs
+---
+
+**In short:** `editor` is the commercial app — full document editing on top of the
+[engine](/docs/paged/repos/core). A React shell talks to the engine wasm
+running in a Web Worker that renders to an `OffscreenCanvas`, with a
+`SharedArrayBuffer` carrying camera and gesture state for real-time interaction.
+
+## What it does
+
+- Full editing: insert/delete frames, edit text, apply paragraph/character/object
+  styles, transform with gestures (translate, rotate, scale, shear).
+- A panel system (properties, styles, swatches, layers, pathfinder, …), a command
+  palette, and a [`paged.*` script editor + REPL](/docs/paged/scripting).
+- Hosts the content [plugins](/docs/paged/plugins) — draw, image, sheets, web,
+  data — through the [Plugin SDK](/docs/paged/plugin-sdk).
+
+## How it's organized
+
+A pnpm workspace: `apps/canvas` (the app), `packages/client` (the wasm boundary —
+the `CanvasClient`, the wire protocol + `PROTOCOL_VERSION`, the SAB primitives),
+`packages/shell` (state, registries, dockview substrate, theme), `packages/catalog`
+(declarative commands/panels), and `packages/ui` (input primitives).
+
+## How it consumes the engine
+
+It pins the published `@paged-media/canvas-wasm` + `introspect-wasm` at a wire
+protocol version — `pnpm install` is enough to build, no core checkout. The
+render architecture and fidelity suite are covered under
+[testing](/docs/paged/testing).
+
+## Recent activity
+
+<RepoActivity repo="editor" />

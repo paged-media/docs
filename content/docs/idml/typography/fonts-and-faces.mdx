@@ -1,0 +1,137 @@
+---
+title: Fonts and faces
+description: How AppliedFont names a family and FontStyle names a face, how the renderer resolves them against host-supplied fonts, and why Fonts.xml is a manifest the parser does not load fonts from.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+**A run names its typeface in two halves — `AppliedFont` is the family and `FontStyle` is the face — and the renderer resolves that pair against fonts the host supplies, not against anything inside the package.**
+
+**In short:** In IDML, a text run picks a typeface with two values: `AppliedFont`
+names the family (such as `Minion Pro`) and `FontStyle` names the face within it
+(such as `Bold` or `Bold Italic`). The renderer turns that pair into a lookup key
+and resolves it against the fonts its host registered, falling back from the exact
+styled face to the bare family to a configured default. The package's `Fonts.xml`
+part is only a *manifest* of which faces a document referenced — IDML embeds no
+font data, and the renderer does not read fonts from it. That is why a missing
+font is a host concern, not a package concern.
+
+A run names its typeface in two halves. `AppliedFont` is the **family** (for
+example `Minion Pro`); `FontStyle` is the **face** within that family (for
+example `Bold`, `Italic`, or `Bold Italic`). Both ride on the
+`CharacterStyleRange` — and, through the [style cascade](/docs/idml/styles/the-cascade),
+on `CharacterStyle` and `ParagraphStyle` too, so a run that sets neither inherits
+the resolved pair from its applied styles.
+
+One wrinkle from the story model carries over here: `AppliedFont` is serialised
+as a typed child of a `Properties` element, not as a plain attribute, while
+`FontStyle` is a plain attribute. The parser reads both the element form
+(`<AppliedFont type="string">Minion Pro</AppliedFont>` inside `<Properties>`) and
+any attribute form, so either shape resolves to the same family on the run.
+
+## How the renderer resolves a face
+
+The renderer does not embed or guess fonts. It asks its host for one, by family
+and face. The lookup concatenates the two halves with a single space — family
+`Helvetica Neue` plus style `Bold` becomes the key `Helvetica Neue Bold` — and
+then falls back, in order:
+
+1. The exact `family + style` entry (`Helvetica Neue Bold`).
+2. The bare-family entry (`Helvetica Neue`), when the styled variant was not
+   registered.
+3. A document-wide default font, when the host configured one.
+
+A `FontStyle` of `Regular` (or an empty/absent style) collapses to the bare
+family key rather than a `… Regular` key — that matches how a regular face is
+registered. The practical consequence: if a host registers only one weight of a
+family, every run in that family resolves to it regardless of the requested face,
+because the styled lookup misses and the bare-family fallback catches it. This is
+deliberate — it lets a document whose original Adobe-licensed fonts can't ship be
+rendered through one permissively-licensed substitute.
+
+<AttrTable
+  element="CharacterStyleRange (and CharacterStyle / ParagraphStyle)"
+  rows={[
+    { attr: 'AppliedFont', type: 'string (font family) — Properties child', support: 'supported', note: 'The family name. Resolved against host-supplied fonts, not against Fonts.xml.' },
+    { attr: 'FontStyle', type: 'string (e.g. "Bold", "Italic", "Bold Italic")', support: 'supported', note: 'The face within the family. Concatenated to the family with a space to form the lookup key; "Regular"/empty maps to the bare family.' },
+  ]}
+/>
+
+## `Fonts.xml` is a manifest, not a font source
+
+Every IDML package carries a `Fonts.xml` part under `Resources/`, referenced from
+the [design map](/docs/idml/package-anatomy/the-design-map) as `idPkg:Fonts`. It is
+tempting to read it as the place fonts come from — but IDML does not embed font
+data. `Fonts.xml` is a *manifest*: it records, per face, the family it belongs to
+and metadata about it, so that InDesign can warn when a referenced font is missing
+from the system on import.
+
+The structure is two nested elements. A `FontFamily` groups the faces of one
+family and carries a `Self` id and a `Name`. Inside it, each `Font` element
+describes one specific face. A `Font` carries — among other fields — `FontFamily`
+(a reference back to the owning family), `Name`, `PostScriptName`, `FontStyleName`,
+`FontType`, and `Status`:
+
+<AttrTable
+  element="Font (inside FontFamily, in Resources/Fonts.xml)"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'not-yet-parsed', note: 'The face id; could be referenced elsewhere by id.' },
+    { attr: 'FontFamily', type: 'string ref (FontFamily Self)', support: 'not-yet-parsed', note: 'The family this face belongs to.' },
+    { attr: 'Name', type: 'string', support: 'not-yet-parsed', note: 'The face name.' },
+    { attr: 'PostScriptName', type: 'string', support: 'not-yet-parsed', note: 'The PostScript name of the face.' },
+    { attr: 'FontStyleName', type: 'string', support: 'not-yet-parsed', note: 'The style name (e.g. "Bold").' },
+    { attr: 'FontType', type: 'Type1 | TrueType | CID | ATC | Bitmap | OCF | OpenTypeCFF | OpenTypeCID | OpenTypeTT | Unknown', support: 'not-yet-parsed', note: 'The technology of the face.' },
+    { attr: 'Status', type: 'Installed | NotAvailable | Fauxed | Substituted | Unknown', support: 'not-yet-parsed', note: 'Whether the authoring system had the face installed.' },
+  ]}
+/>
+
+Because the renderer resolves faces against the host's own font set, it does not
+need this manifest to set type — and today it does not read it. The design map
+lists the part and the parser follows the references it needs; `Fonts.xml` is not
+one of them. <SupportBadge status="parsed-not-rendered" note="Resources/Fonts.xml — listed in the design map as idPkg:Fonts; the parser does not load it. Fonts are supplied to the renderer separately by the host." />
+
+This is why a missing font is a *host* concern, not a package concern. The page
+still composes — runs whose family resolves to nothing fall through to the
+configured default font (or, with none, to the renderer's own fallback) — but the
+glyphs you see are whatever the host actually provided, not whatever the original
+document's `Fonts.xml` named.
+
+## Where this is going
+
+The face-resolution path is intentionally simple: one family-plus-style key with
+two fallbacks. It has no notion yet of composite fonts (IDML's `CompositeFont`,
+which maps different scripts in one run to different physical faces), of weight
+interpolation, or of synthesising a bold/italic face when only the regular is
+present. Runs that lean on those features resolve through the same exact-then-bare
+fallback as everything else.
+
+## Frequently asked questions
+
+**What is the difference between `AppliedFont` and `FontStyle`?**
+`AppliedFont` is the type **family** (for example `Minion Pro`); `FontStyle` is the
+**face** within that family (for example `Bold`, `Italic`, or `Bold Italic`). The
+renderer joins them with a single space to form a lookup key like `Minion Pro
+Bold`, with `Regular` or an empty style collapsing to the bare family.
+
+**Does an IDML file contain the actual font files?**
+No. IDML does not embed font data. Each package carries a `Fonts.xml` manifest that
+records, per face, the family it belongs to and metadata like its PostScript name
+and install status — enough for InDesign to warn about missing fonts on import, but
+not the font itself. The renderer resolves faces against fonts the host supplies
+separately, so today it does not read `Fonts.xml` at all.
+
+**What happens if the requested font is not available to the renderer?**
+The page still composes. The lookup falls back from the exact `family + style`
+entry to the bare-family entry to a host-configured default font (or, with none,
+the renderer's own fallback). One practical consequence: if a host registers only
+one weight of a family, every run in that family resolves to it, because the styled
+lookup misses and the bare-family fallback catches it.
+
+**Does the renderer synthesise a bold or italic face, or handle composite fonts?**
+Not yet. The resolution path is one family-plus-style key with two fallbacks. It
+has no notion of synthesising a bold or italic from the regular face, of weight
+interpolation, or of IDML's `CompositeFont` (which maps different scripts in one
+run to different physical faces); runs using those features resolve through the same
+exact-then-bare fallback as everything else.

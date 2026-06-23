@@ -1,0 +1,48 @@
+---
+title: How the capability state works
+description: The registry, the test-evidence overlay, and the generation pipeline that keeps these pages in lock-step with the software — by construction, not by hand.
+tier: pro
+diataxis: explanation
+status: draft
+owner: paged-docs
+---
+
+**In short:** there is one registry of capabilities. Every repo's tests publish
+evidence against it. The dashboard and these docs both render the joined result.
+Nothing on this page is hand-typed — it is **generated from the registry on every
+build**, so it cannot drift from reality without the build noticing.
+
+## The registry
+
+Each capability is one row, identified by a stable `chapter.feature` id and
+carrying a per-**layer** implementation status. The layers (the matrix columns)
+are the engine's parser, renderer, mutation, canvas/wasm, and SDK; the editor's
+canvas, shell, panel, gesture, script, and styleguide; the server API; and one
+column per content plugin (draw, web, image, data, sheet) plus the plugin API.
+
+A row only *claims* what it implements. Claims are honest about partial work, and
+a claim is never promoted on its own.
+
+## The evidence overlay
+
+Tests across every repo — the engine's Rust suites, the editor's Playwright
+journeys, the plugins' suites, and the corpus conformance harness — publish their
+results against feature ids. The registry joins claim and evidence per cell:
+
+- **shipped &amp; verified** — claimed, and a passing test backs it.
+- **shipped, untested** — claimed, but no test yet maps to it.
+- **failing** — claimed, but a mapped test is red.
+- **partial / planned** — the claim itself is not yet complete.
+
+This is why a green cell means something: the registry claims, the tests verify,
+and the [matrix](/docs/paged/state/matrix) renders both.
+
+## Why these pages stay current
+
+The docs pull the registry (and the engine scripting catalog, the plugin manifest
+schema, the server OpenAPI spec, and the repos' commit history) at build time,
+governed by a pin file, and project them into the components you see. A nightly
+rebuild and an on-push trigger from the source repos keep the published site
+fresh. Authored prose that *describes* a moving source is gated: if the source
+changes and the page isn't re-reviewed, the build flags it. Generated pages
+simply re-render. Either way, "stale and nobody noticed" is designed out.

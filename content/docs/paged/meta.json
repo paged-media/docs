@@ -1,0 +1,26 @@
+{
+  "root": true,
+  "title": "Paged",
+  "icon": "package",
+  "pages": [
+    "index",
+    "architecture",
+    "---Developer reference---",
+    "sdk",
+    "scripting",
+    "plugin-sdk",
+    "api",
+    "---Plugins---",
+    "plugins",
+    "---Compare & use cases---",
+    "compare",
+    "use-cases",
+    "---Repositories---",
+    "repos",
+    "---System state---",
+    "state",
+    "testing",
+    "activity",
+    "demos"
+  ]
+}

@@ -1,0 +1,87 @@
+---
+title: Round-tripping & version compatibility
+description: Round-tripping is what a document keeps when it moves out to IDML and back; version compatibility is how the format records which revision and application build wrote it.
+tier: pro
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+**Round-tripping is what a document keeps when it leaves an application as IDML and comes back; version compatibility is how the format records which revision wrote it.**
+
+**In short:** A *round trip* is the full journey of a document out to IDML and back
+to an application that opens it again. What arrives intact is whatever the XML wrote
+down — geometry, text, styles, references — while anything the original application
+kept only in its own memory does not survive. *Version compatibility* is a separate
+question: every package stamps itself with the format revision and application build
+that produced it, and a reader decides what to do with those stamps. This chapter
+draws both lines and is honest about one fact in particular: our parser records the
+version markers but never branches on them.
+
+A round trip is the full journey of a document: it leaves an application as IDML,
+is read by some other tool, and at some point returns to an application that opens
+it again. The interesting question is not whether the trip happens but what arrives
+intact at the far end. Anything the XML records survives; anything the original
+application kept only in its own memory does not. This chapter is about that line —
+what the interchange form carries across a round trip, and how it signals which
+version of the format and the application produced it.
+
+Two separate ideas are easy to confuse, so it helps to name them up front.
+
+**Round-tripping** is about *content*: which parts of a document — its geometry,
+its text, its styles, its references — make it through the export-and-reopen cycle
+without loss. That depends on what the format chooses to write down, and on what a
+reader chooses to read back.
+
+**Version compatibility** is about *vintage*: every package stamps itself with the
+format revision and the application build that wrote it. Those stamps let a reader
+decide whether it understands what it is about to parse. They are data the producer
+wrote, not a setting on any one tool.
+
+## Why this matters to a reader of the file
+
+If you generate or consume IDML, you need a realistic expectation of what a round
+trip preserves. The XML is the document's portable structure and intent, not a
+snapshot of the source application's working state — see
+[the binary-to-XML lineage](/docs/idml/foundations/binary-to-xml-lineage) for where that
+boundary sits. Knowing what falls on which side of it tells you what you can safely
+rely on after the file has been somewhere else and come back.
+
+You also need to know how the version stamps behave when *we* are the reader. Our
+parser records the stamps but does not negotiate on them: it targets one modern DOM
+and reads every package the same way, regardless of the version it claims. That is
+a deliberate, honest limitation, and the rest of this chapter is precise about it.
+
+## What's here
+
+- **[Version markers](/docs/idml/round-tripping/version-markers)** — the two places a
+  package declares its vintage: the `<?aid?>` processing instruction at the top of
+  the design map, and the `DOMVersion` attribute on the root `Document`. What each
+  field names, and exactly how much of it our parser acts on.
+- **[Compatibility](/docs/idml/round-tripping/compatibility)** — what survives a round
+  trip versus what the format leaves for the application to recompute, why the
+  format's versioning is data rather than a switch, and an honest account of where
+  our reader does not do version negotiation.
+
+## Frequently asked questions
+
+**What does round-tripping mean for an IDML document?**
+Round-tripping is the cycle of exporting a document to IDML, letting another tool
+read or transform it, and reopening it in an application. The question that matters
+is what survives the trip: anything written explicitly into the XML — pages, text,
+styles, colors, references — makes it across, while the source application's private
+working state does not, because it was never written down.
+
+**Is round-tripping the same as version compatibility?**
+No. Round-tripping is about *content* — which parts of a document make it through
+the export-and-reopen cycle without loss. Version compatibility is about *vintage* —
+the format revision and application build each package stamps into itself, and what
+a reader chooses to do with those stamps. They are easy to confuse because both
+concern moving a file between tools, but they are separate concerns.
+
+**Does Paged's parser change how it reads a file based on the version stamp?**
+No. Our parser records the version markers — the `<?aid?>` processing instruction
+and the `Document@DOMVersion` attribute — but never branches on them. It targets one
+modern DOM and reads every package through the same path, whatever vintage it claims.
+This is a deliberate, honest limitation, covered in detail across the two pages in
+this chapter.

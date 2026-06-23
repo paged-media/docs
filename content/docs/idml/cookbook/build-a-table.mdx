@@ -1,0 +1,103 @@
+---
+title: Build a table in a story
+description: A recipe for authoring an IDML Table — nest it on a paragraph, declare its grid with row, column, and cell counts, then give each Cell its own paragraph.
+tier: pro
+diataxis: how-to
+status: published
+owner: paged-docs
+---
+
+**A table in IDML is nested on a paragraph, not placed as a top-level object.**
+
+**In short:** to author a table by hand you nest a `Table` element inside a
+`CharacterStyleRange`, declare the grid with a few row and column counts, list the
+tracks, then give every cell its own little paragraph. The table draws wherever the
+text flow reaches it, so the simplest host is an empty paragraph in an otherwise
+blank story. This recipe builds a two-column, three-row table from scratch, naming
+each element and attribute exactly as it appears in the XML.
+
+## The recipe
+
+1. **Find a host paragraph.** A `Table` lives inside a `CharacterStyleRange`, which
+   lives inside a `ParagraphStyleRange`, inside a `Story`. The table draws where the
+   text flow reaches it. If you only need a table, an empty paragraph in an
+   otherwise blank story is enough to carry it.
+2. **Declare the grid on the `Table` element.** Set `HeaderRowCount`,
+   `BodyRowCount`, and `FooterRowCount` — they add up to the total row count — and
+   `ColumnCount`. In the example, `HeaderRowCount="1"` plus `BodyRowCount="2"` makes
+   three rows; `ColumnCount="2"` makes two columns. Point `AppliedTableStyle` at a
+   table style (`TableStyle/$ID/[Basic Table]` is the built-in default).
+3. **List the rows, then the columns.** Add one `<Row>` per row and one `<Column>`
+   per column. `Name` is the zero-based index; `SingleRowHeight` and
+   `SingleColumnWidth` size the track in points. Order matters: all `Row` elements
+   come before all `Column` elements, before any cells.
+4. **Add one `<Cell>` per grid position.** Address each cell with
+   `Name="col:row"` — zero-indexed, column first. Cell `0:0` is the top-left header;
+   `1:2` is the second column of the third row. `RowSpan` and `ColumnSpan` default
+   to `1`.
+5. **Put a paragraph inside each cell.** A cell's content is an ordinary
+   `ParagraphStyleRange` → `CharacterStyleRange` → `Content`, the same structure as
+   story body text — just scoped to the cell. That's where the cell's text lives.
+6. **Paint and pad as needed.** `FillColor` on a cell fills its background (the
+   header cells use `Color/Black`); the four `Text*Inset` attributes pad the
+   content from the cell edges; the `*EdgeStrokeColor` / `*EdgeStrokeWeight` pairs
+   draw the cell's borders.
+
+## Worked over a small table
+
+The story below is a single empty paragraph that carries one `Table`: a header row
+("Item", "Qty") and two body rows. Read its `Stories/Story_ustory.xml` part — every
+element the recipe names is right there, in order.
+
+<ExampleEmbed example="a-table">
+  A Table nested on a paragraph: three Rows, two Columns, and six Cells, each
+  addressed by Name="col:row" and holding its own paragraph.
+</ExampleEmbed>
+
+## Things to get right
+
+- **Counts and tracks must agree.** `HeaderRowCount + BodyRowCount + FooterRowCount`
+  has to equal the number of `<Row>` elements, and `ColumnCount` the number of
+  `<Column>` elements. A mismatch is the most common reason a hand-authored table
+  fails to build.
+- **Cell `Name` is `column:row`, not `row:column`.** It reads backwards from how you
+  might say it aloud. Cell `1:0` is column 1, row 0 — the top-right header in a
+  two-column table.
+- **A cell with no `ParagraphStyleRange` is an empty cell, not a missing one.** You
+  still write the `<Cell>` element for every grid position; an empty cell just has no
+  paragraph inside.
+- **Spanning cells don't repeat.** A cell with `ColumnSpan="2"` covers two columns,
+  so you write one `<Cell>` for the span and omit the position it absorbs — don't
+  also emit the covered cell.
+- **Header and footer rows repeat when the table breaks.** That behaviour, and how a
+  table splits across threaded frames, belongs to
+  [tables in the text flow](/docs/idml/tables/tables-in-text-flow).
+
+For the full model — how rows, columns, and cells relate, and why a table is
+anchored on a paragraph at all — see [Tables](/docs/idml/tables).
+
+## Frequently asked questions
+
+**Where does a `Table` element live in the IDML structure?**
+A `Table` is nested inside a `CharacterStyleRange`, which sits inside a
+`ParagraphStyleRange`, inside a `Story`. It is not a top-level object — it rides on a
+paragraph and draws where the text flow reaches it, so an empty paragraph in a blank
+story is enough to carry one.
+
+**How do I size a table's rows and columns?**
+You declare the grid on the `Table` element with `HeaderRowCount`, `BodyRowCount`,
+`FooterRowCount`, and `ColumnCount`, then list one `<Row>` and one `<Column>` per
+track. `SingleRowHeight` and `SingleColumnWidth` set each track's size in points. The
+row counts must add up to the number of `<Row>` elements, and `ColumnCount` must
+match the number of `<Column>` elements, or the table fails to build.
+
+**How are individual cells addressed?**
+Each `<Cell>` carries a `Name` of the form `column:row`, zero-indexed and column
+first — so `0:0` is the top-left cell and `1:2` is the second column of the third
+row. You write one `<Cell>` per grid position; a cell with no `ParagraphStyleRange`
+is simply empty, not missing.
+
+**What happens to a table when it breaks across frames?**
+Header and footer rows repeat at the top of each fragment when a table splits across
+threaded frames. That behaviour belongs to the reference — see
+[tables in the text flow](/docs/idml/tables/tables-in-text-flow).

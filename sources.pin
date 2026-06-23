@@ -18,6 +18,13 @@
         "catalog.json": "crates/paged-introspect/catalog.json"
       }
     },
+    "sdk-catalog": {
+      "repo": "core",
+      "ref": "main",
+      "files": {
+        "api.json": "web/idml-viewer/api-catalog.json"
+      }
+    },
     "plugin-sdk": {
       "repo": "plugin-sdk",
       "ref": "main",

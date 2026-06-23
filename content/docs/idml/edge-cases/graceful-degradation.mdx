@@ -1,0 +1,213 @@
+---
+title: Graceful degradation
+description: Everything the Paged renderer does NOT stop on — missing attributes that fall back to defaults, unknown values that are ignored, BasedOn and frame-threading cycles that are capped, nested frames that are skipped, and missing image links that get a placeholder — and the honest limits of that forgiveness.
+tier: pro
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+**Most of what is "wrong" with a real IDML document never stops it from rendering
+— the renderer is built to read past the small lies and gaps, and this page is the
+map of which ones it forgives and how.**
+
+**In short:** the [error model](/docs/idml/edge-cases/the-error-model) covers the hard
+line — the structural failures that stop a load cold. This page covers the other,
+much larger category: the imperfections the renderer *reads past*. A missing
+attribute becomes the default. An attribute value the renderer doesn't recognize
+is treated as if it weren't there. A `BasedOn` chain or a frame thread that loops
+forever is cut off at a fixed depth. A text frame buried somewhere the renderer
+can't place it is skipped and counted. A missing image leaves a recognizable
+placeholder rather than a hole. None of these stop the page from coming out — and
+that is deliberate, because a document that is 99% fine should render 99% of the
+way, not fail because of the 1%. The cost of that forgiveness is that some of it is
+*silent*, and we are honest below about exactly where.
+
+## The shape of forgiveness
+
+There is a clean dividing line running through the whole renderer. **Structural
+promises are strict; everything else is forgiving.** A part the manifest names must
+exist — break that and the load fails. But once the document is open, the renderer
+treats almost every individual attribute, value, and reference as *optional input
+with a sensible fallback*. The reason is practical: IDML is enormous, it evolves
+with every InDesign release, and real documents are edited by hand and by dozens of
+tools. If a single unknown attribute or out-of-range number could abort a render,
+nothing would ever render. So the parse layer is written to *degrade* rather than
+fail wherever degrading still produces a meaningful page.
+
+The rest of this page walks the specific forgiving behaviors, roughly from the
+smallest (one attribute) to the largest (a whole frame), and ends with the line
+they all share: where forgiveness becomes a *silent* gap you should know about.
+
+## Missing attributes become defaults
+
+The most common imperfection is also the most thoroughly handled: an attribute
+simply isn't there. The renderer's attribute readers are written to return *absent*
+rather than to demand a value. A missing attribute reads as "unset," and an unset
+value falls through to whatever the next layer of the cascade — the applied style,
+then the based-on parent, then the document default — provides, exactly as if you
+had never specified it.
+
+This is why a sparse, hand-written story still renders: a `<CharacterStyleRange>`
+that names no font, no size, and no color isn't an error — it is three unset
+values that resolve through the applied character style and paragraph style to the
+document's defaults. Absence is a first-class, expected state throughout the
+format, not a failure.
+
+## Unknown values are ignored
+
+A subtler case: the attribute is present, but its value is one the renderer doesn't
+recognize. Enumerated attributes — corner styles, justification modes, fitting
+types, and the like — are read through a strict lookup. A value that matches a
+known name is accepted; anything else is treated exactly like a missing attribute:
+it becomes *unset* and falls through the cascade to the default.
+
+The same defensive read applies to numeric attributes that arrive malformed or out
+of range. A size or offset that doesn't parse as a finite number, or a tint
+percentage outside its valid `0–100` band, is rejected and read as unset rather
+than allowed to distort the output. The principle is the same in both cases: an
+input the renderer can't make safe sense of is discarded in favour of the default,
+not forced into the layout.
+
+This matters most across InDesign versions. A newer InDesign can write an enum
+value that didn't exist when the renderer's lookup was last updated. Rather than
+fail the whole document over one unrecognized token, the renderer drops that one
+value to its default and renders everything else faithfully.
+
+<SupportBadge status="supported" note="Unknown enum values fall back to the default — but the fallback is silent: nothing in the parsed document marks that a value was dropped." />
+
+This is the first honest gap. Falling back is the right behavior, but the renderer
+does **not** currently record *that* a value was unrecognized. If a document looks
+subtly off — a corner that should be beveled rendering square — because it carries
+a value from a newer InDesign than the renderer knows, there is no diagnostic
+pointing at it. The page renders; the dropped value leaves no trace.
+
+## Cycles are capped, not detected
+
+Two places in IDML can reference themselves into an infinite loop, and the renderer
+guards both the same way — with a fixed depth cap rather than true cycle detection.
+
+A **`BasedOn` style chain** is meant to terminate at a root style. Nothing in the
+format forbids a style from being based on itself, directly or through a ring of
+intermediates. The renderer resolves a chain by walking it hop by hop and folding
+in each parent's unset attributes — and it simply stops after a fixed number of
+hops (16). Real chains are one to three hops deep, so the cap is never reached by a
+healthy document; a cyclic one is cut off harmlessly with whatever it had resolved
+so far.
+
+A **frame thread** — the `NextTextFrame` links that flow one story across multiple
+frames — has the same exposure. The resolver follows the chain of frames and is
+bounded by a much larger cap (256 frames) so that a thread that loops back on
+itself can't spin forever. Real threads are a handful of frames; the cap exists
+purely so a malformed one terminates.
+
+<SupportBadge status="supported" note="Cycle caps prevent hangs, but they do not emit a warning — a capped chain is indistinguishable from a deep-but-legal one." />
+
+This is the second honest gap, and it is the same shape as the first: the caps make
+the renderer *safe* against malformed input, but they are not *diagnostic*. When a
+chain is cut off at the cap, nothing is reported. A pathologically deep but
+technically-legal chain and a genuine cycle look identical to the resolver, and
+both simply stop at the limit. The cap is a safety mechanism, not a validity check.
+
+## Nested frames are skipped — and counted
+
+Not every forgiving behavior is silent. When a text frame is nested somewhere the
+renderer doesn't yet place it — inside a `<Group>`, for instance — the parser does
+not fail and does not pretend the frame doesn't exist. It skips that frame for
+layout purposes and **increments a counter** on the spread, `skipped_nested_frames`.
+
+This is the model we'd like the silent gaps above to grow toward: the lossy
+behavior is real, but it leaves a trace a caller can read without parsing logs.
+`paged-inspect` surfaces the count directly — the human-readable report appends
+"N nested frame(s) skipped" to the affected spread, and the JSON output carries
+`skipped_nested_frames` per spread. A consumer can check that field, see it is
+non-zero, and know the render is lossy and by how much, all without re-parsing
+anything.
+
+<SupportBadge status="parsed-not-rendered" note="Group-nested text frames are parsed and counted, but not laid out — the count is the honest signal that the render is lossy." />
+
+## A missing image gets a placeholder
+
+The last common imperfection is a broken link. An image-bearing frame — an
+`<Image>`, `<EPSImage>`, `<PDF>`, or `<ImportedPage>` — references its bits by a
+link URI, and that link can fail to resolve: the file wasn't packaged, the path is
+a stale absolute path from another machine, the URI is URL-encoded in a shape the
+resolver can't match. The image lookup returns *nothing* in all of these cases.
+
+When it does, the renderer doesn't leave a blank hole and it doesn't fail the
+render. By default it stamps InDesign's own missing-image placeholder into the
+frame: a grey fill clipped to the frame's path, with two diagonal stroke segments
+across it — the same "broken link" visual InDesign bakes into an exported page.
+This is deliberate fidelity, not a fallback of last resort: real-world templates
+ship with unresolved links on purpose, so matching InDesign's placeholder makes the
+rendered page match the reference page those templates were designed against. (A
+caller that wants the placeholder suppressed can opt out; `paged-inspect` exposes
+this as a flag.)
+
+<SupportBadge status="supported" note="A missing image link is replaced by InDesign’s placeholder visual, and the resolution failure is also reported as a render diagnostic — so a consumer reading structured output learns the link broke." />
+
+The placeholder is a faithful *visual* result, and the failure that produced it is
+now **reported** as well: the renderer records an `ImageLinkMissing` (or
+`ImageDecodeFailed`) diagnostic carrying the frame and link URI on
+`BuiltDocument.diagnostics`. So a broken link is visible both on the render *and*
+to a consumer that only reads structured output — no longer a silent gap.
+
+## What degrades vs. what hard-fails
+
+Pulling it together, the line is consistent:
+
+**These degrade — the load succeeds and the page renders, with a fallback:**
+
+- A missing attribute → unset, resolved through the cascade to a default.
+- An unrecognized enum value → unset, same as missing.
+- A malformed or out-of-range number → unset, default used.
+- A `BasedOn` cycle → cut off at depth 16 with what resolved so far.
+- A frame-thread cycle → cut off at 256 frames.
+- A `<Group>`-nested text frame → skipped for layout, counted on the spread.
+- A missing image link → InDesign's placeholder visual stamped in the frame.
+
+**These hard-fail — the load stops with an error (see
+[the error model](/docs/idml/edge-cases/the-error-model)):**
+
+- A manifest reference to a part not in the archive → `OpenError::MissingEntry`.
+- A referenced part present but not well-formed XML → wrapped `ParseError`.
+- A missing or wrong `mimetype`, or a non-ZIP archive → `ParseError`.
+
+The honest summary of the gaps: a **render diagnostics channel**
+(`BuiltDocument.diagnostics`) now reports the lossy outcomes that used to be
+invisible — unresolved/undecodable image links, overset text clipped at the last
+frame, a footnote pool taller than its frame, and section-numbering fallback —
+each with the page, frame, story, or URI it pertains to, alongside the
+skipped-nested-frame counter. Two degradations remain **silent**: an unknown enum
+value dropped to its default, and a `BasedOn` / frame-thread cycle cut at its cap.
+Routing those through the same channel is the remaining direction. We badge them
+honestly so that "the page rendered" is never mistaken for "the page rendered
+everything the document asked for."
+
+## Frequently asked questions
+
+**If a value is unknown or malformed, why doesn't the renderer just fail?**
+Because IDML is large, version-evolving, and produced by many tools, treating every
+unrecognized token or out-of-range number as fatal would mean almost no real
+document renders. The renderer instead drops the single problematic value to its
+default and renders everything else, so one unfamiliar attribute can't sink a whole
+page. The trade-off is that some of those fallbacks are currently silent.
+
+**How do I tell whether a render was lossy?**
+Today the one reliable structured signal is the per-spread `skipped_nested_frames`
+count, which `paged-inspect` reports in both its text and JSON output — a non-zero
+value means text frames were dropped from layout. The other degradations (unknown
+values, capped cycles, missing images) do not yet report themselves in structured
+output; a missing image is visible only as the placeholder on the rendered page.
+
+**Does the `BasedOn` or frame cap ever affect a normal document?**
+No. Real `BasedOn` chains are one to three hops and real frame threads are a handful
+of frames, far below the caps of 16 and 256 respectively. The caps exist only so a
+self-referential or otherwise malformed chain terminates instead of looping; a
+healthy document never reaches them.
+
+**Can I turn off the missing-image placeholder?**
+Yes. The placeholder is on by default because it reproduces what InDesign bakes into
+an exported page, which is what most reference renders expect. `paged-inspect`
+exposes a flag to suppress it for fixtures whose references were exported without the
+placeholder visible.

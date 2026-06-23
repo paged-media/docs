@@ -1,0 +1,91 @@
+---
+title: "Paged vs InDesign, QuarkXPress, Affinity & Scribus"
+description: How Paged compares to the major desktop-publishing tools — an open-source, IDML-compatible, scriptable platform measured against the incumbents on a dated capability matrix.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+reviewed: "2026-06-23"
+---
+
+**How does Paged compare to InDesign, QuarkXPress, Affinity, and Scribus?**
+
+**In short:** Paged is an open-source desktop publishing platform built on a
+structurally valid IDML container, with a plugin SDK and an automation-first
+architecture — combining the open format of Scribus with the extensibility of
+the InDesign ecosystem. Page-layout capability is commoditised across all of
+these tools; the field separates on **differentiators** — openness, IDML
+interchange, scripting, extensibility, and automation. No incumbent occupies
+*open format + first-class automation and extensibility* at once, and that empty
+quadrant is where Paged sits. The trade-off, stated plainly: Paged is an emerging
+platform and is not yet at the layout/print depth of the 25-year-old incumbents.
+*(Snapshot: 2026-06-23.)*
+
+<SoftwareApplicationLd />
+
+<ComparisonVerdicts />
+
+## The capability matrix
+
+<ComparisonMatrix />
+
+## Where the field actually separates
+
+Every tool here can place text and images on a page. Layout and typography are
+**baseline** — table stakes, not a reason to choose one tool over another. The
+real decision is made on the **differentiators**, and they cluster on two axes:
+how *open* the format is, and how *automatable* the tool is.
+
+InDesign is the most capable and the most closed and most expensive. Affinity is
+free but proprietary, with no scripting and no plugins. Scribus is open source but
+has no plugin platform and only partial IDML interchange. QuarkXPress is
+proprietary and desktop-bound. **None of them is simultaneously open-format and
+automation-first.** Paged is built for exactly that corner: an open `.paged`
+container that is always a valid IDML package, a public plugin SDK, and a
+scriptable, headless-friendly, web-native engine — so documents are automatable
+and interchangeable rather than locked in a single vendor's app.
+
+<ComparisonMethodology />
+
+## Compare a specific tool
+
+- **[Paged vs Affinity](/docs/paged/compare/paged-vs-affinity)** — open vs free-but-closed; the sharpest contrast on the differentiator axis.
+- **[Paged vs InDesign](/docs/paged/compare/paged-vs-indesign)** — the open, IDML-compatible foundation for the same automation jobs, without the subscription or the closed format.
+- **[Paged vs Scribus](/docs/paged/compare/paged-vs-scribus)** — two open-source tools; Paged adds IDML compatibility and a plugin platform, Scribus leads on print today.
+- **[Paged vs QuarkXPress](/docs/paged/compare/paged-vs-quarkxpress)** — open vs proprietary for structured, data-driven publishing.
+- **[Open-source DTP alternatives](/docs/paged/compare/open-source-dtp)** — the landscape of free and open desktop-publishing tools.
+
+## Related
+
+- **[What is an IDML editor?](/docs/paged/compare/idml-editor)** — the category Paged sits in.
+- **[Automated publishing](/docs/paged/use-cases/automated-publishing)** — the data-driven, PIM-fed job Paged is built for.
+- **[What is IDML?](/docs/idml/foundations/what-is-idml)** — the open format underneath it all.
+
+## Frequently asked questions
+
+**Is there an open-source alternative to InDesign?**
+Yes — both Scribus and Paged are open source. Paged is distinctive because its
+documents are a valid IDML package, so they round-trip with the InDesign
+ecosystem instead of being a one-way island, and it ships a plugin SDK and a
+scripting layer for automation.
+
+**Can you edit IDML files without Adobe InDesign?**
+Yes. Paged reads and writes IDML natively, so you can open, edit, and re-export
+IDML packages without InDesign. Affinity can import IDML but cannot export it;
+Scribus support is partial.
+
+**What is the best DTP tool for automated, data-driven publishing?**
+For depth today, InDesign with InDesign Server plus EasyCatalog or priint. For an
+open, scriptable, headless-friendly foundation without per-seat lock-in, Paged is
+designed for exactly this — with the caveat that parts of its batch pipeline are
+still landing.
+
+**Is Paged ready to replace InDesign?**
+Not for deep, artisanal layout and print production — those are emerging in Paged
+and mature in InDesign. Paged's wedge is openness, interchange, and automation;
+choose it as an open foundation, not as a like-for-like layout replacement yet.
+
+**How were these scores decided?**
+They are an ordinal 0–3 editorial judgement on a dated snapshot, with roadmap
+items marked *planned* rather than scored as present. See the methodology note
+above; corrections are welcome.

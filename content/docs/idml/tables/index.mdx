@@ -1,0 +1,91 @@
+---
+title: Tables
+description: An IDML table is a grid that rides on a paragraph — a Table element with rows, columns, and cells that each hold their own text, drawn where the story flow reaches it.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+**An IDML table is not a page item of its own — it is a `<Table>` element that rides on a paragraph in the text flow.**
+
+**In short:** In IDML, a table is a `<Table>` element nested inside a
+`<CharacterStyleRange>`, inside a `<ParagraphStyleRange>`, inside a story — the
+same place a run of text sits. It has no position attribute and names no frame:
+it draws wherever the host paragraph lands as the story flows down its text frame.
+Everything that makes a table a *table* — the grid dimensions, the rows, columns,
+and cells, the borders — lives on that one `<Table>` element and its children.
+This page introduces how the format models a table and how the rest of the chapter
+is laid out.
+
+A table in IDML is not a page item of its own. It is a `<Table>` element that
+**rides on a paragraph**, the same way an inline graphic does — it sits inside a
+`<CharacterStyleRange>`, inside a `<ParagraphStyleRange>`, inside a story. The
+story flows down its [text frame](/docs/idml/stories-text); when the flow reaches the
+paragraph that hosts the table, the table draws there. Everything that makes a
+table a *table* — the grid, the cells, the borders — lives on that one `<Table>`
+element and its children.
+
+This is worth pausing on, because it is the key to everything else on these pages.
+A table has no position attribute. It does not name a frame. It inherits its
+horizontal placement from the paragraph it rides on and its vertical placement
+from where that paragraph lands in the flow. If you understand stories and
+paragraphs, you already understand where a table *goes*; these pages are about
+what a table *is*.
+
+## The model in one breath
+
+A `<Table>` declares its shape with counts: how many header rows, how many body
+rows, how many footer rows, and how many columns. It then carries three kinds of
+children:
+
+- **`<Row>`** elements — one per row, giving each row its height.
+- **`<Column>`** elements — one per column, giving each column its width.
+- **`<Cell>`** elements — one per occupied grid position, each addressed by a
+  `Name="col:row"` and each holding its own paragraphs of text.
+
+The counts and the children are redundant on purpose: the counts tell the renderer
+the grid's dimensions, and the rows / columns / cells fill it in. A cell can span
+more than one row or column, so the number of `<Cell>` elements is usually fewer
+than rows × columns.
+
+## How to read this chapter
+
+The pages build up in the order the renderer meets the pieces:
+
+- **[The table model](/docs/idml/tables/the-table-model)** — the `<Table>` element
+  itself: the row and column counts, the outer border, and the row / column
+  divider rules.
+- **[Rows, columns, and cells](/docs/idml/tables/rows-columns-cells)** — the `<Row>`,
+  `<Column>`, and `<Cell>` children: track sizes, the `col:row` addressing,
+  merged cells via spans, per-cell insets and strokes, and the text inside a cell.
+- **[Tables in the text flow](/docs/idml/tables/tables-in-text-flow)** — what it means
+  for a table to be anchored in a paragraph: how it breaks across threaded frames,
+  and how header and footer rows repeat.
+
+A table's *formatting* — the styles it can apply — is a separate concern, covered
+in [table and cell styles](/docs/idml/styles/table-and-cell-styles). A `<Table>` names
+a table style with `AppliedTableStyle`, and a `<Cell>` names a cell style with
+`AppliedCellStyle`; both resolve through [the cascade](/docs/idml/styles/the-cascade)
+the same way text styles do. These pages describe the *structure* those styles
+dress.
+
+## Frequently asked questions
+
+**How is a table represented in IDML?**
+A table is a `<Table>` element nested inside a `<CharacterStyleRange>`, inside a
+`<ParagraphStyleRange>`, inside a story — not a top-level page item. The `<Table>`
+declares the grid's dimensions as counts and carries `<Row>`, `<Column>`, and
+`<Cell>` children that fill the grid in.
+
+**Where does an IDML table appear on the page?**
+A table has no position attribute and names no frame. It inherits its horizontal
+placement from the paragraph it rides on and its vertical placement from where that
+paragraph lands as the story flows down its text frame. Move the host paragraph and
+the table moves with it.
+
+**Why are there fewer `<Cell>` elements than rows times columns?**
+A cell can span more than one row or column. The grid positions covered by a
+spanning cell have no `<Cell>` element of their own, so every merge removes the
+cells it absorbs — which is why the count of `<Cell>` elements is usually fewer
+than rows × columns.

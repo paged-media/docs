@@ -12,6 +12,9 @@ import { CapabilityMatrix } from './capability-matrix';
 import { ConformanceTable } from './conformance-table';
 import { StatusHeadline } from './status-headline';
 import { ScriptingCatalog } from './scripting-catalog';
+import { SdkCatalog } from './sdk-catalog';
+import { SdkPlayground } from './sdk-playground';
+import { ScriptingPlayground } from './scripting-playground';
 import { PluginCapabilities } from './plugin-capabilities';
 import { RestApiReference } from './rest-api-reference';
 import { ActivityFeed, RepoActivity } from './activity-feed';
@@ -20,6 +23,10 @@ import { LiveDemo } from './live-demo';
 import { AttrTable } from './attr-table';
 import { Callout, Note } from './callout';
 import { GutenbergAside } from './gutenberg-aside';
+import { RelatedAcrossPillars } from './related-across-pillars';
+import { XRef } from './xref';
+import { ComparisonMatrix, ComparisonVerdicts, ComparisonMethodology } from './comparison-matrix';
+import { SoftwareApplicationLd } from './software-application-ld';
 import { PackageGraph, CoordinateSpace, StyleCascade, StoryThreading } from '@/components/diagrams';
 
 /**
@@ -43,6 +50,9 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     ConformanceTable,
     StatusHeadline,
     ScriptingCatalog,
+    SdkCatalog,
+    SdkPlayground,
+    ScriptingPlayground,
     PluginCapabilities,
     RestApiReference,
     ActivityFeed,
@@ -54,6 +64,12 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     Callout,
     Note,
     GutenbergAside,
+    RelatedAcrossPillars,
+    XRef,
+    ComparisonMatrix,
+    ComparisonVerdicts,
+    ComparisonMethodology,
+    SoftwareApplicationLd,
     PackageGraph,
     CoordinateSpace,
     StyleCascade,

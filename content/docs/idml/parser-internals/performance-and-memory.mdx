@@ -1,0 +1,152 @@
+---
+title: Performance and memory
+description: Why Paged's parser is fast and light — a single forward XML pass with no second AST walk, zero-copy byte slices over one decompressed buffer, parse-on-demand, and a style cascade resolved lazily at render time.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+**The parser is fast because it reads each part once, copies nothing it can slice, and defers every cost it can defer to the moment something actually needs the result.**
+
+**In short:** Four design choices set the parser's performance and memory profile.
+It reads each XML part in a single forward pass, so there is no second walk over an
+intermediate tree. It keeps every archive part as a zero-copy slice over one
+decompressed buffer, so handing parts to parsers costs nothing. It parses each
+resource on demand rather than up front, so unreferenced parts are never decoded into
+structs. And it resolves the style cascade lazily at render time rather than caching
+it, trading a little repeated work for a much smaller, simpler in-memory document.
+This page explains each choice and the trade-off it carries.
+
+## Single pass, no second walk
+
+Each XML part is read once, start to finish, by the event-driven `quick-xml` reader.
+The parser reacts to each event — start tag, text, end tag, end of file — as it
+arrives and assembles the typed struct inline. When the end-of-file event lands, the
+struct is done.
+
+The thing that *doesn't* happen is the cost worth naming. The parser never builds a
+DOM, and it never walks the part a second time. A DOM-based reader allocates a full
+tree of nodes for the document, then a second stage walks that tree to extract the
+fields it wants, then the tree is discarded. Paged collapses those two stages into one:
+the extraction happens *during* the read. For a long story — thousands of character
+runs, each with its own attributes — the difference is one linear pass producing typed
+structs versus a tree allocation plus a tree walk, with the tree thrown away at the
+end.
+
+The trade-off is that a single-pass reader has to handle everything in document order,
+with only the state it has accumulated so far. It cannot "look ahead" to an element it
+hasn't reached yet. In practice IDML's parts are laid out so this is a non-issue —
+attributes precede the content they govern, parents open before children — and the
+parsers keep small bits of running state (an anchored-frame stack, a suppression
+depth) to bridge the cases that need a little context.
+
+## Zero-copy slices over one buffer
+
+Opening the container decompresses every ZIP entry exactly once into a map of `Bytes`
+slices. Decompression itself is unavoidable — the gzipped parts have to be expanded to
+be read — but it is paid a single time, and the result is held as shareable slices
+rather than owned buffers.
+
+The payoff is in everything that comes after. When a story or spread is parsed, its
+bytes are fetched from the map and handed to the parser as a `Bytes` clone, which is a
+reference-count bump over the existing buffer, not a copy of the data. A document with
+hundreds of stories is decompressed once and then sliced hundreds of times for free.
+The crate states the intent plainly: the entry map "keeps `Bytes` so downstream crates
+can slice sub-resources … without copying."
+
+The trade-off here is the honest one: the *whole* decompressed archive lives in memory
+for the life of the container, not just the parts currently being rendered. For the
+documents Paged targets that is a sound bargain — decompressed IDML is text-XML and
+modest next to the rasterised output — and it buys a flat, simple memory model with no
+per-reader duplication and no re-decompression when a part is revisited.
+
+## Parse on demand
+
+The container open parses only two things: the mimetype string and the designmap
+manifest. Every other part stays as undecoded bytes until a higher layer asks for it,
+and a part the manifest never references is never parsed into structs at all.
+
+This keeps the cost of *touching* a document proportional to what you do with it.
+Opening a container to read its manifest does not pay to parse a single story. Building
+a full `Document` parses the parts the designmap points at — the styles, the graphics
+palette, the spreads, the stories — and nothing else. Bytes that sit in the archive
+unreferenced are decompressed (because the open decompresses everything) but never
+decoded.
+
+The trade-off is the mirror of the zero-copy one: the parser front-loads decompression
+(everything, once) but defers parsing (each part, only if needed). That split is
+intentional — decompression is cheap and shared, parsing into typed structs is the
+heavier per-part work, so it is the parsing that is made lazy.
+
+## Cascade resolved at render time
+
+The largest deferral is the style cascade. The parser stores style *definitions* as it
+finds them — each `ParagraphStyleDef`, `CharacterStyleDef`, `ObjectStyleDef` with its
+own attributes and its `BasedOn` parent reference — but it does **not** flatten them
+into fully-resolved styles, and it does not cache the resolved result. Resolution
+happens later, on demand, when the renderer asks for the effective style of a specific
+run.
+
+When that question comes, the resolver walks the `BasedOn` chain from the requested
+style up through its parents, folding each parent's unset attributes into the
+accumulating result, capped at `MAX_BASED_ON_DEPTH = 16` hops. The same lazy,
+fold-on-walk pattern serves the character, paragraph, object, cell, and table
+cascades. The resolved value is produced fresh each time it is asked for and not
+retained.
+
+This is a real trade-off, made deliberately:
+
+- **What it costs:** a style that is asked for many times is re-resolved each time, so
+  there is repeated work proportional to how often the cascade is queried. The chain is
+  short (real `BasedOn` chains are 1–3 hops) and the fold is cheap, so each resolution
+  is small.
+- **What it buys:** the in-memory document stays close to the file's own shape. There
+  is no pre-computed, denormalised copy of every effective style to build, hold, and
+  keep consistent. Styles are stored once, as authored; the effective value is derived
+  when and where it is needed. That keeps the parsed document small and the parser's job
+  simple — it records what the file says, and leaves "what does this *mean* when fully
+  cascaded" to the moment the answer is actually used.
+
+If a given workload made repeated re-resolution measurable, caching resolved styles
+would be a natural future optimisation precisely because the current design keeps the
+authored definitions intact and resolution as a pure function over them — but today the
+cascade is resolved at render time, not cached.
+
+## The shape of the trade-offs
+
+Read together, the four choices point the same way: do the unavoidable shared work once
+and early (decompress the archive), and defer everything that is per-part or derived to
+the moment it is needed (parse on demand, resolve the cascade on demand), while never
+copying what can be sliced. The result is a parser whose cost tracks what you actually
+ask of a document rather than the document's total size — light to open, cheap to slice,
+and carrying no denormalised state it has to keep in sync.
+
+For the mechanics these choices rest on — the container open, the zero-copy entry map,
+and the on-demand parsers — see [The reader](/docs/idml/parser-internals/the-reader). For
+how the cascade itself behaves when a reference is missing or loops, see
+[Validation and recovery](/docs/idml/parser-internals/validation-and-recovery).
+
+## Frequently asked questions
+
+**Does the parser load the whole file into memory?**
+Yes — the container open decompresses every ZIP entry into memory at once and keeps it
+for the container's lifetime. That is the deliberate cost of the zero-copy model:
+decompress once, then slice freely without copying or re-decompressing. The heavier
+work of parsing those bytes into typed structs is what's deferred, not the
+decompression.
+
+**Why isn't the resolved style cascade cached?**
+Because caching it would mean building and holding a denormalised copy of every
+effective style and keeping it consistent. Instead the parser keeps style definitions
+exactly as authored and resolves the cascade fresh each time the renderer asks, folding
+up a `BasedOn` chain that is typically only 1–3 hops. It trades a little repeated work
+for a smaller, simpler in-memory document — and leaves caching open as a future
+optimisation if a workload ever needs it.
+
+**Is single-pass parsing actually faster than building a tree?**
+For this job, yes. A DOM reader allocates a full intermediate tree and then walks it a
+second time to pull out fields, discarding the tree afterward. The single-pass reader
+extracts fields *during* the one read it already has to do, so there is no second walk
+and no tree to allocate or free — which matters most on the largest parts, like a long
+threaded story.

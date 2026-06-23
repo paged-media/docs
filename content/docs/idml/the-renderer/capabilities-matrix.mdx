@@ -1,0 +1,37 @@
+---
+title: Capabilities matrix
+description: A single-page map of every IDML construct and how far the Paged renderer takes it — parsed, rendered, or not yet. Generated live from the capability registry; the same status as the support badge on each feature's own page.
+tier: intermediate
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+**In short:** every IDML construct this reference documents, with how far the
+Paged renderer takes it — the same support badge you see beside each feature in
+its chapter, gathered in one place. This page is **generated from the capability
+registry**: it cannot drift from the engine, because it *is* the engine's
+recorded status. For the full cross-platform view (editor, server, plugins), see
+the [platform capability matrix](/docs/paged/state/matrix).
+
+<StatusHeadline />
+
+## How to read this
+
+Each cell's glyph carries the meaning, so the grid reads in greyscale:
+
+- <SupportBadge feature="typography.knuth-plass" compact /> — shipped, and a test verifies it.
+- A **partial** cell means the construct is read but only partly acted on; a
+  **planned** cell means it isn't handled yet. The note on each row's chapter
+  page explains the specifics.
+
+The columns are the engine layers each construct touches — most IDML constructs
+live in **Parser** and **Renderer**, with **Mutation** where editing applies.
+
+<CapabilityMatrix group="format" />
+
+## Questions
+
+The status here is the registry's, backed by tests — not a hand-kept list. If a
+badge looks wrong, the fix is in the engine or its test coverage, and this page
+follows automatically. See [how the capability state works](/docs/paged/state/how-it-works).

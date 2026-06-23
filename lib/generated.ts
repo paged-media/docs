@@ -233,6 +233,112 @@ export function getRestApi(): RestApi {
   return load('rest-api.json', { generatedAt: '', sourceCommit: null, info: { title: null, version: null, openapi: null }, endpointCount: 0, groups: [] });
 }
 
+// ── SDK catalog (@paged-media/idml-viewer + ViewerSession + Inspector) ───────
+export interface SdkMember {
+  name: string;
+  kind: string; // function | method | property | event | class | type
+  signature: string;
+  returns: string;
+  summary: string;
+}
+export interface SdkGroup {
+  key: string;
+  title: string;
+  summary: string;
+  members: SdkMember[];
+}
+export interface SdkCatalog {
+  generatedAt: string;
+  sourceMode: string;
+  sourceCommit: string | null;
+  package: string;
+  memberCount: number;
+  groups: SdkGroup[];
+}
+export function getSdkCatalog(): SdkCatalog {
+  return load('sdk-catalog.json', {
+    generatedAt: '',
+    sourceMode: 'none',
+    sourceCommit: null,
+    package: '@paged-media/idml-viewer',
+    memberCount: 0,
+    groups: [],
+  });
+}
+
+// ── IDML element/attribute schema (from the engine catalog `elements`) ───────
+export interface IdmlAttr {
+  name: string;
+  typeHint: string;
+  settablePath: string | null;
+  summary: string;
+}
+export interface IdmlElement {
+  name: string;
+  chapter: string;
+  summary: string;
+  attributes: IdmlAttr[];
+}
+export interface IdmlSchema {
+  generatedAt: string;
+  sourceCommit: string | null;
+  elementCount: number;
+  attributeCount: number;
+  elements: IdmlElement[];
+  byName: Record<string, IdmlElement>;
+}
+let _idmlSchema: IdmlSchema | undefined;
+export function getIdmlSchema(): IdmlSchema {
+  return (_idmlSchema ??= load('idml-schema.json', {
+    generatedAt: '',
+    sourceCommit: null,
+    elementCount: 0,
+    attributeCount: 0,
+    elements: [],
+    byName: {},
+  }));
+}
+export function getIdmlElement(name: string): IdmlElement | undefined {
+  return getIdmlSchema().byName[name];
+}
+
+// ── cross-pillar links (IDML format ⇄ Paged platform) ────────────────────────
+export interface PagedSurface {
+  key: string;
+  label: string;
+  url: string;
+  note?: string;
+}
+export interface ChapterCrosslink {
+  title: string;
+  group: string;
+  idmlUrl: string | null;
+  featureCount: number;
+  shippedPct: number | null;
+  shipped: { parser: Impl; renderer: Impl; mutation: Impl; sdk: Impl; script: Impl };
+  pagedSurfaces: PagedSurface[];
+}
+export interface Crosslinks {
+  generatedAt: string;
+  sourceCommit: string | null;
+  chapterCount: number;
+  chapters: Record<string, ChapterCrosslink>;
+  surfaces: Record<string, { url: string; label: string; chapters: string[] }>;
+}
+let _crosslinks: Crosslinks | undefined;
+export function getCrosslinks(): Crosslinks {
+  return (_crosslinks ??= load('crosslinks.json', {
+    generatedAt: '',
+    sourceCommit: null,
+    chapterCount: 0,
+    chapters: {},
+    surfaces: {},
+  }));
+}
+export function getChapterCrosslink(chapter: string): ChapterCrosslink | undefined {
+  return getCrosslinks().chapters[chapter];
+}
+
 // ── activity (cross-repo commit feed) ────────────────────────────────────────
 export interface Commit {
   repo?: string;

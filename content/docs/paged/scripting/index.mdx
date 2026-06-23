@@ -1,0 +1,67 @@
+---
+title: Scripting with paged.*
+description: The Boa-based scripting layer — a sandboxed ECMAScript surface for reading and authoring a paged document through the paged.* host API. The full surface is generated from the engine catalog.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+reviewed: "2026-06-23"
+---
+
+**In short:** paged embeds a **Boa** ECMAScript engine and exposes a single
+global, **`paged.*`**, for inspecting and editing the open document. The same
+surface runs in the editor's script panel/REPL and headless via the `paged-run`
+CLI. This reference is **generated from the engine's own catalog**, so it always
+matches the running engine exactly.
+
+## The shape of a script
+
+A script is plain ECMAScript (no modules, no I/O — see [constraints](/docs/paged/scripting/constraints)).
+It addresses elements by id, reads with `paged.inspect` / `paged.get`, and edits
+with `paged.set` and the structural authoring functions. Every write returns a
+boolean so a script can branch on success.
+
+```js
+const frame = paged.selection()[0];
+if (frame) {
+  paged.set(frame, "fillColor", "Color/Red");
+  paged.set(frame, "frameRotation", 12);
+}
+```
+
+## Try it
+
+Edit the script and press **Run** — it executes in the real Paged editor on the
+right, and the canvas updates live. Console output appears below.
+
+<ScriptingPlayground
+  title="A first paged.* script — recolor and rotate the selected frame"
+  script={`// Inspect the selection, then recolor and rotate the first frame.
+const sel = paged.selection();
+console.log('selected:', sel.length, 'element(s)');
+
+const frame = sel[0];
+if (frame) {
+  paged.set(frame, 'fillColor', 'Color/Red');
+  paged.set(frame, 'frameRotation', 12);
+  console.log('recolored + rotated', frame);
+} else {
+  console.log('Select a frame on the canvas, then Run again.');
+}`}
+/>
+
+> The playground runs against [play.paged.media](https://play.paged.media). It
+> needs that app deployed with the editable-script bridge and a
+> cross-origin-isolated (COOP/COEP) page — both are wired here; see
+> [constraints](/docs/paged/scripting/constraints) for the sandbox model.
+
+## What's here
+
+- **[Host functions](/docs/paged/scripting/host-functions)** — every `paged.*`
+  function, grouped by kind (read, write, author, history, console).
+- **[Settable paths](/docs/paged/scripting/settable-paths)** — the property
+  names you can pass to `paged.set`, plus the id grammar for addressing elements.
+- **[Constraints](/docs/paged/scripting/constraints)** — the sandbox rules and
+  execution budgets.
+
+<ScriptingCatalog section="grammar" />

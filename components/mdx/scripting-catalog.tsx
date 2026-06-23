@@ -8,65 +8,14 @@
  *   <ScriptingCatalog section="functions" | "grammar" | "paths" | "constraints" />
  */
 import { getScripting } from '@/lib/generated';
+import { ScriptingFnsView, ScriptingPathsView } from './scripting-catalog-view';
 
-const TH: React.CSSProperties = {
-  textAlign: 'left',
-  fontFamily: 'var(--font-sans)',
-  fontSize: 11,
-  fontWeight: 640,
-  letterSpacing: '0.04em',
-  color: 'var(--color-muted)',
-  padding: '4px 8px',
-  borderBottom: '1px solid var(--color-rule)',
-  whiteSpace: 'nowrap',
-};
-const TD: React.CSSProperties = { padding: '5px 8px', borderBottom: '1px solid color-mix(in srgb, var(--color-rule) 55%, transparent)', verticalAlign: 'top' };
 const mono: React.CSSProperties = { fontFamily: 'var(--font-mono, monospace)', fontSize: 12.5 };
-
-const KIND_TITLE: Record<string, string> = {
-  read: 'Read',
-  write: 'Write',
-  author: 'Author (structural)',
-  history: 'History (undo/redo)',
-  console: 'Console',
-};
 
 function Functions() {
   const { hostFunctionGroups, hostFunctionCount } = getScripting();
   if (!hostFunctionGroups.length) return <Empty />;
-  return (
-    <div className="not-prose" style={{ margin: '1rem 0' }}>
-      <p style={{ fontSize: 11.5, color: 'var(--color-muted)', margin: '0 0 .5rem' }}>{hostFunctionCount} host functions, grouped by kind.</p>
-      {hostFunctionGroups.map((g) => (
-        <div key={g.kind} style={{ margin: '0 0 1rem' }}>
-          <h3 style={{ fontFamily: 'var(--font-serif, var(--font-sans))', fontSize: 15, margin: '0 0 2px' }}>{KIND_TITLE[g.kind] ?? g.kind}</h3>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 13 }}>
-              <thead>
-                <tr>
-                  <th style={TH}>Function</th>
-                  <th style={TH}>Returns</th>
-                  <th style={TH}>Summary</th>
-                </tr>
-              </thead>
-              <tbody>
-                {g.functions.map((fn) => (
-                  <tr key={fn.name}>
-                    <td style={{ ...TD, ...mono, whiteSpace: 'nowrap' }}>
-                      <strong>{fn.name}</strong>
-                      <span style={{ color: 'var(--color-muted)' }}>{fn.params}</span>
-                    </td>
-                    <td style={{ ...TD, ...mono, color: 'var(--color-muted)' }}>{fn.returns}</td>
-                    <td style={{ ...TD, fontFamily: 'var(--font-sans)' }}>{fn.summary}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  return <ScriptingFnsView groups={hostFunctionGroups} count={hostFunctionCount} />;
 }
 
 function Grammar() {
@@ -89,20 +38,7 @@ function Grammar() {
 function Paths() {
   const { settablePaths, settablePathCount } = getScripting();
   if (!settablePaths.length) return <Empty />;
-  return (
-    <div className="not-prose" style={{ margin: '1rem 0' }}>
-      <p style={{ fontSize: 11.5, color: 'var(--color-muted)', margin: '0 0 .5rem' }}>
-        {settablePathCount} settable property paths — the second argument to <code style={mono}>paged.set(id, path, value)</code>.
-      </p>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 8px' }}>
-        {settablePaths.map((p) => (
-          <code key={p} style={{ ...mono, fontSize: 11.5, background: 'color-mix(in srgb, var(--color-rule) 14%, transparent)', borderRadius: 3, padding: '1px 6px' }}>
-            {p}
-          </code>
-        ))}
-      </div>
-    </div>
-  );
+  return <ScriptingPathsView paths={settablePaths} count={settablePathCount} />;
 }
 
 function Constraints() {

@@ -1,0 +1,89 @@
+---
+title: "Paged vs Adobe InDesign"
+description: Paged vs Adobe InDesign — an open-source, IDML-compatible, scriptable platform versus the subscription incumbent. Where Paged fits for open, automated publishing.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+reviewed: "2026-06-23"
+---
+
+**How does Paged compare to Adobe InDesign?**
+
+**In short:** InDesign is the deepest, most established layout tool, with the
+largest ecosystem and talent pool — and it is a closed, subscription product
+whose native `.indd` format is proprietary (IDML is its interchange form). Paged
+is open source, treats IDML as its native container, and is scriptable and
+headless-friendly. Paged does not match InDesign's layout depth or ecosystem
+today; its case is being the *open foundation* for the same interchange and
+automation jobs, without the subscription or the lock-in. *(Snapshot:
+2026-06-23.)*
+
+<SoftwareApplicationLd />
+
+## Verdict
+
+- **Choose InDesign** for the deepest layout and typography toolset, mature print
+  production, and the broadest ecosystem and hiring pool — if a subscription and
+  a closed native format are acceptable.
+- **Choose Paged** for an open, IDML-native, scriptable, automation-first
+  foundation — accepting that layout and print depth are still emerging.
+
+## At a glance
+
+<ComparisonMatrix only={["paged", "indesign"]} differentiatorsOnly />
+
+## Open & interoperable
+
+InDesign defines IDML, and IDML round-trips between InDesign and Paged — that is
+the whole point of the format. The difference is the *native* document: InDesign's
+`.indd` is closed and binary, while Paged's `.paged` is an open, inspectable ZIP
+that is always a valid IDML package. With Paged, the open form *is* the working
+form, not just an export.
+
+## Extensible
+
+InDesign has a mature SDK and a scripting model (ExtendScript/UXP), but the SDK is
+closed and access is paid. Paged's [plugin SDK](/docs/paged/plugin-sdk) and
+[`paged.*` scripting](/docs/paged/scripting) are open and public — the same
+surface its own first-party plugins use.
+
+## Automation-native
+
+InDesign's automation story is strong but built around paid, closed pieces:
+InDesign Server plus ecosystem tools like EasyCatalog and priint. Paged is
+automation-native and headless-friendly by design, aimed at data-driven and
+PIM-fed publishing — see [automated publishing](/docs/paged/use-cases/automated-publishing).
+Be clear-eyed: InDesign's automation ecosystem is far more mature today; parts of
+Paged's batch pipeline are still landing.
+
+## Migrating from InDesign
+
+Because Paged is IDML-native, the migration path is the IDML package itself:
+export IDML from InDesign, open it in Paged, and it round-trips. You are not
+converting into a foreign format — you are staying in IDML and swapping the tool
+that reads it. See [round-tripping](/docs/idml/round-tripping).
+
+## When InDesign is the better choice
+
+For deep, artisanal layout, advanced typography, mature CMYK/print production, and
+a team that already knows the tool, InDesign is the better choice today. Paged is
+not a like-for-like replacement for that work yet; it is the open, automatable
+alternative for interchange- and data-driven workflows.
+
+## Frequently asked questions
+
+**Can Paged open InDesign files?**
+Paged works with IDML — InDesign's open interchange format. Export IDML from
+InDesign and Paged reads and re-writes it. Paged does not open the proprietary
+binary `.indd` directly.
+
+**Is Paged a free alternative to InDesign?**
+Paged is open source and free, but it is an emerging platform, not a feature-for-
+feature InDesign replacement. Choose it for openness, IDML interchange, and
+automation rather than layout-depth parity.
+
+**Does Paged work for automated catalog publishing like InDesign Server?**
+That is exactly the job Paged targets — scriptable, headless output from data.
+InDesign Server's ecosystem is more mature today; Paged offers an open foundation
+for the same workflows.

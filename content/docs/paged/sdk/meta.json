@@ -1,0 +1,13 @@
+{
+  "title": "SDK",
+  "icon": "renderer",
+  "pages": [
+    "index",
+    "embedding-guide",
+    "camera-and-navigation",
+    "events-and-errors",
+    "rendering-to-bytes",
+    "viewer-session",
+    "api-reference"
+  ]
+}

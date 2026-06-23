@@ -1,0 +1,29 @@
+---
+title: Capability state
+description: The live, evidence-backed status of every paged capability — what is shipped, at which layer, and whether tests verify it. Generated directly from the capability registry.
+tier: beginner
+diataxis: reference
+status: draft
+owner: paged-docs
+---
+
+**In short:** paged tracks every capability as one row in a **registry**, with a
+per-layer implementation status and a test-evidence overlay. These pages render
+that registry live — the same data behind the internal dashboard, published here
+so anyone can see exactly where the system stands.
+
+<StatusHeadline />
+
+## Where to look
+
+- **[Capability matrix](/docs/paged/state/matrix)** — every capability across
+  every layer (parser, renderer, mutation, editor, server, plugins), with a
+  shipped/verified glyph per cell.
+- **[Conformance](/docs/paged/state/conformance)** — how far the corpus
+  harness verifies each IDML feature: parsed → rendered → mutatable →
+  round-trips, claimed versus verified.
+- **[How it works](/docs/paged/state/how-it-works)** — the registry, the
+  evidence flow, and why these pages can never silently go stale.
+
+The registry claims; the tests verify; this site renders both. A claim with no
+passing test shows as **untested**, not green — the honesty is built in.

@@ -1,0 +1,69 @@
+---
+title: "Automated & data-driven publishing"
+description: Generate catalogs, datasheets, and documents from data — PIM-fed, scriptable, headless publishing with Paged's open IDML platform.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+reviewed: "2026-06-23"
+---
+
+**Can you generate documents from data — catalogs, datasheets, price lists — automatically?**
+
+**In short:** yes. Paged is built for automated, data-driven publishing: a
+scriptable, headless-friendly engine on an open IDML container, so you can pour
+records from a PIM or database into a template and produce print-ready documents
+in batches — without a per-seat desktop app in the loop. The incumbent path
+(InDesign Server + EasyCatalog/priint) is more mature today; Paged's case is an
+*open* foundation for the same job. *(Snapshot: 2026-06-23.)*
+
+<SoftwareApplicationLd />
+
+## The job
+
+Catalog, datasheet, and directory publishing is fundamentally *templating over
+data*: a layout plus a feed of records (products, prices, specs) that fills it,
+repeated across hundreds or thousands of pages. The hard parts are doing it
+**automatically**, **from a data source**, and **at scale** — not hand-placing
+each record.
+
+## Why Paged fits
+
+- **Scriptable** — the [`paged.*` scripting layer](/docs/paged/scripting) drives
+  the document model from JavaScript: read a record, place text and frames, apply
+  styles, repeat.
+- **Headless & web-native** — the engine runs without a desktop GUI, so it fits a
+  server or a build pipeline.
+- **Open, interchangeable output** — results are valid [IDML](/docs/idml/foundations/what-is-idml)
+  packages, so they round-trip with the InDesign ecosystem instead of being a
+  one-way export.
+- **Data plugins** — the [paged.data plugin](/docs/paged/plugins/data) targets
+  database/PIM-fed record flows directly.
+
+## Honest maturity
+
+InDesign Server with EasyCatalog or priint is the established, battle-tested stack
+for this work. Parts of Paged's batch/automation pipeline are still landing — see
+the live [capability state](/docs/paged/state). Choose Paged here for an open,
+scriptable foundation you can own and extend, not for turnkey parity today.
+
+## Related
+
+- [Scripting with paged.*](/docs/paged/scripting) — the automation surface.
+- [paged.data plugin](/docs/paged/plugins/data) — record flows and batch output.
+- [Compare DTP tools](/docs/paged/compare) — how automation stacks up across tools.
+
+## Frequently asked questions
+
+**Can Paged generate a catalog from a database or PIM?**
+Yes — that is a primary use case. Script the document from your records, or use
+the data plugin's record flow, and produce IDML output in batches.
+
+**Does it run on a server, without a GUI?**
+Yes. The engine is headless-friendly and web-native, so it fits build pipelines
+and servers.
+
+**Is this as capable as InDesign Server + EasyCatalog today?**
+Not yet — that stack is more mature. Paged offers an open, scriptable foundation
+for the same workflows; check the [capability state](/docs/paged/state) for what's
+shipped.

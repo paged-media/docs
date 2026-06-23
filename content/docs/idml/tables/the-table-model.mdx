@@ -1,0 +1,165 @@
+---
+title: The table model
+description: The Table element and its attributes — the row and column counts that define the grid, the outer border strokes, and the alternating row and column divider rules.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+**The `<Table>` element is the root of a table: it declares the grid's dimensions as counts and carries the table's own paint directly as attributes.**
+
+**In short:** A `<Table>` defines a grid with four counts — `HeaderRowCount`,
+`BodyRowCount`, `FooterRowCount`, and `ColumnCount` — and carries the table's own
+borders as attributes: the four outer-edge strokes and the alternating row and
+column dividers. Its `<Row>`, `<Column>`, and `<Cell>` children fill the grid in.
+A `<Table>` always lives inside a `<CharacterStyleRange>`, inside a
+`<ParagraphStyleRange>`, inside a story. This page is the attribute reference for
+the `<Table>` element itself.
+
+The `<Table>` element is the root of a table. It declares the grid's dimensions
+as counts, and it carries the table's own paint — the four outer border strokes
+and the alternating row / column dividers — directly as attributes. Its `<Row>`,
+`<Column>`, and `<Cell>` children, covered on the
+[next page](/docs/idml/tables/rows-columns-cells), fill the grid in.
+
+A `<Table>` always lives inside a `<CharacterStyleRange>`, which is inside a
+`<ParagraphStyleRange>`, which is inside a story — see
+[tables in the text flow](/docs/idml/tables/tables-in-text-flow) for what that nesting
+means.
+
+```xml
+<ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
+  <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+    <Table Self="utable" HeaderRowCount="1" FooterRowCount="0" BodyRowCount="2"
+           ColumnCount="2" AppliedTableStyle="TableStyle/$ID/[Basic Table]">
+      <Row .../> <Column .../> <Cell ...>…</Cell>
+    </Table>
+  </CharacterStyleRange>
+</ParagraphStyleRange>
+```
+
+## Shape: the row and column counts
+
+These four counts define the grid. The total number of rows is
+`HeaderRowCount + BodyRowCount + FooterRowCount`; the renderer expects exactly
+that many `<Row>` children and `ColumnCount` `<Column>` children. The counts also
+tell the renderer which rows belong to which *region* — header rows are the first
+`HeaderRowCount`, footer rows are the last `FooterRowCount`, and the body is
+everything between. Region membership drives both repetition (see
+[tables in the text flow](/docs/idml/tables/tables-in-text-flow)) and which cell-style
+region a cell falls into.
+
+<AttrTable
+  element="Table"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'supported', note: 'The table id, e.g. "utable". Informational at the structural level; cells address the grid by Name, not by this id.' },
+    { attr: 'HeaderRowCount', type: 'int (0–25)', support: 'supported', note: 'How many leading rows form the header region. 0 means no header. Defaults to 0 when absent.' },
+    { attr: 'FooterRowCount', type: 'int (0–25)', support: 'supported', note: 'How many trailing rows form the footer region. 0 means no footer. Defaults to 0 when absent.' },
+    { attr: 'BodyRowCount', type: 'int', support: 'supported', note: 'How many rows form the body region (everything that is neither header nor footer). Defaults to 0 when absent.' },
+    { attr: 'ColumnCount', type: 'int', support: 'supported', note: 'How many columns the table has; should match the number of <Column> children. Defaults to 0 when absent.' },
+    { attr: 'AppliedTableStyle', type: 'string (TableStyle id)', support: 'parsed-not-rendered', note: 'The table style the table applies. Recorded and resolved for region cell-style lookup, but the table’s own geometry comes from the cell elements directly rather than from the style. See the note below.' },
+  ]}
+/>
+
+`AppliedTableStyle` resolves the table style's *region* cell-style references (so
+a cell with no `AppliedCellStyle` of its own can inherit the header / body / footer
+region default), but the table's measured layout — insets, row heights, the actual
+strokes drawn — is read from the row, column, and cell elements rather than
+synthesised from the style. The style page,
+[table and cell styles](/docs/idml/styles/table-and-cell-styles), describes which
+parts of that cascade are read today.
+
+## Header and footer repetition
+
+When a table breaks across a chain of threaded frames, its header rows can repeat
+at the top of each continuation frame and its footer rows at the bottom of each
+frame but the last. Two booleans on the `<Table>` control whether they do.
+
+<AttrTable
+  element="Table"
+  rows={[
+    { attr: 'RepeatingHeader', type: 'boolean', support: 'supported', note: 'Whether the header rows duplicate at the top of every continuation frame. Absent means true (repeat); an explicit false suppresses the repeat. Only meaningful when HeaderRowCount > 0.' },
+    { attr: 'RepeatingFooter', type: 'boolean', support: 'supported', note: 'Whether the footer rows duplicate at the bottom of every frame except the last. Absent means true; an explicit false suppresses it. Only meaningful when FooterRowCount > 0.' },
+  ]}
+/>
+
+The repetition itself is described, with its current limits, in
+[tables in the text flow](/docs/idml/tables/tables-in-text-flow).
+
+## The outer border
+
+InDesign serialises the table's four outer-edge strokes directly on the `<Table>`
+element when the user customises the border without going through a table style.
+Each edge has its own colour, weight, type, and tint. These take precedence over
+any border the `AppliedTableStyle` would contribute. A colour of `Swatch/None`
+means no stroke on that edge.
+
+<AttrTable
+  element="Table"
+  rows={[
+    { attr: 'TopBorderStrokeColor / BottomBorderStrokeColor / LeftBorderStrokeColor / RightBorderStrokeColor', type: 'string (swatch id)', support: 'supported', note: 'Per-edge outer-border paint. A reference into Resources/Graphic.xml.' },
+    { attr: 'TopBorderStrokeWeight / BottomBorderStrokeWeight / LeftBorderStrokeWeight / RightBorderStrokeWeight', type: 'double (pt)', support: 'supported', note: 'Per-edge outer-border weight in points.' },
+    { attr: 'TopBorderStrokeType / … / RightBorderStrokeType', type: 'string (stroke-style id)', support: 'parsed-not-rendered', note: 'Per-edge stroke style (solid, dashed, …). Captured; the renderer draws a solid stroke today.' },
+    { attr: 'TopBorderStrokeTint / … / RightBorderStrokeTint', type: 'double (0–100%)', support: 'supported', note: 'Per-edge border tint percentage.' },
+    { attr: 'TopBorderStrokeGapColor / GapTint (per edge)', type: 'swatch id / double', support: 'not-yet-parsed', note: 'Gap colour for dashed / striped border styles. Read past, not acted on.' },
+  ]}
+/>
+
+## Row and column dividers
+
+Between the outer border, the lines that separate one row from the next (and one
+column from the next) are described by two families of *alternating* attributes:
+a "start" set that paints the first run of dividers and an "end" set that paints
+the next run, cycling across the table. They live directly on the `<Table>`.
+
+<AttrTable
+  element="Table"
+  rows={[
+    { attr: 'StartRowStrokeCount / EndRowStrokeCount', type: 'int', support: 'supported', note: 'How many consecutive row dividers take the "start" paint, then the "end" paint, alternating down the table.' },
+    { attr: 'StartRowStrokeColor / EndRowStrokeColor', type: 'string (swatch id)', support: 'supported', note: 'Row-divider paint for each phase of the alternation.' },
+    { attr: 'StartRowStrokeWeight / EndRowStrokeWeight', type: 'double (pt)', support: 'supported', note: 'Row-divider weight for each phase.' },
+    { attr: 'StartRowStrokeTint / EndRowStrokeTint', type: 'double (0–100%)', support: 'supported', note: 'Row-divider tint for each phase.' },
+    { attr: 'StartRowStrokeType / EndRowStrokeType', type: 'string (stroke-style id)', support: 'parsed-not-rendered', note: 'Row-divider stroke style; captured, drawn solid today.' },
+    { attr: 'StartColumnStrokeCount / Color / Weight / Tint / Type (and End* equivalents)', type: 'mixed', support: 'supported', note: 'The column-divider analogue of the row-stroke family. Interior column dividers are drawn from this decl; row strokes win at crossings (StrokeOrder precedence is the remaining piece).' },
+  ]}
+/>
+
+In practice, when a divider style comes from a table style, InDesign also
+serialises the resulting stroke on each `<Cell>`'s matching edge. The renderer
+draws those per-cell edge strokes (covered on the
+[next page](/docs/idml/tables/rows-columns-cells)), which is what makes ordinary
+gridlines appear even when the table-level divider attributes are left at their
+defaults.
+
+The skip-first / skip-last alternating counts *are* now read and honoured (a
+table can skip the first or last N rows or columns before the alternation
+begins). The one attribute still not read is `StrokeOrder` — which stroke wins
+where a row divider crosses a column divider — so today the row divider always
+wins at a crossing.
+<SupportBadge status="not-yet-parsed" note="StrokeOrder crossing precedence (row divider wins today); skip-first/last alternating counts are now honoured" />
+
+## Frequently asked questions
+
+**How does a `<Table>` define how many rows and columns it has?**
+The total number of rows is `HeaderRowCount + BodyRowCount + FooterRowCount`, and
+the column count is `ColumnCount`. The renderer expects exactly that many `<Row>`
+children and `ColumnCount` `<Column>` children; each count defaults to 0 when the
+attribute is absent.
+
+**Does the renderer get a table's geometry from `AppliedTableStyle`?**
+No. `AppliedTableStyle` is recorded and resolved only for region cell-style lookup
+— so a cell with no `AppliedCellStyle` can inherit a header, body, or footer
+default. The table's measured layout — insets, row heights, and the strokes
+actually drawn — is read from the row, column, and cell elements directly.
+
+**Why do gridlines still appear when the table-level divider attributes are left at their defaults?**
+When a divider style comes from a table style, InDesign also serialises the
+resulting stroke on each `<Cell>`'s matching edge. The renderer draws those
+per-cell edge strokes, so ordinary gridlines appear even without any explicit
+table-level divider attributes.
+
+**Are dashed or striped table borders drawn as authored?**
+Not yet. The per-edge `StrokeType` attributes are captured but the renderer draws a
+solid stroke today, and the dashed-style gap colours (`StrokeGapColor` / `GapTint`)
+are read past but not acted on.

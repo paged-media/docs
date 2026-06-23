@@ -58,11 +58,30 @@ function walk(dir) {
 // attr extractors
 const attr = (tag, name) => new RegExp(`<${tag}\\b[^>]*?\\b${name}=["']([^"']+)["']`, 'g');
 
+// Map a content file to its route path (mirrors Fumadocs routing): index → the
+// folder, otherwise the path sans extension. Trailing slash normalized away.
+const allFiles = existsSync(CONTENT) ? walk(CONTENT) : [];
+const pageRoutes = new Set();
+for (const file of allFiles) {
+  let rel = relative(CONTENT, file).replace(/\.mdx$/, '').replace(/\\/g, '/');
+  rel = rel.replace(/\/index$/, '').replace(/^index$/, '');
+  pageRoutes.add(`/docs${rel ? '/' + rel : ''}`);
+}
+
+// Resolve an <XRef to="pillar:path"> to a route, matching components/mdx/xref.tsx.
+function xrefHref(to) {
+  const [pillar, ...rest] = to.split(':');
+  const path = rest.join(':').replace(/^\/+/, '');
+  if (pillar === 'idml' || pillar === 'paged') return `/docs/${pillar}/${path}`.replace(/\/$/, '');
+  return (to.startsWith('/') ? to : `/${to}`).replace(/\/$/, '');
+}
+
 const errors = [];
 let legacyBadges = 0;
 let featureRefs = 0;
+let xrefs = 0;
 
-for (const file of existsSync(CONTENT) ? walk(CONTENT) : []) {
+for (const file of allFiles) {
   const src = readFileSync(file, 'utf8');
   const rel = relative(ROOT, file);
 
@@ -78,11 +97,18 @@ for (const file of existsSync(CONTENT) ? walk(CONTENT) : []) {
     }
   }
 
+  // <XRef to="…"> must resolve to a real page (no rotting cross-pillar links).
+  for (const m of src.matchAll(/<XRef\b[^>]*?\bto=["']([^"']+)["']/g)) {
+    xrefs++;
+    const href = xrefHref(m[1]);
+    if (!pageRoutes.has(href)) errors.push(`${rel}: <XRef to="${m[1]}"> → ${href} — no such page`);
+  }
+
   // legacy status= badges (allowed, counted)
   for (const _ of src.matchAll(/<SupportBadge\b(?![^>]*\bfeature=)[^>]*\bstatus=/g)) legacyBadges++;
 }
 
-console.log(`check-feature-refs: ${featureRefs} live refs validated · ${legacyBadges} legacy status= badge(s) remaining`);
+console.log(`check-feature-refs: ${featureRefs} live refs · ${xrefs} xref(s) · ${pageRoutes.size} pages · ${legacyBadges} legacy status= badge(s)`);
 if (errors.length) {
   console.error(`\n${errors.length} bad reference(s):`);
   for (const e of errors) console.error('  ✗ ' + e);

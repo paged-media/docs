@@ -1,0 +1,75 @@
+---
+title: Embedding guide
+description: Drop the Paged SDK viewer into a page — install, mount a canvas, load a document, and meet the WebGPU and cross-origin-isolation requirements.
+tier: intermediate
+diataxis: tutorial
+status: published
+owner: paged-docs
+reviewed: "2026-06-23"
+---
+
+**Mount a canvas, create a viewer, load a document — that's the whole embed.**
+
+**In short:** install `@paged-media/idml-viewer`, give it a `<canvas>`, call
+`createViewer({ canvas })`, then `await viewer.load(bytes)`. The viewer renders
+with **WebGPU only**, so gate on `navigator.gpu` and show a fallback when it is
+absent. The wasm is loaded lazily by the package; keep the viewer in a
+client-only component so it never runs during SSR or static export.
+
+## Install
+
+```bash
+npm install @paged-media/idml-viewer
+```
+
+## Mount
+
+```ts
+import { createViewer } from '@paged-media/idml-viewer';
+
+const canvas = document.querySelector('canvas')!;
+if (!('gpu' in navigator)) {
+  // No WebGPU — render a fallback instead of a blank canvas.
+} else {
+  const viewer = await createViewer({
+    canvas,
+    layoutMode: 'continuous',
+    input: { wheelZoom: true, dragPan: true, doubleClickZoom: true, keyboard: true },
+  });
+  await viewer.load('/sample.idml'); // bytes, Blob, or a URL string
+  viewer.fit('width');
+}
+```
+
+## Requirements & gotchas
+
+- **WebGPU only.** There is no CPU fallback in the shipped viewer; detect
+  `navigator.gpu` and degrade gracefully (the docs' own live previews do exactly
+  this).
+- **Client-only.** WebGPU and the wasm have no server runtime — lazy-import the
+  viewer in a client component (in Next.js, a `'use client'` component, never in a
+  server render).
+- **Dispose it.** Call `viewer.dispose()` on unmount; each viewer owns a WebGPU
+  device.
+- **Cross-origin isolation** is only needed if you embed alongside the *editor*'s
+  `SharedArrayBuffer` path (COOP/COEP headers). The read-only viewer itself does
+  not require SAB.
+
+This page documents the public, read-only viewer. To embed the full *editing*
+experience (mutation, panels, the `paged.*` scripting layer), you want the
+editor and the [scripting playground](/docs/paged/scripting), which do require
+cross-origin isolation.
+
+## Frequently asked questions
+
+**Does it work in React / Vue / Svelte?**
+Yes — it is framework-agnostic; you give it a canvas. Just keep creation in a
+client-only path and dispose on unmount.
+
+**What about SSR or static export?**
+Don't create the viewer during SSR. Lazy-import it on mount. The static HTML can
+ship the canvas shell; the viewer hydrates on the client.
+
+**Do I need COOP/COEP headers?**
+Not for the read-only viewer. You need them only when embedding the editor's
+SharedArrayBuffer render path.

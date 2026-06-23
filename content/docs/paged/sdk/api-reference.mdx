@@ -1,0 +1,37 @@
+---
+title: API reference
+description: The complete @paged-media/idml-viewer API — every exported function, method, property, event, and type — generated from the package surface, with a live filter.
+tier: intermediate
+diataxis: reference
+status: published
+owner: paged-docs
+reviewed: "2026-06-23"
+---
+
+**Every member of the SDK, in one filterable table.**
+
+**In short:** this is the full public surface of `@paged-media/idml-viewer` — the
+viewer lifecycle, the camera, page navigation, rendering, events, errors, the
+pure camera-math helpers, and every exported type — plus the lower-level
+`ViewerSession` (`@paged-media/sdk`) and the read-only `Inspector`
+(`@paged-media/introspect-wasm`). It is generated from the package's API surface,
+so it does not drift from the code. Type to filter by name, signature, or
+description.
+
+<SdkCatalog />
+
+## Frequently asked questions
+
+**Is this list hand-maintained?**
+No. It is generated into `.generated/sdk-catalog.json` and rendered here. When the
+package gains or changes a member, this page changes on the next build.
+
+**Which package do I install?**
+`@paged-media/idml-viewer` for the ergonomic `Viewer` API. It depends on the
+`@paged-media/sdk` wasm session under the hood; you rarely call `ViewerSession`
+directly. The `Inspector` from `@paged-media/introspect-wasm` is a separate,
+read-only tool for inspection and tests.
+
+**Where do I see these in action?**
+The [camera & navigation](/docs/paged/sdk/camera-and-navigation) page drives most
+of this API in a live viewer you can operate.

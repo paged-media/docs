@@ -1,0 +1,137 @@
+{
+  "$comment": "Editorial DTP comparison matrix behind /docs/paged/compare. Ordinal 0-3 editorial scores on a dated snapshot, NOT vendor benchmarks. Roadmap-not-shipped Paged capabilities use pagedPlanned:true and are scored honestly, not as present. Update with `pnpm update:comparison` (researches current facts via Claude Opus) or by hand — then bump `snapshot`.",
+  "snapshot": "2026-06-23",
+  "scale": [
+    { "score": 0, "label": "None" },
+    { "score": 1, "label": "Limited / emerging" },
+    { "score": 2, "label": "Solid" },
+    { "score": 3, "label": "Comprehensive" }
+  ],
+  "tools": [
+    { "key": "paged", "name": "Paged", "note": "Open-source IDML platform (emerging)" },
+    { "key": "indesign", "name": "Adobe InDesign", "note": "The incumbent; subscription" },
+    { "key": "quark", "name": "QuarkXPress", "note": "Proprietary; perpetual licence" },
+    { "key": "affinity", "name": "Affinity by Canva", "note": "Free, proprietary, single app" },
+    { "key": "scribus", "name": "Scribus", "note": "Open-source (GPL)" }
+  ],
+  "domains": [
+    {
+      "key": "licensing",
+      "title": "Licensing & cost",
+      "kind": "differentiator",
+      "rows": [
+        {
+          "dimension": "Open source & free to use",
+          "scores": { "paged": 3, "indesign": 0, "quark": 0, "affinity": 1, "scribus": 3 },
+          "note": "Paged is MPL-2.0 OR PMEL; Scribus is GPL. Affinity is free-of-charge but proprietary and vendor-governed (Canva)."
+        }
+      ]
+    },
+    {
+      "key": "format",
+      "title": "File format openness",
+      "kind": "differentiator",
+      "rows": [
+        {
+          "dimension": "Open, inspectable document container",
+          "scores": { "paged": 3, "indesign": 1, "quark": 0, "affinity": 0, "scribus": 2 },
+          "note": "Paged's .paged is always a valid IDML (ZIP) package. InDesign's .indd is closed (IDML is its interchange form). .qxp and .af are proprietary; Scribus .sla is open XML but app-specific."
+        }
+      ]
+    },
+    {
+      "key": "interop",
+      "title": "IDML interchange",
+      "kind": "differentiator",
+      "rows": [
+        {
+          "dimension": "Round-trips IDML with the InDesign ecosystem",
+          "scores": { "paged": 3, "indesign": 3, "quark": 1, "affinity": 1, "scribus": 1 },
+          "note": "InDesign defines IDML. Paged reads and writes it natively. Affinity imports IDML but cannot export it; Scribus IDML import is partial."
+        }
+      ]
+    },
+    {
+      "key": "scripting",
+      "title": "Scripting & API",
+      "kind": "differentiator",
+      "rows": [
+        {
+          "dimension": "Scriptable document model",
+          "scores": { "paged": 2, "indesign": 3, "quark": 2, "affinity": 0, "scribus": 2 },
+          "note": "Paged exposes a sandboxed paged.* ECMAScript surface (emerging). InDesign has ExtendScript/UXP; Scribus has Python; Affinity has no scripting."
+        }
+      ]
+    },
+    {
+      "key": "plugins",
+      "title": "Extensibility / plugins",
+      "kind": "differentiator",
+      "rows": [
+        {
+          "dimension": "First-class plugin platform",
+          "scores": { "paged": 2, "indesign": 3, "quark": 1, "affinity": 0, "scribus": 1 },
+          "note": "Paged ships a public plugin SDK (emerging). InDesign's SDK is mature but closed/paid; Quark has XTensions; Affinity has no plugins."
+        }
+      ]
+    },
+    {
+      "key": "automation",
+      "title": "Automation & data-driven publishing",
+      "kind": "differentiator",
+      "rows": [
+        {
+          "dimension": "Headless / data-merge / PIM-fed output",
+          "scores": { "paged": 2, "indesign": 3, "quark": 2, "affinity": 0, "scribus": 1 },
+          "pagedPlanned": true,
+          "note": "InDesign leans on InDesign Server + EasyCatalog/priint. Paged is automation-native and headless-friendly by design; parts of the batch pipeline are still landing."
+        }
+      ]
+    },
+    {
+      "key": "platform",
+      "title": "Platform & delivery",
+      "kind": "differentiator",
+      "rows": [
+        {
+          "dimension": "Desktop, web, and headless delivery",
+          "scores": { "paged": 3, "indesign": 1, "quark": 1, "affinity": 1, "scribus": 1 },
+          "note": "Paged renders with WebGPU and runs in the browser as well as headless. The incumbents are desktop apps (InDesign adds a server product)."
+        }
+      ]
+    },
+    {
+      "key": "layout",
+      "title": "Layout & typography",
+      "kind": "baseline",
+      "rows": [
+        {
+          "dimension": "Professional page layout & typesetting",
+          "scores": { "paged": 1, "indesign": 3, "quark": 3, "affinity": 2, "scribus": 2 },
+          "pagedPlanned": true,
+          "note": "The honest gap: Paged is an emerging platform, not at the layout/typography depth of 25-year-old incumbents. Treated as baseline because every serious tool clears it."
+        }
+      ]
+    },
+    {
+      "key": "print",
+      "title": "Color & print production",
+      "kind": "baseline",
+      "rows": [
+        {
+          "dimension": "CMYK, spot color, PDF/X, preflight",
+          "scores": { "paged": 1, "indesign": 3, "quark": 3, "affinity": 2, "scribus": 3 },
+          "pagedPlanned": true,
+          "note": "Scribus is notably strong here. Paged color/print production is emerging; several pieces are on the roadmap, not shipped."
+        }
+      ]
+    }
+  ],
+  "verdicts": [
+    { "key": "indesign", "choose": "Choose InDesign for the deepest layout toolset, ecosystem, and talent pool — if a subscription and a closed format are acceptable." },
+    { "key": "quark", "choose": "Choose QuarkXPress for long-document and structured/enterprise publishing on a perpetual licence." },
+    { "key": "affinity", "choose": "Choose Affinity for a free, polished one-off layout app — but accept a proprietary format, no scripting, and no plugins." },
+    { "key": "scribus", "choose": "Choose Scribus for mature, open-source layout with excellent print/color output today." },
+    { "key": "paged", "choose": "Choose Paged for an open, IDML-compatible, scriptable, automation-first foundation — accepting that layout/print depth is still emerging." }
+  ]
+}

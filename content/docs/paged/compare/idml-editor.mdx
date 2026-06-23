@@ -1,0 +1,67 @@
+---
+title: "What is an IDML editor?"
+description: An IDML editor reads and writes IDML — InDesign's open interchange format — without requiring Adobe InDesign. What that means, why it matters, and which tools qualify.
+tier: beginner
+diataxis: explanation
+status: published
+owner: paged-docs
+reviewed: "2026-06-23"
+---
+
+**What is an IDML editor?**
+
+**In short:** an IDML editor is an application that can open, edit, and save
+**IDML** — the open, XML-based interchange format for InDesign documents —
+without requiring Adobe InDesign itself. It lets you work with InDesign-compatible
+documents in an open, inspectable form. Paged is an IDML editor where IDML is the
+*native* format: every `.paged` file is a valid IDML package. *(Snapshot:
+2026-06-23.)*
+
+<SoftwareApplicationLd />
+
+## What "IDML editor" means
+
+[IDML](/docs/idml/foundations/what-is-idml) is a ZIP package of XML parts that
+represents an InDesign document as text rather than as a sealed binary. An IDML
+*editor* is any tool that can read those parts, let you change them, and write a
+valid IDML package back out.
+
+That last part — writing valid IDML *back out* — is where tools differ sharply:
+
+- **Paged** is IDML-native: its `.paged` container is always a valid IDML
+  package, so it reads and writes IDML by construction.
+- **Adobe InDesign** exports and imports IDML as its interchange format (its
+  native format is the closed binary `.indd`).
+- **Affinity** can *import* IDML but cannot *export* it — so it is not a
+  round-tripping IDML editor.
+- **Scribus** has partial IDML import.
+
+## Why edit IDML without InDesign?
+
+- **Openness** — IDML is inspectable text, so it fits version control, diffing,
+  and automated pipelines.
+- **No lock-in** — an open editor like Paged means the documents aren't trapped
+  in one vendor's subscription app.
+- **Automation** — a scriptable IDML editor lets you generate and transform
+  documents from data. See [automated publishing](/docs/paged/use-cases/automated-publishing).
+
+## Related
+
+- [What is IDML?](/docs/idml/foundations/what-is-idml) — the format itself.
+- [Package anatomy](/docs/idml/package-anatomy) — what's inside an IDML file.
+- [Compare DTP tools](/docs/paged/compare) — the full capability matrix.
+
+## Frequently asked questions
+
+**Can you edit IDML without Adobe InDesign?**
+Yes. Paged opens, edits, and re-exports IDML natively, so you don't need
+InDesign. Other tools vary: Affinity imports but can't export IDML; Scribus
+support is partial.
+
+**Is IDML the same as INDD?**
+No. `.indd` is InDesign's closed native format; IDML is its open, XML-based
+interchange format. An IDML editor works with the open form.
+
+**Is Paged an IDML editor?**
+Yes — and IDML is its native container, not just an import/export path. Every
+`.paged` file is a valid IDML package.

@@ -1,0 +1,69 @@
+# IA migration 2026-06-23 — two-pillar restructure.
+# Old single-tree URLs (/docs/<section>) now live under /docs/idml/* and /docs/paged/*.
+# Cloudflare Pages _redirects: first match wins, :splat = trailing wildcard.
+
+# Platform → Paged
+/docs/platform/* /docs/paged/:splat 301
+/docs/platform /docs/paged/ 301
+
+# Plugin SDK consolidated under Paged
+/docs/plugin-sdk/* /docs/paged/plugin-sdk/:splat 301
+/docs/plugin-sdk /docs/paged/plugin-sdk/ 301
+
+# IDML Reference sections
+/docs/foundations/* /docs/idml/foundations/:splat 301
+/docs/foundations /docs/idml/foundations/ 301
+/docs/package-anatomy/* /docs/idml/package-anatomy/:splat 301
+/docs/package-anatomy /docs/idml/package-anatomy/ 301
+/docs/geometry-coordinates/* /docs/idml/geometry-coordinates/:splat 301
+/docs/geometry-coordinates /docs/idml/geometry-coordinates/ 301
+/docs/layout-model/* /docs/idml/layout-model/:splat 301
+/docs/layout-model /docs/idml/layout-model/ 301
+/docs/stories-text/* /docs/idml/stories-text/:splat 301
+/docs/stories-text /docs/idml/stories-text/ 301
+/docs/styles/* /docs/idml/styles/:splat 301
+/docs/styles /docs/idml/styles/ 301
+/docs/frames-paths/* /docs/idml/frames-paths/:splat 301
+/docs/frames-paths /docs/idml/frames-paths/ 301
+/docs/typography/* /docs/idml/typography/:splat 301
+/docs/typography /docs/idml/typography/ 301
+/docs/tables/* /docs/idml/tables/:splat 301
+/docs/tables /docs/idml/tables/ 301
+/docs/color-swatches/* /docs/idml/color-swatches/:splat 301
+/docs/color-swatches /docs/idml/color-swatches/ 301
+/docs/images-graphics/* /docs/idml/images-graphics/:splat 301
+/docs/images-graphics /docs/idml/images-graphics/ 301
+/docs/anchored-inline-objects/* /docs/idml/anchored-inline-objects/:splat 301
+/docs/anchored-inline-objects /docs/idml/anchored-inline-objects/ 301
+/docs/cross-references-hyperlinks/* /docs/idml/cross-references-hyperlinks/:splat 301
+/docs/cross-references-hyperlinks /docs/idml/cross-references-hyperlinks/ 301
+/docs/master-spreads-overrides/* /docs/idml/master-spreads-overrides/:splat 301
+/docs/master-spreads-overrides /docs/idml/master-spreads-overrides/ 301
+/docs/layers/* /docs/idml/layers/:splat 301
+/docs/layers /docs/idml/layers/ 301
+/docs/sections-numbering-variables/* /docs/idml/sections-numbering-variables/:splat 301
+/docs/sections-numbering-variables /docs/idml/sections-numbering-variables/ 301
+/docs/conditional-text/* /docs/idml/conditional-text/:splat 301
+/docs/conditional-text /docs/idml/conditional-text/ 301
+/docs/tagged-xml/* /docs/idml/tagged-xml/:splat 301
+/docs/tagged-xml /docs/idml/tagged-xml/ 301
+/docs/companion-formats/* /docs/idml/companion-formats/:splat 301
+/docs/companion-formats /docs/idml/companion-formats/ 301
+/docs/round-tripping/* /docs/idml/round-tripping/:splat 301
+/docs/round-tripping /docs/idml/round-tripping/ 301
+/docs/edge-cases/* /docs/idml/edge-cases/:splat 301
+/docs/edge-cases /docs/idml/edge-cases/ 301
+/docs/comparisons/* /docs/idml/comparisons/:splat 301
+/docs/comparisons /docs/idml/comparisons/ 301
+/docs/the-renderer/* /docs/idml/the-renderer/:splat 301
+/docs/the-renderer /docs/idml/the-renderer/ 301
+/docs/parser-internals/* /docs/idml/parser-internals/:splat 301
+/docs/parser-internals /docs/idml/parser-internals/ 301
+/docs/test-corpus/* /docs/idml/test-corpus/:splat 301
+/docs/test-corpus /docs/idml/test-corpus/ 301
+/docs/cookbook/* /docs/idml/cookbook/:splat 301
+/docs/cookbook /docs/idml/cookbook/ 301
+/docs/glossary/* /docs/idml/glossary/:splat 301
+/docs/glossary /docs/idml/glossary/ 301
+/docs/meta/* /docs/idml/meta/:splat 301
+/docs/meta /docs/idml/meta/ 301

@@ -1,0 +1,174 @@
+---
+title: The BundleHost
+description: Area-by-area reference for the BundleHost — the single object a plugin receives at activation, carrying contribution registration, document access, selection, viewport, overlays, storage, diagnostics, and capability detection.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+**One parameter carries the whole platform.** `activate(host)` receives a
+`BundleHost`; this page is its complete surface at API v0.2. Every member
+returns serializable data or a `Disposable`; expected failures resolve as
+results, never throws.
+
+## `host.manifest` · `host.log`
+
+Your own manifest (read-only) and a namespaced logger
+(`debug/info/warn/error`, prefixed `[<plugin-id>]`). The logger shares its
+sink with the [diagnostics channel](#hostdiagnostics).
+
+## `host.contribute`
+
+Every method enforces the namespace rule and tracks the registration for
+structural teardown. All return `Disposable`.
+
+| Method | Registers | Notes |
+|---|---|---|
+| `tool(c)` | a tool-rail entry | `ToolContribution`: id, title, icon, shortcut, flyout `group`, rail `section`, cursor, and the `gesture()` handler factory the host mounts when the tool activates. The host derives the activation command + guarded shortcut from the registry; [`contributeTool`](/docs/paged/plugin-sdk/the-gesture-kit#registering-the-tool) is the recommended door. |
+| `panel(c)` | a panel | `PanelContribution`: id, title, React component, default dock/group, icon. The host derives `paged.panel.show/hide.<id>` commands; panels compose the host UI kit so they read as native. |
+| `command(c)` | a command | id, title, category, `handler(paged, payload?)`. Reachable from the command palette and keybindings. |
+| `keybinding(c)` | a key binding | `{ key: "cmd+shift+h", command, when? }`. The `when` predicate receives live editor state (e.g. suppress single-key tool shortcuts while a text caret is active). |
+| `overlay(c)` | a canvas overlay | Renders into the shared camera-transformed SVG above the page. |
+| `editContext(d)` | — | **Reserved.** Throws `PluginApiNotImplemented`. |
+| `objectType(d)` | — | **Reserved.** Throws `PluginApiNotImplemented`. |
+
+## `host.document`
+
+Read broadly; write through one door.
+
+```ts
+mutate(m: Mutation): Promise<MutationOutcome>
+//  → { applied: true, createdId, pageIds } | { applied: false, error }
+undo(): Promise<void>            redo(): Promise<void>
+collection<T>(name): Promise<readonly T[]>   // swatches, layers, styles, …
+meta(): Promise<DocumentMeta>                // pageCount, units, colorMode, …
+pathAnchors(id): Promise<PathAnchorsResult | null>   // Bézier anchor table
+hitTest(pageId, [x, y], filter?): Promise<HitResult | null>
+elementGeometry(ids): Promise<ElementGeometryItem[]>
+tree(): Promise<SceneTreeNode[]>
+getMetadata(id): Promise<PluginMetadataEnvelope | null>
+setMetadata(id, envelope | null): Promise<MutationOutcome>
+onDidChange(l): Disposable
+//  fires { kind: "mutationApplied" | "undoApplied" | "redoApplied", pageIds }
+```
+
+`mutate` is **the** write path. Every change lands on the editor's single
+undoable Operation channel — plugin and native edits share one history. The
+typed `Mutation` union (path topology, properties, swatches, gradients,
+layers, pathfinder booleans, batches, …) is re-exported by
+`@paged-media/plugin-api`; batches apply atomically and undo as one step.
+
+Coordinate convention for `pathAnchors` and `hitTest`: anchor tables are in
+the element's local frame (apply the result's `itemTransform` to reach
+page-local space); hit-test points are page-local pt.
+
+### Plugin metadata
+
+`getMetadata`/`setMetadata` attach a JSON envelope —
+`{ v: number, data: object, engine?: Record<string, string> }` — to a leaf
+page item. It persists **in the document** as an IDML `Properties/Label`
+`KeyValuePair`, so it round-trips through save/reopen and survives opens in
+other IDML tooling (InDesign preserves Labels verbatim). The key is derived
+from your manifest id (`x-paged:<id>`) — a bundle reads and writes **its own
+namespace only**, enforced at the host door and again for raw `mutate`
+calls. The engine adds its own gates: a 64 KiB cap per entry and the
+envelope shape. `setMetadata` is an ordinary undoable mutation; `v` is
+*your* schema version (migrations are plugin-owned), and `engine` carries
+determinism pins where relevant.
+
+To create an element and attach metadata as **one undo step**, batch the
+insert with a `setPluginMetadata` whose element id is the literal
+`"$created"` — inside a batch it resolves to the element minted by the most
+recent creating member, and the whole batch applies atomically:
+
+```ts
+await host.document.mutate({
+  op: "batch",
+  args: {
+    ops: [
+      { op: "insertFrame", args: { pageId, bounds } },
+      {
+        op: "setPluginMetadata",
+        args: {
+          elementId: { kind: "rectangle", id: "$created" },
+          key: "x-paged:my.plugin",       // must be YOUR derived key
+          value: JSON.stringify({ v: 1, data: { … } }),
+        },
+      },
+    ],
+  },
+});
+```
+
+## `host.selection`
+
+```ts
+get(): ElementId[]
+set(ids, mode?): Promise<ElementId[]>   // mode: "replace" (default) | …
+onDidChange(l): Disposable
+```
+
+## `host.viewport`
+
+```ts
+camera(): { scale, tx, ty }   // snapshot, CSS px
+pxToPt(px: number): number    // screen px → document pt at current zoom
+```
+
+`pxToPt` is the constant-screen-tolerance idiom: a 6 px pick radius should
+stay 6 px on screen at every zoom level.
+
+## `host.overlay`
+
+```ts
+setToolPreview(shape | null)
+// shape: { pageId, points: [x,y][], close? }  — polyline
+//      | { pageId, rect: [t,l,b,r] }          — rubber-band rect
+```
+
+The in-progress gesture preview channel — page-local pt, rendered by the host
+above the canvas, excluded from export. Cubic previews are flattened to
+polylines at this surface today.
+
+## `host.storage`
+
+Namespaced key-value persistence (`paged.plugin.<id>.*`), JSON values:
+
+```ts
+get<T>(key): T | undefined     set(key, value)
+delete(key)                    keys(): string[]
+```
+
+## `host.diagnostics`
+
+The plugin→host problem channel — parse errors, unsupported-feature warnings:
+
+```ts
+set(key, Diagnostic[])   // { severity, message, source?, line?, column? }
+clear(key?)              get(key): Diagnostic[]
+onDidChange(l): Disposable
+```
+
+Mirrored to the console in v0; the host's problems UI consumes the same store
+as it lands.
+
+## `host.supports(feature)`
+
+Runtime capability detection, preferred over version sniffing for graceful
+degradation:
+
+```ts
+if (host.supports("document.hitTest@1")) { … }
+```
+
+Feature strings have the form `"area.member@major"`; the implemented set is
+exported as `HOST_FEATURES` from `@paged-media/plugin-sdk`, so code, tests,
+and these docs cannot drift apart.
+
+## `host.editor` — the marked escape hatch
+
+The raw editor handle, present at v0 **by design** (gesture handlers receive
+it from the host's tool spine anyway). The rule: any use of `host.editor` not
+reachable through a facade is an API gap by definition — record it, don't
+normalize it. This member does not survive the future isolate boundary.

@@ -1,0 +1,68 @@
+---
+title: "Paged vs QuarkXPress"
+description: Paged vs QuarkXPress — open and IDML-native versus proprietary, for structured and data-driven publishing. A dated capability comparison.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+reviewed: "2026-06-23"
+---
+
+**How does Paged compare to QuarkXPress?**
+
+**In short:** QuarkXPress is a mature, proprietary layout application with a
+perpetual licence and a long history in long-document and enterprise publishing.
+Paged is open source and IDML-native, with scripting and a plugin platform aimed
+at structured, data-driven output. QuarkXPress is deeper on layout and print
+today; Paged's case is openness, IDML interchange, and automation. *(Snapshot:
+2026-06-23.)*
+
+<SoftwareApplicationLd />
+
+## Verdict
+
+- **Choose QuarkXPress** for mature long-document and structured/enterprise
+  publishing on a perpetual licence, with deep layout and print production.
+- **Choose Paged** for an open, IDML-native, scriptable foundation for data-driven
+  publishing — accepting that layout and print depth are still emerging.
+
+## At a glance
+
+<ComparisonMatrix only={["paged", "quark"]} differentiatorsOnly />
+
+## Open vs proprietary
+
+QuarkXPress's `.qxp` is a closed, proprietary format and the app is
+desktop-bound. Paged's `.paged` is an open, inspectable IDML package, and the
+engine is web-native and headless-capable. For XML- and database-driven
+publishing, an open, scriptable container is easier to fit into a pipeline than a
+proprietary desktop format.
+
+## Extensible & automatable
+
+QuarkXPress supports scripting (AppleScript/JavaScript) and XTensions, and Quark
+offers a separate publishing platform for enterprise automation. Paged's
+[scripting](/docs/paged/scripting) and [plugin SDK](/docs/paged/plugin-sdk) are
+open and public, and the engine is built to run headlessly — see [automated
+publishing](/docs/paged/use-cases/automated-publishing).
+
+## When QuarkXPress is the better choice
+
+For established long-document workflows, mature print production, and teams
+already invested in Quark's tooling, QuarkXPress is the better choice today.
+Paged is the open, interchange-friendly alternative for data-driven and
+automation-first work.
+
+## Frequently asked questions
+
+**Can Paged open QuarkXPress files?**
+No — `.qxp` is proprietary. Paged works with IDML. If your content can move via
+IDML, Paged can read and write it.
+
+**Does QuarkXPress use an open format?**
+No. QuarkXPress's native format is proprietary. Paged's `.paged` is an open IDML
+package.
+
+**Which is better for data-driven publishing?**
+Both target it. Quark offers a mature enterprise platform; Paged offers an open,
+scriptable, headless foundation without proprietary lock-in.

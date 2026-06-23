@@ -81,7 +81,7 @@ export function SupportBadge({
     if (f) {
       label = f.badge.label;
       color = TONE_COLOR[f.badge.tone];
-      href = `/docs/platform/state/matrix#${feature}`;
+      href = `/docs/paged/state/matrix#${feature}`;
     } else {
       // Unknown id — render visibly so it surfaces in review; check-feature-refs fails the build.
       label = `unmapped: ${feature}`;

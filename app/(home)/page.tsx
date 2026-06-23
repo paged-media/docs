@@ -15,9 +15,9 @@ const TIERS: [icon: string, name: string, numeral: string, desc: string][] = [
 ];
 
 const START: [icon: string, title: string, desc: string, href: string][] = [
-  ['page', 'Foundations', 'What IDML is, paged media, the document model.', '/docs/foundations'],
-  ['package', 'IDML structure', 'The package, designmap, spreads, and stories.', '/docs/package-anatomy'],
-  ['renderer', 'Rendering', 'How document structure becomes visual pages.', '/docs/the-renderer'],
+  ['page', 'Foundations', 'What IDML is, paged media, the document model.', '/docs/idml/foundations'],
+  ['package', 'IDML structure', 'The package, designmap, spreads, and stories.', '/docs/idml/package-anatomy'],
+  ['renderer', 'Rendering', 'How document structure becomes visual pages.', '/docs/idml/the-renderer'],
 ];
 
 const ctaBase = {
@@ -66,7 +66,7 @@ export default function HomePage() {
             </p>
             <div style={{ display: 'flex', gap: 14, marginTop: 'var(--space-6)', flexWrap: 'wrap' }}>
               <Link
-                href="/docs/foundations"
+                href="/docs/idml/foundations"
                 style={{ ...ctaBase, background: 'var(--color-accent)', color: 'var(--color-paper-soft)' }}
               >
                 Start here <Pic name="arrowRight" size={16} />

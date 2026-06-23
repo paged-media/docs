@@ -1,0 +1,169 @@
+---
+title: Override resolution
+description: The semantics of OverrideList — which master items a body page overrides, how stamping skips exactly those ids, and the honest limits of the current resolver.
+tier: pro
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+**Override resolution is the rule by which a body page's OverrideList tells the renderer to skip specific master items so the page's own copy can stand in.**
+
+**In short:** Where [stamping](/docs/idml/master-spreads-overrides/master-items-and-stamping)
+*adds* every eligible master item to a body page, override resolution is the
+*subtraction*. A body page's `OverrideList` attribute holds a space-separated set
+of the `Self` ids of master items it has taken over; before the stamping pass walks
+the master's items, it builds a set from that list and skips any item whose id is in
+it. The mechanism is small — one attribute, one membership test — but the semantics
+around it (what counts as an override, what the renderer actually checks, where it
+stops short) reward a close look. This page is that look; the end-to-end "one item
+swapped" walkthrough lives on the layout model's
+[Override resolution](/docs/idml/layout-model/override-resolution).
+
+[Stamping](/docs/idml/master-spreads-overrides/master-items-and-stamping) adds every
+eligible master item to a body page. Override resolution is the subtraction: the
+rule by which a body page tells the renderer to *leave out* specific master items,
+so its own copy can stand in their place. The mechanism is small — one attribute,
+one set membership test — but the semantics around it (what counts as an override,
+what the renderer actually checks, where it stops short) reward a close look. This
+page is that look. The end-to-end "one item swapped" walkthrough lives on the
+layout model's [Override resolution](/docs/idml/layout-model/override-resolution); here
+we go under it.
+
+## What `OverrideList` means
+
+`OverrideList` is an attribute on the body `<Page>`. Its value is a
+space-separated list of the `Self` ids of master items this page has overridden.
+The parser splits it on whitespace into a list of ids and stores it on the page;
+that list is the page's complete declaration of intent: *"for these master items,
+do not use the master's version."*
+
+An override is a **two-sided arrangement**, and both sides have to be present for
+the result to look right:
+
+1. The body page lists a master item's id in `OverrideList`, which removes the
+   master's version from the page.
+2. The body page holds its **own replacement** — an ordinary top-level page item,
+   usually with the same role and position as the master item it stands in for.
+
+The format models this as the body page "promoting" a copy of the master item
+into a real, editable page item and recording the original's id so it is not drawn
+twice. From the renderer's side, though, only one thing happens at stamp time:
+the listed ids are skipped. The replacement is not *linked* to the override — it
+is just a normal page item that happens to occupy the space the suppressed master
+item vacated.
+
+## How resolution runs
+
+The override check lives inside the [stamping pass](/docs/idml/master-spreads-overrides/master-items-and-stamping),
+not in a separate phase. Before the pass walks the master's items for a body page,
+it builds a set from that page's `OverrideList`. Then, for every master item it
+would otherwise stamp — across all five shape types: text frames, rectangles,
+ovals, graphic lines, polygons — it tests the item's `Self` id against that set
+and, on a hit, skips it. The skipped item is simply never emitted for that page.
+
+The net effect is a clean one-for-one swap:
+
+- The master's version is **not** stamped (the override list suppressed it), so
+  there is no placeholder painting underneath.
+- The body's replacement, being an ordinary page item, paints on its own through
+  the normal frame pass.
+
+Because the suppression is keyed on the `Self` id, an id that appears in
+`OverrideList` is removed whether or not the body page actually supplies a
+replacement. List an id with no replacement and you get a clean *deletion* of that
+master item from the page — which is occasionally exactly what an author wants.
+
+## What the renderer does *not* check
+
+This is where the deep companion earns its keep. The format carries more override
+machinery than the renderer currently consults, and assuming the unread parts are
+honored is the easiest way to be surprised.
+
+### `AllowOverrides` is not read
+
+In the format, a master item carries an `AllowOverrides` flag that gates whether a
+body page is *permitted* to override it. The current parser does not read that
+flag at all. Suppression is driven **purely** by the body page's `OverrideList`:
+an id present there is skipped regardless of whether the master item opted in. In
+practice InDesign only writes ids into `OverrideList` for items that allowed it,
+so well-formed exports behave correctly — but the renderer is trusting the list,
+not enforcing the gate.
+<SupportBadge status="not-yet-parsed" note="AllowOverrides on master items is not parsed; suppression is OverrideList-driven only" />
+
+### `OverriddenPageItemProps` is not read
+
+An override in InDesign can be partial: a page can override a master item's
+*properties* (move it, recolour it) without replacing the whole item, and the
+master spread records which properties via `OverriddenPageItemProps`. The parser
+does not read that attribute, so property-level overrides are not reconstructed —
+the model is whole-item-or-nothing.
+<SupportBadge status="not-yet-parsed" note="OverriddenPageItemProps — property-level overrides not parsed" />
+
+### The override chain is only shallow-tested
+
+The single-item override is exercised and behaves as described. The fuller story —
+long override lists, overrides interacting with a multi-page facing master, the
+interplay of suppression with the per-page item routing of stamping — is only
+partially tested. If an override on a complex master misbehaves, this is the first
+place to suspect.
+<SupportBadge feature="master-spreads-overrides.override-resolution" note="Full override-chain resolution only partially tested (single-item verified)" />
+
+## A worked example
+
+The package below is a master with a single header rectangle and a body page that
+overrides it. Three details in the parts make the whole mechanism visible:
+
+- The master rectangle is `umasterHeader`, a solid black bar.
+- The body page declares `OverrideList="umasterHeader"` — naming exactly that
+  master item.
+- The body page supplies its own `ubodyHeader` rectangle in the same place, here
+  a lighter 40% tint, plus its body text frame.
+
+Because `umasterHeader` is in the override set, the stamping pass skips it; the
+body's `ubodyHeader` paints in its place.
+
+<ExampleEmbed example="master-override">
+  A body page overrides one master item. OverrideList names the master rectangle,
+  so it is never stamped; the page's own 40%-tint copy stands in.
+</ExampleEmbed>
+
+Read it against the inspector output: the page reports exactly **two** frames —
+the body text frame and the body's replacement rectangle. The master's header is
+*not* among them. If the override were ignored, a third frame (the stamped master
+header) would appear behind the body's copy.
+
+This example also quietly demonstrates the limits above. Its master spread is
+authored with `ShowMasterItems="false"` and the master rectangle carries
+`AllowOverrides="true"` — yet neither flag is what produces the result. The
+header is gone purely because its id is in the body page's `OverrideList`. The
+`ShowMasterItems` flag is [not honored](/docs/idml/master-spreads-overrides/master-items-and-stamping)
+and `AllowOverrides` is not parsed; the `OverrideList` is doing all the work.
+
+For the inheritance side this resolution sits on top of, return to
+[Master items and stamping](/docs/idml/master-spreads-overrides/master-items-and-stamping).
+
+## Frequently asked questions
+
+**What does the OverrideList attribute do?**
+`OverrideList` is an attribute on a body `<Page>` holding a space-separated list of
+the `Self` ids of master items the page has overridden. During the stamping pass,
+the renderer builds a set from that list and skips any master item whose id is in
+it, so the page's own replacement can take its place.
+
+**What happens if I override a master item but supply no replacement?**
+The master item is cleanly deleted from that page. Suppression is keyed only on the
+`Self` id, so an id in `OverrideList` is skipped whether or not the body page
+provides a replacement — listing an id with nothing to stand in for it removes that
+master item from the page.
+
+**Does the renderer honor the AllowOverrides flag on master items?**
+No. `AllowOverrides` is not parsed; suppression is driven purely by the body page's
+`OverrideList`. In practice InDesign only writes ids into `OverrideList` for items
+that allowed overriding, so well-formed exports behave correctly — but the renderer
+trusts the list rather than enforcing the gate.
+
+**Can a body page override just some properties of a master item?**
+Not yet. Property-level overrides are recorded by `OverriddenPageItemProps`, which
+the parser does not read, so the model is whole-item-or-nothing: a master item is
+either stamped in full or suppressed in full by its id appearing in `OverrideList`.

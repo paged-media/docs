@@ -1,0 +1,114 @@
+---
+title: Master spreads
+description: The IDML MasterSpread element — how a body page points at a master, and how master items get stamped onto body pages at render time.
+tier: intermediate
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+**A master spread is a reusable spread that supplies repeating layout to every body page that applies it.**
+
+**In short:** A master spread is a spread that other pages borrow from. It holds
+the repeating layout — running headers, footers, page-number placeholders, frame
+templates — that should appear on many body pages without being re-authored on
+each. In the package it lives under `MasterSpreads/MasterSpread_*.xml`, one file
+per master, and a body page links to it through `AppliedMaster`. At render time
+the master's items are stamped onto every page that names it, going in first so
+they sit behind the page's own content.
+
+## A master spread is a spread
+
+The parser does not have a separate reader for masters. A `<MasterSpread>` has
+the same children as a `<Spread>` — the same `Page`, `TextFrame`, `Rectangle`,
+`Oval`, `GraphicLine`, `Polygon`, and `Group` elements — so the spread parser is
+reused verbatim to read it. Everything the [Spreads and pages](/docs/idml/layout-model/spreads-and-pages)
+and [Page items and stacking](/docs/idml/layout-model/page-items-and-stacking) pages
+say about a spread's structure applies unchanged to a master.
+
+Masters are parsed *before* body spreads, so that by the time a body page names
+its master, the master is already available to resolve against.
+
+### The master's `Self` id
+
+Each master is keyed by a `Self` id derived from its file name:
+`MasterSpreads/MasterSpread_uad.xml` becomes the id `uad`. A body page's
+`AppliedMaster` is matched against that bare id. The lookup is forgiving: a page
+may write the reference as the bare id (`umaster`) or in the prefixed
+`MasterSpread/umaster` form, and both resolve to the same master.
+
+## Master-only attributes
+
+Beyond the spread attributes, a `<MasterSpread>` carries a few naming attributes
+that document spreads do not have. These are part of the format; the parser reads
+the master's `Self` and `ItemTransform` (as for any spread) and treats the naming
+attributes as informational.
+
+<AttrTable
+  element="MasterSpread"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'supported', note: 'The master id; also derivable from the file name. This is what AppliedMaster points at.' },
+    { attr: 'Name', type: 'string', support: 'parsed-not-rendered', note: 'The master\'s display name, e.g. "A-Master". Informational.' },
+    { attr: 'NamePrefix', type: 'string', support: 'parsed-not-rendered', note: 'The short prefix shown in InDesign\'s pages panel, e.g. "A". Informational.' },
+    { attr: 'BaseName', type: 'string', support: 'parsed-not-rendered', note: 'The base portion of the master name. Informational.' },
+    { attr: 'ItemTransform', type: 'list of doubles', support: 'parsed-not-rendered', note: 'As on any spread; see Spreads and pages.' },
+    { attr: 'OverriddenPageItemProps', type: 'list of ints', support: 'not-yet-parsed', note: 'Master-level bookkeeping for overridden item properties. Not read.' },
+    { attr: 'PageColor', type: 'list of doubles or enum', support: 'not-yet-parsed', note: 'Master-only spread page color. Not read.' },
+  ]}
+/>
+
+A master's individual page items can also declare `AllowOverrides` — when true,
+the item permits a body page to replace it. That attribute is the gate for the
+mechanism described in [Override resolution](/docs/idml/layout-model/override-resolution).
+
+## How master items reach a body page
+
+A body page links to a master through its `AppliedMaster` attribute. At render
+time the master's items are stamped into every page that names that master, and
+they go in *first* — so master items sit at the back of the page and the page's
+own items overlay on top. This matches what you would expect: a header rule from
+the master shows behind the body copy.
+
+When a master holds more than one page (a facing-pages master with a distinct
+left and right page), each master item is routed to the body page whose ordinal
+matches the master page it belongs to. A left-page rule lands on left body pages,
+a right-page rule on right body pages — they are not both stamped onto every
+page.
+
+### `ShowMasterItems`
+
+The format carries a `ShowMasterItems` flag on the spread to toggle whether
+master items display. The renderer honors it: a page that applies a master still
+stamps its master items, but a spread that sets `ShowMasterItems="false"` hides
+that master layer.
+<SupportBadge status="supported" note="ShowMasterItems honored — master items suppressed when false" />
+
+The two-page spread example on the
+[Page items and stacking](/docs/idml/layout-model/page-items-and-stacking) page shows
+both halves of this in one package: two body pages, each applying the same master
+by its `Self` id, each receiving the master's per-page header rule.
+
+## Frequently asked questions
+
+**What is a master spread in IDML?**
+A master spread is a reusable spread that holds repeating layout — running
+headers, footers, page-number placeholders, frame templates — so it can appear on
+many body pages without being re-authored on each. It lives under
+`MasterSpreads/MasterSpread_*.xml`, one file per master.
+
+**How does a body page apply a master spread?**
+The body page names the master in its `AppliedMaster` attribute, using either the
+bare `Self` id (`umaster`) or the prefixed `MasterSpread/umaster` form — both
+resolve to the same master. At render time the master's items are stamped onto
+that page first, so they sit behind the page's own items.
+
+**How are master items placed when the master has two pages?**
+For a facing-pages master with a distinct left and right page, each master item is
+routed to the body page whose ordinal matches the master page it belongs to. A
+left-page rule lands on left body pages and a right-page rule on right body pages,
+rather than both being stamped onto every page.
+
+**Is `ShowMasterItems` honored?**
+Not yet. The current pass stamps master items for every page that applies a
+master regardless of the `ShowMasterItems` flag, so a spread that sets
+`ShowMasterItems="false"` to hide its master layer is not honored at this time.

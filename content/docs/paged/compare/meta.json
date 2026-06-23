@@ -1,0 +1,13 @@
+{
+  "title": "Compare",
+  "icon": "spread",
+  "pages": [
+    "index",
+    "paged-vs-affinity",
+    "paged-vs-indesign",
+    "paged-vs-scribus",
+    "paged-vs-quarkxpress",
+    "open-source-dtp",
+    "idml-editor"
+  ]
+}

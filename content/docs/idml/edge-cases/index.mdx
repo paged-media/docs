@@ -1,0 +1,83 @@
+---
+title: Edge cases & real-world quirks
+description: How the Paged renderer behaves when an IDML package is incomplete, contradictory, or malformed — the error model that draws the line between recoverable and fatal, and the graceful-degradation rules that keep imperfect documents rendering.
+tier: pro
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+**This section is about what happens when an IDML package is *wrong* — and why a
+renderer's answer to that question is the part worth citing.**
+
+**In short:** every page before this one describes IDML as it is *supposed* to be:
+a complete package, every reference resolvable, every value in range. Real
+documents are messier. They arrive with a story the manifest still advertises but
+that someone deleted, an attribute value from a newer InDesign than the renderer
+knows, a `BasedOn` chain that loops back on itself, an image link pointing at a
+file that never shipped. This section documents exactly what the Paged renderer
+does with each of those — what it quietly tolerates, what it caps, and what it
+refuses to guess about and stops on. That behavior *is* the contract, so we write
+it down.
+
+A specification tells you what a *valid* document looks like. It is mostly quiet
+about what a reader should do with an invalid one — and that silence is where real
+renderers diverge from each other and from the page you expected. Two tools can
+both "support IDML" and disagree completely the moment a package is a little
+broken: one drops the bad story and renders the rest, one substitutes a default,
+one throws. None of that is in the format definition; all of it is in the code. A
+reference that only describes the happy path is describing the easy half of the
+problem.
+
+So this is the half that makes the rest worth trusting. When you are debugging why
+a document rendered blank, or deciding whether to feed user-uploaded IDML straight
+into a pipeline, or writing a tool that *generates* IDML and wants to know which
+shortcuts the renderer will forgive — the answer lives here, pinned to the actual
+behavior of `Document::open` and the parse layer beneath it, not to a hopeful
+reading of the spec. Where the renderer's behavior is a deliberate limitation
+rather than a feature, we say so plainly and badge it; honest gaps are more useful
+than flattering ones.
+
+The two pages under this section split the topic along its natural seam:
+
+- **[The error model](/docs/idml/edge-cases/the-error-model)** is the reference: the
+  precise set of failures that stop a load, what each one means, and what a
+  consumer gets back. This is the line between "recoverable" and "fatal."
+- **[Graceful degradation](/docs/idml/edge-cases/graceful-degradation)** is the other
+  side: everything the renderer *doesn't* stop on — the missing attributes that
+  become defaults, the unknown values it ignores, the cycles it caps, the missing
+  image it stands in for. The forgiving reads that keep an imperfect document
+  rendering instead of failing.
+
+Read the error model first if you want to know what will make a load fail outright;
+read graceful degradation if you want to know what will quietly change what you
+see on the page.
+
+## Frequently asked questions
+
+**What is the difference between a recoverable and a fatal IDML problem in Paged?**
+A **fatal** problem is one that stops the load: the renderer returns a single typed
+error from `Document::open` and hands back no document at all. A **recoverable**
+problem is one the renderer reads past *inside* a load that otherwise succeeds — a
+missing attribute, an unknown value, a capped cycle, a broken image link. The line
+is structural: a part the manifest explicitly promised must exist and parse, but
+almost everything an *open* document leaves unsaid or says oddly is forgiven. The
+[error model](/docs/idml/edge-cases/the-error-model) is the catalogue of fatal failures;
+[graceful degradation](/docs/idml/edge-cases/graceful-degradation) is the catalogue of
+recoverable ones.
+
+**Why does this section describe renderer behavior instead of just the IDML format?**
+Because the format definition is mostly quiet about invalid documents, and that
+silence is exactly where two tools that both "support IDML" diverge — one drops a
+bad story, one substitutes a default, one stops. None of that is in the format; all
+of it is in the renderer's code. So these pages are pinned to what the Paged
+renderer actually does at `Document::open` and the parse layer beneath it, not to a
+reading of the spec.
+
+**Is it safe to feed untrusted or user-uploaded IDML to the Paged renderer?**
+Yes, in the sense that malformed input is returned as a typed error value rather
+than crashing the renderer: a broken archive, a non-IDML mimetype, or a dangling
+manifest reference each surface as a named failure a caller can act on. What this
+section adds is the rest of the picture — which imperfections will *not* stop a load
+but will quietly change the rendered page — so you can decide what "rendered
+successfully" should mean in your pipeline.

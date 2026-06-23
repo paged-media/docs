@@ -1,0 +1,66 @@
+---
+title: "Paged vs Scribus"
+description: Paged vs Scribus — two open-source desktop publishing tools compared. Paged adds IDML compatibility, a modern web renderer, and a plugin platform; Scribus leads on print today.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+reviewed: "2026-06-23"
+---
+
+**How does Paged compare to Scribus?**
+
+**In short:** Scribus is Paged's nearest philosophical neighbour — a mature,
+respected open-source DTP application with excellent color and print output. Paged
+extends the open-source DTP idea with **IDML compatibility** (its files round-trip
+with the InDesign ecosystem), a **modern web/WebGPU renderer**, and a **plugin
+SDK** that Scribus lacks. Scribus is stronger on print production today; Paged is
+the more interchangeable and extensible platform. *(Snapshot: 2026-06-23.)*
+
+<SoftwareApplicationLd />
+
+## Verdict
+
+- **Choose Scribus** for mature, open-source layout with excellent CMYK/spot color
+  and print production you can rely on today.
+- **Choose Paged** when you also need IDML interchange with the InDesign
+  ecosystem, a plugin platform, scripting/automation, or web/headless delivery.
+
+## At a glance
+
+<ComparisonMatrix only={["paged", "scribus"]} differentiatorsOnly />
+
+## Both open — different bets
+
+Both Paged and Scribus are open source, so neither locks you in. They bet
+differently on *what openness should buy you*:
+
+- **Interchange.** Scribus's native `.sla` is open XML but application-specific,
+  and its IDML import is partial. Paged's `.paged` is always a valid IDML
+  package, so files move between Paged and the InDesign ecosystem.
+- **Extensibility.** Scribus has Python scripting but no first-class third-party
+  plugin platform. Paged ships a public [plugin SDK](/docs/paged/plugin-sdk)
+  alongside its [`paged.*` scripting](/docs/paged/scripting).
+- **Delivery.** Scribus is a desktop application. Paged renders with WebGPU and
+  runs in the browser and headless.
+
+## When Scribus is the better choice
+
+For print-bound work today — CMYK, spot colors, PDF/X, preflight — Scribus is
+mature and excellent, and Paged's print production is still emerging. If your
+output is the press and you don't need IDML interchange or a plugin platform,
+Scribus is a strong, proven choice. We credit Scribus's maturity here rather than
+punching down: it has earned it.
+
+## Frequently asked questions
+
+**Is Paged a fork of Scribus?**
+No. They are independent projects. Paged is built around the IDML format and a web
+renderer; Scribus has its own `.sla` format and a long-standing desktop codebase.
+
+**Which has better print output, Paged or Scribus?**
+Scribus, today. Its color and print production are mature; Paged's are emerging.
+
+**Can Scribus open IDML files?**
+Only partially. Paged reads and writes IDML natively, which is its main
+interchange advantage over Scribus.

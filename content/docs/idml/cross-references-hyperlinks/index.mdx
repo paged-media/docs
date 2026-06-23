@@ -1,0 +1,109 @@
+---
+title: Cross-references & hyperlinks
+description: How a document points at itself and at the world — links, bookmarks, cross-references, and index markers — and why the parser keeps them even though the renderer does not draw them yet.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+**Cross-references and hyperlinks are how an IDML document points at itself and at the world — links, bookmarks, cross-references, and index markers, all recorded as reference metadata beside the content.**
+
+**In short:** IDML captures four related kinds of *reference* — hyperlinks,
+bookmarks, cross-references, and index markers — as small pieces of metadata that
+sit alongside the text rather than inside it. None of them change a single glyph;
+each only says "this stretch of text means *go here*" or "this spot belongs under
+*term X*." Paged's parser reads every one of these constructs into the document
+model so tools can list, follow, and rewrite them, while the page renderer does
+not yet draw them. This page maps the four families, explains where each lives in
+the package, and sets up the two pages that cover them in detail.
+
+By the time a document threads its stories across spreads, the text starts
+wanting to point at things — a web address, another page, a heading two
+chapters back, an entry in the index at the end. IDML records each of these as
+a small piece of *reference* metadata that sits alongside the content rather
+than inside the run it decorates. None of it changes a single glyph; it only
+says "this stretch of text means *go here*."
+
+That separation is the reason this chapter sits where it does. You can only
+understand a reference once you understand the thing it links *from* and the
+thing it links *to* — a run of text, a page, a story. So this chapter comes
+after [stories and text](/docs/idml/stories-text/story-structure) and after the
+[package anatomy](/docs/idml/package-anatomy/the-design-map) that names the spreads a
+page-destination could land on. With those in hand, a reference is just a named
+arrow drawn over content you already know how to read.
+
+## Four kinds of arrow
+
+IDML keeps four related families of reference, and they split cleanly by where
+the arrow points:
+
+- **Hyperlinks** point a *source* (text, or a whole frame) at a *destination* —
+  a URL, a page, or an anchor elsewhere in the text. This is the one that
+  becomes a clickable link when the document is exported to PDF.
+- **Bookmarks** are named anchors with no visible source — entries in a PDF's
+  navigation pane that jump to a destination.
+- **Cross-references** are a source that resolves its *display text* from its
+  target ("see page 12", "*Chapter 3*"). The arrow and the words it shows are
+  bound together.
+- **Index markers** are the opposite shape: scattered points in the body text
+  that each say "this paragraph belongs under *term X*," collected at the end
+  into a generated index.
+
+The first two live on the [hyperlinks and bookmarks
+page](/docs/idml/cross-references-hyperlinks/hyperlinks-and-bookmarks); the last two,
+which both depend on a *resolution pass* over the whole document, share the
+[cross-references and index page](/docs/idml/cross-references-hyperlinks/cross-references-and-index).
+
+## Where they live
+
+Most of this metadata lives at the top of the document, in the design map,
+next to the part references — a flat list of `Hyperlink`, `Bookmark`,
+`CrossReferenceSource`, and `Topic` elements. The endpoints inside the running
+text — the stretch a hyperlink covers, the point an index marker sits at — live
+back in the stories, as wrapper elements or zero-width markers between the
+`Content` chunks. A reference is therefore a *pair*: a record in the manifest
+and an anchor in the prose, joined by an id.
+
+## What the renderer does with them today
+
+Most of this chapter now resolves at render time. The parser reads every
+construct into the document model, and the renderer follows it: **hyperlinks**
+and **bookmarks** emit PDF link annotations (URL and go-to-page), and a
+**cross-reference** resolves to its destination's current page and
+re-resolves when that destination moves — so the displayed text stays correct
+after a reflow. **Index** topics aggregate and de-duplicate into page lists.
+
+The one thing the renderer still does not do is paint visual link *decorations*
+(an on-page underline or highlight is an editor affordance, not a render
+output), and a couple of source-side cases remain. Each page here flags exactly
+where it stands with a <SupportBadge status="supported" compact /> or
+<SupportBadge status="parsed-not-rendered" compact /> badge so you always know
+which side of the line a feature sits on.
+
+## Frequently asked questions
+
+**What kinds of references does IDML support?**
+IDML records four related families: **hyperlinks** (a source pointing at a URL,
+page, or text anchor), **bookmarks** (named navigation anchors with no visible
+source), **cross-references** (a source whose display text is derived from its
+target), and **index markers** (scattered points in the body that feed a generated
+index). The first two are covered on the [hyperlinks and bookmarks
+page](/docs/idml/cross-references-hyperlinks/hyperlinks-and-bookmarks); the last two on
+the [cross-references and index page](/docs/idml/cross-references-hyperlinks/cross-references-and-index).
+
+**Where are hyperlinks and cross-references stored in an IDML package?**
+Most of the reference records live at the top of the document in the design map,
+as a flat list of `Hyperlink`, `Bookmark`, `CrossReferenceSource`, and `Topic`
+elements. The endpoints that sit inside the running text — the stretch a hyperlink
+covers, the point an index marker occupies — live back in the stories as wrapper
+elements or zero-width markers. Each reference is therefore a pair: a record in the
+manifest and an anchor in the prose, joined by an id.
+
+**Does Paged render hyperlinks and index entries?**
+Not yet. Paged's parser reads every construct in this chapter into the document
+model so an editor and the SDK can list, follow, and rewrite them, but the page
+renderer does not draw link underlines, make regions clickable, resolve a
+cross-reference's display text, or generate an index story. Each feature is
+**parsed, not rendered**: present in the model, absent from the page, with
+interactivity and index generation slated for SDK Phase 5.

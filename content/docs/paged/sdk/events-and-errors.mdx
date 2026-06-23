@@ -1,0 +1,61 @@
+---
+title: Events & errors
+description: Subscribe to the SDK viewer's events with viewer.on(...), and branch on typed ViewerError codes rather than message strings.
+tier: intermediate
+diataxis: reference
+status: published
+owner: paged-docs
+reviewed: "2026-06-23"
+---
+
+**The viewer tells you when things change, and fails with codes, not strings.**
+
+**In short:** `viewer.on(event, listener)` subscribes to `loaded`,
+`pageChanged`, `zoomChanged`, `scrollChanged`, and `error`, and returns an
+unsubscribe function — call it on teardown. Failures surface as a typed
+`ViewerError` carrying a stable `code` (e.g. `GPU_UNAVAILABLE`), so you branch on
+the code, never on the human-readable message.
+
+## Subscribing
+
+```ts
+const off = viewer.on('pageChanged', ({ page }) => updatePager(page));
+// …later
+off(); // unsubscribe
+
+viewer.on('error', (err) => {
+  if (err.code === 'GPU_UNAVAILABLE') showFallback();
+});
+```
+
+You can see these fire live in the [camera & navigation
+playground](/docs/paged/sdk/camera-and-navigation) — the right-hand panel logs
+each event as you drive the viewer.
+
+## Events
+
+<SdkCatalog group="events" />
+
+## Errors
+
+<SdkCatalog group="errors" />
+
+Branching on `code` keeps your handling stable across releases — the message text
+may change for clarity, but the codes are part of the contract. The most common
+one to handle is `GPU_UNAVAILABLE`: the viewer is WebGPU-only, so on a browser
+without it you show a fallback rather than a blank canvas. See the
+[embedding guide](/docs/paged/sdk/embedding-guide) for the full requirements.
+
+## Frequently asked questions
+
+**Do I need to unsubscribe?**
+Yes — `on` returns a disposer; call it when your component unmounts so listeners
+don't accumulate across viewer lifetimes.
+
+**Why branch on `code` instead of the message?**
+Messages are for humans and may be reworded; `ViewerErrorCode` values are stable
+and meant for control flow.
+
+**Which event tells me the document is ready?**
+`loaded`, which carries `{ pageCount }`. It fires once layout is complete, after
+`viewer.load(...)` resolves.

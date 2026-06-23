@@ -1,0 +1,64 @@
+---
+title: Why a package format
+description: Why IDML is split into many small XML parts inside one ZIP archive instead of a single file — sharing, locality of change, and streaming.
+tier: beginner
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+**IDML is a ZIP of many small parts, not one big file — and that split is a deliberate, useful choice.**
+
+**In short:** Making the document XML would have been enough to make it readable.
+IDML goes further and splits it into many small parts inside a ZIP archive. That
+buys three concrete things once documents get real: resources can be *shared*
+instead of copied, a change to one spread stays *local* to one part, and a reader
+can *stream* the manifest first and then pull only the parts it needs. The price is
+that the document becomes a graph of cross-referencing parts rather than a single
+self-contained file — and most of the package-anatomy section is about that graph.
+
+If the goal was just "make it XML," one big XML file would have done. IDML instead
+splits the document into many small parts inside a ZIP. That choice buys three
+things that matter once documents get real.
+
+**Sharing.** Colors, fonts, and styles are referenced from many places but defined
+once. Pulling them into their own resource parts means a paragraph can say "use
+this style" by name, and the definition lives in exactly one place. The same
+mechanism lets two stories share a style without copying it.
+
+**Locality of change.** When one spread changes, only that spread's part changes.
+A tool — or a person reading a diff — can see what moved without scanning the whole
+document. Each spread, each story, gets its own part.
+
+**Streaming and order.** A reader can load the manifest first, learn what parts
+exist and how they relate, and then pull in the parts it needs. The archive carries
+a small amount of structure (which part is the entry point) so a consumer knows
+where to begin.
+
+The cost is that the document is now a graph of cross-referencing parts rather than
+one self-contained file. Most of the **[package anatomy](/docs/idml/package-anatomy)**
+section is about that graph: what the parts are and how they point at each other.
+
+The next page opens a minimal package and reads it part by part.
+
+## Frequently asked questions
+
+**Why isn't an IDML file just one big XML file?**
+A single XML file would be readable, but it would force resources to be copied
+wherever they are used, make every edit touch the whole document, and require a
+reader to load everything at once. Splitting the document into many small parts
+inside a ZIP lets resources be shared, keeps each change local to one part, and
+lets a consumer load only what it needs.
+
+**What does splitting the document into parts actually buy you?**
+Three things. *Sharing:* colors, fonts, and styles are defined once and referenced
+by name from many places. *Locality of change:* when one spread changes, only that
+spread's part changes, so tools and humans can see exactly what moved. *Streaming
+and order:* a reader can load the manifest first to learn what parts exist and then
+pull in the ones it needs.
+
+**What is the downside of the package format?**
+The document is no longer one self-contained file — it is a graph of parts that
+point at each other by reference. Understanding it means understanding those
+references, which is what the **[package anatomy](/docs/idml/package-anatomy)** section
+is about.

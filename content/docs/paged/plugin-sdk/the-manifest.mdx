@@ -1,0 +1,70 @@
+---
+title: The manifest
+description: Field-by-field reference for a Paged plugin's manifest.json — identity, apiVersion negotiation, the capability declaration, and the contributes block, including what is enforced today versus declared for the future.
+tier: intermediate
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+**The manifest is the plugin's reviewable claim.** It is plain JSON, validated
+against a published schema by `paged-plugin validate`, and checked again at
+load time. Code registers; the manifest declares — and the two must agree.
+
+## Top level
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `id` | string | yes | Reverse-DNS identity, e.g. `media.paged.draw`. Must match `^[a-z][a-z0-9]*(\.[a-z][a-z0-9-]*)+$`. Doubles as the **namespace prefix** for every contributed id and the key for the plugin's storage partition. |
+| `name` | string | yes | Human-readable name. |
+| `version` | string | yes | The bundle's own semver. |
+| `apiVersion` | string | yes | Range against `@paged-media/plugin-api` — `*`, exact (`0.2.0`), or caret (`^0.2`). See [Versioning](/docs/paged/plugin-sdk/versioning) for the 0.x caret rule. The host refuses unsatisfied ranges at load. |
+| `publisher` | string | no | Publisher identity. |
+| `capabilities` | object | no | What the plugin asks to do (below). |
+| `contributes` | object | no | What the plugin registers (below). |
+
+## `capabilities`
+
+> **Enforcement status:** in API v0 capabilities are **declarative** — they
+> are recorded, validated for shape, and surfaced for review, but not yet
+> enforced at runtime. Enforcement attaches at the existing chokepoints (the
+> namespace check on `contribute.*`, the single `mutate` door) as the platform
+> hardens toward third-party distribution. Declare honestly now; the contract
+> will not change shape when the gate switches on.
+
+| Field | Values | Meaning |
+|---|---|---|
+| `document.read` | `"broad"` \| `"scoped"` | Read access. `broad` is the intended default — snapping against siblings and converting text to outlines need to *see* the document. |
+| `document.write` | `"broad"` \| `"scoped"` | Write access. `scoped` is the intended default: mutate only what you own (the entered edit context's subtree, once contexts land). |
+| `rendering` | `"overlay"` \| `"hitTest"` \| `"sceneLayer"` | Render-pipeline surfaces used. `overlay` = the shared tool-preview signal; `hitTest` = host geometric queries; `sceneLayer` is reserved for retained plugin scene content. |
+| `editContext` | string[] | Content types the plugin claims for double-click entry (reserved — see below). |
+| `network` | boolean | Whether the plugin fetches external resources. Defaults to false; paste-a-URL workflows must declare it. |
+| `clipboard` | `"none"` \| `"vector"` \| `"full"` | Clipboard access tier. |
+
+## `contributes`
+
+| Field | Shape | Status |
+|---|---|---|
+| `tools` | string[] of tool ids | **Live.** Registered via `host.contribute.tool` / the SDK's `contributeTool`. |
+| `panels` | string[] of panel ids, or paths to `*.panel.json` | **Live** for expert-leaf React panels (ids); `*.panel.json` declarative panels are design prototypes pending the host's schema renderer. |
+| `commands` | string[] of command ids | **Live.** |
+| `editContexts` | `{ type, entry: "doubleClick" \| "command" }[]` | **Reserved.** Declared so manifests are forward-complete; the shell's edit-context registry is platform roadmap. |
+| `objectTypes` | `{ type, bakedFallback: "group" \| "rectangle" \| "raster" }[]` | **Reserved.** Plugin-defined content types under the metadata-plus-baked-fallback fidelity contract: documents must never become unreadable without their plugins — they degrade to the declared baked form. |
+
+## The namespace rule
+
+Every id in `contributes.tools`, `contributes.commands`, and panel ids must
+start with `<id>.` — `paged-plugin validate` rejects manifests that violate
+it, and the host throws at registration time. One rule, enforced twice, and it
+is deliberately the same chokepoint where per-capability checks will attach.
+
+## Validation
+
+```bash
+paged-plugin validate path/to/manifest.json
+# ✓ media.paged.draw@0.2.0 valid (apiVersion ^0.2)
+```
+
+The CLI checks: schema shape, the id pattern, semver fields, the namespace
+rule for every contributed id, and that referenced `*.panel.json` files exist
+relative to the manifest. It is dependency-free and safe to run in CI.

@@ -1,0 +1,123 @@
+---
+title: Character styles
+description: The CharacterStyle element and its attributes — identity, BasedOn, font and size, fill, tracking — the RootCharacterStyleGroup, and how a range that applies a character style can still override one of its attributes locally.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+**A character style formats a run — a span of text inside a paragraph — usually setting only the few attributes that differ from the surrounding text.**
+
+**In short:** A `<CharacterStyle>` overrides formatting on a run rather than a
+whole paragraph, so it typically carries just the handful of attributes that
+change — a bold face, a fill colour, some tracking — and inherits the rest from its
+`BasedOn` parent and, ultimately, from the
+[paragraph style](/docs/idml/styles/paragraph-styles) the run sits in. Every character
+style lives in `<RootCharacterStyleGroup>` inside `Resources/Styles.xml` and
+bottoms out at the uneditable `[No character style]` root. A run names its
+character style through `AppliedCharacterStyle`, but can also set an attribute
+directly on its range, where the local value wins over the style. This page lists
+the attributes our parser reads; the order they resolve in is covered under
+[conflict resolution](/docs/idml/styles/conflict-resolution).
+
+A character style formats a *run* — a span of text inside a paragraph — and unlike
+a paragraph style it usually sets only the few attributes that differ from the
+surrounding text. The rest is inherited: from the style's `BasedOn` parent, and
+ultimately from the [paragraph style](/docs/idml/styles/paragraph-styles) the run sits
+in. This page lists the attributes our parser reads off `<CharacterStyle>`; the
+order they resolve in is covered under [conflict resolution](/docs/idml/styles/conflict-resolution).
+
+## Where they live
+
+Each `<CharacterStyle>` sits inside `<RootCharacterStyleGroup>` (with optional
+intermediate `<CharacterStyleGroup>` nesting the parser flattens). The uneditable
+root is `CharacterStyle/$ID/[No character style]` — the bottom of every character
+[cascade](/docs/idml/styles/the-cascade) and the style a run applies when it wants
+nothing but the paragraph defaults.
+
+```xml
+<RootCharacterStyleGroup>
+  <CharacterStyle Self="CharacterStyle/$ID/[No character style]"
+                  Name="$ID/[No character style]"/>
+  <CharacterStyle Self="CharacterStyle/Emphasis" Name="Emphasis"
+                  FontStyle="Bold" PointSize="12"/>
+</RootCharacterStyleGroup>
+```
+
+## Attributes
+
+`AppliedFont` may appear as an attribute or as an `<AppliedFont>` child inside
+`<Properties>`; `Leading` is read from the run/range rather than the style.
+`StrokeColor` set to the literal `Swatch/None` is normalised to unset, so a
+`BasedOn` chain can fall through to a real colour from a parent.
+
+<AttrTable
+  element="CharacterStyle"
+  rows={[
+    { attr: 'Self', type: 'string id', support: 'supported', note: 'The style id, e.g. "CharacterStyle/Emphasis". What a run references via AppliedCharacterStyle.' },
+    { attr: 'Name', type: 'string', support: 'parsed-not-rendered', note: 'Human-readable name; resolution keys on Self.' },
+    { attr: 'BasedOn', type: 'string id', support: 'supported', note: 'Parent character style id, or the [No character style] root. Attribute or <BasedOn> Properties child.' },
+    { attr: 'AppliedFont', type: 'string (font family)', support: 'supported', note: 'Font family. Attribute or <AppliedFont> Properties child.' },
+    { attr: 'FontStyle', type: 'string (e.g. "Bold", "Italic")', support: 'supported', note: 'Named face within the family.' },
+    { attr: 'PointSize', type: 'double (pt)', support: 'supported', note: 'Type size in points.' },
+    { attr: 'FillColor', type: 'string (Color/Swatch id)', support: 'supported', note: 'Glyph fill; a reference into Resources/Graphic.xml.' },
+    { attr: 'FillTint', type: 'double (0–100%)', support: 'supported', note: 'Fill tint percentage; absent means full strength.' },
+    { attr: 'StrokeColor', type: 'string (Color/Swatch id)', support: 'supported', note: 'Glyph outline paint. "Swatch/None" normalises to unset.' },
+    { attr: 'StrokeWeight', type: 'double (pt)', support: 'supported', note: 'Outline weight when StrokeColor resolves.' },
+    { attr: 'Tracking', type: 'double (1/1000 em)', support: 'supported', note: 'Inter-glyph spacing added to every advance.' },
+    { attr: 'Capitalization', type: 'Normal | SmallCaps | AllCaps | CapToSmallCap', support: 'supported', note: 'AllCaps uppercases before shaping.' },
+    { attr: 'BaselineShift', type: 'double (pt)', support: 'supported', note: 'Lifts (+) or drops (−) glyphs relative to the baseline.' },
+    { attr: 'HorizontalScale', type: 'double (%)', support: 'supported', note: '100 = identity; folded into the glyph affine.' },
+    { attr: 'VerticalScale', type: 'double (%)', support: 'parsed-not-rendered', note: '100 = identity; per-glyph y-scale not yet applied.' },
+    { attr: 'Skew', type: 'double (deg)', support: 'supported', note: 'Faux-italic slant, folded into the glyph affine.' },
+    { attr: 'Position', type: 'Normal | Superscript | Subscript | OTSuperscript | OTSubscript', support: 'parsed-not-rendered', note: 'Baseline position; captured but not yet scaled/shifted.' },
+    { attr: 'Underline', type: 'boolean', support: 'supported', note: 'Underline decoration.' },
+    { attr: 'StrikeThru', type: 'boolean', support: 'supported', note: 'Strike-through decoration.' },
+    { attr: 'Ligatures', type: 'boolean', support: 'supported', note: 'Standard + contextual OpenType ligatures (liga, clig). Default at the bottom of the cascade is true.' },
+    { attr: 'KerningMethod', type: 'Metrics | Optical | None', support: 'supported', note: 'Optical falls back to Metrics until the outline-driven pass lands.' },
+  ]}
+/>
+
+## A local override beats the style
+
+A run applies a character style by id, but it can also set an attribute directly on
+its `<CharacterStyleRange>`. That local value is *not* part of the style sheet and
+is *not* subject to `BasedOn` resolution — it simply wins. In the example below
+both runs apply the same `Emphasis` style (which sets `PointSize="12"`), but the
+second range adds `PointSize="24"` to itself; that run shapes at 24 pt while the
+first stays at the style's 12.
+
+<ExampleEmbed example="local-override">
+  Two runs, one character style — the second range overrides PointSize locally.
+</ExampleEmbed>
+
+The full priority order — local value, then the applied character style's
+resolved chain, then the paragraph style's resolved chain — is laid out in
+[conflict resolution](/docs/idml/styles/conflict-resolution). The run-level override
+attributes are the same names as the style attributes above; the parser reads them
+off the `<CharacterStyleRange>` itself.
+
+## Frequently asked questions
+
+**What is a character style for?**
+A character style formats a run — a span of text inside a paragraph — and usually
+sets only the few attributes that differ from the surrounding text, such as a bold
+face or a different colour. Everything it does not set is inherited from its
+`BasedOn` parent and from the paragraph style the run sits in.
+
+**How does a run reference a character style?**
+A run names its character style through `AppliedCharacterStyle`, whose value is the
+style's `Self` id. A run that wants nothing but the paragraph defaults applies the
+`[No character style]` root.
+
+**Can a run override an attribute set by its character style?**
+Yes. A value set directly on the `<CharacterStyleRange>` is not part of the style
+sheet and is not subject to `BasedOn` resolution — it simply wins. In the example
+above, two runs apply the same `Emphasis` style but the second adds
+`PointSize="24"` to its range, so it shapes at 24 pt while the first stays at the
+style's 12.
+
+**Where does `Leading` come from if not the character style?**
+`Leading` is read from the run or range rather than from the `<CharacterStyle>`
+element, so it is not one of the style attributes listed above.
