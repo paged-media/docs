@@ -16,6 +16,8 @@
     "examples:assemble": "tsx scripts/examples/assemble-cli.ts",
     "examples:index": "tsx scripts/examples/index.ts",
     "validate:examples": "tsx scripts/examples/validate.ts",
+    "check:scripting": "tsx scripts/scripting/check-corpus.ts",
+    "validate:scripting": "tsx scripts/scripting/validate.ts",
     "check:feature-refs": "node scripts/check-feature-refs.mjs",
     "check:freshness": "node scripts/check-freshness.mjs",
     "check:seo": "node scripts/check-seo.mjs",

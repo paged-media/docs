@@ -1,19 +1,29 @@
 ---
-title: REST API
-description: The editor-server REST surface — authentication, files, account, billing, fonts, and image search — generated from the server's OpenAPI specification.
-tier: pro
+title: API reference
+description: Every programmable surface of paged in one place — the paged.* scripting API, the Viewer SDK, the editor-server REST API, and the plugin manifest — each generated from its own source of truth.
+tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
+reviewed: "2026-06-27"
 ---
 
-**In short:** the [editor-server](/docs/paged/repos/editor-server) exposes a
-REST API for the editor's account, storage, billing, and asset features. The
-endpoints below are **generated from the server's OpenAPI spec** (which is itself
-generated from the server's Zod contracts), so this reference matches the running
-service.
+**In short:** paged exposes four programmable surfaces. Each reference below is
+**generated from its own source of truth** — the engine's scripting catalog, the
+SDK package surface, the server's OpenAPI spec, and the plugin manifest schema —
+so none of them drift from the running code.
 
-Authentication is cookie-based (a better-auth session). All routes live under
-`/api/*`; the spec is also served live at the server's `/openapi.json`.
+<ApiReferenceIndex />
 
-<RestApiReference />
+## Which one do I want?
+
+- **[Scripting (`paged.*`)](/docs/paged/scripting)** — read and author the open
+  document from inside the editor's script panel, the REPL, or headless via
+  `paged-run`. Start with the [examples](/docs/paged/scripting/examples).
+- **[Viewer SDK](/docs/paged/sdk)** — embed a WebGPU IDML viewer on a canvas:
+  load a document, drive the camera, render to bytes, listen for events.
+- **[REST API](/docs/paged/api/rest)** — the editor-server HTTP surface for
+  accounts, document storage, billing, and assets.
+- **[Plugin manifest](/docs/paged/plugin-sdk)** — the declarative contract a
+  plugin bundle ships to contribute tools, panels, commands, and document
+  behaviour.

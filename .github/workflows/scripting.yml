@@ -1,0 +1,64 @@
+name: scripting
+
+on:
+  pull_request:
+    paths:
+      - 'data/scripting/**'
+      - 'scripts/scripting/**'
+      - 'core.pin'
+      - '.github/workflows/scripting.yml'
+  push:
+    branches: [main]
+  schedule:
+    # Weekly core-drift check: re-validate the example corpus against core@main.
+    - cron: '0 6 * * 1'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: resolve core ref
+        id: core
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "ref=main" >> "$GITHUB_OUTPUT"   # drift check: latest
+          else
+            echo "ref=$(grep -v '^#' core.pin | head -1 | tr -d '[:space:]')" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: checkout core (public, no token needed)
+        uses: actions/checkout@v4
+        with:
+          repository: paged-media/core
+          ref: ${{ steps.core.outputs.ref }}
+          path: core
+
+      # core/rust-toolchain.toml pins the channel; rustup honors it inside ./core.
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core
+          key: ${{ steps.core.outputs.ref }}
+
+      - name: build paged-run (the headless NDJSON engine session)
+        run: cargo build --release --manifest-path core/Cargo.toml -p paged-run
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Pull the engine's scripting catalog so the membership check sees the
+      # functions/paths the pinned engine actually ships.
+      - name: generate catalog
+        run: pnpm generate:docs
+
+      - name: check the example corpus is pinned to the catalog
+        run: pnpm check:scripting
+
+      - name: execute every example + seed against the engine
+        run: PAGED_RUN="$PWD/core/target/release/paged-run" pnpm validate:scripting

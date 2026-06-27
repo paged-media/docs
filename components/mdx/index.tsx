@@ -15,6 +15,10 @@ import { ScriptingCatalog } from './scripting-catalog';
 import { SdkCatalog } from './sdk-catalog';
 import { SdkPlayground } from './sdk-playground';
 import { ScriptingPlayground } from './scripting-playground';
+import { FunctionPlayground } from './function-playground';
+import { PathShowcase } from './path-showcase';
+import { PathReference } from './path-reference';
+import { ApiReferenceIndex } from './api-reference-index';
 import { PluginCapabilities } from './plugin-capabilities';
 import { RestApiReference } from './rest-api-reference';
 import { ActivityFeed, RepoActivity } from './activity-feed';
@@ -28,6 +32,7 @@ import { XRef } from './xref';
 import { ComparisonMatrix, ComparisonVerdicts, ComparisonMethodology } from './comparison-matrix';
 import { SoftwareApplicationLd } from './software-application-ld';
 import { PackageGraph, CoordinateSpace, StyleCascade, StoryThreading } from '@/components/diagrams';
+import { InteractiveFigure, ScriptingExecutionModel, RenderPipeline } from '@/components/diagrams/interactive';
 
 /**
  * Custom components available in every MDX page. `ExampleEmbed` is the one
@@ -53,6 +58,10 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     SdkCatalog,
     SdkPlayground,
     ScriptingPlayground,
+    FunctionPlayground,
+    PathShowcase,
+    PathReference,
+    ApiReferenceIndex,
     PluginCapabilities,
     RestApiReference,
     ActivityFeed,
@@ -74,6 +83,9 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     CoordinateSpace,
     StyleCascade,
     StoryThreading,
+    InteractiveFigure,
+    ScriptingExecutionModel,
+    RenderPipeline,
     DynamicCodeBlock,
     ...extra,
   };

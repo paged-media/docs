@@ -39,11 +39,28 @@ const btn = (primary?: boolean): React.CSSProperties => ({
   cursor: 'pointer',
 });
 
-export function ScriptingPlayground({ script = '', title, codeHeight = 220, frameHeight = 460 }: { script?: string; title?: string; codeHeight?: number; frameHeight?: number }) {
+export function ScriptingPlayground({
+  script = '',
+  title,
+  seed,
+  lookFor,
+  codeHeight = 220,
+  frameHeight = 460,
+}: {
+  script?: string;
+  title?: string;
+  /** A named starter document run before the snippet (see editor ./playground/seeds). */
+  seed?: string;
+  /** One line describing what visibly changes when the script runs. */
+  lookFor?: string;
+  codeHeight?: number;
+  frameHeight?: number;
+}) {
   const [source, setSource] = useState(script.trim());
   const [loaded, setLoaded] = useState(false);
   const [ready, setReady] = useState(false);
   const [running, setRunning] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [output, setOutput] = useState<{ lines: string[]; error: string | null } | null>(null);
   const frameRef = useRef<HTMLIFrameElement>(null);
   const pendingRef = useRef<number | null>(null);
@@ -73,10 +90,25 @@ export function ScriptingPlayground({ script = '', title, codeHeight = 220, fram
     pendingRef.current = id;
     setRunning(true);
     setOutput(null);
-    frame.postMessage({ type: 'paged:run', id, source }, PLAYGROUND_ORIGIN);
+    // A seeded playground re-seeds before each run so a mutating snippet starts
+    // from identical content every time (Reset semantics).
+    frame.postMessage({ type: 'paged:run', id, source, reseed: !!seed }, PLAYGROUND_ORIGIN);
   }
 
-  const src = `${PLAYGROUND_ORIGIN}/?embed=script`;
+  async function copySource() {
+    try {
+      await navigator.clipboard.writeText(source);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1400);
+    } catch {
+      /* clipboard blocked — no-op */
+    }
+  }
+
+  // The embed loads the real editor; a seed scaffolds a starter document so the
+  // snippet has something addressable to act on.
+  const src = `${PLAYGROUND_ORIGIN}/?embed=script${seed ? `&seed=${encodeURIComponent(seed)}` : ''}`;
+  const openHref = `${PLAYGROUND_ORIGIN}/?embed=script${seed ? `&seed=${encodeURIComponent(seed)}` : ''}`;
 
   return (
     <figure className="not-prose" style={{ margin: '1.25rem 0' }}>
@@ -90,8 +122,14 @@ export function ScriptingPlayground({ script = '', title, codeHeight = 220, fram
           <button type="button" onClick={() => { setSource(script.trim()); setOutput(null); }} style={btn(false)}>
             Reset
           </button>
+          <button type="button" onClick={copySource} style={btn(false)} title="Copy the script">
+            {copied ? 'Copied ✓' : 'Copy'}
+          </button>
+          <a href={openHref} target="_blank" rel="noreferrer" style={{ ...btn(false), textDecoration: 'none', display: 'inline-block' }} title="Open the playground in a full window">
+            Open ↗
+          </a>
           <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono, monospace)', fontSize: 11, color: 'var(--color-muted)' }}>
-            {loaded ? (ready ? 'editor ready' : 'booting editor…') : 'paged.* · editor at 50%'}
+            {loaded ? (ready ? 'editor ready' : 'booting editor…') : seed ? `paged.* · seed: ${seed}` : 'paged.* · editor at 50%'}
           </span>
         </div>
 
@@ -122,6 +160,13 @@ export function ScriptingPlayground({ script = '', title, codeHeight = 220, fram
             </button>
           )}
         </div>
+
+        {/* What to look for — the visible outcome of a successful run */}
+        {lookFor ? (
+          <div style={{ borderTop: '1px solid var(--color-rule)', padding: '7px 12px', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--color-muted)', background: 'color-mix(in srgb, var(--valid, #2a7) 7%, transparent)' }}>
+            <strong style={{ fontWeight: 640, color: 'inherit' }}>Look for:</strong> {lookFor}
+          </div>
+        ) : null}
 
         {/* Console output */}
         <div style={{ borderTop: '1px solid var(--color-rule)', padding: '8px 12px', fontFamily: 'var(--font-mono, monospace)', fontSize: 12, background: 'color-mix(in srgb, var(--color-rule) 6%, transparent)', maxHeight: 160, overflow: 'auto' }}>

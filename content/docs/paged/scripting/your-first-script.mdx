@@ -1,0 +1,108 @@
+---
+title: Your first script
+description: A hands-on, five-step introduction to the paged.* scripting API — read the document, address an element, write a property, author from scratch, and undo — each step runnable in a live editor.
+tier: beginner
+diataxis: tutorial
+status: draft
+owner: paged-docs
+reviewed: "2026-06-27"
+---
+
+**In short:** in five short steps you'll read a document, change a frame, build
+one from scratch, and undo it — every step running in a real editor you can edit.
+By the end you'll know the three moves every script is made of: **read**,
+**address**, **write**.
+
+## 1. Read the document
+
+Everything starts with a read. `paged.tree()` returns the document hierarchy —
+**as a JSON string**, so parse it first. Press **Run**:
+
+<ScriptingPlayground
+  seed="one-text-frame-selected"
+  lookFor="The console prints one spread → one page → one text frame."
+  script={`const tree = JSON.parse(paged.tree());
+const page = tree[0].children[0];
+console.log('page', page.label, 'has', page.children.length, 'frame(s)');
+console.log('first frame:', JSON.stringify(page.children[0]));`}
+/>
+
+<Callout type="warn">
+Every read (`tree`, `selection`, `stories`, `pages`, …) returns a **JSON string**.
+Forgetting `JSON.parse` is the single most common scripting mistake — `"[]".length`
+is `2`, not `0`.
+</Callout>
+
+## 2. Address an element
+
+To change something you need its **id**. The frame in this document is already
+selected, so read the selection and turn it into an address — `kind:id`:
+
+<ScriptingPlayground
+  seed="one-text-frame-selected"
+  lookFor="The console prints the selected frame's address, e.g. textFrame:u3."
+  script={`const sel = JSON.parse(paged.selection());   // [{ kind, id }]
+const el = sel[0];
+const ref = el.kind + ':' + el.id;            // "textFrame:u3"
+console.log('selected:', ref);`}
+/>
+
+## 3. Write a property
+
+Now address it and write. `paged.set(id, path, value)` takes a [settable
+path](/docs/paged/scripting/settable-paths) and re-renders immediately:
+
+<ScriptingPlayground
+  seed="one-text-frame-selected"
+  lookFor="The frame fills red, gains a thick border, and rotates 12°."
+  script={`const [el] = JSON.parse(paged.selection());
+const ref = el.kind + ':' + el.id;
+paged.set(ref, 'frameFillColor', 'Color/Red');
+paged.set(ref, 'frameStrokeColor', 'Color/Black');
+paged.set(ref, 'frameStrokeWeight', 4);
+paged.set(ref, 'frameRotationAngle', 12);`}
+/>
+
+## 4. Author from scratch
+
+Reads and writes work on what's there — but you can also **create**. Get a page
+id from `paged.pages()`, make a frame (it returns its new id), and pour text in:
+
+<ScriptingPlayground
+  seed="blank"
+  lookFor="A new text frame appears on the blank page with a sentence in it."
+  script={`const pid = JSON.parse(paged.pages())[0].selfId;
+const frame = paged.insertTextFrame(pid, [120, 72, 320, 480]);
+console.log('created', frame);
+
+const story = JSON.parse(paged.stories())[0].selfId;
+paged.insertText(story, 0, 'Hello from a paged.* script!');`}
+/>
+
+## 5. Undo
+
+Every write goes through the editor's Operation channel, so `paged.undo()` reverts
+it exactly as ⌘Z would:
+
+<ScriptingPlayground
+  seed="one-text-frame-selected"
+  lookFor="The frame fills red, then undo reverts it, then redo re-applies it."
+  script={`const [el] = JSON.parse(paged.selection());
+const ref = el.kind + ':' + el.id;
+paged.set(ref, 'frameFillColor', 'Color/Red');
+console.log('red');
+paged.undo();
+console.log('undone');
+paged.redo();
+console.log('red again');`}
+/>
+
+## Where to go next
+
+- **[Examples](/docs/paged/scripting/examples)** — a working playground for each
+  `paged.*` function.
+- **[Path showcases](/docs/paged/scripting/showcases)** — the 179 settable paths,
+  grouped and runnable.
+- **[Host functions](/docs/paged/scripting/host-functions)** — the complete API.
+- **[Constraints](/docs/paged/scripting/constraints)** — the sandbox rules and
+  budgets.

@@ -14,18 +14,32 @@ surface runs in the editor's script panel/REPL and headless via the `paged-run`
 CLI. This reference is **generated from the engine's own catalog**, so it always
 matches the running engine exactly.
 
+## How a script becomes pixels
+
+<ScriptingExecutionModel />
+
 ## The shape of a script
 
 A script is plain ECMAScript (no modules, no I/O — see [constraints](/docs/paged/scripting/constraints)).
 It addresses elements by id, reads with `paged.inspect` / `paged.get`, and edits
-with `paged.set` and the structural authoring functions. Every write returns a
-boolean so a script can branch on success.
+with `paged.set` and the structural authoring functions. Every property write
+returns a boolean so a script can branch on success.
+
+<Callout type="warn">
+**Reads return JSON strings — parse them.** `paged.selection()`, `paged.tree()`,
+`paged.stories()` and every other read return a **JSON string**, not a live
+value. Call `JSON.parse(...)` before you index into the result. The parsed
+elements are `{ kind, id }` objects; address one as the string `` `${kind}:${id}` ``
+(e.g. `textFrame:u3`) when you pass it to `paged.set` / `paged.inspect`.
+</Callout>
 
 ```js
-const frame = paged.selection()[0];
-if (frame) {
-  paged.set(frame, "fillColor", "Color/Red");
-  paged.set(frame, "frameRotation", 12);
+// Reads return JSON strings — parse them.
+const [el] = JSON.parse(paged.selection());
+if (el) {
+  const ref = `${el.kind}:${el.id}`;            // e.g. "textFrame:u3"
+  paged.set(ref, "frameFillColor", "Color/Red"); // a real settable path
+  paged.set(ref, "frameRotationAngle", 12);      // rotate 12°
 }
 ```
 
@@ -35,18 +49,22 @@ Edit the script and press **Run** — it executes in the real Paged editor on th
 right, and the canvas updates live. Console output appears below.
 
 <ScriptingPlayground
-  title="A first paged.* script — inspect the document, then fill a selected frame"
-  script={`// A blank document is loaded in the editor below. Inspect it…
-console.log(paged.tree());
+  title="A first paged.* script — read the selection, then fill the frame red"
+  seed="one-text-frame-selected"
+  lookFor="The text frame on the page turns red and rotates 12°."
+  script={`// The editor below starts with one text frame, already selected.
+// Reads return JSON strings, so parse before you index.
+const sel = JSON.parse(paged.selection());
+console.log('selected', sel.length, 'element(s)');
 
-// …then fill the selected frame. 'frameFillColor' is a real settable path
-// (see "Settable paths" in the sidebar); the value is a swatch reference.
-const sel = paged.selection();
-if (sel.length) {
-  paged.set(sel[0], 'frameFillColor', 'Color/Red');
-  console.log('filled', sel[0], 'red');
+const el = sel[0];
+if (el) {
+  const ref = el.kind + ':' + el.id;          // e.g. "textFrame:u3"
+  paged.set(ref, 'frameFillColor', 'Color/Red');
+  paged.set(ref, 'frameRotationAngle', 12);
+  console.log('filled', ref, 'red');
 } else {
-  console.log('Tip: draw a rectangle in the editor, select it, then Run again.');
+  console.log('Nothing selected — press Reset to reload the starter frame.');
 }`}
 />
 

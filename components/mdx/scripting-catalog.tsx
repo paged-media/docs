@@ -8,6 +8,7 @@
  *   <ScriptingCatalog section="functions" | "grammar" | "paths" | "constraints" />
  */
 import { getScripting } from '@/lib/generated';
+import { SCRIPTING_EXAMPLES } from '@/data/scripting/examples';
 import { ScriptingFnsView, ScriptingPathsView } from './scripting-catalog-view';
 
 const mono: React.CSSProperties = { fontFamily: 'var(--font-mono, monospace)', fontSize: 12.5 };
@@ -15,7 +16,10 @@ const mono: React.CSSProperties = { fontFamily: 'var(--font-mono, monospace)', f
 function Functions() {
   const { hostFunctionGroups, hostFunctionCount } = getScripting();
   if (!hostFunctionGroups.length) return <Empty />;
-  return <ScriptingFnsView groups={hostFunctionGroups} count={hostFunctionCount} />;
+  // Which functions have a runnable example → a "Try it" deep-link into the
+  // examples gallery (where the editor boots lazily, one at a time).
+  const exampleFns = Array.from(new Set(SCRIPTING_EXAMPLES.map((e) => e.fn)));
+  return <ScriptingFnsView groups={hostFunctionGroups} count={hostFunctionCount} exampleFns={exampleFns} />;
 }
 
 function Grammar() {

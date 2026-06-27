@@ -1,4 +1,4 @@
 {
-  "title": "REST API",
-  "pages": ["index"]
+  "title": "API reference",
+  "pages": ["index", "rest"]
 }

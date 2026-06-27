@@ -1,0 +1,310 @@
+---
+title: Examples
+description: A working, editable playground for each paged.* host function — read the document, style frames, author text, apply styles, place images, and undo, each runnable against the real editor.
+tier: intermediate
+diataxis: how-to
+status: draft
+owner: paged-docs
+reviewed: "2026-06-27"
+---
+
+**In short:** every example below is a **real, editable script** running against
+the live editor. Each starts from a seeded starter document so the script has
+something to act on, and tells you what to **look for** on the canvas. Edit any
+snippet and press **Run** — the change applies and re-renders immediately.
+
+<Callout type="warn">
+**Reads return JSON strings — parse them.** `paged.selection()`, `paged.tree()`,
+`paged.stories()` and friends return a JSON string, not a live value. Call
+`JSON.parse(...)` first; the parsed elements are `{ kind, id }` objects, addressed
+as the string `` `${kind}:${id}` `` (e.g. `textFrame:u3`).
+</Callout>
+
+## Reading the document
+
+<FunctionPlayground fn="paged.tree" />
+
+<FunctionPlayground fn="paged.pages" />
+
+<FunctionPlayground fn="paged.inspect" />
+
+<FunctionPlayground fn="paged.get" />
+
+## Styling frames
+
+<FunctionPlayground fn="paged.set" />
+
+## Authoring content
+
+<FunctionPlayground fn="paged.insertTextFrame" />
+
+<FunctionPlayground fn="paged.insertText" />
+
+<FunctionPlayground fn="paged.applyStyle" />
+
+<FunctionPlayground fn="paged.placeImage" />
+
+## History
+
+<FunctionPlayground fn="paged.undo" />
+
+## Structure & geometry
+
+<FunctionPlayground fn="paged.deleteElement" />
+
+<FunctionPlayground fn="paged.moveFrame" />
+
+<FunctionPlayground fn="paged.resizeFrame" />
+
+<FunctionPlayground fn="paged.duplicatePage" />
+
+<FunctionPlayground fn="paged.setElementSelection" />
+
+<FunctionPlayground fn="paged.dissolveGroup" example="group-and-dissolve" />
+
+## Drawing
+
+<FunctionPlayground fn="paged.insertOval" />
+
+<FunctionPlayground fn="paged.insertLine" />
+
+## Styles & tables
+
+<FunctionPlayground fn="paged.createParagraphStyle" />
+
+<FunctionPlayground fn="paged.insertTable" />
+
+## Collections & document state
+
+Every read returns a JSON string — parse it, then report a count or the first row.
+
+<FunctionPlayground fn="paged.swatches" example="list-swatches" />
+
+<FunctionPlayground fn="paged.gradients" example="list-gradients" />
+
+<FunctionPlayground fn="paged.colorGroups" example="list-color-groups" />
+
+<FunctionPlayground fn="paged.layers" example="list-layers" />
+
+<FunctionPlayground fn="paged.paragraphStyles" example="list-paragraph-styles" />
+
+<FunctionPlayground fn="paged.characterStyles" example="list-character-styles" />
+
+<FunctionPlayground fn="paged.objectStyles" example="list-object-styles" />
+
+<FunctionPlayground fn="paged.links" example="audit-links" />
+
+<FunctionPlayground fn="paged.conditions" example="list-conditions" />
+
+<FunctionPlayground fn="paged.conditionSets" example="list-condition-sets" />
+
+<FunctionPlayground fn="paged.collection" example="read-collection" />
+
+<FunctionPlayground fn="paged.documentMeta" example="read-document-meta" />
+
+<FunctionPlayground fn="paged.stories" example="read-stories" />
+
+<FunctionPlayground fn="paged.selection" example="read-selection" />
+
+<FunctionPlayground fn="paged.contentSelection" example="read-content-selection" />
+
+## Selection
+
+<FunctionPlayground fn="paged.clearSelection" example="clear-selection" />
+
+<FunctionPlayground fn="paged.setContentSelection" example="set-content-selection" />
+
+## Pages & masters
+
+<FunctionPlayground fn="paged.insertPage" example="insert-page" />
+
+<FunctionPlayground fn="paged.deletePage" example="delete-page" />
+
+<FunctionPlayground fn="paged.resizePage" example="resize-page" />
+
+<FunctionPlayground fn="paged.applyMasterToPage" example="apply-master" />
+
+## Frames & threading
+
+<FunctionPlayground fn="paged.insertFrame" example="insert-graphic-frame" />
+
+<FunctionPlayground fn="paged.createGroup" example="group-frames" />
+
+<FunctionPlayground fn="paged.linkFrames" example="thread-frames" />
+
+<FunctionPlayground fn="paged.unlinkFrames" example="unthread-frame" />
+
+## Vector paths
+
+<FunctionPlayground fn="paged.insertPath" example="draw-custom-path" />
+
+<FunctionPlayground fn="paged.pathPointInsert" example="path-point-insert" />
+
+<FunctionPlayground fn="paged.pathPointRemove" example="path-point-remove" />
+
+<FunctionPlayground fn="paged.pathPointCurveType" example="path-point-curve" />
+
+<FunctionPlayground fn="paged.pathPointSet" example="path-point-set" />
+
+<FunctionPlayground fn="paged.pathOpenAt" example="path-open-at" />
+
+<FunctionPlayground fn="paged.outlineStroke" example="outline-stroke" />
+
+<FunctionPlayground fn="paged.offsetPath" example="offset-path" />
+
+<FunctionPlayground fn="paged.simplifyPath" example="simplify-path" />
+
+<FunctionPlayground fn="paged.pathfinderBoolean" example="pathfinder-union" />
+
+## Tables
+
+<FunctionPlayground fn="paged.insertTableRow" example="table-insert-row" />
+
+<FunctionPlayground fn="paged.deleteTableRow" example="table-delete-row" />
+
+<FunctionPlayground fn="paged.insertTableColumn" example="table-insert-column" />
+
+<FunctionPlayground fn="paged.deleteTableColumn" example="table-delete-column" />
+
+<FunctionPlayground fn="paged.insertHeaderRow" example="table-insert-header" />
+
+<FunctionPlayground fn="paged.removeHeaderRow" example="table-remove-header" />
+
+<FunctionPlayground fn="paged.insertFooterRow" example="table-insert-footer" />
+
+<FunctionPlayground fn="paged.removeFooterRow" example="table-remove-footer" />
+
+<FunctionPlayground fn="paged.setCellSpan" example="table-cell-span" />
+
+<FunctionPlayground fn="paged.setRowHeight" example="table-row-height" />
+
+<FunctionPlayground fn="paged.setColumnWidth" example="table-column-width" />
+
+## Styles — create, rename, delete
+
+<FunctionPlayground fn="paged.createCharacterStyle" example="create-character-style" />
+
+<FunctionPlayground fn="paged.renameCharacterStyle" example="rename-character-style" />
+
+<FunctionPlayground fn="paged.deleteCharacterStyle" example="delete-character-style" />
+
+<FunctionPlayground fn="paged.createObjectStyle" example="create-object-style" />
+
+<FunctionPlayground fn="paged.renameObjectStyle" example="rename-object-style" />
+
+<FunctionPlayground fn="paged.deleteObjectStyle" example="delete-object-style" />
+
+<FunctionPlayground fn="paged.createCellStyle" example="create-cell-style" />
+
+<FunctionPlayground fn="paged.renameCellStyle" example="rename-cell-style" />
+
+<FunctionPlayground fn="paged.deleteCellStyle" example="delete-cell-style" />
+
+<FunctionPlayground fn="paged.createTableStyle" example="create-table-style" />
+
+<FunctionPlayground fn="paged.renameTableStyle" example="rename-table-style" />
+
+<FunctionPlayground fn="paged.deleteTableStyle" example="delete-table-style" />
+
+<FunctionPlayground fn="paged.renameParagraphStyle" example="rename-paragraph-style" />
+
+<FunctionPlayground fn="paged.deleteParagraphStyle" example="delete-paragraph-style" />
+
+<FunctionPlayground fn="paged.setStyleProperty" example="set-style-property" />
+
+## Numbering lists
+
+<FunctionPlayground fn="paged.createNumberingList" example="create-numbering-list" />
+
+<FunctionPlayground fn="paged.editNumberingList" example="edit-numbering-list" />
+
+<FunctionPlayground fn="paged.deleteNumberingList" example="delete-numbering-list" />
+
+## Sections & page numbering
+
+<FunctionPlayground fn="paged.insertSection" example="insert-section" />
+
+<FunctionPlayground fn="paged.editSection" example="edit-section" />
+
+<FunctionPlayground fn="paged.deleteSection" example="delete-section" />
+
+## Conditional text
+
+<FunctionPlayground fn="paged.setConditionVisible" example="set-condition-visible" />
+
+<FunctionPlayground fn="paged.activateConditionSet" example="activate-condition-set" />
+
+## Layers
+
+<FunctionPlayground fn="paged.layerInsert" example="layer-insert" />
+
+<FunctionPlayground fn="paged.layerMove" example="layer-move" />
+
+<FunctionPlayground fn="paged.layerRemove" example="layer-remove" />
+
+## Ruler guides
+
+<FunctionPlayground fn="paged.insertGuide" example="insert-guide" />
+
+<FunctionPlayground fn="paged.moveGuide" example="move-guide" />
+
+<FunctionPlayground fn="paged.deleteGuide" example="delete-guide" />
+
+## Fields
+
+<FunctionPlayground fn="paged.insertField" example="insert-field" />
+
+<FunctionPlayground fn="paged.setFieldValue" example="set-field-value" />
+
+## Text & history
+
+<FunctionPlayground fn="paged.deleteRange" example="delete-range" />
+
+<FunctionPlayground fn="paged.redo" example="redo-write" />
+
+## Document & colour settings
+
+<FunctionPlayground fn="paged.setDocumentDefaults" example="set-document-defaults" />
+
+<FunctionPlayground fn="paged.setColorSettings" example="set-color-settings" />
+
+<FunctionPlayground fn="paged.setProofSetup" example="set-proof-setup" />
+
+<FunctionPlayground fn="paged.setInkSetting" example="set-ink-setting" />
+
+<FunctionPlayground fn="paged.setUseStandardLabForSpots" example="set-lab-for-spots" />
+
+<FunctionPlayground fn="paged.importSwatchLibrary" example="import-swatch-library" />
+
+<FunctionPlayground fn="paged.setPluginMetadata" example="set-plugin-metadata" />
+
+<FunctionPlayground fn="paged.replaceImageBytes" example="replace-image-bytes" />
+
+<FunctionPlayground fn="paged.batch" example="batch-mutations" />
+
+## Workflows
+
+Real desktop-publishing tasks, each chaining several host functions into one
+recipe — a starting point you can edit and rerun.
+
+<FunctionPlayground fn="paged.insertTextFrame" example="workflow-two-column-article" />
+
+<FunctionPlayground fn="paged.insertTable" example="workflow-price-table" />
+
+<FunctionPlayground fn="paged.placeImage" example="workflow-image-with-caption" />
+
+<FunctionPlayground fn="paged.linkFrames" example="workflow-thread-overset" />
+
+<FunctionPlayground fn="paged.set" example="workflow-pull-quote" />
+
+<FunctionPlayground fn="paged.insertSection" example="workflow-section-numbering" />
+
+<FunctionPlayground fn="paged.insertField" example="workflow-running-footer" />
+
+<FunctionPlayground fn="paged.insertGuide" example="workflow-column-guides" />
+
+---
+
+Looking for the full surface? See [Host functions](/docs/paged/scripting/host-functions)
+for every `paged.*` function and [Settable paths](/docs/paged/scripting/settable-paths)
+for everything `paged.set` accepts.

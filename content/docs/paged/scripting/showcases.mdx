@@ -1,0 +1,40 @@
+---
+title: Path showcases
+description: The 179 settable paths, grouped into ten themed playgrounds — fills, strokes, transforms, effects, corners, text, tables, anchoring, blend, and styles — each a runnable demo against a starter document.
+tier: intermediate
+diataxis: how-to
+status: draft
+owner: paged-docs
+reviewed: "2026-06-27"
+---
+
+**In short:** `paged.set(id, path, value)` accepts **179 settable paths**. They are
+grouped below into ten themes; each theme is a **runnable playground** that writes a
+few of its paths so you can see them take effect. The full, filterable list lives in
+[Settable paths](/docs/paged/scripting/settable-paths).
+
+<Callout type="note">
+Every showcase starts from a seeded document with a frame already selected, so the
+script can read the selection (`JSON.parse(paged.selection())`) and address it as
+`` `${kind}:${id}` ``. Edit any snippet and press **Run**.
+</Callout>
+
+<PathShowcase theme="fills" />
+
+<PathShowcase theme="strokes" />
+
+<PathShowcase theme="transform" />
+
+<PathShowcase theme="corners-fitting" />
+
+<PathShowcase theme="effects" />
+
+<PathShowcase theme="blend-opacity" />
+
+<PathShowcase theme="text-paragraph" />
+
+<PathShowcase theme="tables-cells" />
+
+<PathShowcase theme="anchored-textwrap" />
+
+<PathShowcase theme="styles-layers" />

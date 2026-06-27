@@ -52,8 +52,19 @@ function FilterBox({ value, onChange, placeholder }: { value: string; onChange: 
   );
 }
 
+const fnAnchor = (name: string) => `fn-${name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`;
+
 /** Filterable host-function tables, grouped by kind. */
-export function ScriptingFnsView({ groups, count }: { groups: Array<{ kind: string; functions: HostFn[] }>; count: number }) {
+export function ScriptingFnsView({
+  groups,
+  count,
+  exampleFns = [],
+}: {
+  groups: Array<{ kind: string; functions: HostFn[] }>;
+  count: number;
+  exampleFns?: string[];
+}) {
+  const hasExample = new Set(exampleFns);
   const [q, setQ] = useState('');
   const needle = q.trim().toLowerCase();
   const filtered = useMemo(() => {
@@ -90,7 +101,20 @@ export function ScriptingFnsView({ groups, count }: { groups: Array<{ kind: stri
                       <span style={{ color: 'var(--color-muted)' }}>{fn.params}</span>
                     </td>
                     <td style={{ ...TD, ...mono, color: 'var(--color-muted)' }}>{fn.returns}</td>
-                    <td style={{ ...TD, fontFamily: 'var(--font-sans)' }}>{fn.summary}</td>
+                    <td style={{ ...TD, fontFamily: 'var(--font-sans)' }}>
+                      {fn.summary}
+                      {hasExample.has(fn.name) ? (
+                        <>
+                          {' '}
+                          <a
+                            href={`/docs/paged/scripting/examples#${fnAnchor(fn.name)}`}
+                            style={{ whiteSpace: 'nowrap', fontWeight: 640, color: 'var(--color-accent)', textDecoration: 'none' }}
+                          >
+                            Try it ▸
+                          </a>
+                        </>
+                      ) : null}
+                    </td>
                   </tr>
                 ))}
               </tbody>
