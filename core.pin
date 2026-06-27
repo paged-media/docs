@@ -10,7 +10,11 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.44.0 (tag commit 9210bf8). The WebGPU live preview no longer builds
+# Currently: v0.51.2 (tag commit 964ce83). This release wires the full paged.*
+# scripting surface (109 host fns) + refreshed catalog, so the scripting gate
+# (scripting.yml: paged-run) and the example gate (paged-inspect) build from an
+# engine that has every scripted function. The WebGPU live preview no longer builds
 # from this commit — it consumes the published npm `@paged-media/idml-viewer` at the
-# matching release (its bundled wasm), so this pin governs the CI example gate only.
-9210bf8281db594d91dda9801e84f72214796a4a
+# matching release (its bundled wasm), so this pin governs the CI example/scripting
+# gates only.
+964ce83d67eaf645e8d1ee877ec7d2527b5638c7
