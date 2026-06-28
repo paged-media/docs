@@ -23,7 +23,14 @@ export type SeedId =
   | 'styled-story'
   | 'swatches-and-styles'
   | 'image-frame'
-  | 'a-table';
+  | 'a-table'
+  // Rich DTP starter documents — realistic prefilled layouts so a snippet's
+  // change lands on real content, plus a furniture page for "create" snippets.
+  | 'flyer'
+  | 'article-spread'
+  | 'report-page'
+  | 'catalog'
+  | 'starter-page';
 
 export interface ScriptingExample {
   /** Stable slug → playground anchor. */
@@ -79,9 +86,9 @@ export const SCRIPTING_EXAMPLES: ScriptingExample[] = [
     title: 'Fill and rotate the selected frame',
     summary:
       'Read the selection, address it as kind:id, then write two properties. paged.set re-renders, so the change is immediate.',
-    seed: 'one-text-frame-selected',
+    seed: 'flyer',
     level: 'beginner',
-    lookFor: 'The text frame turns red and rotates 12°.',
+    lookFor: 'The flyer headline turns red and rotates 12°.',
     script: `// Reads return JSON strings — parse before indexing.
 const [el] = JSON.parse(paged.selection());
 if (el) {
@@ -131,9 +138,9 @@ console.log('bounds', bounds);`,
     feature: 'scripting.inspection',
     title: 'Walk the document hierarchy',
     summary: 'spreads → pages → frames. Page/spread ids are null by design; frames carry real ids.',
-    seed: 'two-frames',
+    seed: 'article-spread',
     level: 'beginner',
-    lookFor: 'The console prints the spread/page/frame tree; two frames appear under page 1.',
+    lookFor: 'The console prints the spread/page/frame tree; the article headline, body, pull-quote and picture frames appear under page 1.',
     script: `const tree = JSON.parse(paged.tree());
 for (const spread of tree) {
   console.log('spread', spread.label);
@@ -152,9 +159,9 @@ for (const spread of tree) {
     feature: 'scripting.page-enumeration',
     title: 'List pages and their ids',
     summary: 'paged.pages() is the only way to get a usable page id (for insertFrame / insertPage).',
-    seed: 'blank',
+    seed: 'report-page',
     level: 'beginner',
-    lookFor: 'The console prints page 1 with its selfId and size in points.',
+    lookFor: 'The console prints the content page with its selfId and size in points.',
     script: `const pages = JSON.parse(paged.pages());
 for (const p of pages) {
   console.log('page', p.index, '· id', p.selfId, '·', p.sizePt.join(' × '), 'pt');
@@ -169,9 +176,9 @@ for (const p of pages) {
     title: 'Create a text frame and pour text into it',
     summary:
       'Get a page id, create a frame (it returns its new id and is auto-selected), then insert text into its story.',
-    seed: 'blank',
+    seed: 'starter-page',
     level: 'intermediate',
-    lookFor: 'A new text frame appears on the page with a sentence of text.',
+    lookFor: 'A new text frame with a sentence of text appears in the open middle of the page, between the header and footer furniture.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
 const frame = paged.insertTextFrame(pid, [120, 72, 320, 480]);   // [t,l,b,r] in pt
 console.log('created', frame);                                    // "textFrame:uX"
@@ -222,9 +229,9 @@ if (styles.length) {
     alsoFns: ['paged.redo', 'paged.set'],
     title: 'Undo and redo a write',
     summary: 'Every write lands on the same Operation channel as the UI, so undo/redo work exactly as in the editor.',
-    seed: 'one-text-frame-selected',
+    seed: 'flyer',
     level: 'intermediate',
-    lookFor: 'The frame turns red, then undo reverts it, then redo re-applies it.',
+    lookFor: 'The headline turns red, then undo reverts it, then redo re-applies it.',
     script: `const [el] = JSON.parse(paged.selection());
 const ref = el.kind + ':' + el.id;
 paged.set(ref, 'frameFillColor', 'Color/Red');
@@ -275,9 +282,9 @@ console.log('deleting', ref, '→', paged.deleteElement(ref));`,
     alsoFns: ['paged.pages'],
     title: 'Draw an oval',
     summary: 'A graphic primitive — like insertLine / insertFrame, it returns the new element id.',
-    seed: 'blank',
+    seed: 'starter-page',
     level: 'intermediate',
-    lookFor: 'An oval appears in the middle of the page.',
+    lookFor: 'A black oval appears in the open middle of the page, between the header and footer bands.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
 const oval = paged.insertOval(pid, [200, 180, 380, 440]);   // [t,l,b,r] in pt
 console.log('created', oval);
@@ -291,9 +298,9 @@ if (oval) paged.set(oval, 'frameFillColor', 'Color/Black');`,
     alsoFns: ['paged.pages'],
     title: 'Draw a line',
     summary: 'A graphic line between two page-local points.',
-    seed: 'blank',
+    seed: 'starter-page',
     level: 'intermediate',
-    lookFor: 'A diagonal line is drawn across the page.',
+    lookFor: 'A diagonal line is drawn across the open middle of the page.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
 const line = paged.insertLine(pid, [72, 72], [360, 480]);    // [x1,y1] → [x2,y2]
 console.log('created', line);`,
@@ -353,9 +360,9 @@ console.log('resized', ref, '→', paged.get(ref, 'frameBounds'));`,
     alsoFns: ['paged.tree', 'paged.selection'],
     title: 'Select elements from a script',
     summary: 'Selection is app state (not undoable); set it to drive the Properties panel.',
-    seed: 'two-frames',
+    seed: 'catalog',
     level: 'intermediate',
-    lookFor: 'Both frames on the page become selected.',
+    lookFor: 'All six product tiles on the page become selected.',
     script: `// Collect every frame id from the tree.
 const refs = [];
 for (const sp of JSON.parse(paged.tree()))
@@ -475,7 +482,7 @@ for (const g of groups) console.log(' -', g.name, '→', g.members.length, 'memb
     feature: 'scripting.collections',
     title: 'Read the layer stack',
     summary: 'Organise artwork onto named layers, then read the stack back — each row carries name, visibility, lock, print state and z-order.',
-    seed: 'blank',
+    seed: 'report-page',
     level: 'beginner',
     lookFor: 'The console prints a Background → Artwork layer stack, bottom to top.',
     script: `paged.layerInsert(0, 'Background');
@@ -551,7 +558,7 @@ for (const l of links) console.log(' -', l.hostKind, '·', l.uri, '·', l.status
     feature: 'scripting.collections',
     title: 'List conditional-text conditions',
     summary: 'Conditions tag text for show/hide versioning (e.g. a Draft watermark, EN vs DE copy). Read the ones this document defines.',
-    seed: 'blank',
+    seed: 'flyer',
     level: 'intermediate',
     lookFor: 'The console reports how many conditions the document defines (none on a fresh document).',
     script: `const conds = JSON.parse(paged.conditions());
@@ -565,7 +572,7 @@ for (const c of conds) console.log(' -', c.name, c.visible ? '·shown' : '·hidd
     feature: 'scripting.collections',
     title: 'List condition sets',
     summary: 'A condition set is a saved visibility snapshot across all conditions — one click to flip a document between, say, a print and a web variant.',
-    seed: 'blank',
+    seed: 'flyer',
     level: 'intermediate',
     lookFor: 'The console reports the condition-set count.',
     script: `const sets = JSON.parse(paged.conditionSets());
@@ -579,7 +586,7 @@ for (const s of sets) console.log(' -', s.name, '→', s.conditions.length, 'con
     feature: 'scripting.collections',
     title: 'Read any typed collection by name',
     summary: 'One generic accessor over every document collection — here the spreads, so you can enumerate the layout sheet by sheet.',
-    seed: 'blank',
+    seed: 'catalog',
     level: 'intermediate',
     lookFor: 'The console prints each spread and its page count.',
     script: `const spreads = JSON.parse(paged.collection('spreads'));
@@ -593,7 +600,7 @@ for (const sp of spreads) console.log(' -', sp.label, '·', sp.pageCount, 'page(
     feature: 'scripting.inspection',
     title: 'Read whole-document metadata',
     summary: 'The single-shot document snapshot — page count, the new-object fill/stroke defaults, and the active colour-management settings.',
-    seed: 'blank',
+    seed: 'flyer',
     level: 'beginner',
     lookFor: 'The console prints the page count and the document default fill/stroke.',
     script: `const meta = JSON.parse(paged.documentMeta());
@@ -608,9 +615,9 @@ console.log('CMYK profile:', meta.cmykProfileName ?? '(working space)');`,
     feature: 'scripting.inspection',
     title: 'List the document stories',
     summary: 'Every text flow with its character and paragraph counts plus an overset flag — the source of the story ids text edits address.',
-    seed: 'one-text-frame-selected',
+    seed: 'article-spread',
     level: 'beginner',
-    lookFor: 'The console prints the story id, character count and overset state.',
+    lookFor: 'The console prints each of the article’s stories with its character count and overset state.',
     script: `const stories = JSON.parse(paged.stories());
 for (const s of stories) {
   console.log('story', s.selfId, '·', s.characterCount, 'chars /', s.paragraphCount, 'paras',
@@ -710,7 +717,7 @@ console.log('pages now:', JSON.parse(paged.pages()).length);`,
     feature: 'scripting.full-mutation-surface',
     title: 'Remove a page',
     summary: 'Delete a page by id. We add a spare page first (you cannot delete a document down to zero pages), then remove it.',
-    seed: 'blank',
+    seed: 'report-page',
     level: 'intermediate',
     lookFor: 'The page count goes 1 → 2 → 1.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
@@ -727,9 +734,9 @@ console.log('pages after delete:', JSON.parse(paged.pages()).length);`,
     feature: 'scripting.full-mutation-surface',
     title: 'Change the page size to A4',
     summary: 'Set a page GeometricBounds in points. Here we switch US Letter (612×792) to A4 (595.28×841.89 pt).',
-    seed: 'blank',
+    seed: 'report-page',
     level: 'intermediate',
-    lookFor: 'The page becomes narrower and taller (A4 proportions).',
+    lookFor: 'The content page becomes narrower and taller (A4 proportions).',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
 paged.resizePage(pid, [0, 0, 841.89, 595.28]);   // [t,l,b,r] A4 in pt
 console.log('resized to', JSON.parse(paged.pages())[0].sizePt.join(' × '), 'pt');`,
@@ -742,9 +749,9 @@ console.log('resized to', JSON.parse(paged.pages())[0].sizePt.join(' × '), 'pt'
     feature: 'scripting.full-mutation-surface',
     title: 'Apply a master to a page',
     summary: 'Masters carry shared furniture (running heads, folios). Apply the first master to a page; omit the id to detach it instead.',
-    seed: 'blank',
+    seed: 'report-page',
     level: 'pro',
-    lookFor: 'The page picks up the master spread (or detaches when none is defined).',
+    lookFor: 'The content page picks up the master spread (or detaches when none is defined).',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
 const masters = JSON.parse(paged.collection('masterPages'));
 const masterId = masters.length ? masters[0].selfId : undefined;
@@ -762,9 +769,9 @@ console.log('applied master', masterId ?? '(detach)', '→', paged.applyMasterTo
     feature: 'scripting.structural-authoring',
     title: 'Draw a graphic (picture) frame',
     summary: 'A non-text frame — the usual target for placeImage. Returns its kind:id address (and auto-selects it).',
-    seed: 'blank',
+    seed: 'starter-page',
     level: 'intermediate',
-    lookFor: 'An empty picture frame appears, ready for an image, filled with a 20% grey here.',
+    lookFor: 'A 20%-grey picture frame appears in the open middle of the page, ready for an image.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
 const frame = paged.insertFrame(pid, [120, 120, 360, 432]);   // [t,l,b,r] pt
 console.log('created', frame);
@@ -798,9 +805,9 @@ console.log('grouping', refs.length, 'items →', paged.createGroup(refs));`,
     feature: 'scripting.full-mutation-surface',
     title: 'Thread a story across two frames',
     summary: 'When copy overflows one frame, thread it into a second so the text continues — the core of multi-frame article flow.',
-    seed: 'blank',
+    seed: 'starter-page',
     level: 'pro',
-    lookFor: 'Overset copy in a short first frame flows on into the second frame.',
+    lookFor: 'Overset copy in a short first frame flows on into a second frame below it.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
 const a = paged.insertTextFrame(pid, [72, 72, 150, 280]);     // short — will overflow
 const sid = JSON.parse(paged.stories())[0].selfId;
@@ -816,9 +823,9 @@ console.log('threaded', a, '→', b, ':', paged.linkFrames(a, b));`,
     feature: 'scripting.full-mutation-surface',
     title: 'Break a text thread',
     summary: 'Cut the link leaving a frame so its overflow no longer pours onward — e.g. to re-route a story into a different frame.',
-    seed: 'blank',
+    seed: 'starter-page',
     level: 'pro',
-    lookFor: 'A threaded pair is created, then the thread out of the first frame is severed.',
+    lookFor: 'A threaded pair is created on the page, then the thread out of the first frame is severed.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
 const a = paged.insertTextFrame(pid, [72, 72, 150, 280]);
 const sid = JSON.parse(paged.stories())[0].selfId;
@@ -841,9 +848,9 @@ console.log('unthreaded', a, ':', paged.unlinkFrames(a));`,
     feature: 'scripting.full-mutation-surface',
     title: 'Draw a custom shape (a pennant)',
     summary: 'Build an arbitrary closed path from anchors — each is { anchor, left, right } (corner points repeat the anchor). Returns the new polygon address.',
-    seed: 'blank',
+    seed: 'starter-page',
     level: 'pro',
-    lookFor: 'A solid triangular pennant appears on the page.',
+    lookFor: 'A solid triangular pennant appears in the open middle of the page.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
 const pennant = [
   { anchor: [200, 120], left: [200, 120], right: [200, 120] },
@@ -862,7 +869,7 @@ if (path) paged.set(path, 'frameFillColor', 'Color/Black');`,
     feature: 'scripting.full-mutation-surface',
     title: 'Add an anchor to a shape',
     summary: 'Refine a custom path by inserting an anchor into its flat PathPointArray — turning a triangle into a quad here.',
-    seed: 'blank',
+    seed: 'starter-page',
     level: 'pro',
     lookFor: 'A fourth corner is added to the triangle, squaring it off.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
@@ -883,7 +890,7 @@ console.log('added anchor →', ok);`,
     feature: 'scripting.full-mutation-surface',
     title: 'Remove a redundant anchor',
     summary: 'Delete an anchor from a path by its flat index — simplifying a four-point shape back toward a triangle.',
-    seed: 'blank',
+    seed: 'starter-page',
     level: 'pro',
     lookFor: 'One corner of a four-point shape is removed.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
@@ -904,7 +911,7 @@ console.log('removed anchor 3 →', paged.pathPointRemove(p, 3));`,
     feature: 'scripting.full-mutation-surface',
     title: 'Smooth a corner point',
     summary: 'Flip one anchor between corner and smooth — rounding a hard vertex into a curved transition.',
-    seed: 'blank',
+    seed: 'starter-page',
     level: 'pro',
     lookFor: 'The first corner of the shape becomes a smooth curve.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
@@ -924,7 +931,7 @@ console.log('smoothed anchor 0 →', paged.pathPointCurveType(p, 0, true));`,
     feature: 'scripting.full-mutation-surface',
     title: 'Nudge one anchor handle',
     summary: 'Write a single Bezier handle (role = anchor | left | right) to reshape a path precisely.',
-    seed: 'blank',
+    seed: 'starter-page',
     level: 'pro',
     lookFor: 'The apex of a triangle shifts to a new position.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
@@ -944,7 +951,7 @@ console.log('moved apex →', paged.pathPointSet(p, 0, 'anchor', [260, 90]));`,
     feature: 'scripting.full-mutation-surface',
     title: 'Cut a closed path open',
     summary: 'Open a closed contour at a chosen anchor — turning a filled silhouette into an open stroked path.',
-    seed: 'blank',
+    seed: 'starter-page',
     level: 'pro',
     lookFor: 'A closed shape is split open at its first corner.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
@@ -965,7 +972,7 @@ console.log('opened at anchor 0 →', paged.pathOpenAt(p, 0));`,
     feature: 'scripting.full-mutation-surface',
     title: 'Outline a rule into a filled shape',
     summary: 'Convert a stroked path into the filled outline of that stroke — so an 8pt rule becomes an editable band (cap/join = butt|round|square / miter|round|bevel).',
-    seed: 'blank',
+    seed: 'starter-page',
     level: 'pro',
     lookFor: 'A thick diagonal rule turns into a closed filled band.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
@@ -981,7 +988,7 @@ console.log('outlined →', paged.outlineStroke(rule, 8, 'round', 'round', 4));`
     feature: 'scripting.full-mutation-surface',
     title: 'Inset a shape (keyline)',
     summary: 'Inset (delta < 0) or outset (delta > 0) a closed contour — e.g. to build a registration keyline just inside a shape.',
-    seed: 'blank',
+    seed: 'starter-page',
     level: 'pro',
     lookFor: 'The shape contracts by 10pt all round.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
@@ -1001,7 +1008,7 @@ console.log('inset 10pt →', paged.offsetPath(p, -10, 'miter', 4));`,
     feature: 'scripting.full-mutation-surface',
     title: 'Simplify a path',
     summary: 'Re-express a path with fewer anchors within a pt tolerance — lightening a dense traced outline.',
-    seed: 'blank',
+    seed: 'starter-page',
     level: 'pro',
     lookFor: 'The path is re-expressed within a 3pt tolerance.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
@@ -1022,7 +1029,7 @@ console.log('simplified →', paged.simplifyPath(p, 3));`,
     feature: 'scripting.full-mutation-surface',
     title: 'Merge shapes with Pathfinder',
     summary: 'Combine overlapping shapes into one silhouette (kind = union | intersect | subtract | exclude). The kept shape absorbs the others.',
-    seed: 'blank',
+    seed: 'starter-page',
     level: 'pro',
     lookFor: 'Two overlapping squares merge into a single union outline.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
@@ -1484,7 +1491,7 @@ console.log('deleted →', paged.deleteNumberingList(id));`,
     feature: 'scripting.full-mutation-surface',
     title: 'Start a front-matter section',
     summary: 'Anchor a <Section> at a page to restart page numbering — here lower-roman with an "i" front-matter scheme.',
-    seed: 'blank',
+    seed: 'report-page',
     level: 'pro',
     lookFor: 'A section begins at page 1 with lower-roman numbering.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
@@ -1500,7 +1507,7 @@ console.log('sections now:', JSON.parse(paged.collection('sections')).length);`,
     feature: 'scripting.full-mutation-surface',
     title: 'Set a section prefix',
     summary: 'Edit a section discovered from the sections collection — give it an "A-" chapter prefix on the folio.',
-    seed: 'blank',
+    seed: 'report-page',
     level: 'pro',
     lookFor: 'The section gains an A- page-number prefix.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
@@ -1516,7 +1523,7 @@ console.log('prefix A- →', paged.editSection(secId, { prefix: 'A-' }));`,
     feature: 'scripting.full-mutation-surface',
     title: 'Delete a section',
     summary: 'Remove a section so its page-numbering restart reverts to the previous scheme.',
-    seed: 'blank',
+    seed: 'report-page',
     level: 'pro',
     lookFor: 'A just-created section is removed.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
@@ -1538,7 +1545,7 @@ console.log('deleted →', paged.deleteSection(secId));`,
     feature: 'scripting.full-mutation-surface',
     title: 'Hide a conditional-text condition',
     summary: 'Flip a condition visible/hidden — e.g. hide the Draft watermark for a final export. Acts on the first defined condition.',
-    seed: 'blank',
+    seed: 'flyer',
     level: 'pro',
     lookFor: 'The first condition is hidden (or reports false when none are defined).',
     script: `const conds = JSON.parse(paged.conditions());
@@ -1553,7 +1560,7 @@ console.log('hide', target, '→', paged.setConditionVisible(target, false));`,
     feature: 'scripting.full-mutation-surface',
     title: 'Activate a condition set',
     summary: 'Switch the document to one saved visibility set ("show only this set") — e.g. flip to the German-language variant.',
-    seed: 'blank',
+    seed: 'flyer',
     level: 'pro',
     lookFor: 'The first condition set activates (or reports false when none exist).',
     script: `const sets = JSON.parse(paged.conditionSets());
@@ -1572,7 +1579,7 @@ console.log('activate', target, '→', paged.activateConditionSet(target));`,
     feature: 'scripting.full-mutation-surface',
     title: 'Add a named layer',
     summary: 'Append a layer at a zero-based stacking index — here an "Annotations" layer above the artwork.',
-    seed: 'blank',
+    seed: 'report-page',
     level: 'intermediate',
     lookFor: 'An Annotations layer is added to the stack.',
     script: `console.log('added layer →', paged.layerInsert(0, 'Annotations'));
@@ -1586,7 +1593,7 @@ console.log('layers:', JSON.parse(paged.layers()).map(function (l) { return l.na
     feature: 'scripting.full-mutation-surface',
     title: 'Reorder a layer in the stack',
     summary: 'Move a layer to a new zero-based index — sending the background to the very bottom.',
-    seed: 'blank',
+    seed: 'report-page',
     level: 'intermediate',
     lookFor: 'The Background layer moves to the bottom of the stack.',
     script: `paged.layerInsert(0, 'Background');
@@ -1602,7 +1609,7 @@ console.log('sent to back →', paged.layerMove(bg.selfId, 0));`,
     feature: 'scripting.full-mutation-surface',
     title: 'Remove an empty layer',
     summary: 'Delete a layer by id — tidying up an empty scratch layer.',
-    seed: 'blank',
+    seed: 'report-page',
     level: 'intermediate',
     lookFor: 'A just-added layer is removed again.',
     script: `paged.layerInsert(0, 'Scratch');
@@ -1621,7 +1628,7 @@ console.log('removed →', paged.layerRemove(id));`,
     feature: 'scripting.full-mutation-surface',
     title: 'Place a column guide',
     summary: 'Add a ruler guide (orientation = vertical | horizontal) at a page-local position — here a vertical guide at 144pt (2 inches).',
-    seed: 'blank',
+    seed: 'report-page',
     level: 'pro',
     lookFor: 'A vertical guide appears two inches in from the left.',
     script: `const spread = JSON.parse(paged.collection('spreads'))[0].selfId;
@@ -1635,7 +1642,7 @@ console.log('column guide at 144pt →', paged.insertGuide(spread, 'vertical', 1
     feature: 'scripting.full-mutation-surface',
     title: 'Nudge a ruler guide',
     summary: 'Move a guide along its perpendicular axis. We add one, read its minted id from the spread, then slide it.',
-    seed: 'blank',
+    seed: 'report-page',
     level: 'pro',
     lookFor: 'The guide slides from 144pt to 216pt.',
     script: `const spread = JSON.parse(paged.collection('spreads'))[0].selfId;
@@ -1652,7 +1659,7 @@ console.log('moved to 216pt →', paged.moveGuide(g, 216));`,
     feature: 'scripting.full-mutation-surface',
     title: 'Delete a ruler guide',
     summary: 'Remove a guide by its minted id (read from the spread guides list).',
-    seed: 'blank',
+    seed: 'report-page',
     level: 'pro',
     lookFor: 'A just-added guide is removed.',
     script: `const spread = JSON.parse(paged.collection('spreads'))[0].selfId;
@@ -1722,9 +1729,9 @@ console.log('chars', before, '→', JSON.parse(paged.stories())[0].characterCoun
     feature: 'scripting.undo-redo',
     title: 'Redo an undone change',
     summary: 'Every write lands on the same Operation channel as the UI, so redo re-applies exactly what undo reverted.',
-    seed: 'one-text-frame-selected',
+    seed: 'flyer',
     level: 'intermediate',
-    lookFor: 'The frame turns red, undo reverts it, redo re-applies the red fill.',
+    lookFor: 'The headline turns red, undo reverts it, redo re-applies the red fill.',
     script: `const [el] = JSON.parse(paged.selection());
 const ref = el.kind + ':' + el.id;
 paged.set(ref, 'frameFillColor', 'Color/Red');
@@ -1742,7 +1749,7 @@ console.log('redo →', paged.redo());   // red again`,
     feature: 'scripting.full-mutation-surface',
     title: 'Set new-object defaults',
     summary: 'Define the fill/stroke/weight new frames inherit — here no fill, a 1pt black stroke, so drawn boxes start as keylines.',
-    seed: 'blank',
+    seed: 'flyer',
     level: 'pro',
     lookFor: 'New objects default to a 1pt black stroke with no fill.',
     script: `console.log('defaults set →', paged.setDocumentDefaults({ stroke: 'Color/Black', weight: 1 }));`,
@@ -1754,7 +1761,7 @@ console.log('redo →', paged.redo());   // red again`,
     feature: 'scripting.full-mutation-surface',
     title: 'Configure colour management',
     summary: 'Replace the document colour-management policy — preserve embedded profiles, relative-colorimetric intent, black-point compensation on.',
-    seed: 'blank',
+    seed: 'flyer',
     level: 'pro',
     lookFor: 'The document colour-management settings are updated.',
     script: `console.log('colour settings →', paged.setColorSettings({
@@ -1770,7 +1777,7 @@ console.log('redo →', paged.redo());   // red again`,
     feature: 'scripting.full-mutation-surface',
     title: 'Soft-proof for CMYK press',
     summary: 'Configure on-screen soft-proofing — simulate a SWOP CMYK press with paper-white simulation. Pass profileName null to turn proofing off.',
-    seed: 'blank',
+    seed: 'flyer',
     level: 'pro',
     lookFor: 'Soft-proofing is configured for a SWOP CMYK press.',
     script: `console.log('proof setup →', paged.setProofSetup({
@@ -1786,7 +1793,7 @@ console.log('redo →', paged.redo());   // red again`,
     feature: 'scripting.full-mutation-surface',
     title: 'Convert a spot ink to process',
     summary: 'Adjust an ink output setting (Ink Manager) — convert a spot to process at output. This blank document defines no spot inks, so it reports false cleanly.',
-    seed: 'blank',
+    seed: 'flyer',
     level: 'pro',
     lookFor: 'The first spot ink converts to process (or reports false when none exist).',
     script: `const inks = JSON.parse(paged.collection('inks'));
@@ -1801,7 +1808,7 @@ console.log('convert to process →', paged.setInkSetting(spot, { convertToProce
     feature: 'scripting.full-mutation-surface',
     title: 'Prefer Lab for spot previews',
     summary: 'Preview spot colours from their Lab primary rather than the CMYK alternate — closer to the swatch-book appearance.',
-    seed: 'blank',
+    seed: 'flyer',
     level: 'pro',
     lookFor: 'Spot-colour previews switch to their Lab values.',
     script: `console.log('use Lab for spots →', paged.setUseStandardLabForSpots(true));`,
@@ -1859,9 +1866,9 @@ console.log('cleared inline bytes →', paged.replaceImageBytes(ref, null));`,
     feature: 'scripting.full-mutation-surface',
     title: 'Two-column layout in one undo step',
     summary: 'Apply an array of { op, args } mutations as ONE undoable step — here two text frames for a two-column page, created atomically.',
-    seed: 'blank',
+    seed: 'starter-page',
     level: 'pro',
-    lookFor: 'Two side-by-side text columns appear, undoable as a single step.',
+    lookFor: 'Two side-by-side text columns appear in the open middle of the page, undoable as a single step.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
 const ok = paged.batch([
   { op: 'insertTextFrame', args: { pageId: pid, bounds: [72, 72, 720, 290] } },
@@ -1883,9 +1890,9 @@ console.log('two-column layout →', ok);`,
     feature: 'scripting.text-authoring',
     title: 'Lay out a two-column article',
     summary: 'Create a text frame, pour a heading + body, split it into two columns with a gutter, and style the heading — a complete article block.',
-    seed: 'blank',
+    seed: 'starter-page',
     level: 'pro',
-    lookFor: 'A two-column article with a distinct heading on the first line.',
+    lookFor: 'A two-column article with a distinct heading on the first line appears below the page header.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
 const frame = paged.insertTextFrame(pid, [72, 72, 720, 540]);
 const sid = JSON.parse(paged.stories())[0].selfId;
@@ -1926,7 +1933,7 @@ console.log('price table', table, 'ready');`,
     feature: 'scripting.structural-authoring',
     title: 'Place an image with a caption',
     summary: 'Draw a picture frame, place an image fitted proportionally, then add a small caption frame directly beneath it.',
-    seed: 'blank',
+    seed: 'starter-page',
     level: 'pro',
     lookFor: 'A fitted image above a small italic-sized caption line.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
@@ -1948,7 +1955,7 @@ console.log('captioned figure', figure, '+', caption);`,
     feature: 'scripting.full-mutation-surface',
     title: 'Thread overset copy onto a second page',
     summary: 'Pour a long story into a short frame, add a fresh page, and thread the overflow into a frame there — continuing the flow.',
-    seed: 'blank',
+    seed: 'starter-page',
     level: 'pro',
     lookFor: 'A story overflows page 1 and continues in a frame on page 2.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
@@ -1990,7 +1997,7 @@ console.log('pull-quote styled on', ref);`,
     feature: 'scripting.full-mutation-surface',
     title: 'Front-matter then body page numbering',
     summary: 'Start the document in lower-roman front matter, add a page, then begin an arabic body section restarting at 1 — classic book folios.',
-    seed: 'blank',
+    seed: 'report-page',
     level: 'pro',
     lookFor: 'Page 1 numbers as roman front matter; a later section restarts arabic at 1.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
@@ -2008,7 +2015,7 @@ console.log('sections:', JSON.parse(paged.collection('sections')).length);`,
     feature: 'scripting.full-mutation-surface',
     title: 'Build a running footer with a folio',
     summary: 'Add a footer text frame, type a running head, and drop a live page-number field after it — the page folio.',
-    seed: 'blank',
+    seed: 'starter-page',
     level: 'pro',
     lookFor: 'A small footer line reading the running head followed by a live page number.',
     script: `const pid = JSON.parse(paged.pages())[0].selfId;
@@ -2027,15 +2034,147 @@ console.log('running footer placed in', footer);`,
     feature: 'scripting.full-mutation-surface',
     title: 'Set up a column grid with guides',
     summary: 'Drop evenly-spaced vertical guides across the page to scaffold a multi-column grid before placing frames.',
-    seed: 'blank',
+    seed: 'report-page',
     level: 'pro',
-    lookFor: 'Three vertical guides divide the page into a column grid.',
+    lookFor: 'Three vertical guides divide the content page into a column grid.',
     script: `const spread = JSON.parse(paged.collection('spreads'))[0].selfId;
 let placed = 0;
 for (const x of [153, 306, 459]) {          // quarter / half / three-quarter
   if (paged.insertGuide(spread, 'vertical', x, 0)) placed++;
 }
 console.log('placed', placed, 'column guides');`,
+  },
+
+  // ════════════════════════════════════════════════════════════════════════
+  // The flagship — a complete editorial job authored end to end: multi-page,
+  // multi-layer, threaded "floating" text, and rich typography in one script.
+  // ════════════════════════════════════════════════════════════════════════
+  {
+    id: 'workflow-editorial-layout',
+    fn: 'paged.insertPage',
+    alsoFns: [
+      'paged.layerInsert',
+      'paged.layerMove',
+      'paged.createParagraphStyle',
+      'paged.setStyleProperty',
+      'paged.applyStyle',
+      'paged.insertTextFrame',
+      'paged.insertText',
+      'paged.insertFrame',
+      'paged.set',
+      'paged.linkFrames',
+      'paged.insertField',
+      'paged.insertSection',
+      'paged.setElementSelection',
+      'paged.pages',
+      'paged.layers',
+      'paged.stories',
+    ],
+    paths: [
+      'frameFillColor',
+      'frameFillTint',
+      'frameStrokeColor',
+      'frameStrokeWeight',
+      'frameInsetSpacing',
+      'frameRotationAngle',
+      'textFrameColumnCount',
+      'textFrameColumnGutter',
+      'characterFontSize',
+    ],
+    feature: 'scripting.full-mutation-surface',
+    title: 'Compose a three-page editorial layout',
+    summary:
+      'A full editorial job in one script: a four-layer stack, three paragraph styles, a masthead with a tinted band and a floating rotated pull-quote, a drop-cap two-column story threaded across two pages, a restarting arabic section, and a running folio with a live page number on every page.',
+    seed: 'starter-page',
+    level: 'pro',
+    lookFor:
+      'A three-page editorial layout: a masthead with a floating, rotated pull-quote on page 1, a drop-cap two-column story threaded onto pages 2-3, running folios on every page, and a four-layer stack with the background sent to the back.',
+    script: `// A complete editorial layout, authored end to end. addText() maps each new
+// frame to ITS OWN story (story ids are diffed before/after the insert), so a
+// multi-frame, multi-page layout stays unambiguous.
+const addText = function (pid, bounds, text) {
+  const before = JSON.parse(paged.stories()).map(function (s) { return s.selfId; });
+  const ref = paged.insertTextFrame(pid, bounds);
+  const after = JSON.parse(paged.stories());
+  let sid = null;
+  for (let i = 0; i < after.length; i++) {
+    if (before.indexOf(after[i].selfId) === -1) { sid = after[i].selfId; break; }
+  }
+  if (sid && text) paged.insertText(sid, 0, text);
+  return { ref: ref, sid: sid };
+};
+
+const p1 = JSON.parse(paged.pages())[0].selfId;
+
+// 1) A four-layer stack, then send the background to the very back.
+paged.layerInsert(0, 'Background');
+paged.layerInsert(1, 'Artwork');
+paged.layerInsert(2, 'Type');
+paged.layerInsert(3, 'Notes');
+const bg = JSON.parse(paged.layers()).find(function (l) { return l.name === 'Background'; });
+if (bg) paged.layerMove(bg.selfId, 0);
+
+// 2) Three paragraph styles — display, deck, body.
+const display = paged.createParagraphStyle({ name: 'Display' });
+const deck = paged.createParagraphStyle({ name: 'Deck' });
+const body = paged.createParagraphStyle({ name: 'Body' });
+paged.setStyleProperty('paragraph', display, 'characterFontSize', 42);
+paged.setStyleProperty('paragraph', deck, 'characterFontSize', 16);
+paged.setStyleProperty('paragraph', body, 'characterFontSize', 10);
+paged.setStyleProperty('paragraph', body, 'paragraphSpaceAfter', 6);
+
+// 3) Page 1 — masthead: a tinted band, a title, a deck, and a floating,
+//    rotated pull-quote with a hairline rule (text floating over the band).
+const band = paged.insertFrame(p1, [104, 54, 250, 558]);
+paged.set(band, 'frameFillColor', 'Color/Black');
+paged.set(band, 'frameFillTint', 10);
+const TITLE = 'The Quarterly Review';
+const t = addText(p1, [116, 66, 196, 546], TITLE);
+if (t.sid && display) paged.applyStyle(t.sid, 0, TITLE.length, display);
+const DECK = 'Field notes on typography, layout, and the printed page.';
+const d = addText(p1, [206, 66, 246, 546], DECK);
+if (d.sid && deck) paged.applyStyle(d.sid, 0, DECK.length, deck);
+const QUOTE = 'Good type is invisible; great type is unforgettable.';
+const q = addText(p1, [300, 320, 470, 560], QUOTE);
+paged.set(q.ref, 'frameFillColor', 'Color/Black');
+paged.set(q.ref, 'frameFillTint', 8);
+paged.set(q.ref, 'frameStrokeColor', 'Color/Black');
+paged.set(q.ref, 'frameStrokeWeight', 1);
+paged.set(q.ref, 'frameInsetSpacing', [12, 12, 12, 12]);
+paged.set(q.ref, 'frameRotationAngle', -6);
+if (q.sid) paged.set('storyRange:' + q.sid + '@0..' + QUOTE.length, 'characterFontSize', 17);
+
+// 4) A drop-cap, two-column story threaded across pages 2 and 3.
+const p2 = paged.insertPage(p1);
+const PARA = 'Typography begins long before the first word is set: with the grid, the measure, and the rhythm of the page. A column of text is a river of decisions - leading that breathes, a measure that does not tire the eye, and contrast that guides without shouting. When a story outgrows its frame it does not stop; it threads onward, resuming on the next page exactly where the eye expects to continue. This is the quiet machinery of the printed page, and every part of it is scriptable.';
+const BODY = PARA + ' ' + PARA;
+const story = addText(p2, [96, 54, 430, 558], BODY);
+if (story.sid && body) paged.applyStyle(story.sid, 0, BODY.length, body);
+paged.set(story.ref, 'textFrameColumnCount', 2);
+paged.set(story.ref, 'textFrameColumnGutter', 16);
+if (story.sid) paged.set('storyRange:' + story.sid + '@0..1', 'characterFontSize', 44);  // raised drop cap
+const p3 = paged.insertPage(p2);
+const cont = paged.insertTextFrame(p3, [80, 54, 720, 558]);   // empty continuation
+paged.set(cont, 'textFrameColumnCount', 2);
+paged.set(cont, 'textFrameColumnGutter', 16);
+paged.linkFrames(story.ref, cont);                            // overset flows onto page 3
+
+// 5) A restarting arabic section, plus a running folio on every page.
+paged.insertSection(p1, { style: 'arabic', start: 1 });
+const HEAD = 'THE QUARTERLY REVIEW    ';
+const pages = JSON.parse(paged.pages());
+for (let i = 0; i < pages.length; i++) {
+  const f = addText(pages[i].selfId, [726, 54, 744, 558], HEAD);
+  if (f.sid) {
+    paged.insertField(f.sid, HEAD.length, 'pageNumber');      // live page number
+    paged.set('storyRange:' + f.sid + '@0..' + HEAD.length, 'characterFontSize', 8);
+  }
+}
+
+paged.setElementSelection([t.ref]);
+console.log('built a ' + JSON.parse(paged.pages()).length + '-page layout · ' +
+  JSON.parse(paged.layers()).length + ' layers · ' +
+  JSON.parse(paged.stories()).length + ' stories');`,
   },
 ];
 
