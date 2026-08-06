@@ -10,11 +10,20 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.51.2 (tag commit 964ce83). This release wires the full paged.*
-# scripting surface (109 host fns) + refreshed catalog, so the scripting gate
-# (scripting.yml: paged-run) and the example gate (paged-inspect) build from an
-# engine that has every scripted function. The WebGPU live preview no longer builds
-# from this commit — it consumes the published npm `@paged-media/idml-viewer` at the
-# matching release (its bundled wasm), so this pin governs the CI example/scripting
-# gates only.
-964ce83d67eaf645e8d1ee877ec7d2527b5638c7
+# Currently: v0.61.0 (tag commit ea918cb). Ten protocol versions in one step
+# (51 -> 61): anchored frames, hyperlinks, structured story read, cell styling,
+# closePath/joinPaths, planar regions + pasteInto/releaseFrom, opacity masks,
+# text-on-path, z-order reorder and ink coverage.
+#
+# This bump also makes the policy above TRUE again, which it had quietly stopped
+# being. The previous pin named v0.51.2 — a tag that was cut but never published:
+# its release, and v0.51.1 and v0.51.0 before it, all died on an expired NPM_TOKEN
+# that npm reported as a 404. So the gate was building paged-inspect from an engine
+# no published package shipped from, which is precisely what this pin exists to
+# prevent. v0.61.0 is the first tag since v0.49.0 whose packages are actually on
+# npm.
+#
+# The WebGPU live preview does not build from this commit — it consumes the
+# published npm `@paged-media/idml-viewer` at the matching release (its bundled
+# wasm), so this pin governs the CI example/scripting gates only.
+ea918cbe47754209ed0215d70b1cbcae1e5b3f15
