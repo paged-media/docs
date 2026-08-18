@@ -15,8 +15,8 @@ importers:
         specifier: github:paged-media/demo-replay#685b976af0bbe70a50476ccb2aa12f907b91c7c4
         version: https://codeload.github.com/paged-media/demo-replay/tar.gz/685b976af0bbe70a50476ccb2aa12f907b91c7c4(react@19.2.6)(rrweb@2.0.1)
       '@paged-media/idml-viewer':
-        specifier: 0.35.0
-        version: 0.35.0
+        specifier: 0.61.1
+        version: 0.61.1
       fflate:
         specifier: ^0.8.2
         version: 0.8.3
@@ -501,8 +501,8 @@ packages:
       react:
         optional: true
 
-  '@paged-media/idml-viewer@0.35.0':
-    resolution: {integrity: sha512-6AP8MQqBW8FgJ7/si0r/yWwUjRRpxCV8eV7BLLzbYwu9W4bbAXfSlHJ2ZPUyAz/dlS64QzTC6ftQol7YrgSAEA==}
+  '@paged-media/idml-viewer@0.61.1':
+    resolution: {integrity: sha512-rYBb9V95/hwg0c3Lm2UETUwgoVSx48Ge1ROwpY+fuwmzhnGl2VBu3UgiNXGhDvJyiTcsej3MvYywrlmzMNo0kw==}
 
   '@radix-ui/number@1.1.1':
     resolution: {integrity: sha512-MkKCwxlXTgz6CFoJx3pCwn07GKp36+aZyu/u2Ln2VrA5DcdyCZkASEDBTd8x5whTQQL5CiYf4prXKLcgQdv29g==}
@@ -2340,7 +2340,7 @@ snapshots:
     optionalDependencies:
       react: 19.2.6
 
-  '@paged-media/idml-viewer@0.35.0': {}
+  '@paged-media/idml-viewer@0.61.1': {}
 
   '@radix-ui/number@1.1.1': {}
 

@@ -20,12 +20,15 @@ const SRC = join(ROOT, '.generated', 'sources', 'state');
 const GEN = join(ROOT, '.generated');
 
 /**
- * The 18 matrix columns — mirror of state/registry/stages.yaml (a frozen
- * taxonomy; the state dashboard hardcodes the same list). gen-matrix VALIDATES
- * that every stage present in the live data appears here, so a new column added
- * upstream fails this build loudly instead of being silently dropped.
+ * The matrix columns. Canonical source: `state.json`'s top-level `stages`
+ * array — the state generator emits its registry/stages.yaml taxonomy with
+ * every join, so a column added upstream flows through with no edit here.
+ * The embedded list below is the FALLBACK only for older state snapshots
+ * that predate that emission. Either way gen-matrix VALIDATES that every
+ * stage present in the live data appears in the resolved list, so drift
+ * fails this build loudly instead of being silently dropped.
  */
-const STAGES = [
+const FALLBACK_STAGES = [
   { id: 'core.parser', title: 'Parser', group: 'Core' },
   { id: 'core.renderer', title: 'Renderer', group: 'Core' },
   { id: 'core.mutation', title: 'Mutation', group: 'Core' },
@@ -44,8 +47,14 @@ const STAGES = [
   { id: 'plugin.image', title: 'Image', group: 'Plugins' },
   { id: 'plugin.data', title: 'Data', group: 'Plugins' },
   { id: 'plugin.sheet', title: 'Sheet', group: 'Plugins' },
+  { id: 'plugin.publish', title: 'Publish', group: 'Plugins' },
+  { id: 'plugin.pdf', title: 'PDF', group: 'Plugins' },
+  { id: 'plugin.doc', title: 'Doc', group: 'Plugins' },
 ];
-const STAGE_IDS = new Set(STAGES.map((s) => s.id));
+
+/** state.json's `stages[].group` uses the registry's lowercase group ids;
+ *  map them onto the display groups the docs matrix renders. */
+const GROUP_TITLES = { core: 'Core', editor: 'Editor', server: 'Server', plugin: 'Plugins' };
 
 function readJSON(path, fallback) {
   try {
@@ -72,6 +81,15 @@ const features = state?.features ?? [];
 const chapters = state?.chapters ?? [];
 const headline = state?.meta?.headline ?? meta?.headline ?? {};
 
+// Resolve the columns: prefer the taxonomy state.json carries (already
+// order-sorted by the generator); fall back to the embedded list ONLY when
+// the snapshot predates the emission.
+const stagesFromState = Array.isArray(state?.stages) && state.stages.length > 0;
+const STAGES = stagesFromState
+  ? state.stages.map((s) => ({ id: s.id, title: s.title, group: GROUP_TITLES[s.group] ?? s.group }))
+  : FALLBACK_STAGES;
+const STAGE_IDS = new Set(STAGES.map((s) => s.id));
+
 // Validate the stage taxonomy against the live data (drift → hard fail).
 if (features.length) {
   const seen = new Set();
@@ -79,8 +97,11 @@ if (features.length) {
   const unknown = [...seen].filter((s) => !STAGE_IDS.has(s));
   if (unknown.length) {
     console.error(
-      `gen-matrix: state.json has stage(s) not in the embedded taxonomy: ${unknown.join(', ')}.\n` +
-        '  Update STAGES in scripts/generate/gen-matrix.mjs to match state/registry/stages.yaml.',
+      `gen-matrix: state.json has stage(s) not in the ${stagesFromState ? 'emitted' : 'embedded fallback'} taxonomy: ${unknown.join(', ')}.\n` +
+        (stagesFromState
+          ? '  state.json is internally inconsistent (cells vs its own top-level `stages`) — re-generate upstream.'
+          : '  Update FALLBACK_STAGES in scripts/generate/gen-matrix.mjs to match state/registry/stages.yaml,\n' +
+            '  or re-pull a state snapshot that carries the top-level `stages` array.'),
     );
     process.exit(1);
   }
