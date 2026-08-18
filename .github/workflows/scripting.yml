@@ -53,9 +53,14 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       # Pull the engine's scripting catalog so the membership check sees the
-      # functions/paths the pinned engine actually ships.
+      # functions/paths the pinned engine actually ships. gh needs a token
+      # (same wiring as build.yml/cloudflare-pages.yml) — without one EVERY
+      # pull-sources fetch fails, the catalog loads empty, and the pin check
+      # ✗s every path (the lane's standing red since 2026-07-27).
       - name: generate catalog
         run: pnpm generate:docs
+        env:
+          GH_TOKEN: ${{ secrets.DOCS_SOURCES_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: check the example corpus is pinned to the catalog
         run: pnpm check:scripting
