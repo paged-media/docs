@@ -10,20 +10,27 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.61.0 (tag commit ea918cb). Ten protocol versions in one step
-# (51 -> 61): anchored frames, hyperlinks, structured story read, cell styling,
-# closePath/joinPaths, planar regions + pasteInto/releaseFrom, opacity masks,
-# text-on-path, z-order reorder and ink coverage.
+# Currently: v0.62.0 (tag commit 9127e7d). One protocol version on from v0.61.0,
+# adding `itemLayer` (assign an EXISTING page item to a layer — until protocol 62
+# layer membership was birth-only, settable in a paged-gen fixture and nowhere
+# else) and `UnlinkFrames.restore_target` (unlink a frame and hand its content
+# back to a named story).
 #
-# This bump also makes the policy above TRUE again, which it had quietly stopped
-# being. The previous pin named v0.51.2 — a tag that was cut but never published:
-# its release, and v0.51.1 and v0.51.0 before it, all died on an expired NPM_TOKEN
-# that npm reported as a 404. So the gate was building paged-inspect from an engine
-# no published package shipped from, which is precisely what this pin exists to
-# prevent. v0.61.0 is the first tag since v0.49.0 whose packages are actually on
-# npm.
+# v0.62.0 also carries the render-effect sweep's fixes: eleven operations that
+# the wire accepted and reported success for while changing nothing on the page.
+# An example gate building from v0.61.0 would validate examples against an engine
+# that silently no-ops those ops.
+#
+# Why the policy says "a tag whose packages are PUBLISHED", not just "a tag":
+# the pin once named v0.51.2, a tag that was cut but never shipped — its release,
+# and v0.51.1 and v0.51.0 before it, all died on an expired NPM_TOKEN that npm
+# reported as a 404. The gate was then building paged-inspect from an engine no
+# published package shipped from, which is exactly what this pin exists to prevent.
+# v0.61.0 ended that gap; v0.62.0 is verified the same way — all four packages
+# (canvas-wasm, introspect-wasm, sdk, idml-viewer) answer at 0.62.0 on the
+# registry. Check that before moving this pin, not after.
 #
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-ea918cbe47754209ed0215d70b1cbcae1e5b3f15
+9127e7dbbfc6fbc0d13e5e210a9a7df92648edaa

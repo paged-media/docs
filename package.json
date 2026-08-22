@@ -26,7 +26,7 @@
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "@paged-media/demo-replay": "github:paged-media/demo-replay#685b976af0bbe70a50476ccb2aa12f907b91c7c4",
-    "@paged-media/idml-viewer": "0.61.1",
+    "@paged-media/idml-viewer": "0.62.0",
     "fflate": "^0.8.2",
     "fumadocs-core": "^16.9.3",
     "fumadocs-ui": "^16.9.3",
