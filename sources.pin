@@ -25,6 +25,14 @@
         "api.json": "web/idml-viewer/api-catalog.json"
       }
     },
+    "cli-surface": {
+      "$comment": "The `paged` command tree, walked out of clap itself by `cargo run -p paged-cli --example emit-cli-surface`. Added 2026-09-09: docs.paged.media had no CLI page at all, and writing one by hand would have made a second statement of the tree that drifts the first time a flag is added.",
+      "repo": "core",
+      "ref": "main",
+      "files": {
+        "cli.json": "crates/paged-cli/cli.json"
+      }
+    },
     "plugin-sdk": {
       "repo": "plugin-sdk",
       "ref": "main",

@@ -12,6 +12,7 @@ import { CapabilityMatrix } from './capability-matrix';
 import { ConformanceTable } from './conformance-table';
 import { StatusHeadline } from './status-headline';
 import { ScriptingCatalog } from './scripting-catalog';
+import { CliReference } from './cli-reference';
 import { SdkCatalog } from './sdk-catalog';
 import { SdkPlayground } from './sdk-playground';
 import { ScriptingPlayground } from './scripting-playground';
@@ -55,6 +56,7 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     ConformanceTable,
     StatusHeadline,
     ScriptingCatalog,
+    CliReference,
     SdkCatalog,
     SdkPlayground,
     ScriptingPlayground,

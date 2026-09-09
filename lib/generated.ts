@@ -187,6 +187,49 @@ export function getScripting(): Scripting {
   });
 }
 
+// ── CLI (the `paged` command tree) ───────────────────────────────────────────
+export interface CliArg {
+  name: string;
+  positional: boolean;
+  required: boolean;
+  repeatable: boolean;
+  long: string | null;
+  short: string | null;
+  takesValues: boolean;
+  valueNames: string[] | null;
+  defaults: string[];
+  help: string | null;
+}
+export interface CliCommand {
+  name: string;
+  about: string | null;
+  longAbout: string | null;
+  args: CliArg[];
+  subcommands: CliCommand[];
+}
+export interface Cli {
+  generatedAt: string;
+  sourceCommit: string | null;
+  binary: string;
+  about: string | null;
+  protocol: number | null;
+  commandCount: number;
+  subcommandCount: number;
+  groups: Array<{ title: string; blurb: string; commands: CliCommand[] }>;
+}
+export function getCli(): Cli {
+  return load('cli.json', {
+    generatedAt: '',
+    sourceCommit: null,
+    binary: 'paged',
+    about: null,
+    protocol: null,
+    commandCount: 0,
+    subcommandCount: 0,
+    groups: [],
+  });
+}
+
 // ── plugin SDK (manifest capability vocabulary) ──────────────────────────────
 export interface CapabilityDef {
   name: string;

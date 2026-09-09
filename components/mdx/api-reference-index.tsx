@@ -3,7 +3,7 @@
  * surface, with live counts pulled from the generated catalogs so the numbers
  * never drift. Server component.
  */
-import { getScripting, getSdkCatalog, getRestApi, getPluginCapabilities } from '@/lib/generated';
+import { getScripting, getSdkCatalog, getRestApi, getPluginCapabilities, getCli } from '@/lib/generated';
 
 interface Card {
   title: string;
@@ -17,6 +17,7 @@ export function ApiReferenceIndex() {
   const sdk = getSdkCatalog();
   const rest = getRestApi();
   const plugin = getPluginCapabilities();
+  const cli = getCli();
 
   const cards: Card[] = [
     {
@@ -24,6 +25,12 @@ export function ApiReferenceIndex() {
       href: '/docs/paged/scripting/host-functions',
       count: `${scripting.hostFunctionCount} functions · ${scripting.settablePathCount} paths`,
       blurb: 'The Boa host API for inspecting and authoring the open document — every function and settable path, generated from the engine catalog.',
+    },
+    {
+      title: 'Command line (paged)',
+      href: '/docs/paged/cli',
+      count: `${cli.commandCount} commands · ${cli.subcommandCount} subcommands`,
+      blurb: 'The `paged` binary — author, render, export, read back and verify a document from a shell, over the same typed engine door the editor uses. Generated from the binary\u2019s own parser.',
     },
     {
       title: 'Viewer SDK',

@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "pnpm generate:docs && next dev",
     "prepare:preview": "node scripts/prepare-preview-wasm.mjs",
-    "generate:docs": "node scripts/generate/pull-sources.mjs && node scripts/generate/gen-matrix.mjs && node scripts/generate/gen-scripting.mjs && node scripts/generate/gen-plugin-sdk.mjs && node scripts/generate/gen-api.mjs && node scripts/generate/gen-activity.mjs && node scripts/generate/gen-sdk.mjs && node scripts/generate/gen-idml-schema.mjs && node scripts/generate/gen-crosslinks.mjs",
+    "generate:docs": "node scripts/generate/pull-sources.mjs && node scripts/generate/gen-matrix.mjs && node scripts/generate/gen-scripting.mjs && node scripts/generate/gen-cli.mjs && node scripts/generate/gen-plugin-sdk.mjs && node scripts/generate/gen-api.mjs && node scripts/generate/gen-activity.mjs && node scripts/generate/gen-sdk.mjs && node scripts/generate/gen-idml-schema.mjs && node scripts/generate/gen-crosslinks.mjs",
     "build": "pnpm generate:docs && pnpm prepare:preview && next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",

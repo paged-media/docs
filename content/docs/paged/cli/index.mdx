@@ -1,0 +1,77 @@
+---
+title: Command line (paged)
+description: The `paged` binary — open, author, render, export and verify documents from a shell, driving the same typed engine door the editor's worker uses. Generated from the binary's own parser.
+tier: intermediate
+diataxis: reference
+status: published
+owner: paged-docs
+---
+
+**In short:** one binary that opens IDML or `.paged`, authors through the script
+bridge, renders what the editor renders, exports IDML / `.paged` / PDF, reads
+back everything the engine knows about a document, and verifies the result.
+
+```bash
+cargo build --release -p paged-cli      # → target/release/paged
+```
+
+<CliReference section="summary" />
+
+## Why it is the same engine
+
+`paged` drives **`WorkerCore::dispatch`** — the typed door the editor's worker
+uses, the same match arms and the same model calls, with no JSON in between. So
+the CLI cannot apply a mutation the editor cannot, or load a document with
+options the editor cannot express, and it inherits fonts, colour management, PDF
+export, the container-parts door, scripting and undo without reimplementing any
+of them.
+
+That is the parity contract, and it has a matching limit worth stating: `paged`
+cannot resolve an external `Links/photo.jpg` off the filesystem. Neither can the
+editor's canvas — images reach it as bytes already in the container. The older
+`paged-inspect` binary can, which is why it still exists.
+
+## Fonts and colour: the ordering rule
+
+Fonts are registered **before** the document is loaded, because the registry
+seeds shaping at load and a later registration cannot retroactively shape
+anything. A colour profile is registered and then made the working space
+**after** the load, because the model binds its profile at load time. Getting
+either backwards produces a document that looks right in the log and wrong on
+the page.
+
+Two flags that read alike and are not:
+
+- `--fonts <dir|file>` **registers** families. This is what makes a face
+  available to text that names it, and what `paged read font-face` serves back.
+- `--font <file>` is only the **fallback** face, for text that names no family
+  at all.
+
+Core ships no fallback face of its own. Text whose family nothing answers for is
+not shaped, and an unshaped page renders white — so the CLI says so on stderr
+rather than letting a blank PNG look like a renderer bug.
+
+## The command reference
+
+Every command below, every flag, and every default is read out of the binary's
+parser at build time. If a flag is here, the binary has it.
+
+<CliReference />
+
+## Addressing an element
+
+The read commands that take an element accept the same `kind:id` address
+`paged.set` takes — one grammar, shared by the command line and the scripting
+bridge:
+
+```
+textFrame:u12   rectangle:u3   oval:u7   polygon:u4   graphicLine:u9   group:u2
+storyRange:Story/u1@0..6
+```
+
+A malformed address is refused with the list of forms, not a stack trace.
+
+## Related
+
+- [Scripting (`paged.*`)](/docs/paged/scripting) — what `paged script` runs.
+- [API reference](/docs/paged/api) — the other programmable surfaces.

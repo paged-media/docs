@@ -1,6 +1,6 @@
 ---
 title: API reference
-description: Every programmable surface of paged in one place — the paged.* scripting API, the Viewer SDK, the editor-server REST API, and the plugin manifest — each generated from its own source of truth.
+description: Every programmable surface of paged in one place — the paged.* scripting API, the paged command line, the Viewer SDK, the editor-server REST API, and the plugin manifest — each generated from its own source of truth.
 tier: intermediate
 diataxis: reference
 status: published
@@ -8,10 +8,10 @@ owner: paged-docs
 reviewed: "2026-06-27"
 ---
 
-**In short:** paged exposes four programmable surfaces. Each reference below is
+**In short:** paged exposes five programmable surfaces. Each reference below is
 **generated from its own source of truth** — the engine's scripting catalog, the
-SDK package surface, the server's OpenAPI spec, and the plugin manifest schema —
-so none of them drift from the running code.
+CLI's own argument parser, the SDK package surface, the server's OpenAPI spec,
+and the plugin manifest schema — so none of them drift from the running code.
 
 <ApiReferenceIndex />
 
@@ -20,6 +20,9 @@ so none of them drift from the running code.
 - **[Scripting (`paged.*`)](/docs/paged/scripting)** — read and author the open
   document from inside the editor's script panel, the REPL, or headless via
   `paged-run`. Start with the [examples](/docs/paged/scripting/examples).
+- **[Command line (`paged`)](/docs/paged/cli)** — the same engine from a shell:
+  author with a script, render, export, read back what a document holds, and
+  verify it deterministically. The lane a build system wants.
 - **[Viewer SDK](/docs/paged/sdk)** — embed a WebGPU IDML viewer on a canvas:
   load a document, drive the camera, render to bytes, listen for events.
 - **[REST API](/docs/paged/api/rest)** — the editor-server HTTP surface for
@@ -27,3 +30,10 @@ so none of them drift from the running code.
 - **[Plugin manifest](/docs/paged/plugin-sdk)** — the declarative contract a
   plugin bundle ships to contribute tools, panels, commands, and document
   behaviour.
+
+The **editor itself** is not a sixth entry here, and the reason is worth saying
+rather than leaving as an omission: it has no API of its own. Everything it can
+be driven to do it is driven to do through two of the surfaces above —
+`paged.*` scripting for the document, and the plugin manifest for the interface
+around it. A reference for "the editor" would be a third statement of those
+two.
