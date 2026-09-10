@@ -10,27 +10,42 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.62.0 (tag commit 9127e7d). One protocol version on from v0.61.0,
-# adding `itemLayer` (assign an EXISTING page item to a layer — until protocol 62
-# layer membership was birth-only, settable in a paged-gen fixture and nowhere
-# else) and `UnlinkFrames.restore_target` (unlink a frame and hand its content
-# back to a named story).
+# Currently: v0.63.0 (tag commit 08fb4b1). One protocol version on from v0.62.0.
+# Protocol 63 makes the SCRIPT BUDGET a wire parameter: `ExecuteScript` carries
+# an optional `ScriptBudgetWire`, absent meaning the engine's own ceilings (the
+# editor's 2 s REPL guard, unchanged) and `wallClockMs: 0` meaning no deadline.
+# That closed the last place `paged-cli` reached past `WorkerCore::dispatch` —
+# `paged script` needs 60 s and the kind hardcoded 2 s, so it had been calling
+# `execute_script_with` directly.
 #
-# v0.62.0 also carries the render-effect sweep's fixes: eleven operations that
-# the wire accepted and reported success for while changing nothing on the page.
-# An example gate building from v0.61.0 would validate examples against an engine
-# that silently no-ops those ops.
+# v0.63.0 also carries two fixes the docs gate cares about: `paged.set(id,
+# "itemLayer", …)` actually WRITES now (protocol 62 taught the catalog to parse
+# the path and the wire to apply it, and never taught `js_value_to_wire` it was
+# string-valued, so it returned false and wrote nothing — a806321), and the
+# directional feather paints the real coverage mask shared with the PDF lane
+# rather than stamping a white blurred path (72cd7b3).
+#
+# v0.62.0 added `itemLayer` (assign an EXISTING page item to a layer — until
+# protocol 62 layer membership was birth-only, settable in a paged-gen fixture
+# and nowhere else), `UnlinkFrames.restore_target`, and the render-effect
+# sweep's fixes: eleven operations that the wire accepted and reported success
+# for while changing nothing on the page.
 #
 # Why the policy says "a tag whose packages are PUBLISHED", not just "a tag":
 # the pin once named v0.51.2, a tag that was cut but never shipped — its release,
 # and v0.51.1 and v0.51.0 before it, all died on an expired NPM_TOKEN that npm
 # reported as a 404. The gate was then building paged-inspect from an engine no
 # published package shipped from, which is exactly what this pin exists to prevent.
-# v0.61.0 ended that gap; v0.62.0 is verified the same way — all four packages
-# (canvas-wasm, introspect-wasm, sdk, idml-viewer) answer at 0.62.0 on the
-# registry. Check that before moving this pin, not after.
+# v0.61.0 ended that gap; v0.63.0 is verified the same way — all four packages
+# (canvas-wasm, introspect-wasm, sdk, idml-viewer) answer at 0.63.0 on the
+# registry. Check that before moving this pin, not after. NOTE the v0.63.0
+# publish took two attempts: the first was stopped by core's own subset audit
+# because `paged-sdk` had come to link `paged-mutate` transitively, and npm
+# answered PUT 202 (queued) rather than 200 for two of the four packages, so
+# they read 0.62.0 for a few minutes after a green run. Both are reasons to
+# check the registry rather than the workflow's conclusion.
 #
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-9127e7dbbfc6fbc0d13e5e210a9a7df92648edaa
+08fb4b14e3d2bfcb7e67f0b768ba196f82f3e80e
