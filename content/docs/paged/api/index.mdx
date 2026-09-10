@@ -31,6 +31,23 @@ and the plugin manifest schema — so none of them drift from the running code.
   plugin bundle ships to contribute tools, panels, commands, and document
   behaviour.
 
+## What each one reaches
+
+They all sound complete, and they are not equal. This table is generated from
+the capability × surface matrix, whose every cell comes from the gate that owns
+that surface — the engine's own CLI and scripting surface tests, the editor's
+probed capability table, each SDK's generated catalog. Nothing in it is written
+by hand, including the reasons a cell is not reachable.
+
+<SurfaceReach />
+
+The two populations are the engine's own: an **authoring operation** is one
+`Mutation` — insert text, resize a frame, create a swatch — and a **message
+kind** is one request on the worker channel, which covers the reads, the
+exports, the gestures and the container parts as well as the writes. A surface
+that reaches every operation and half the message kinds can author anything and
+ask fewer questions about it.
+
 The **editor itself** is not a sixth entry here, and the reason is worth saying
 rather than leaving as an omission: it has no API of its own. Everything it can
 be driven to do it is driven to do through two of the surfaces above —

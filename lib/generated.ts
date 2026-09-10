@@ -230,6 +230,40 @@ export function getCli(): Cli {
   });
 }
 
+// ── capability x surface reach ───────────────────────────────────────────────
+export interface SurfaceCounts {
+  named: number;
+  generic: number;
+  blocked: number;
+  na: number;
+}
+export interface SurfaceReach {
+  key: string;
+  title: string;
+  href: string | null;
+  ops: SurfaceCounts;
+  kinds: SurfaceCounts;
+  note: string | null;
+}
+export interface Surfaces {
+  generatedAt: string;
+  sourceCommit: string | null;
+  protocol: number | null;
+  opCount: number;
+  kindCount: number;
+  surfaces: SurfaceReach[];
+}
+export function getSurfaces(): Surfaces {
+  return load('surfaces.json', {
+    generatedAt: '',
+    sourceCommit: null,
+    protocol: null,
+    opCount: 0,
+    kindCount: 0,
+    surfaces: [],
+  });
+}
+
 // ── plugin SDK (manifest capability vocabulary) ──────────────────────────────
 export interface CapabilityDef {
   name: string;

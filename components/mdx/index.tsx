@@ -20,6 +20,7 @@ import { FunctionPlayground } from './function-playground';
 import { PathShowcase } from './path-showcase';
 import { PathReference } from './path-reference';
 import { ApiReferenceIndex } from './api-reference-index';
+import { SurfaceReach } from './surface-reach';
 import { PluginCapabilities } from './plugin-capabilities';
 import { RestApiReference } from './rest-api-reference';
 import { ActivityFeed, RepoActivity } from './activity-feed';
@@ -64,6 +65,7 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     PathShowcase,
     PathReference,
     ApiReferenceIndex,
+    SurfaceReach,
     PluginCapabilities,
     RestApiReference,
     ActivityFeed,

@@ -33,6 +33,14 @@
         "cli.json": "crates/paged-cli/cli.json"
       }
     },
+    "capability-matrix": {
+      "$comment": "The capability x surface matrix (state scripts/capability-matrix.mjs): 117 wire ops + 61 wire kinds against seven surfaces, each cell derived from the gate that owns that surface. Added 2026-09-10: the API index named five programmable surfaces in prose and could not say what any of them REACHES, which is the question a reader arrives with. state is private, so this rides the same DOCS_SOURCES_TOKEN path as state.json.",
+      "repo": "state",
+      "ref": "main",
+      "files": {
+        "capability-matrix.json": "data/capability-matrix.json"
+      }
+    },
     "plugin-sdk": {
       "repo": "plugin-sdk",
       "ref": "main",
