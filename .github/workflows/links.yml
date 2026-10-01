@@ -19,7 +19,9 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # linkinator 8 needs node >= 22 (its undici 8 calls
+          # webidl.util.markAsUncloneable, absent on node 20).
+          node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
@@ -33,7 +35,7 @@ jobs:
       - name: internal links (hard fail on PRs); external only on schedule
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
-            pnpm dlx linkinator ./.next/server/app --recurse
+            pnpm dlx linkinator@8.1.0 ./.next/server/app --recurse
           else
-            pnpm dlx linkinator ./.next/server/app --recurse --skip "^https?://"
+            pnpm dlx linkinator@8.1.0 ./.next/server/app --recurse --skip "^https?://"
           fi
