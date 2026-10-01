@@ -32,7 +32,7 @@ jobs:
 
       - name: feature-ref integrity (every feature=/chapter= resolves in the registry)
         run: pnpm check:feature-refs
-      - name: prose freshness guard (describes:/reviewed: pages not stale)
+      - name: 'prose freshness guard (describes:/reviewed: pages not stale)'
         run: pnpm check:freshness
 
       - run: pnpm typecheck

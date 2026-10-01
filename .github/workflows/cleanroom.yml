@@ -13,11 +13,16 @@ on:
 jobs:
   similarity:
     runs-on: ubuntu-latest
+    # `secrets` is not allowed in a step `if:`; expose the presence check
+    # through the job env (an `if: secrets…` made this workflow unparseable,
+    # so it never ran).
+    env:
+      HAS_BASELINE_TOKEN: ${{ secrets.CLEANROOM_BASELINE_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
 
       - name: fetch private baseline fingerprint
-        if: ${{ secrets.CLEANROOM_BASELINE_TOKEN != '' }}
+        if: env.HAS_BASELINE_TOKEN == 'true'
         env:
           GH_TOKEN: ${{ secrets.CLEANROOM_BASELINE_TOKEN }}
         run: |
