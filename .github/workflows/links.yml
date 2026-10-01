@@ -9,6 +9,7 @@ on:
     # External link rot is checked weekly so flaky third-party timeouts never
     # block a content PR.
     - cron: '0 6 * * 2'
+  workflow_dispatch:
 
 jobs:
   links:
@@ -22,6 +23,13 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+        env:
+          # Same as build.yml: `pnpm build` re-runs generate:docs, which pulls the
+          # cross-repo sources from PRIVATE repos. Without the PAT the pull fails
+          # and prerender crashes (`b is not iterable` on /docs/paged/scripting/
+          # examples) — every weekly run since 2026-08-25.
+          GH_TOKEN: ${{ secrets.DOCS_SOURCES_TOKEN || secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: internal links (hard fail on PRs); external only on schedule
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
