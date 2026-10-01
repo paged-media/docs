@@ -47,10 +47,13 @@ paged.set(ref, 'frameTextWrapOffsets', [12, 12, 12, 12]);`,
   {
     id: 'tables-cells',
     title: 'Tables & cells',
-    summary: 'Cell fills, insets, edge strokes, and table row/column structure.',
+    summary:
+      'Cell fills, insets and edge strokes. Row/column structure is not a property write: it goes through insertTableRow / insertTableColumn (the counts are read-only).',
     match: any(starts('cell', 'table'), exact('appliedCellStyle', 'appliedTableStyle')),
     seed: 'a-table',
-    demoPaths: ['tableRowCount', 'tableColumnCount'],
+    // tableRowCount / tableColumnCount are READ-ONLY since core v0.63.0
+    // (6e90cef): settablePaths means settable, and the apply layer rejects them.
+    demoPaths: ['cellFillColor', 'cellInsetTop'],
     lookFor: 'The console reports the table’s row and column counts.',
     script: `// Find the table id from the story tree, then read its dimensions.
 const story = JSON.parse(paged.stories())[0];
