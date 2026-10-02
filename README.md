@@ -12,6 +12,16 @@ the renderer learns reading them.
 > independent description by the Paged project and is not affiliated with or
 > endorsed by the vendor.
 
+## Documentation of this repository
+
+[`docs/`](./docs/README.md) documents how the site itself is built; the site's content is in
+`content/docs/`.
+
+- [`docs/concept.md`](./docs/concept.md): what the site is for and the rules it follows.
+- [`docs/architecture.md`](./docs/architecture.md): the build, the generated pages, the examples pipeline, hosting.
+- [`docs/status.md`](./docs/status.md): what ships today and what does not.
+- [`docs/adr/`](./docs/adr/README.md): the architecture decisions, one per file.
+
 ## Stack
 
 Fumadocs (Next.js App Router + MDX) + TypeScript + pnpm. A single Next app at the
