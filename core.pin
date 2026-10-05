@@ -10,9 +10,21 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.64.0 (tag commit 6dea692). One protocol version on from v0.63.0.
-# Protocol 64 makes a batch of attributes the model already carried SETTABLE on
-# the wire: `setFlowGrowRule` (a story's frame chain may grow, ADR 026, with
+# Currently: v0.66.0 (tag commit fcffd2d). Two protocol versions on from v0.64.0
+# (v0.65.0 was released while this pin stayed put). Protocol 65 widened the
+# write surface: duplicateElements, stroke alignment and effects on every kind
+# that draws them, opacity and blend on groups, paragraphComposer, a style's
+# settable properties and a story's grow rule readable. Protocol 66 adds a pen
+# path's end cap and line ends, the gradient axis read back on paths and ovals,
+# rotate/scale/shear about a given point, a text frame's glyphs as outlines,
+# plugin metadata on every scene-tree node, binary scene images and part bytes,
+# `DeletePagedPart`, `deleteTable`, exact table undo, and per-page scene
+# invalidation. All four packages (canvas-wasm,
+# introspect-wasm, sdk, idml-viewer) answer at 0.66.0 on the registry (`latest`),
+# checked before this pin moved; core's own CI was green on the tag commit.
+#
+# v0.64.0 (tag commit 6dea692): protocol 64 makes a batch of attributes the
+# model already carried SETTABLE on the wire: `setFlowGrowRule` (a story's frame chain may grow, ADR 026, with
 # copyFrameOptions per ADR 029), keep options and StartParagraph (the
 # break-before rule, ADR 028), span and split columns (SpanColumnType), and the
 # list-marker attributes. Rendering also moved: forced line breaks (U+2028),
@@ -57,4 +69,4 @@
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-6dea69248e52b2a34b7c2deb1342afed15fd90a2
+fcffd2d38680d50fdb07d587c80e376c060ef58b

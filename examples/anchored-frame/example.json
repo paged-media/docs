@@ -16,7 +16,7 @@
     { "lines": "5", "note": "The host run. The anchored object is a child of this CharacterStyleRange, not a sibling of the frame on the spread." },
     { "lines": "6", "note": "Content comes first — the literal text the object is anchored into." },
     { "lines": "7", "note": "A Rectangle nested directly inside the run is an anchored object. GeometricBounds and FillColor are read just like a spread-level frame; the bounds give it a 36x72pt box." },
-    { "lines": "8", "note": "AnchoredObjectSetting carries the placement intent. AnchoredPosition=\"InlinePosition\" requests inline (glyph-space) anchoring; AnchorPoint names which corner of the object lands on the anchor." }
+    { "lines": "8", "note": "AnchoredObjectSetting carries the placement intent. AnchoredPosition=\"InlinePosition\" requests inline (glyph-space) anchoring; AnchorPoint names which corner of the object lands on the anchor. Inline, the object is a character of its line: it takes its own width on the line, so the laid-out page has two runs (the text and the object) while the story still has one." }
   ],
   "expect": {
     "opens": true,
@@ -25,7 +25,7 @@
     "stories": 1,
     "frames": 1,
     "paragraphs": 1,
-    "runs": 1
+    "runs": 2
   },
   "pathological": false,
   "license": "MIT"
