@@ -10,7 +10,16 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.66.0 (tag commit fcffd2d). Two protocol versions on from v0.64.0
+# Currently: v0.68.0 (tag commit c7c16a7). Two protocol versions on from
+# v0.66.0 (v0.67.0 was released while this pin stayed put). Protocol 67 moves
+# snapping into the engine (requestSnapPoint, setSnapSettings; ADR 125).
+# Protocol 68 draws scene-layer text in its own face: a run's family plus
+# weight/italic resolve through the host-registered fonts, the default face only
+# as a fallback, reported on the reply as `fontFallbacks` (ADR 126). All four
+# packages (canvas-wasm, introspect-wasm, sdk, idml-viewer) answer at 0.68.0 on
+# the registry (`latest`), checked before this pin moved.
+#
+# v0.66.0 (tag commit fcffd2d). Two protocol versions on from v0.64.0
 # (v0.65.0 was released while this pin stayed put). Protocol 65 widened the
 # write surface: duplicateElements, stroke alignment and effects on every kind
 # that draws them, opacity and blend on groups, paragraphComposer, a style's
@@ -69,4 +78,4 @@
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-fcffd2d38680d50fdb07d587c80e376c060ef58b
+c7c16a78f1d6bea1da0441d17f3177b8f735a55d
