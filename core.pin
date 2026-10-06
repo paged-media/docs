@@ -10,7 +10,18 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.68.0 (tag commit c7c16a7). Two protocol versions on from
+# Currently: v0.70.0 (tag commit 9bc22c2). Two protocol versions on from
+# v0.68.0. Protocol 69 (v0.69.0, the data-publishing batch): fields at the
+# caret, document-scoped plugin labels (`setDocumentMetadata`), pages a merge
+# can make. Protocol 70: pages and masters for presentations (`movePage`,
+# `setPageMetadata`, page links, snapshots without items, master editing and
+# create/delete/rename; ADR 129) and the platform doors for plugin content
+# (scene-layer scoped fonts, a handle on every batch mint, drop shadows on
+# every shape; ADR 130). All four packages (canvas-wasm, introspect-wasm, sdk,
+# idml-viewer) answer at 0.70.0 on the registry (`latest`), checked before this
+# pin moved; core's own CI was green on the tag commit.
+#
+# v0.68.0 (tag commit c7c16a7). Two protocol versions on from
 # v0.66.0 (v0.67.0 was released while this pin stayed put). Protocol 67 moves
 # snapping into the engine (requestSnapPoint, setSnapSettings; ADR 125).
 # Protocol 68 draws scene-layer text in its own face: a run's family plus
@@ -78,4 +89,4 @@
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-c7c16a78f1d6bea1da0441d17f3177b8f735a55d
+9bc22c24fe7b2ccce307d5e4daf9b4b3c7cd634f
