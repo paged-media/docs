@@ -10,7 +10,14 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.70.1 (tag commit 172d652). A renderer patch on v0.70.0: an
+# Currently: v0.70.2 (tag commit c7a4b78). A renderer patch on v0.70.1:
+# rectangles and text frames cast their object shadow from what they paint (a
+# stroke-only frame from its stroke, a stroked frame pushed out by the stroke's
+# outer part, a rounded frame along its corners, text in an unfilled frame),
+# measured against InDesign 2025. No wire change. All four packages answer at
+# 0.70.2 on the registry (`latest`).
+#
+# v0.70.1 (tag commit 172d652). A renderer patch on v0.70.0: an
 # oval's or polygon's object shadow is cast from what it paints (an unfilled
 # shape from its stroke; a stroked oval as an ellipse with the stroke's outer
 # half), measured against InDesign 2025. No wire change. All four packages
@@ -95,4 +102,4 @@
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-172d65238ddf2725f6c868d5dc1814393c1955eb
+c7a4b788cc24acd7d5af8843655ec3806ad613a1
