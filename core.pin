@@ -10,7 +10,13 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.70.0 (tag commit 9bc22c2). Two protocol versions on from
+# Currently: v0.70.1 (tag commit 172d652). A renderer patch on v0.70.0: an
+# oval's or polygon's object shadow is cast from what it paints (an unfilled
+# shape from its stroke; a stroked oval as an ellipse with the stroke's outer
+# half), measured against InDesign 2025. No wire change. All four packages
+# answer at 0.70.1 on the registry (`latest`).
+#
+# v0.70.0 (tag commit 9bc22c2). Two protocol versions on from
 # v0.68.0. Protocol 69 (v0.69.0, the data-publishing batch): fields at the
 # caret, document-scoped plugin labels (`setDocumentMetadata`), pages a merge
 # can make. Protocol 70: pages and masters for presentations (`movePage`,
@@ -89,4 +95,4 @@
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-9bc22c24fe7b2ccce307d5e4daf9b4b3c7cd634f
+172d65238ddf2725f6c868d5dc1814393c1955eb
