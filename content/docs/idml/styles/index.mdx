@@ -1,93 +1,91 @@
 ---
 title: Styles
-description: IDML keeps formatting in named, reusable style sheets, and the parser resolves a style reference plus its chain of parents into the values a run actually renders with.
+description: How IDML keeps formatting in named, reusable styles, which kinds of style there are, which part each lives in, and how text and frames refer to them.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
+describes: [styles.cascade, styles.based-on-chain]
+reviewed: 2026-10-11
 ---
 
-**A style in IDML is a named bundle of formatting that text, frames, and tables point at instead of repeating values inline.**
+**A style in IDML is a named bundle of formatting that text, frames and tables point at instead of repeating the values.**
 
-**In short:** A finished page carries thousands of formatting decisions — every
-paragraph's font, size, indent, and spacing; every run's colour and tracking;
-every frame's fill and stroke. IDML records each of those bundles once, in
-`Resources/Styles.xml`, and lets stories, frames, and tables *reference* a style
-by id rather than spelling out the values on every span of text. A style is rarely
-self-contained: it inherits from a parent through `BasedOn` and can be overridden
-locally on the range that applies it, so the value a glyph finally renders with is
-the result of a small resolution the parser performs. This chapter explains what
-lives in the style sheet and the two mechanics — the cascade and local overrides —
-that every style kind shares.
+**In short:** Most formatting in an InDesign document lives in styles. A paragraph refers to
+its paragraph style by id, a run to its character style, a frame to its object style, a table
+and its cells to table and cell styles. Each style can inherit from a parent through
+`BasedOn`, and the element that applies a style can override any single attribute locally.
+The value a glyph or a frame ends up with is the result of folding those three layers
+together. Most style kinds live in `Resources/Styles.xml`; stroke styles and numbering lists
+live elsewhere.
 
-A finished page carries thousands of formatting decisions — every paragraph's
-font, size, indent, and spacing; every run's colour and tracking; every frame's
-fill and stroke. IDML does not repeat those decisions on each piece of text.
-Instead it names them once, in `Resources/Styles.xml`, and lets stories, frames,
-and tables *point at* a style by id. A run says `AppliedCharacterStyle="…"`; the
-values live in the style sheet.
+## The kinds of style
 
-That indirection is what this chapter is about. A style is rarely self-contained:
-it inherits from a parent through `BasedOn`, and the text that applies it can
-override a single attribute right on the range. So the value a glyph finally
-renders with is the result of a small resolution — applied style, parent chain,
-and local override, folded together in a fixed order. Read this chapter once the
-[stories](/docs/idml/stories-text) and [frames](/docs/idml/frames-paths) that *carry* these
-styles already make sense; styles are the layer that paints them.
+| Style kind | Element | Where it lives | Applied by |
+| --- | --- | --- | --- |
+| [Paragraph style](/docs/idml/styles/paragraph-styles) | `<ParagraphStyle>` | `Resources/Styles.xml`, under `<RootParagraphStyleGroup>` | `AppliedParagraphStyle` on a `<ParagraphStyleRange>` |
+| [Character style](/docs/idml/styles/character-styles) | `<CharacterStyle>` | `Resources/Styles.xml`, under `<RootCharacterStyleGroup>` | `AppliedCharacterStyle` on a `<CharacterStyleRange>` |
+| [Object style](/docs/idml/styles/object-styles) | `<ObjectStyle>` | `Resources/Styles.xml`, under `<RootObjectStyleGroup>` | `AppliedObjectStyle` on a frame or shape |
+| [Table style](/docs/idml/styles/table-and-cell-styles) | `<TableStyle>` | `Resources/Styles.xml`, under `<RootTableStyleGroup>` | `AppliedTableStyle` on a `<Table>` |
+| [Cell style](/docs/idml/styles/table-and-cell-styles) | `<CellStyle>` | `Resources/Styles.xml`, under `<RootCellStyleGroup>` | `AppliedCellStyle` on a `<Cell>`, or a table style's region |
+| TOC style | `<TOCStyle>` with `<TOCStyleEntry>` children | `Resources/Styles.xml` | a table of contents generated from it |
+| Stroke style | `<StrokeStyle>`, `<DashedStrokeStyle>`, `<DottedStrokeStyle>`, `<StripedStrokeStyle>`, `<WavyStrokeStyle>` | `Resources/Graphic.xml` | `StrokeType` and the `…StrokeType` attributes |
+| Numbering list | `<NumberingList>` | `designmap.xml`, as a child of `<Document>` | `AppliedNumberingList` on a paragraph or paragraph style |
 
-## What lives in the style sheet
+Paragraph, character, object, table and cell styles share the same two mechanics:
+[inheritance through `BasedOn`](/docs/idml/styles/the-cascade) and local overrides. TOC
+styles name the paragraph styles a table of contents collects and the styles its entries take.
+Stroke styles define the dash, dot or stripe pattern of a line; the built-in ones (`Solid`,
+`ThickThick`, `Dashed`, …) are `<StrokeStyle>` elements named in the reserved `$ID/`
+namespace, such as `StrokeStyle/$ID/Solid`. A numbering list ties numbered paragraphs in
+different stories into one sequence (see
+[lists, keep options and span columns](/docs/idml/typography/lists-keep-span)).
 
-`Resources/Styles.xml` is one part referenced from the design map by its
-`idPkg:Styles` entry. Inside, each kind of style sits in its own root group:
+> **In Paged:** paragraph, character, object, table, cell and TOC styles are read, and the
+> five cascading kinds resolve through their `BasedOn` chains. Stroke styles and numbering
+> lists are read only from `Resources/Styles.xml`, so the ones InDesign writes to
+> `Resources/Graphic.xml` and `designmap.xml` are not picked up yet. A built-in stroke style
+> still draws by its name. <SupportBadge feature="styles.cascade" />
 
-- **[Paragraph styles](/docs/idml/styles/paragraph-styles)** — `<ParagraphStyle>` in
-  `<RootParagraphStyleGroup>`. Font, size, alignment, indents, spacing, and the
-  character defaults a paragraph starts from.
-- **[Character styles](/docs/idml/styles/character-styles)** — `<CharacterStyle>` in
-  `<RootCharacterStyleGroup>`. Run-level overrides: font style, size, fill,
-  tracking, and the like.
-- **[Object styles](/docs/idml/styles/object-styles)** — `<ObjectStyle>` in
-  `<RootObjectStyleGroup>`. Fill, stroke, and corner defaults a frame inherits.
-- **[Table and cell styles](/docs/idml/styles/table-and-cell-styles)** —
-  `<TableStyle>` and `<CellStyle>`. Region cell styles, borders, fills, and
-  insets for [tables](/docs/idml/tables).
+## Names, ids and groups
 
-## The two ideas to carry through
+Every style has a `Self` id and a `Name`. References always use the `Self` id, so a style can be
+renamed without touching the text that applies it. A style id is the kind followed by the
+name, for example `ParagraphStyle/Body`; a colon in a name is escaped as `%3a` in the id.
 
-Every style kind shares the same two mechanics, and the chapter spends most of its
-time on them:
+InDesign's built-in styles are named in the reserved `$ID/` namespace, which keeps them
+language-independent: `ParagraphStyle/$ID/[No paragraph style]`,
+`CharacterStyle/$ID/[No character style]`, `ObjectStyle/$ID/[None]`. The bracketed
+`[No paragraph style]` and `[No character style]` are the roots every paragraph and character
+style inherits from in the end.
 
-1. **[The cascade](/docs/idml/styles/the-cascade)** — `BasedOn` links a style to a
-   parent. The parser walks that chain at resolve time, filling any attribute the
-   child left unset from the parent above it, all the way down to the root.
-2. **Local overrides** — an attribute set directly on a `<ParagraphStyleRange>` or
-   `<CharacterStyleRange>` wins over whatever the applied style would supply.
+Styles can be organised into groups (`<ParagraphStyleGroup>`, `<CharacterStyleGroup>`, …)
+nested inside the root group. A group is a folder for the user: it changes neither the style's
+id nor how it inherits.
 
-The last page, **[conflict resolution](/docs/idml/styles/conflict-resolution)**, puts
-both together: it traces, attribute by attribute, exactly how the parser computes
-a single run's effective formatting, and calls out the ambiguous cases and the
-constructs it parses but does not yet act on.
+## Local overrides
+
+The element that applies a style can set any of the style's attributes on itself. A
+`<CharacterStyleRange>` with `PointSize="24"` sets the size at 24 pt whatever its character
+style says. The override belongs to that range only; the style is unchanged.
+[Conflict resolution](/docs/idml/styles/conflict-resolution) walks through the order in which
+local values, character styles and paragraph styles combine.
 
 ## Frequently asked questions
 
 **What is a style in IDML?**
-A style is a named, reusable bundle of formatting stored in
-`Resources/Styles.xml`. Instead of repeating values like font, size, and colour
-on every piece of text, IDML defines them once and lets stories, frames, and
-tables reference the style by id.
+A named, reusable bundle of formatting. Text, frames and tables refer to a style by its `Self`
+id instead of repeating the values on every element.
 
 **What kinds of styles does IDML have?**
-IDML has five style kinds, each in its own root group:
-[paragraph styles](/docs/idml/styles/paragraph-styles),
-[character styles](/docs/idml/styles/character-styles),
-[object styles](/docs/idml/styles/object-styles), and
-[table and cell styles](/docs/idml/styles/table-and-cell-styles). Paragraph and
-character styles format text; object styles format page items; table and cell
-styles dress [tables](/docs/idml/tables).
+Paragraph, character, object, table and cell styles, which all inherit through `BasedOn`, plus
+TOC styles, stroke styles and numbering lists. The first six live in `Resources/Styles.xml`,
+stroke styles in `Resources/Graphic.xml` and numbering lists in `designmap.xml`.
 
-**How does the parser decide what value a piece of text actually renders with?**
-It folds together three sources in a fixed order: a value set directly on the
-range wins first, then the applied style resolved through its
-[`BasedOn` chain](/docs/idml/styles/the-cascade), then the root defaults at the bottom
-of that chain. The full attribute-by-attribute walk is covered in
-[conflict resolution](/docs/idml/styles/conflict-resolution).
+**Do style groups affect formatting?**
+No. A `<ParagraphStyleGroup>` or similar group only organises styles in the user interface.
+References use the style's `Self` id, and inheritance follows `BasedOn`, not the group.
+
+**What does `$ID/` mean in a style name?**
+It marks one of InDesign's built-in styles, such as `[No paragraph style]` or `[None]`. The
+`$ID/` prefix keeps the name independent of the interface language.

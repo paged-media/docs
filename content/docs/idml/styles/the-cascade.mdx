@@ -1,143 +1,108 @@
 ---
 title: The cascade
-description: BasedOn links a style to a parent; the parser folds that chain into one resolved set of values, bounds cycles with a depth cap, and lets a local override on a range still win.
+description: How BasedOn links a style to its parent, how InDesign writes it as a typed Properties child, and how a chain of styles folds into one set of values.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
+describes: [styles.based-on-chain, styles.cascade]
+reviewed: 2026-10-11
 ---
 
-**The cascade is how the parser folds a style and its `BasedOn` parents into one resolved set of values.**
+**`BasedOn` names a style's parent; a style's effective values are its own attributes, then whatever its parents supply for the rest.**
 
-**In short:** A style in IDML rarely sets everything it needs. It inherits from a
-parent through the `BasedOn` attribute, which names another style of the same kind,
-all the way down to a root sentinel. When something applies a style, the parser
-walks that chain upward and merges the styles together so that the first style in
-the walk to set an attribute wins and the walk only continues to fill what is still
-unset. The walk is bounded at sixteen hops so a cyclic or corrupt file degrades
-gracefully, and a value set directly on a range still sits above the whole cascade.
-This page explains how `BasedOn` resolution works; how a local override layers on
-top of it is covered in [conflict resolution](/docs/idml/styles/conflict-resolution).
-
-A style rarely says everything. A "Body Indented" style might set only a
-first-line indent and leave its font, size, and colour to be inherited from
-"Body", which in turn inherits the document's base font from the root. IDML
-records that lineage with one attribute — `BasedOn` — and leaves the work of
-*following* it to whoever reads the file. This page is about how our parser does
-that following.
+**In short:** A style rarely sets everything. "Body Indented" might set only a first-line
+indent and take its font, size and colour from "Body", which takes its font from the root.
+Each style names its parent in `BasedOn`, and InDesign writes that as a typed child of the
+style's `<Properties>` block, not as an attribute. To find a style's value for any attribute,
+walk up the chain from the applied style and take the first value set. A value set directly
+on the text or frame that applies the style sits above the whole chain.
 
 <StyleCascade />
 
-## `BasedOn` names a parent
+## How InDesign writes `BasedOn`
 
-Every paragraph, character, object, cell, and table style may carry a `BasedOn`
-attribute (or, in InDesign's serialisation, a `<BasedOn>` child element inside
-`<Properties>` — the parser accepts both forms). Its value is the `Self` id of
-another style of the same kind, or the root sentinel — `ParagraphStyle/$ID/[No
-paragraph style]` for paragraphs, `CharacterStyle/$ID/[No character style]` for
-characters. A style with no `BasedOn` is its own root.
+InDesign writes a style's parent as the first child of its `<Properties>` block:
 
-The example below has a three-link chain. The root carries the base font, size,
-and fill; "Body" adds a larger size and some space after; "Body Indented" adds
-only the indent. The story applies "Body Indented" — and gets all three styles'
-contributions.
+- `<BasedOn type="object">ParagraphStyle/Body</BasedOn>` names a parent by its `Self` id.
+- `<BasedOn type="string">$ID/[No paragraph style]</BasedOn>` is how InDesign names one of its
+  reserved roots: the `$ID/` name, without the kind prefix.
+
+Paragraph, character, object, table and cell styles all use this form. A `BasedOn="…"`
+attribute on the style's start tag is not InDesign's spelling, and InDesign ignores it when it
+opens the file: the style opens based on the root, as if no parent were named. In the census of
+real documents, paragraph styles use the attribute form in one document and the child in 271.
+
+The chain of every paragraph style ends at `[No paragraph style]`, and of every character style
+at `[No character style]`; a style that names no parent is based on that root.
 
 <ExampleEmbed example="based-on-chain">
-  A BasedOn chain: "Body Indented" → "Body" → the [No paragraph style] root.
+  A three-link chain: "Body Indented" is based on "Body", which is based on the
+  `[No paragraph style]` root. Each parent is a typed `BasedOn` child.
 </ExampleEmbed>
+
+> **In Paged:** the importer reads both the typed child and the attribute; when a style has
+> both, the attribute wins. The exporter always writes the child, as `type="object"` with the
+> parent's `Self`. A reserved root written in the `type="string"` form (`$ID/[No paragraph
+> style]`) is not matched to the root style, so the chain stops one step early. `Swatch/None`
+> on a text style's stroke, or on an object, table or cell style's fill or stroke, is read as
+> unset rather than as "no paint", so a parent's colour shows through (see
+> [conflict resolution](/docs/idml/styles/conflict-resolution)).
+> <SupportBadge feature="styles.based-on-chain" />
 
 ## How a chain resolves
 
-When something applies a style, the parser does not read just that one
-`<ParagraphStyle>`. It walks the `BasedOn` chain from the applied style upward and
-folds the styles together into a single resolved set of values. The rule for each
-attribute is the same: **the first style in the walk that sets it wins**, and the
-walk continues upward only to fill attributes still unset.
+For each attribute, the first style in the chain that sets it wins. Resolving "Body Indented"
+in the example above gives:
 
-Concretely, `resolve_paragraph` (and its siblings `resolve_character`,
-`resolve_object`, `resolve_cell`, `resolve_table`) starts an empty accumulator at
-the applied style and, for each style in the chain, calls `merge_below`: every
-field the accumulator has *not* yet filled is taken from the current style; fields
-already filled are left alone. The cursor then moves to that style's `BasedOn`
-parent and repeats. (`crates/paged-parse/src/styles.rs`, `resolve_paragraph` at
-the `Resolved*` resolvers; `merge_below` per resolved type.)
-
-For the example above, resolving "Body Indented" produces:
-
-| Attribute | Resolved value | Came from |
+| Attribute | Value | Set by |
 | --- | --- | --- |
-| `FirstLineIndent` | `18` | Body Indented (the applied style) |
+| `FirstLineIndent` | `18` | Body Indented, the applied style |
 | `PointSize` | `14` | Body |
 | `SpaceAfter` | `6` | Body |
 | `AppliedFont` | `Open Sans` | the root |
 | `FillColor` | `Color/Black` | the root |
 
-Because the walk fills "first setter wins", a child can *shadow* a parent: if
-"Body Indented" had its own `PointSize`, that value would have filled the slot
-before the walk ever reached "Body". This is inheritance with override built into
-a single pass — there is no separate "later rule overrides earlier rule" step the
-way CSS has. The order *is* the chain order.
+A child shadows its parent: if "Body Indented" set its own `PointSize`, Body's `14` would never
+be reached. There is no later-rule-wins step as in CSS. The chain order is the precedence.
 
-## The depth cap
+What counts as "set" depends on the attribute. A colour attribute set to `Swatch/None` is a real
+value meaning "no paint", and it shadows a parent's colour like any other value. An attribute
+that is absent is not set, and the walk continues.
 
-IDML's schema does not forbid a `BasedOn` cycle — A based on B based on A — and
-nothing stops a hand-edited or corrupt file from containing one. A naive walk
-would loop forever. The resolver therefore bounds every walk at a fixed number of
-hops: `MAX_BASED_ON_DEPTH = 16` (`crates/paged-parse/src/styles.rs:51`). After
-sixteen hops the walk simply stops, returning whatever it has accumulated so far.
+## Cycles and missing parents
 
-<SupportBadge status="supported" note="Cycle-safe by construction" />
+Nothing in the format forbids a cycle, A based on B based on A, and a hand-edited file can
+contain one. A parent id that names no style can appear the same way. A reader should stop the
+walk in both cases and keep what it has gathered.
 
-Sixteen is comfortably above any real document — typical chains are one to three
-links — so the cap never truncates a legitimate hierarchy; it exists only so a
-pathological file degrades gracefully instead of hanging. A missing parent (a
-`BasedOn` pointing at an id that is not in the style sheet) ends the walk the same
-way: the lookup fails, the walk stops, and the attributes gathered so far stand.
+> **In Paged:** the walk stops after 16 steps, which is far above any real chain (one to three
+> links is typical), and stops at a parent it cannot find.
 
-## Local overrides still win
+## Local overrides sit above the chain
 
-The cascade resolves the *applied style* into a set of values. But the text that
-applies a style can also set an attribute directly on its range — `PointSize="24"`
-right on a `<CharacterStyleRange>`, say. That local value is not part of the style
-sheet and is not touched by `BasedOn` resolution at all. It sits *above* the whole
-cascade: when the effective formatting of a run is computed, the local value is
-seeded first and the resolved style only fills what the local value left blank.
-
-In other words there are two layers stacked on top of the chain:
-
-1. the value set **directly on the range** (highest priority),
-2. the **applied style**, resolved through its `BasedOn` chain (this page),
-3. the **root defaults** at the bottom of that chain.
-
-This page covered layer 2 — turning one applied style into resolved values. How
-layers 1 and 2 combine for a real run, attribute by attribute, is the subject of
-[conflict resolution](/docs/idml/styles/conflict-resolution). The
-[local-override example](/docs/idml/styles/character-styles) there shows a range that
-applies a character style and then overrides one of its attributes.
+The cascade turns one applied style into a set of values. The element that applies the style
+can also set an attribute on itself: `PointSize="24"` on a `<CharacterStyleRange>`. That value
+belongs to the element, not to the style, and wins over the whole chain. For text there is one
+more layer, because a run sits inside a paragraph:
+[conflict resolution](/docs/idml/styles/conflict-resolution) gives the full order.
 
 ## Frequently asked questions
 
-**What does `BasedOn` do in an IDML style?**
-`BasedOn` names the parent a style inherits from — another style of the same kind,
-or a root sentinel like `ParagraphStyle/$ID/[No paragraph style]`. The parser
-accepts it either as an attribute or as a `<BasedOn>` child inside `<Properties>`,
-and a style with no `BasedOn` is its own root.
+**How does InDesign write `BasedOn` in IDML?**
+As a typed child of the style's `<Properties>` block: `<BasedOn type="object">` with the
+parent's `Self` id, or `<BasedOn type="string">` with the `$ID/` name of a built-in root such as
+`$ID/[No paragraph style]`.
 
-**How does the parser resolve a chain of styles?**
-It starts an empty accumulator at the applied style and walks the `BasedOn` chain
-upward, filling each attribute from the first style in the walk that sets it and
-leaving already-filled attributes alone. There is no separate "later rule
-overrides earlier rule" step the way CSS has — the chain order *is* the precedence
-order.
+**Does InDesign read a `BasedOn` attribute?**
+No. A `BasedOn="…"` attribute on the style's start tag is ignored, and the style opens with no
+parent. Write the `<Properties>` child.
 
-**What happens if a `BasedOn` chain has a cycle or a missing parent?**
-The walk is bounded at `MAX_BASED_ON_DEPTH = 16` hops, so a cycle stops after
-sixteen hops and returns whatever was accumulated; a `BasedOn` pointing at an id
-not in the style sheet ends the walk the same way. Either case resolves gracefully
-instead of looping forever or erroring.
+**How is a chain of styles resolved?**
+Start at the applied style and walk up through `BasedOn`. For each attribute, take the first
+value you meet. The applied style's own values therefore win over its parent's, and its
+parent's over the grandparent's.
 
-**Does the cascade override a value set directly on a range?**
-No. A value set directly on a `<ParagraphStyleRange>` or `<CharacterStyleRange>` is
-not part of the style sheet and is not touched by `BasedOn` resolution; it sits
-above the whole cascade and the resolved style only fills what the local value left
-blank.
+**What happens with a cycle or a missing parent?**
+The format does not prevent either. Stop the walk when it repeats or when a parent id names no
+style, and use the values gathered so far.

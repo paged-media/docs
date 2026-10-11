@@ -9,8 +9,16 @@
         <AppliedFont type="string">Open Sans</AppliedFont>
       </Properties>
     </ParagraphStyle>
-    <ParagraphStyle Self="ParagraphStyle/Body" Name="Body" BasedOn="ParagraphStyle/$ID/[No paragraph style]" PointSize="14" SpaceAfter="6"/>
-    <ParagraphStyle Self="ParagraphStyle/Body Indented" Name="Body Indented" BasedOn="ParagraphStyle/Body" FirstLineIndent="18"/>
+    <ParagraphStyle Self="ParagraphStyle/Body" Name="Body" PointSize="14" SpaceAfter="6">
+      <Properties>
+        <BasedOn type="object">ParagraphStyle/$ID/[No paragraph style]</BasedOn>
+      </Properties>
+    </ParagraphStyle>
+    <ParagraphStyle Self="ParagraphStyle/Body Indented" Name="Body Indented" FirstLineIndent="18">
+      <Properties>
+        <BasedOn type="object">ParagraphStyle/Body</BasedOn>
+      </Properties>
+    </ParagraphStyle>
   </RootParagraphStyleGroup>
   <RootObjectStyleGroup>
     <ObjectStyle Self="ObjectStyle/$ID/[None]" Name="$ID/[None]" FillColor="Swatch/None" StrokeColor="Swatch/None" StrokeWeight="0" AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]" CornerOption="None" CornerRadius="0" EndCap="ButtEndCap" EndJoin="MiterEndJoin" MiterLimit="4" StrokeAlignment="CenterAlignment" StrokeType="StrokeStyle/$ID/Solid" Nonprinting="false"/>

@@ -1,0 +1,49 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "object-style",
+  "title": "A rectangle formatted by an object style",
+  "tier": "intermediate",
+  "chapter": "styles",
+  "concept": "A rectangle with no fill or stroke of its own applies an object style; the style, based on [None], supplies a 40 % red fill and a 2 pt black stroke.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Resources/Styles.xml",
+    "language": "xml",
+    "label": "Resources/Styles.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree",
+    "live"
+  ],
+  "annotations": [
+    {
+      "lines": "14",
+      "note": "[None] is InDesign's built-in object style: no fill, no stroke. Its Self uses the reserved $ID/ namespace."
+    },
+    {
+      "lines": "15",
+      "note": "The Panel style sets the fill (Color/Red at FillTint 40) and a 2 pt black stroke. EnableFill and EnableStroke switch those categories of the style on."
+    },
+    {
+      "lines": "16-18",
+      "note": "Panel names its parent in a typed BasedOn child, as InDesign writes it. Anything Panel leaves unset comes from [None]."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 2,
+    "paragraphs": 1,
+    "runs": 1
+  },
+  "pathological": false,
+  "license": "MIT",
+  "elements": [
+    "ObjectStyle",
+    "RootObjectStyleGroup"
+  ]
+}

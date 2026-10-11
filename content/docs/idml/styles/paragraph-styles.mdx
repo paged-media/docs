@@ -1,141 +1,151 @@
 ---
 title: Paragraph styles
-description: The ParagraphStyle element and its key attributes — identity, the BasedOn parent, font and size defaults, alignment, indents, and spacing — plus the RootParagraphStyleGroup that holds them.
+description: The ParagraphStyle element — identity, BasedOn parent, character defaults, paragraph geometry and the option families it carries, as InDesign writes them.
 tier: pro
 diataxis: reference
 status: published
 owner: paged-docs
+describes: [styles.paragraph.crud, styles.based-on-chain, styles.next-style-overrides]
+reviewed: 2026-10-11
 ---
 
-**A paragraph style is the most attribute-rich style in IDML, carrying both paragraph geometry and the character defaults a paragraph's text starts from.**
+**A paragraph style carries both the geometry of a paragraph and the character defaults its text starts from.**
 
-**In short:** A `<ParagraphStyle>` defines how a whole paragraph is formatted —
-its alignment, indents, and spacing — *and* the font, size, and fill its text
-falls back on when no character style sets them. Every paragraph style lives in
-`<RootParagraphStyleGroup>` inside `Resources/Styles.xml`, is keyed by its `Self`
-id regardless of any group nesting, and inherits from a parent through `BasedOn`
-down to the uneditable `[No paragraph style]` root. This page is the attribute
-reference for the fields our parser reads; for how those fields combine with
-parents and local overrides, see [the cascade](/docs/idml/styles/the-cascade).
-
-A `<ParagraphStyle>` is the most attribute-rich style in IDML. It carries both
-paragraph geometry (alignment, indents, spacing) *and* the character defaults a
-paragraph's text starts from (font, size, fill), so a run that applies no
-character style still has a complete set of values to fall back on. This page is
-the attribute reference for the fields our parser reads; for how they combine with
-parents and local overrides, see [the cascade](/docs/idml/styles/the-cascade).
+**In short:** A `<ParagraphStyle>` sets a paragraph's alignment, indents, spacing,
+hyphenation, keeps and lists, and also the font, size and colour its text uses when no
+character style says otherwise. InDesign writes most of these as attributes, and a handful as
+typed children of a `<Properties>` block: the font (`AppliedFont`), the parent (`BasedOn`), the
+leading, the tab stops and the list settings. A paragraph refers to its style through
+`AppliedParagraphStyle` on its `<ParagraphStyleRange>`.
 
 ## Where they live
 
-Every `<ParagraphStyle>` sits inside `<RootParagraphStyleGroup>` in
-`Resources/Styles.xml`. InDesign may nest user styles inside intermediate
-`<ParagraphStyleGroup>` elements for organisation; the parser flattens these — it
-keys every style by its `Self` id regardless of grouping, so a group's nesting
-does not affect resolution. Two default styles are always present: the editable
-"Normal Paragraph Style" and the uneditable root, `ParagraphStyle/$ID/[No
-paragraph style]`, which is the bottom of every [cascade](/docs/idml/styles/the-cascade).
+Paragraph styles sit under `<RootParagraphStyleGroup>` in `Resources/Styles.xml`, optionally
+inside `<ParagraphStyleGroup>` folders. Two built-ins are always present: the root
+`ParagraphStyle/$ID/[No paragraph style]`, which every chain ends at, and
+`ParagraphStyle/$ID/NormalParagraphStyle`, shown in InDesign as `[Basic Paragraph]`, the
+style new text gets.
 
-```xml
-<RootParagraphStyleGroup>
-  <ParagraphStyle Self="ParagraphStyle/$ID/[No paragraph style]"
-                  Name="$ID/[No paragraph style]"
-                  AppliedFont="Open Sans" PointSize="12" FillColor="Color/Black"/>
-  <ParagraphStyle Self="ParagraphStyle/Body" Name="Body"
-                  BasedOn="ParagraphStyle/$ID/[No paragraph style]"
-                  PointSize="14" SpaceAfter="6"/>
-</RootParagraphStyleGroup>
-```
+<ExampleEmbed example="based-on-chain">
+  Three paragraph styles. The root carries the font as a typed `AppliedFont` child; each of the
+  other two names its parent in a typed `BasedOn` child.
+</ExampleEmbed>
 
-## Identity and inheritance
+## Attributes and `<Properties>` children
 
-<AttrTable
-  element="ParagraphStyle"
-  rows={[
-    { attr: 'Self', type: 'string id', support: 'supported', note: 'The style id, e.g. "ParagraphStyle/Body". What a paragraph references via AppliedParagraphStyle. A colon in the name encodes as %3a inside Self.' },
-    { attr: 'Name', type: 'string', support: 'parsed-not-rendered', note: 'Human-readable name; the [No paragraph style] root uses the $ID/ form. Informational — resolution keys on Self, not Name.' },
-    { attr: 'BasedOn', type: 'string id', support: 'supported', note: 'The parent style id, or the root sentinel. May also appear as a <BasedOn> child inside <Properties>; both forms are read. Drives the cascade.' },
-  ]}
-/>
+Most paragraph-style settings are plain attributes. These are written as typed children of the
+style's `<Properties>` block instead:
+
+| Child | Type | Holds |
+| --- | --- | --- |
+| `<BasedOn>` | `object` (a `Self` id) or `string` (a `$ID/` root name) | the parent style |
+| `<AppliedFont>` | `string` | the font family, such as `Minion Pro` |
+| `<Leading>` | `unit` (points) or `enumeration` (`Auto`) | the leading |
+| `<TabList>` | `list` of `record`s | the tab stops; see [drop caps and tabs](/docs/idml/typography/drop-caps-and-tabs) |
+| `<BulletChar>`, `<NumberingFormat>`, `<AppliedNumberingList>`, `<BulletsCharacterStyle>`, `<NumberingCharacterStyle>` | various | list settings; see [lists, keep options and span columns](/docs/idml/typography/lists-keep-span) |
+| `<SpanSplitColumnCount>` | `short` or `enumeration` (`All`) | how many columns a span or split covers |
+| `<AllNestedStyles>` | `list` of `record`s | nested styles; see below |
+
+InDesign ignores an `AppliedFont` attribute on a paragraph style; the font has to be the typed
+child. The rule for `BasedOn` is the same (see [the cascade](/docs/idml/styles/the-cascade)).
+
+> **In Paged:** the importer reads `AppliedFont`, `BasedOn` and `Leading` in either form. The
+> exporter writes them as children, the way InDesign reads them.
+> <SupportBadge feature="styles.paragraph.crud" />
 
 ## Character defaults
 
-These carry the font, size, and colour a paragraph's text starts from. They are
-the same attributes a [character style](/docs/idml/styles/character-styles) can
-override, and a run can override again locally. `AppliedFont` may appear as an
-attribute or as an `<AppliedFont>` child inside `<Properties>`.
+A paragraph style carries the full set of character attributes, so a run that applies no
+character style still has a value for each. The common ones:
 
-<AttrTable
-  element="ParagraphStyle"
-  rows={[
-    { attr: 'AppliedFont', type: 'string (font family)', support: 'supported', note: 'Font family name. Attribute or <AppliedFont> Properties child. The renderer resolves it against the fonts supplied to it.' },
-    { attr: 'FontStyle', type: 'string (e.g. "Regular", "Bold")', support: 'supported', note: 'Named face within the family.' },
-    { attr: 'PointSize', type: 'double (pt)', support: 'supported', note: 'Type size in points.' },
-    { attr: 'FillColor', type: 'string (Color/Swatch id)', support: 'supported', note: 'Glyph fill; a reference into Resources/Graphic.xml.' },
-    { attr: 'FillTint', type: 'double (0–100%)', support: 'supported', note: 'Fill tint percentage; absent means use the swatch at full strength.' },
-    { attr: 'StrokeColor', type: 'string (Color/Swatch id)', support: 'supported', note: 'Glyph outline paint. "Swatch/None" normalises to unset so the cascade can fall through.' },
-    { attr: 'StrokeWeight', type: 'double (pt)', support: 'supported', note: 'Outline weight when StrokeColor resolves.' },
-    { attr: 'Tracking', type: 'double (1/1000 em)', support: 'supported', note: 'Inter-glyph spacing added to every advance; divide by 1000 for the em fraction.' },
-    { attr: 'Capitalization', type: 'Normal | SmallCaps | AllCaps | CapToSmallCap', support: 'supported', note: 'AllCaps uppercases before shaping; SmallCaps approximated until OpenType smcp lands.' },
-    { attr: 'Position', type: 'Normal | Superscript | Subscript | OTSuperscript | OTSubscript', support: 'parsed-not-rendered', note: 'Baseline position; captured but scaling/shift not yet applied.' },
-    { attr: 'Underline', type: 'boolean', support: 'supported', note: 'Underline decoration.' },
-    { attr: 'StrikeThru', type: 'boolean', support: 'supported', note: 'Strike-through decoration.' },
-  ]}
-/>
+<AttrTable element="ParagraphStyle" attrs={['AppliedFont', 'FontStyle', 'PointSize', 'FillColor', 'FillTint', 'Tracking', 'Capitalization', 'Position', 'Ligatures', 'KerningMethod']} />
+
+Their meaning is the same as on a character style; see
+[character styles](/docs/idml/styles/character-styles) and the
+[typography](/docs/idml/typography) chapter.
+
+> **In Paged:** `Ligatures`, `KerningMethod` and the `OTF…` OpenType attributes are read from
+> character styles and ranges but not yet from paragraph styles, where InDesign also writes
+> them; a run whose only source for them is its paragraph style gets the defaults (ligatures on,
+> metric kerning, no extra OpenType features).
 
 ## Paragraph geometry
 
-`Justification` is parsed into a typed enum; an unrecognised value falls through to
-the cascade (effectively left-aligned). The binding-aware values
-`ToBindingSide` / `AwayFromBindingSide` are accepted and treated as
-`LeftAlign` / `RightAlign` because binding side is not yet plumbed through.
+<AttrTable element="ParagraphStyle" attrs={['Justification', 'LeftIndent', 'RightIndent', 'FirstLineIndent', 'LastLineIndent', 'SpaceBefore', 'SpaceAfter']} />
 
-<AttrTable
-  element="ParagraphStyle"
-  rows={[
-    { attr: 'Justification', type: 'LeftAlign | CenterAlign | RightAlign | LeftJustified | CenterJustified | RightJustified | FullyJustified | ToBindingSide | AwayFromBindingSide', support: 'supported', note: 'Horizontal alignment. FullyJustified currently composes like LeftJustified; binding-aware values fall back to Left/Right.' },
-    { attr: 'FirstLineIndent', type: 'double (pt)', support: 'supported', note: 'Extra indent on the first line of the paragraph.' },
-    { attr: 'SpaceBefore', type: 'double (pt)', support: 'supported', note: 'Vertical space added above the paragraph.' },
-    { attr: 'SpaceAfter', type: 'double (pt)', support: 'supported', note: 'Vertical space added below the paragraph.' },
-    { attr: 'Hyphenation', type: 'boolean', support: 'supported', note: 'IDML default is true; an explicit false disables the hyphenator for the paragraph.' },
-    { attr: 'AppliedLanguage', type: 'string (e.g. "$ID/English: USA")', support: 'supported', note: 'Picks the hyphenation dictionary; unknown values fall back to English-US.' },
-    { attr: 'MinimumWordSpacing / DesiredWordSpacing / MaximumWordSpacing', type: 'double (% of normal)', support: 'supported', note: 'Justification word-spacing range; drives the composer\'s shrink/stretch ratios.' },
-    { attr: 'DropCapCharacters / DropCapLines', type: 'short', support: 'supported', note: 'Number of leading characters that drop, and how many lines they span.' },
-  ]}
-/>
+`Justification` takes `LeftAlign`, `CenterAlign`, `RightAlign`, the justified modes
+`LeftJustified`, `CenterJustified`, `RightJustified` and `FullyJustified`, and the
+binding-relative `ToBindingSide` and `AwayFromBindingSide`. The justified modes differ in their
+last line; see [justification and line-breaking](/docs/idml/typography/justification-and-linebreaking).
 
-The parser reads a number of further families off `<ParagraphStyle>` — a
-`<TabList>` of `<TabStop>` children, bullets-and-numbering attributes
-(`BulletsAndNumberingListType`, `NumberingExpression`, `NumberingFormat`, …),
-letter/glyph-spacing knobs, paragraph shading / rules / borders, and CJK kinsoku /
-mojikumi references. Those belong to the [typography](/docs/idml/typography) and
-[lists](/docs/idml/stories-text) chapters; this page covers the core formatting an
-ordinary paragraph applies.
+> **In Paged:** `CenterJustified` and `RightJustified` are set ragged (centred and flush right)
+> instead of justified, and `FullyJustified` is composed like `LeftJustified`. Both are known
+> engine issues. `ToBindingSide` is set left and `AwayFromBindingSide` right.
 
-One attribute is read and deliberately not acted on: `NextStyle`. It only affects
-which style InDesign applies to the *next* paragraph as you type, so it has no
-bearing on rendering an existing document. <SupportBadge status="parsed-not-rendered" note="NextStyle (authoring-only)" />
+## Option families
+
+A paragraph style carries several further families of attributes, each documented with its
+topic:
+
+- **Spacing and composition:** `Composer`, `MinimumWordSpacing` / `DesiredWordSpacing` /
+  `MaximumWordSpacing`, the letter-spacing and glyph-scaling triples, `SingleWordJustification`,
+  and the hyphenation family (`Hyphenation`, `HyphenateWordsLongerThan`, `HyphenateAfterFirst`,
+  `HyphenateBeforeLast`, `HyphenateCapitalizedWords`, `HyphenateLadderLimit`,
+  `HyphenationZone`, …). See [justification and line-breaking](/docs/idml/typography/justification-and-linebreaking)
+  and [composer and OpenType features](/docs/idml/typography/composer-and-opentype).
+- **Drop caps and tabs:** `DropCapCharacters`, `DropCapLines`, `DropCapDetail` and the
+  `<TabList>`. See [drop caps and tabs](/docs/idml/typography/drop-caps-and-tabs).
+- **Lists, keeps and columns:** `BulletsAndNumberingListType`, `NumberingExpression` and the
+  list children; `KeepLinesTogether`, `KeepAllLinesTogether`, `KeepFirstLines`,
+  `KeepLastLines`, `KeepWithNext`, `StartParagraph`; `SpanColumnType` and its companions. See
+  [lists, keep options and span columns](/docs/idml/typography/lists-keep-span).
+- **Rules, shading and borders:** `RuleAbove…` and `RuleBelow…` (on, colour, tint, weight,
+  offset, indents, width), `ParagraphShading…` and `ParagraphBorder…` (on, colour, tint,
+  weight, offsets, per-corner options).
+  <SupportBadge feature="styles.paragraph-rules" /> <SupportBadge feature="styles.paragraph-shading" /> <SupportBadge feature="styles.paragraph-border" />
+- **CJK composition:** `KinsokuSet`, `KinsokuType`, `MojikumiTable` / `Mojikumi`.
+  <SupportBadge feature="typography.kinsoku" /> <SupportBadge feature="typography.mojikumi" />
+
+## Nested styles
+
+A nested style applies a character style to the start of each paragraph, up to a delimiter: the
+first word, the first tab, everything before a colon. InDesign writes a paragraph style's
+nested styles as `<Properties><AllNestedStyles type="list">`, one `record` per nested style,
+each naming the character style, the delimiter, how many times it repeats and whether the
+delimiter itself is included.
+
+> **In Paged:** nested styles are applied when they come as `<NestedStyle>` elements under the
+> paragraph style, a form InDesign does not write. The `<AllNestedStyles>` list InDesign writes is
+> not read yet, so nested styles from an InDesign file are not applied.
+> <SupportBadge feature="stories-text.nested-styles" />
+
+## `NextStyle`
+
+`NextStyle` names the paragraph style InDesign gives the next paragraph when the user presses
+Return at the end of this one. It is an authoring setting: it changes nothing about how existing
+text looks. A heading style typically has `NextStyle` set to the body style; a body style
+usually points at itself.
+
+> **In Paged:** `NextStyle` is read, can be set, and survives a save. It does not affect
+> rendering. <SupportBadge feature="styles.next-style-overrides" />
 
 ## Frequently asked questions
 
+**How do I set a paragraph style's font in IDML?**
+With a typed child: `<Properties><AppliedFont type="string">Minion Pro</AppliedFont></Properties>`,
+plus `FontStyle="Bold"` as an attribute for the face. InDesign ignores an `AppliedFont` attribute
+on the style.
+
 **What is the difference between a paragraph style and a character style?**
-A paragraph style formats a whole paragraph — its alignment, indents, and spacing —
-and also carries the character defaults (font, size, fill) its text starts from. A
-[character style](/docs/idml/styles/character-styles) formats only a run inside a
-paragraph and usually sets just the few attributes that differ from the surrounding
-text.
+A paragraph style sets whole-paragraph properties (alignment, indents, spacing, keeps, lists)
+and the character defaults the paragraph's text starts from. A
+[character style](/docs/idml/styles/character-styles) applies to a run inside a paragraph and
+usually sets only the few attributes that differ.
 
-**Where do paragraph styles live in an IDML package?**
-Every `<ParagraphStyle>` sits inside `<RootParagraphStyleGroup>` in
-`Resources/Styles.xml`. InDesign may nest user styles inside intermediate
-`<ParagraphStyleGroup>` elements, but the parser flattens these and keys every
-style by its `Self` id, so grouping does not affect resolution.
+**What is `[Basic Paragraph]`?**
+The built-in style InDesign applies to new text. Its id is
+`ParagraphStyle/$ID/NormalParagraphStyle`. It is an ordinary, editable style based on the
+`[No paragraph style]` root.
 
-**What does a paragraph reference to get its formatting?**
-A paragraph names its paragraph style through `AppliedParagraphStyle`, whose value
-is the style's `Self` id. The parser then resolves that style down its
-[`BasedOn` chain](/docs/idml/styles/the-cascade) to a full set of values.
-
-**Are there paragraph-style attributes the parser reads but does not render?**
-Yes. `NextStyle` is authoring-only — it only affects which style InDesign applies
-to the *next* paragraph as you type — and `Position` is captured but not yet
-scaled or shifted. Both are flagged as parsed-not-rendered in the tables above.
+**Does `NextStyle` change how a document renders?**
+No. It only tells InDesign which style to apply to a new paragraph typed after this one.

@@ -4,7 +4,7 @@
   "title": "A BasedOn chain of paragraph styles",
   "tier": "intermediate",
   "chapter": "styles",
-  "concept": "Body inherits from the [No paragraph style] root; Body Indented inherits from Body. The applied style resolves by walking the chain.",
+  "concept": "Body inherits from the [No paragraph style] root and Body Indented from Body, each naming its parent in a typed BasedOn Properties child. The applied style resolves by walking the chain.",
   "packageDir": "package",
   "editable": {
     "part": "Resources/Styles.xml",
@@ -22,12 +22,12 @@
       "note": "The root [No paragraph style] carries the document's base size and fill, and its font as a typed AppliedFont inside Properties (InDesign ignores an AppliedFont attribute). It is the bottom of every chain."
     },
     {
-      "lines": "12",
-      "note": "Body is BasedOn the root: it sets PointSize and SpaceAfter, and inherits the font and FillColor from the root."
+      "lines": "12-16",
+      "note": "Body names its parent in a typed BasedOn child of Properties, the spelling InDesign writes and reads: type=\"object\" with the parent's Self. It sets PointSize and SpaceAfter and inherits the font and FillColor from the root."
     },
     {
-      "lines": "13",
-      "note": "Body Indented is BasedOn Body: it sets only FirstLineIndent and inherits everything else through Body to the root."
+      "lines": "17-21",
+      "note": "Body Indented is based on Body: it sets only FirstLineIndent and inherits everything else through Body to the root."
     }
   ],
   "expect": {
@@ -41,6 +41,10 @@
   },
   "pathological": false,
   "license": "MIT",
+  "elements": [
+    "ParagraphStyle",
+    "RootParagraphStyleGroup"
+  ],
   "verified": {
     "status": "verified",
     "indesignVersion": "20.0.1.32",
