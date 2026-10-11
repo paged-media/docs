@@ -10,7 +10,13 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.71.1 (tag commit 6adb3b7). Protocol 71, the object model
+# Currently: v0.71.2 (tag commit 7cad959). A patch on v0.71.1: a caret is an
+# address (`storyRange:<story>@n..n` names the paragraph it stands in, for
+# reads and writes), which the object-model panels need whenever nothing is
+# selected. No wire or catalog change. All four packages answer at 0.71.2 on
+# the registry (`latest`).
+#
+# v0.71.1 (tag commit 6adb3b7). Protocol 71, the object model
 # (ADRs 131, 132): one address grammar for every object, typed property schemas,
 # `Set` / `RequestGet` / `RequestQuery` on the wire, typed commands (`paged
 # invoke`, `paged ops` on the CLI; `paged.invoke` in scripts), text variables
@@ -112,4 +118,4 @@
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-6adb3b7413b7c02eaf056d5a7a18bc64e052d555
+7cad959959cdf646fbc2af8cfe68456586cb12af
