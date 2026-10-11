@@ -5,6 +5,10 @@ tier: beginner
 diataxis: tutorial
 status: published
 owner: paged-docs
+describes:
+  - stories-text.story-model
+  - package-anatomy.story-parts
+reviewed: 2026-10-11
 ---
 
 **The fastest way to understand IDML is to open the smallest valid package and read it.**
@@ -31,13 +35,39 @@ A few things to notice, top to bottom:
 
 - The outer `idPkg:Story` is the part wrapper; the inner `Story` is the content,
   and its `Self` id is how the page's text frame finds it.
-- A `ParagraphStyleRange` is a run of text sharing one paragraph style; a
-  `CharacterStyleRange` nests inside for character-level styling.
-- The actual text sits in `Content`.
+- A `ParagraphStyleRange` is a run of text sharing one set of paragraph attributes; a
+  `CharacterStyleRange` nests inside for character-level formatting.
+- The actual text sits in `Content`. It is ordinary XML text, so `&`, `<` and `>` are
+  written as `&amp;`, `&lt;` and `&gt;`.
 
-That is the entire payload of this document. Everything else in the package exists
-to give this story a page to live on and styles to resolve against — which is what
-the **[package anatomy](/docs/idml/package-anatomy)** section unpacks next.
+## When there is more than one paragraph
+
+This story has one paragraph, so it shows nothing between paragraphs. Add a second and
+you meet the one rule that trips up most hand-edited files: **a paragraph ends with a
+`<Br/>` element**, a sibling of `Content` inside the last `CharacterStyleRange` of the
+paragraph. Every paragraph except the story's last ends with one.
+
+<ExampleEmbed example="paragraph-marks">
+  Three paragraphs. The first two share one paragraph range and each ends with a
+  `<Br/>`; the second holds a forced line break (`&#x2028;`). The third has its own
+  range because its spacing differs.
+</ExampleEmbed>
+
+Three more characters are written the way InDesign writes them:
+
+- **A new paragraph is `<Br/>`, not a new range.** A `ParagraphStyleRange` can hold
+  several paragraphs. Writing one range per paragraph without the mark gives InDesign one
+  long paragraph.
+- **A forced line break is the character U+2028** inside `Content`. It breaks the line
+  without ending the paragraph.
+- **A tab is the character U+0009** inside `Content`, often written `&#9;`.
+
+[The paragraph model](/docs/idml/stories-text/the-paragraph-model) explains why IDML
+works this way.
+
+That is the entire payload of the first document. Everything else in the package exists
+to give the story a page to live on and styles to resolve against, which is what the
+**[package anatomy](/docs/idml/package-anatomy)** section unpacks next.
 
 ## Frequently asked questions
 
@@ -53,7 +83,12 @@ surrounding parts — manifest, resources, spread — give that story a page and
 to resolve against.
 
 **What is the difference between a `ParagraphStyleRange` and a `CharacterStyleRange`?**
-A `ParagraphStyleRange` is a run of text that shares one paragraph style. A
-`CharacterStyleRange` nests inside it to apply character-level styling to a smaller
-span. The actual text sits in the `Content` element within the
+A `ParagraphStyleRange` is a run of one or more paragraphs that share their paragraph
+attributes. A `CharacterStyleRange` nests inside it for a stretch of characters that
+share their character attributes. The text sits in `Content` elements inside the
 `CharacterStyleRange`.
+
+**How do I start a new paragraph when editing by hand?**
+End the current paragraph with a `<Br/>` element after its last `Content`. Starting a new
+`ParagraphStyleRange` alone does not end the paragraph: InDesign reads consecutive ranges
+without a mark as one paragraph.

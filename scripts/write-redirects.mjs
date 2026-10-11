@@ -38,6 +38,12 @@ const MOVED_IDML_PAGES = {
   'stories-text/text-variables': 'sections-numbering-variables/text-variables',
 };
 
+// IDML pages that described Paged rather than the format, now on
+// docs.paged.media: old IDML path → path on the Paged site.
+const MOVED_TO_PAGED = {
+  'foundations/how-the-renderer-reads-it': 'engine/how-paged-reads-idml',
+};
+
 const chapters = (dir) =>
   readdirSync(join(ROOT, 'content/docs', dir)).filter((n) => statSync(join(ROOT, 'content/docs', dir, n)).isDirectory());
 const idmlChapters = chapters('idml');
@@ -59,6 +65,10 @@ if (SITE === 'paged') {
   // Moved IDML pages go straight to their new home, ahead of the pillar splat.
   for (const [from, to] of Object.entries(MOVED_IDML_PAGES)) {
     rules.push([`/docs/idml/${from}`, `${IDML}/${to}/`], [`/docs/idml/${from}/`, `${IDML}/${to}/`]);
+  }
+  // IDML pages that moved to this site, from both former trees.
+  for (const [from, to] of Object.entries(MOVED_TO_PAGED)) {
+    for (const old of [`/docs/idml/${from}`, `/docs/${from}`]) rules.push([old, `/${to}/`], [`${old}/`, `/${to}/`]);
   }
   // The IDML pillar is now its own site.
   rules.push(['/docs/idml', `${IDML}/`], ['/docs/idml/', `${IDML}/`]);
@@ -82,6 +92,9 @@ if (SITE === 'paged') {
   for (const [from, to] of Object.entries(MOVED_IDML_PAGES)) {
     rules.push([`/${from}`, `/${to}/`], [`/${from}/`, `/${to}/`]);
     rules.push([`/docs/idml/${from}`, `/${to}/`], [`/docs/idml/${from}/`, `/${to}/`]);
+  }
+  for (const [from, to] of Object.entries(MOVED_TO_PAGED)) {
+    for (const old of [`/${from}`, `/docs/idml/${from}`]) rules.push([old, `${PAGED}/${to}/`], [`${old}/`, `${PAGED}/${to}/`]);
   }
   rules.push(['/docs/idml', '/'], ['/docs/idml/', '/']);
   rules.push(['/docs/idml/*', '/:splat']);

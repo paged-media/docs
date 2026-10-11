@@ -1,0 +1,123 @@
+---
+title: How Paged reads IDML
+description: The path from an .idml or .paged file to pages in Paged — the IDML adapter, the native document model, the whole-document build and the two rasterisers.
+tier: pro
+diataxis: explanation
+status: published
+owner: paged-docs
+describes:
+  - package-anatomy.core-import
+  - package-anatomy.native-model-part
+  - package-anatomy.paged-container
+reviewed: 2026-10-11
+---
+
+**Paged reads IDML through an adapter: the package is imported into Paged's own document model, and everything after that works on the model, not on the XML.**
+
+**In short:** IDML is a format Paged reads and writes, not the shape of its engine. The
+IDML adapter (`idml-import` and `idml-export`, kept in the plugin-publish repository and
+compiled into the engine) turns a package into the native document model. The engine then
+lays out the whole document in one build, produces a display list per page, and paints it
+on the CPU or the GPU. A `.paged` file is an IDML package that also carries the model
+itself, so it opens without an IDML parse.
+
+## 1. Open: one archive, two ways in
+
+Every file is opened as a ZIP. The importer reads every entry, then checks two things: a
+`mimetype` entry whose text is exactly `application/vnd.adobe.indesign-idml-package`, and
+a `designmap.xml`. Anything else is rejected before a part is parsed.
+
+What happens next depends on what the archive carries:
+
+- **A `.paged` file with a current model part.** If `paged/core/model/document.pgm`
+  exists and its format version matches, the model is rebuilt from that part and the IDML
+  parts are not parsed ([ADR 118](https://github.com/paged-media/core/blob/main/docs/adr/118-paged-file-is-a-valid-idml-package.md)).
+- **Any other package.** The IDML parts are imported.
+
+The read-only viewer SDK always takes the second path.
+
+## 2. Import: IDML parts to the native model
+
+The importer lives in plugin-publish and is linked into the engine wasm at a pinned
+revision ([ADR 022](https://github.com/paged-media/plugin-publish/blob/main/docs/adr/022-idml-relocates-to-plugin-publish.md),
+[ADR 651](https://github.com/paged-media/plugin-publish/blob/main/docs/adr/651-idml-compiled-into-engine-wasm.md)).
+It reads the package in a fixed order:
+
+1. `designmap.xml`: the part list, layers, sections, text variables, hyperlinks,
+   bookmarks, conditions and document settings;
+2. `Resources/Preferences.xml` (the chapter number), `Resources/Graphic.xml` and
+   `Resources/Styles.xml`, each by its fixed path;
+3. every master spread, then every spread, then every story the design map names.
+
+A part the design map names but the archive lacks stops the import. A reference that
+names a missing colour, style or frame does not: it resolves to nothing and the build
+falls back. The result is a `Document` built from `paged-model` types, with its lookup
+indexes (frame for story, frame chains) rebuilt after import. From here on nothing in
+the engine reads XML.
+
+The importer accepts both InDesign's spellings and the older private spellings Paged
+once wrote, so existing files keep opening
+([ADR 653](https://github.com/paged-media/plugin-publish/blob/main/docs/adr/653-indesign-is-the-oracle.md)).
+
+## 3. Build: the whole document at once
+
+`build_document` lays out the whole document and returns one display list per page,
+with diagnostics ([ADR 107](https://github.com/paged-media/core/blob/main/docs/adr/107-whole-document-build.md)).
+Inside one build:
+
+- styles cascade and text threads through its frame chains;
+- text is shaped, broken into lines by InDesign-calibrated composers and hyphenated;
+- a story with a grow rule gets generated pages until it fits
+  ([ADR 026](https://github.com/paged-media/core/blob/main/docs/adr/026-auto-growing-region-chains.md)),
+  and keep options are settled
+  ([ADR 028](https://github.com/paged-media/core/blob/main/docs/adr/028-pagination-rules-are-engine-owned.md));
+- text variables, running headers and cross-references are resolved against the current
+  layout, which costs a second pass.
+
+The build does no file or network I/O. Fonts, placed images and the CMYK profile are
+handed in by the host, and anything it had to degrade is reported as a diagnostic rather
+than dropped silently.
+
+## 4. Paint: one display list, two rasterisers
+
+A display list is a flat list of drawing commands with resolved paints. The same list is
+painted by tiny-skia on the CPU (the command line, snapshots, the fidelity gate) or by
+Vello on the GPU (WebGPU in the browser, including this site's live preview)
+([ADR 100](https://github.com/paged-media/core/blob/main/docs/adr/100-two-rasterisers-one-trait.md)).
+PDF export writes from the same lists. The stages in detail are in
+[the pipeline](/docs/paged/engine/the-renderer/the-pipeline).
+
+## 5. Save: InDesign's spelling, plus the model
+
+`idml-export` writes the model back as IDML. When nothing changed it streams the source
+parts through byte for byte; when something did, it patches what changed. Either way it
+writes what InDesign reads, which was measured in InDesign rather than read off a
+specification. The format-level rules are collected in
+[What InDesign needs to open a file](/docs/idml/package-anatomy/what-indesign-requires).
+
+A `.paged` save writes the same IDML parts, then adds the model part, plugin parts under
+`paged/<plugin>/` and a `manifest.json`. None of them is named by `designmap.xml`, so
+InDesign opens the file as ordinary IDML and ignores them
+([The `.paged` container](/docs/idml/package-anatomy/the-paged-container)).
+
+## Frequently asked questions
+
+**Does Paged render from the IDML XML directly?**
+No. The XML is imported into Paged's document model first, and layout and painting work
+on that model. A `.paged` file can skip the import entirely when it carries a current
+model part.
+
+**Where does the IDML parser live?**
+In the plugin-publish repository, as the `idml-import` and `idml-export` crates. The
+engine takes them as dependencies pinned to a revision and compiles them into its wasm,
+so the published packages read IDML with no extra install.
+
+**What happens when an IDML file references something that is not there?**
+A missing part named by the design map stops the import. A missing colour, style or
+frame only makes that one reference resolve to nothing; the build falls back and reports
+what it could not resolve.
+
+**Does Paged recompute text variables or show the saved value?**
+It recomputes them against the current layout: dates, chapter number, file name, last
+page number and running headers. The value InDesign saved in `ResultText` is the fallback
+for kinds it does not compute.

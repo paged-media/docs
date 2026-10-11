@@ -1,10 +1,14 @@
 ---
 title: What IDML is
-description: IDML is Adobe's open, XML-based interchange format for InDesign documents — a layout's full structure as readable text in a ZIP, describing content and intent rather than pixels.
+description: IDML is Adobe's open, XML-based interchange format for InDesign documents — a layout's full structure as readable text in a ZIP, describing intent, not pixels.
 tier: beginner
 diataxis: explanation
 status: published
 owner: paged-docs
+describes:
+  - foundations.container.open
+  - foundations.designmap.structure
+reviewed: 2026-10-11
 ---
 
 **IDML is how a layout document travels as text instead of as an opaque binary.**
@@ -51,18 +55,21 @@ rewrite.
 
 **It describes content and intent, not pixels.** An IDML part never says "put a
 black dot here." It says "this story uses this paragraph style and flows through
-this frame on this page." Turning that intent into actual pixels is the renderer's
-job — which is what Paged does, and what this entire reference is quietly about.
-Every time we explain a part of the format, we explain it from the angle that
-matters: what our renderer actually has to *do* with it.
+this frame on this page." Turning that intent into pages is the job of whatever opens
+the file: InDesign itself, or another renderer. Some results are stored anyway, as a
+convenience for readers that do not compute them: a text variable carries the text it
+showed when the file was saved.
+
+IDML has two smaller relatives built from the same vocabulary: **IDMS**, a snippet
+of page items, and **ICML**, a single story for an editorial workflow. They are covered
+in [companion formats](/docs/idml/companion-formats).
 
 That's the whole shape of the thing: an archive of XML, defined by Adobe®,
-describing a document's structure and intent for paged media — meant to be read and
-rewritten by tools, not squinted at by humans. And credit where it's due: Adobe did
-a genuinely excellent job with IDML. It's clean, thoroughly specified, and holds up
-under real scrutiny — a format that rewards anyone willing to read it, and a real
-pleasure to build a renderer against. The next pages dig into where it came from
-and why it's packaged the way it is.
+describing a document's structure and intent for paged media, meant to be read and
+rewritten by tools. The format is regular enough that a package can carry extra
+parts no other reader needs: a `.paged` file, for example, is a valid IDML package
+with private parts added ([the `.paged` container](/docs/idml/package-anatomy/the-paged-container)).
+The next pages look at where the format came from and why it is packaged the way it is.
 
 ## Frequently asked questions
 
@@ -84,5 +91,5 @@ generate, and transform it with other tools.
 Yes. Because an IDML file is just a ZIP archive of XML parts, you can unzip it and
 inspect or edit any part in a plain text editor, and tools can generate or transform
 IDML without InDesign installed. That said, IDML describes content and *intent*, not
-finished pixels — so to turn it into a faithful visual page you still need a renderer
-(such as Paged) or InDesign itself to interpret the layout.
+finished pixels, so to turn it into a page you still need software that composes the
+layout: InDesign itself, or another renderer.

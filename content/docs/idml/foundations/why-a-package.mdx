@@ -5,6 +5,9 @@ tier: beginner
 diataxis: explanation
 status: published
 owner: paged-docs
+describes:
+  - foundations.designmap.structure
+reviewed: 2026-10-11
 ---
 
 **IDML is a ZIP of many small parts, not one big file — and that split is a deliberate, useful choice.**
@@ -34,6 +37,12 @@ document. Each spread, each story, gets its own part.
 exist and how they relate, and then pull in the parts it needs. The archive carries
 a small amount of structure (which part is the entry point) so a consumer knows
 where to begin.
+
+A side effect of the manifest is that the archive can hold parts the manifest does not
+name. InDesign reads only what `designmap.xml` and the container point at, so an extra
+entry rides along unread, the same private-parts idiom EPUB and OpenDocument use. Tools
+use it to keep their own data inside a file that stays valid IDML (see
+[the `.paged` container](/docs/idml/package-anatomy/the-paged-container)).
 
 The cost is that the document is now a graph of cross-referencing parts rather than
 one self-contained file. Most of the **[package anatomy](/docs/idml/package-anatomy)**

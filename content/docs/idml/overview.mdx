@@ -1,63 +1,116 @@
 ---
 title: About this reference
-description: What the IDML Reference covers, how it is organized by reader tier, and how its examples are validated against a working renderer.
+description: What this independent IDML reference covers, how it is organized, how its examples are checked in InDesign and a renderer, and what its support badges mean.
 tier: beginner
 diataxis: explanation
 status: published
 owner: paged-docs
+describes:
+  - package-anatomy.core-import
+reviewed: 2026-10-11
 ---
 
-**This is an independent, living reference for IDML, the InDesign Markup Language.**
+**This is an independent reference for IDML, the InDesign Markup Language: what the format contains, how its parts fit together, and what InDesign does with them.**
 
-**In short:** IDML is the format an InDesign document takes when it travels as
-text — an open, inspectable package instead of a sealed binary. This reference
-explains the format for humans, from first principles: from small files we author
-ourselves, and from what a working renderer does with them. It is not the
-normative specification — it points to the authoritative spec where a normative
-answer is needed — and it runs roughly beginner to pro so you can enter wherever
-your question lives.
+**In short:** IDML is the form an InDesign document takes as a ZIP of readable XML parts.
+This reference explains that format from first principles, for people who read, write or
+transform IDML files. It is not the normative specification. Every rule it states comes
+from files we build ourselves and from what InDesign does when it opens them, and every
+example is a real package that both InDesign and an open renderer open.
 
-The reference implementation behind every example is
-[Paged](/docs/paged/overview), an open-source engine that reads, renders and
-writes IDML. Where it helps, a page notes how Paged handles a construct; the
-format itself is described independently of any one tool.
+## What it covers
 
-## How this is organized
+The subject is the format: the package, the parts, the elements and attributes, and the
+behaviour InDesign gives them. Pages are written in a neutral voice about the format.
 
-The reference runs roughly beginner to pro, ordered by how a reader actually comes
-to understand the format — not by the order any source document happens to list
-things in. Three reader tiers run throughout:
+[Paged](/docs/paged/overview), an open-source engine that reads, renders and writes IDML,
+is the reference implementation the examples run on. Where it is useful to know what Paged
+does with a construct, a page says so in a short aside marked **In Paged**, usually with a
+support badge. Paged's own internals are documented on its own site, starting from
+[how Paged reads IDML](/docs/paged/engine/how-paged-reads-idml).
 
-- 🟢 **Beginner** — "What is this thing?"
-- 🟡 **Intermediate** — "How do I work with it?"
-- 🔴 **Pro** — "How does it really work, and where are the edges?"
+## How the claims are checked
 
-Every page declares one tier and one job, and carries a difficulty label. Pages
-still being written are excluded from search until they reach real depth.
+**InDesign is the authority on behaviour.** A rule like "a missing `ItemTransform` is not
+read as identity" or "the font is a typed `Properties` child" is a measurement: a file was
+built, opened in InDesign 20.0.1, and the result was read back. A tool's own round trip
+cannot catch these: a reader and a writer can agree with each other and with nobody else.
+The method is described in the [clean-room protocol](/docs/idml/meta/clean-room-protocol).
+
+**Every example is a real package.** Snippets are never typed into a page. Each lives in
+the documentation's `examples/` folder as an unzipped package, and two checks run on it:
+
+- **The renderer gate, on every build.** Each package is assembled and opened by
+  `paged-inspect`, built from the exact engine release the site pins. The page counts,
+  stories, frames, paragraphs and runs must match what the example declares, or the build
+  fails.
+- **The InDesign check.** Each package is opened in InDesign, which must open it with no
+  missing font or link, save it back as IDML and export a PDF with the expected page count.
+  The example then shows an **InDesign** tab with that output and the measured difference
+  from Paged's render. Editing a package removes the tab until it is checked again.
+
+**Real documents set the priorities.** The generated
+[element reference](/docs/idml/reference) counts how often each element and attribute
+appears across 305 documents, so a page can tell a common construct from a rare one.
+
+## Reading a support badge
+
+A badge reports what Paged does with a construct, read live from Paged's feature
+registry, and links to that feature's row in the capability matrix:
+
+| Badge | Meaning |
+|---|---|
+| Supported · verified | Read and rendered, with passing tests |
+| Supported · untested | Read and rendered, without a test that proves it |
+| Parsed, partly rendered | Read, but only some of it affects the page |
+| Parsed, not rendered | Read and kept, with no effect on the page |
+| Planned | Not read yet |
+
+A badge describes Paged, not the format. The format facts on a page hold for any reader.
+
+## How it is organized
+
+Pages run from beginner to pro in the order a reader comes to understand the format, not
+in the order any other document lists things. Each page declares one tier and one job:
+
+- 🟢 **Beginner**: what is this thing?
+- 🟡 **Intermediate**: how do I work with it?
+- 🔴 **Pro**: how does it really work, and where are the edges?
 
 ## Start here
 
-- **[Foundations](/docs/idml/foundations)** — what IDML is and how to read one by hand.
-- **[Package anatomy](/docs/idml/package-anatomy)** — what is actually inside the ZIP.
-- **[Stories & text](/docs/idml/stories-text)** — where the words live.
+- **[Foundations](/docs/idml/foundations)**: what IDML is and how to read one by hand.
+- **[Package anatomy](/docs/idml/package-anatomy)**: what is inside the ZIP, and what
+  InDesign needs to open it.
+- **[Stories & text](/docs/idml/stories-text)**: where the words live, and the paragraph
+  model.
+- **[Geometry & coordinates](/docs/idml/geometry-coordinates)** and
+  **[Layout model](/docs/idml/layout-model)**: where things sit on a spread.
+- **[Element reference](/docs/idml/reference)**: every element, generated from real
+  documents.
 
 ## Frequently asked questions
 
 **What is this reference?**
-It is an independent, community-minded reference for the IDML file format and the
-open-source Paged renderer. Every page is written from first principles — from small
-files we author ourselves and from how our own parser behaves — rather than copied
-from any specification.
+An independent explanation of the IDML file format. Its rules come from files we build and
+from what InDesign does with them, and its examples are packages that both InDesign and an
+open renderer open.
 
 **Is this the official IDML specification?**
-No. This is an explanatory reference for humans, not the normative spec. Where a
-strictly normative answer matters, we say so and point you to the authoritative
-specification; element and attribute names themselves are simple facts and are used
-freely throughout.
+No. It is an explanatory reference written without copying the specification's wording or
+arrangement. Element and attribute names are facts of the format and are used as written.
+
+**How do I know an example is correct?**
+Every example passes a renderer check on each build, and examples with an InDesign tab were
+opened, saved and exported by InDesign itself. The tab shows InDesign's output next to the
+measured difference from Paged's render.
+
+**Do I need Paged to use this reference?**
+No. The format facts hold for any tool that reads or writes IDML. Paged appears only in
+the marked asides and the support badges.
 
 **Where should I start?**
-If you are new to the format, begin with [Foundations](/docs/idml/foundations) to learn
-what IDML is and read one by hand, then move to
-[Package anatomy](/docs/idml/package-anatomy) to see what is inside the ZIP. The
-reference runs beginner → intermediate → pro, and each page declares its tier so you
-can enter wherever your question lives.
+If you are new to the format, read [Foundations](/docs/idml/foundations) in order, then
+[Package anatomy](/docs/idml/package-anatomy). If you write IDML from code, read
+[What InDesign needs to open a file](/docs/idml/package-anatomy/what-indesign-requires)
+early.

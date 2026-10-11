@@ -5,6 +5,10 @@ tier: beginner
 diataxis: explanation
 status: published
 owner: paged-docs
+describes:
+  - foundations.container.open
+  - sections-numbering-variables.text-variables
+reviewed: 2026-10-11
 ---
 
 **IDML and the native binary carry the same document — they differ only in who they are for.**
@@ -50,21 +54,18 @@ for example, carries the text it resolved to at export time; recomputing it page
 by page is left to whatever opens the file. The form states "this is what it said
 then" and trusts the application to decide whether to refresh it.
 
-## What we read first
+## What a reader does first
 
-Our reader treats the archive as a container before it treats it as a document.
-The container open (`core/crates/paged-parse`) decompresses every entry, then
-checks one thing up front: the `mimetype` entry must read exactly
-`application/vnd.adobe.indesign-idml-package`. Anything else is rejected as
-not-IDML before a single page is parsed. Only then does it read `designmap.xml`,
-the manifest that names every other part.
+The lineage shows in the order a reader works. It treats the archive as a container
+before it treats it as a document: it checks that the `mimetype` entry names an IDML
+package, then reads `designmap.xml`, the manifest that names every other part. Only then
+does it follow the manifest to the shared resources, the master spreads, the spreads and
+the stories. Identify the package, read the manifest, follow it to the parts: the XML
+form exists so that a tool other than the original application can do exactly that.
 
-`Document::open` (`core/crates/paged-scene`) builds on that: it pulls the shared
-resources (graphics, styles), then the master spreads, the spreads, and the
-stories the manifest enumerates — each fetched by the path the design map gave it.
-The lineage shows here in the order of reading: identify the package, read the
-manifest, follow it to the parts. The XML exists precisely so a tool other than
-the original application can do exactly that.
+> **In Paged:** the reading order is described in
+> [how Paged reads IDML](/docs/paged/engine/how-paged-reads-idml).
+> <SupportBadge feature="foundations.container.open" />
 
 ## Frequently asked questions
 
@@ -83,5 +84,5 @@ and undo history stays in the binary.
 **Why are some values, like text variables, stored as fixed results instead of live instructions?**
 The interchange form records certain values as facts rather than as instructions to
 recompute. A text variable, for example, carries the text it resolved to at export
-time; whatever opens the file decides whether to refresh it. Our reader honors that
-by capturing the resolved result faithfully rather than recomputing it.
+time; whatever opens the file decides whether to refresh it. InDesign recomputes it when
+it composes the page; a reader that cannot compute it can still show the stored text.

@@ -5,6 +5,9 @@ tier: beginner
 diataxis: explanation
 status: published
 owner: paged-docs
+describes:
+  - foundations.container.open
+reviewed: 2026-10-11
 ---
 
 **Foundations is the on-ramp: what IDML is, where it came from, and how to open one yourself.**
@@ -21,21 +24,27 @@ start. Each page builds on the last, in the order a curious reader would actuall
 ask the questions. Read them top to bottom the first time through; come back to any
 one of them later as a standalone explainer.
 
-- **[What IDML is](/docs/idml/foundations/what-is-idml)** — the format in one sitting.
-- **[The binary-to-XML lineage](/docs/idml/foundations/binary-to-xml-lineage)** — why an
+- **[What paged media is](/docs/idml/foundations/what-is-paged-media)**: content composed
+  for bounded pages, and why that makes layout hard.
+- **[What IDML is](/docs/idml/foundations/what-is-idml)**: the format in one sitting.
+- **[The binary-to-XML lineage](/docs/idml/foundations/binary-to-xml-lineage)**: why an
   XML form exists alongside the native binary.
-- **[Why a package format](/docs/idml/foundations/why-a-package)** — why it is split into
+- **[Why a package format](/docs/idml/foundations/why-a-package)**: why it is split into
   many parts inside one archive.
-- **[Read one by hand](/docs/idml/foundations/read-one-by-hand)** — open a minimal
+- **[Read one by hand](/docs/idml/foundations/read-one-by-hand)**: open a minimal
   package and read it part by part.
-- **[How the renderer reads it](/docs/idml/foundations/how-the-renderer-reads-it)** — the
-  path from open to pixels, at altitude.
+
+A program that reads IDML has the same jobs whatever it is built with: open the archive
+and read the design map, resolve the references between parts, cascade the styles, thread
+each story through its frames, and compose the text into lines and pages. The rest of this
+reference describes what each of those jobs reads from the file. For one implementation
+of the whole path, see [how Paged reads IDML](/docs/paged/engine/how-paged-reads-idml).
 
 ## Frequently asked questions
 
 **Where should I start if I am new to IDML?**
-Start at the top of this section with **[What IDML is](/docs/idml/foundations/what-is-idml)**,
-then read the pages in order. They assume no prior knowledge and each one builds on
+Start at the top of this section with **[What paged media is](/docs/idml/foundations/what-is-paged-media)**
+and **[What IDML is](/docs/idml/foundations/what-is-idml)**, then read the pages in order. They assume no prior knowledge and each one builds on
 the page before it, so by the end you will understand what an IDML file holds and
 how to open one yourself.
 
@@ -43,6 +52,11 @@ how to open one yourself.
 No. The Foundations pages are written for readers with no background in page layout,
 XML, or Adobe® InDesign®. They explain the few concepts you need as they come up, in
 plain English.
+
+**Where is the page about how a renderer reads IDML?**
+It moved to the Paged documentation as
+[how Paged reads IDML](/docs/paged/engine/how-paged-reads-idml), because it describes one
+implementation rather than the format. The paragraph above lists the jobs any reader has.
 
 **What does this section cover, and what comes after it?**
 Foundations covers the *what* and *why* of IDML — what it is, where it came from,
