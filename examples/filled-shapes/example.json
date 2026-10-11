@@ -20,15 +20,15 @@
   "annotations": [
     {
       "lines": "5",
-      "note": "A Rectangle with FillColor=\"Color/Red\". No ParentStory, so the parser files it as a vector frame, not a text frame. ContentType=\"GraphicType\" declares it a graphics frame."
+      "note": "A Rectangle with FillColor=\"Color/Red\". With no story and no image it is a plain vector shape; its four corner anchors make the rectangle."
     },
     {
       "lines": "19",
-      "note": "An Oval with FillColor=\"Color/Blue\". The parser treats it as the ellipse inscribed in its path's bounding box."
+      "note": "An Oval with FillColor=\"Color/Blue\". An Oval is drawn from its path, like any other shape."
     },
     {
-      "lines": "25",
-      "note": "The four PathPointType anchors describe a 240x240 square; the inscribed ellipse is therefore a circle."
+      "lines": "24-27",
+      "note": "The path InDesign writes for an ellipse: four anchors at the edge midpoints (bottom, right, top, left), each with handles 0.5523 × the radius along its edge. Here the radius is 120, so this is a circle. Four corner anchors under an Oval would draw a square."
     }
   ],
   "expect": {
@@ -55,5 +55,10 @@
       "ssim": 0.975,
       "fontsMatched": true
     }
-  }
+  },
+  "elements": [
+    "Rectangle",
+    "Oval",
+    "PathPointType"
+  ]
 }

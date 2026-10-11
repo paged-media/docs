@@ -1,104 +1,82 @@
 ---
 title: GeometricBounds
-description: GeometricBounds is the axis-aligned bounding box of an IDML page item, given as four points in the surprising y-before-x order y1 x1 y2 x2 (top, left, bottom, right).
+description: GeometricBounds is an IDML element's axis-aligned bounding box in its own space, written in the y-before-x order y1 x1 y2 x2 (top, left, bottom, right).
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
+describes: [geometry-coordinates.geometric-bounds]
+reviewed: 2026-10-11
 ---
 
-**`GeometricBounds` is the axis-aligned bounding box of a page item, written in the y-before-x order `y1 x1 y2 x2`.**
+**`GeometricBounds` is an element's axis-aligned bounding box, written in the y-before-x order `y1 x1 y2 x2`.**
 
-**In short:** `GeometricBounds` is the axis-aligned bounding rectangle of a page
-item, given as four numbers in points. It is the quickest way to know how big a
-frame is and where its box sits, and it appears on both `Page` elements and page
-items. The catch is the axis order: the four numbers are `y1 x1 y2 x2` — that is
-**top, left, bottom, right**, with the *vertical* coordinate first, the opposite
-of the `(x, y)` ordering used almost everywhere else. From those four numbers the
-renderer derives width as `right − left` and height as `bottom − top`.
+**In short:** `GeometricBounds` is four numbers in points: **top, left, bottom, right**,
+with the vertical coordinate first. Width is `x2 − x1` and height is `y2 − y1`. Every
+`<Page>` carries it, and it is the page's only geometry. On page items it is optional and
+rare: InDesign's own exports describe a page item by its
+[`PathGeometry`](/docs/idml/geometry-coordinates/path-geometry), and a reader derives the
+box from the path. The bounds are in the element's own space; its
+[`ItemTransform`](/docs/idml/geometry-coordinates/item-transform) maps them into the parent.
 
 ## The axis order is y before x
 
-This is the one thing to memorize, because it is the opposite of the `(x, y)`
-ordering used almost everywhere else:
-
+```text
+GeometricBounds="y1 x1 y2 x2"      top  left  bottom  right
 ```
-GeometricBounds="y1 x1 y2 x2"
-```
-
-That is **top, left, bottom, right** — the *vertical* coordinate comes first.
-The parser reads the four numbers in exactly that order into a `Bounds` record:
 
 <AttrTable
   element="GeometricBounds (y1 x1 y2 x2)"
   rows={[
-    { attr: 'y1', type: 'number (pt)', support: 'supported', note: 'Top edge. Stored as Bounds.top.' },
-    { attr: 'x1', type: 'number (pt)', support: 'supported', note: 'Left edge. Stored as Bounds.left.' },
-    { attr: 'y2', type: 'number (pt)', support: 'supported', note: 'Bottom edge (larger Y, since Y grows downward). Stored as Bounds.bottom.' },
-    { attr: 'x2', type: 'number (pt)', support: 'supported', note: 'Right edge. Stored as Bounds.right.' },
+    { attr: 'y1', type: 'number (pt)', note: 'Top edge.' },
+    { attr: 'x1', type: 'number (pt)', note: 'Left edge.' },
+    { attr: 'y2', type: 'number (pt)', note: 'Bottom edge: the larger Y, because Y grows downward.' },
+    { attr: 'x2', type: 'number (pt)', note: 'Right edge.' },
   ]}
 />
 
-The parser requires exactly four numbers. A value with any other count is
-rejected, and the item falls back to deriving its bounds elsewhere (see below).
+A value with any count other than four numbers is not a box. A page declared
+`GeometricBounds="0 0 841.89 595.276"` is 595.276 pt wide and 841.89 pt tall: an A4
+page whose own space starts at its top-left corner. Page bounds do not have to start at
+`0 0`; what places the page is the bounds mapped through its `ItemTransform`.
 
-## What the renderer computes from it
+## Bounds and the outline
 
-Once parsed, the box yields the frame's dimensions directly:
+`GeometricBounds` is only a box. For an axis-aligned rectangle it matches the outline; for
+an ellipse, a triangle or a curve it is the box around the outline. Where it is absent, the
+box comes from the path: the smallest and largest x and y over the path's anchor points.
 
-- **width** = `right − left` = `x2 − x1`
-- **height** = `bottom − top` = `y2 − y1`
-
-Because Y grows downward, `y2` (bottom) is the *larger* number and `y1` (top) the
-smaller, so the height subtraction is positive. A page declared
-`GeometricBounds="0 0 841.89 595.276"` is therefore 595.276 pt wide and 841.89 pt
-tall — an A4 page with its top-left at the origin.
-
-## Bounds vs. the real outline
-
-`GeometricBounds` is only the *bounding box*. The actual shape of a page item
-lives in its [`PathGeometry`](/docs/idml/geometry-coordinates/path-geometry). For an
-axis-aligned rectangle the two agree; for a triangle, an ellipse, or a Bézier
-blob the bounding box is just the tightest box around the outline.
-
-Real-world InDesign exports often omit `GeometricBounds` on page items entirely
-and serialise only the path. When the attribute is absent, the parser derives the
-box from the path's anchor points: it scans every anchor and takes the minimum Y
-as the top, the maximum Y as the bottom, the minimum X as the left, and the
-maximum X as the right. Either way the frame ends up with the same `Bounds`
-record — one read from the attribute, the other reconstructed from the geometry.
+Most page items in real documents carry no `GeometricBounds` at all: InDesign writes the
+path and nothing else. A writer that emits both should keep them consistent.
 
 ## Where it appears
 
-<AttrTable
-  element="GeometricBounds carriers"
-  rows={[
-    { attr: 'Page', type: 'y1 x1 y2 x2', support: 'supported', note: 'The page rectangle, in the page’s own coordinates.' },
-    { attr: 'page items', type: 'y1 x1 y2 x2', support: 'supported', note: 'TextFrame / Rectangle / Oval / GraphicLine / Polygon. Optional when a PathGeometry is present.' },
-  ]}
-/>
+| Element | Use |
+|---|---|
+| `Page` | The page rectangle in the page's own space. Required: a page without it has no size. |
+| page items | Optional. Derived from the `PathGeometry` when absent. |
 
-The bounds are always in the element's own *inner* coordinate space — the same
-space the path anchors live in — and the item's
-[`ItemTransform`](/docs/idml/geometry-coordinates/item-transform) maps that space onto
-the page.
+The bounds are in the element's own inner space, the same space as its path anchors.
+The element's `ItemTransform` maps that space into the parent: the spread for a page or a
+top-level item, a group for a group member.
+
+> **In Paged:** a page without parseable `GeometricBounds` is skipped. On a page item that
+> carries both, the attribute wins over the path. <SupportBadge feature="geometry-coordinates.geometric-bounds" />
 
 ## Frequently asked questions
 
 **What is the axis order of GeometricBounds?**
-The four numbers are `y1 x1 y2 x2`, meaning **top, left, bottom, right** — the
-vertical coordinate comes first. This is the reverse of the `(x, y)` ordering
-used in most other IDML geometry, so it is the one thing worth memorizing.
+`y1 x1 y2 x2`: top, left, bottom, right. The vertical coordinate comes first, unlike path
+anchors, which are written `x y`.
 
-**How are a frame's width and height computed from GeometricBounds?**
-Width is `right − left` (`x2 − x1`) and height is `bottom − top` (`y2 − y1`).
-Because Y grows downward, `y2` (bottom) is the larger number, so the height
-subtraction comes out positive. The parser requires exactly four numbers; any
-other count is rejected.
+**How are width and height computed?**
+Width is `x2 − x1`, height is `y2 − y1`. Because Y grows downward, `y2` is the larger
+value.
 
-**What happens when a page item has no GeometricBounds?**
-Real InDesign exports often omit `GeometricBounds` on page items and serialise
-only the [`PathGeometry`](/docs/idml/geometry-coordinates/path-geometry). When the
-attribute is absent, the parser derives the box from the path's anchor points —
-taking the minimum and maximum X and Y — so the item ends up with the same
-`Bounds` record either way.
+**Why do my page items have no GeometricBounds?**
+Because InDesign does not write them on page items. It writes the outline as
+`PathGeometry`; the bounding box is the extent of the path's anchors.
+
+**Are GeometricBounds in page coordinates?**
+No. They are in the element's own space. Map them through the element's `ItemTransform`,
+and through any enclosing group's, to get spread coordinates.

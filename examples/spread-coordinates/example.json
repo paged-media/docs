@@ -1,0 +1,59 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "spread-coordinates",
+  "title": "Spread coordinates on a two-page spread",
+  "tier": "intermediate",
+  "chapter": "geometry-coordinates",
+  "concept": "Page items are placed in spread coordinates: the spine is x = 0 and, as InDesign writes its own files, the pages' vertical centre is y = 0. Each Page is placed in that space by its own ItemTransform.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Spreads/Spread_uspread.xml",
+    "language": "xml",
+    "label": "Spreads/Spread_uspread.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree",
+    "live"
+  ],
+  "annotations": [
+    {
+      "lines": "3",
+      "note": "PageCount and BindingLocation describe the spread: two pages, with the spine after the first. The spread's own ItemTransform places it on the pasteboard."
+    },
+    {
+      "lines": "4",
+      "note": "The left page. Its bounds are 0 0 841.89 595.276 in its own space; its ItemTransform moves that rectangle to x = -595.276 … 0 and y = -420.945 … 420.945, so its right edge is the spine."
+    },
+    {
+      "lines": "5",
+      "note": "The right page starts at the spine (x = 0) and is shifted up by half its height, like the left page."
+    },
+    {
+      "lines": "6",
+      "note": "A frame on the left page. Its ItemTransform is in spread coordinates, so x is negative and y is measured from the vertical centre: -275.12 is 145.82 pt below the page's top edge."
+    },
+    {
+      "lines": "20",
+      "note": "The frame on the right page: x = 57.638 from the spine, the same y as its partner."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 2,
+    "stories": 2,
+    "frames": 4,
+    "paragraphs": 2,
+    "runs": 2
+  },
+  "pathological": false,
+  "license": "MIT",
+  "elements": [
+    "Spread",
+    "Page",
+    "TextFrame",
+    "MasterSpread"
+  ]
+}

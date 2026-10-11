@@ -1,88 +1,121 @@
 ---
 title: Units & origin
-description: IDML geometry is measured in points (1/72 inch) from an origin at the page's top-left, with Y growing downward instead of upward.
+description: IDML measures in points with Y growing downward. Page items use spread coordinates, with the spine at x = 0 and each page placed by its own ItemTransform.
 tier: beginner
 diataxis: explanation
 status: published
 owner: paged-docs
+describes: [layout-model.spreads-pages, geometry-coordinates.item-transform]
+reviewed: 2026-10-11
 ---
 
-**Every IDML coordinate is a point, measured from the page's top-left, with Y growing downward.**
+**IDML coordinates are points, Y grows downward, and page items are placed in their spread's space, whose origin is on the spine.**
 
-**In short:** Every coordinate in an IDML page item — its bounds, its transform,
-the anchor points of its outline — is a plain number with two implicit
-conventions behind it: a *unit* and an *origin*. The unit is always the **point**
-(1/72 of an inch), so a value like `595.276` is simply 210 mm expressed in
-points. The origin is the page's **top-left corner**, and unlike the math-class
-plane, **Y grows downward** — moving down the page gives a larger Y. Get those
-two conventions right and the numbers stop being mysterious.
+**In short:** Every coordinate in a layout part is a plain number in points (1/72 inch).
+X grows to the right and Y grows downward. The origin that page items are measured from
+is not a page corner: items belong to a spread, and spread coordinates put x = 0 on the
+spine, the fold between the left and right page. InDesign's own files also put y = 0 at
+the pages' vertical centre. Each `<Page>` is placed in spread space by its own
+`ItemTransform`, so the left page of a facing spread lies at negative x.
 
 ## The unit is the point
 
-There is one measurement unit in IDML geometry: the **point**, defined as 1/72
-of an inch. The parser never asks what unit a coordinate is in; it parses every
-geometry attribute as a plain number and treats it as points throughout. When
-you see a page bound like `841.89`, that is points — an A4 page is 841.89 pt
-tall (297 mm × 72 / 25.4).
+Bounds, transforms and path anchors carry no unit. They are all points: 72 to the inch.
+That is why metric documents are full of non-round numbers: an A4 page is
+`595.276 × 841.89` (210 × 297 mm), US Letter is `612 × 792`.
 
-This is why a value such as `595.276` shows up so often: it is 210 mm, the A4
-width, expressed in points. Nothing in the file says "points"; it is simply the
-unit the whole format is built on.
+## Y grows downward
 
-## The origin is the top-left, and Y grows downward
-
-The point `(0, 0)` of a page is its **top-left corner**. From there:
-
-- **X grows to the right** — the familiar direction.
-- **Y grows downward** — the *un*familiar one. Moving down the page means a
-  *larger* Y, the opposite of the math-class plane where up is positive.
+X grows to the right, as usual. Y grows **downward**: a larger Y is further down the page.
+A box from `y = 100` to `y = 300` is 200 pt tall, with its bottom edge at the larger value.
+This holds in every space of the format: item space, page space and spread space.
 
 <CoordinateSpace />
 
-This downward-Y convention is the single most common source of confusion when
-reading IDML by hand. A frame whose top edge is at `Y = 100` and whose bottom
-edge is at `Y = 300` is 200 pt tall, with the bottom edge *below* the top — even
-though 300 is the bigger number. Everything else in the format follows from
-holding that picture steady.
+## Page items use spread coordinates
 
-## How the parser reads it
+A spread part holds one `<Spread>` element. Its children are the `<Page>` elements *and*
+the page items: text frames, rectangles, groups and the rest are siblings of the pages,
+not children of them. Their transforms map into the spread's space.
 
-The parser confirms this directly in how it derives a frame's size. A
-[`Bounds`](/docs/idml/geometry-coordinates/geometric-bounds) record stores `top`,
-`left`, `bottom`, and `right`, and computes:
+In that space:
 
-- width as `right − left`
-- height as `bottom − top`
+- **x = 0 is the spine.** On a facing spread the left page runs from `-width` to `0` and
+  the right page from `0` to `width`. A single-page spread puts its page to the right of
+  the spine, from `0` to `width`.
+- **y = 0 is the vertical centre** of the pages in the files InDesign writes: a page of
+  height `H` runs from `-H/2` to `H/2`.
+- **Each page is placed by its `ItemTransform`.** InDesign writes the left page of an A4
+  spread with `ItemTransform="1 0 0 1 -595.276 -420.945"` and the right page with
+  `1 0 0 1 0 -420.945`; both have `GeometricBounds="0 0 841.89 595.276"` in their own
+  space.
 
-For those subtractions to give positive sizes, `bottom` must be the larger Y and
-`right` the larger X — exactly the top-left-origin, Y-downward space. The same
-holds for the path anchors: when a shape has no explicit bounds, the parser scans
-its anchor points and takes the smallest Y as the top and the largest Y as the
-bottom. Up is the small number; down is the big one.
+The vertical centring is a convention, not a rule a reader may rely on. What a reader can
+rely on is the arithmetic: a page's rectangle in spread space is its `GeometricBounds`
+mapped through its `ItemTransform`. Some files put the page tops at `y = 0`, and some
+InDesign exports carry page bounds that do not start at `0 0` (a page whose bounds start
+at `24.94` and whose transform subtracts `420.94` still spans `-396 … 396`). Both are
+placed correctly by doing the mapping.
 
-## Inner space vs. page space
+<ExampleEmbed example="spread-coordinates">
+  A two-page A4 spread written the way InDesign writes it: the spine at x = 0, the pages
+  centred on y = 0, and each frame's ItemTransform in spread coordinates.
+</ExampleEmbed>
 
-One more subtlety, picked up in detail on the next pages: each page item is
-authored in its *own* coordinate space, usually starting at its own `(0, 0)`,
-and then an [`ItemTransform`](/docs/idml/geometry-coordinates/item-transform) places
-that whole little space onto the page. So a shape's anchor points are not page
-coordinates — they are the shape's *inner* coordinates, waiting to be moved into
-place. The unit (points) and the orientation (Y down) are the same in both
-spaces; only the origin shifts.
+The same spread written with the page tops at `y = 0` is the
+[two-page-spread](/docs/idml/layout-model/spreads-and-pages) example; it opens identically.
+
+## Which page an item is on
+
+Nothing in an item names its page. A reader works it out from geometry: map the item's
+bounds into spread space and find the page that contains it. Items that lie outside every
+page sit on the **pasteboard**, the area around the pages; InDesign keeps them in the file
+and does not print them.
+
+> **In Paged:** an item belongs to the page that contains the centre of its bounds, and
+> it is drawn on every page its bounds overlap, so an item across the spine shows on both
+> pages.
+> <SupportBadge feature="layout-model.spreads-pages" />
+
+## Spreads on the pasteboard
+
+The `<Spread>` element has an `ItemTransform` too. InDesign uses it to stack the spreads
+of a document down its pasteboard: the first spread at `0 0`, the next one a page height
+plus a gap further down (`1 0 0 1 0 1039.89` for A4), and so on. Because the pages and the
+items of a spread are both inside that transform, the translation does not change where an
+item sits on its page. A rotation in it does: it turns the whole spread, as InDesign's
+*rotate spread view* does.
+
+## Item space
+
+One level further in, each item draws its outline in its own space, usually from
+`0, 0`. The item's `ItemTransform` maps that space into the spread (or into a group, or
+into the frame the item was pasted into). The unit and the direction of Y are the same
+in every space; only the origin and orientation change.
+[`ItemTransform`](/docs/idml/geometry-coordinates/item-transform) covers the matrix.
+
+InDesign writes an `ItemTransform` on every spread, page and page item, including the
+identity `1 0 0 1 0 0`. A writer should do the same: InDesign does not read a missing
+`ItemTransform` as the identity, and items written without one land in the wrong place.
 
 ## Frequently asked questions
 
 **What unit does IDML use for coordinates?**
-IDML geometry uses the **point**, defined as 1/72 of an inch, as its only unit.
-Nothing in the file labels a value as points — the parser reads every geometry
-attribute as a plain number and treats it as points throughout.
+The point, 1/72 of an inch, everywhere. Nothing in the file labels a value as points.
 
-**Where is the origin in an IDML page?**
-The origin `(0, 0)` is the page's **top-left corner**. X grows to the right as
-usual, but Y grows *downward*, so a point further down the page has a larger Y
-value — the opposite of the math-class convention where up is positive.
+**Where is the origin for page items?**
+On the spine of the spread: page items are children of the `<Spread>` and use its
+coordinates. In InDesign's own files the origin is also at the vertical centre of the
+pages. The page's top-left corner is the origin only of the page's own inner space.
 
-**Why is a value like 595.276 so common in IDML files?**
-`595.276` is 210 mm — the width of A4 — expressed in points (210 × 72 / 25.4).
-Likewise `841.89` is the A4 height of 297 mm in points. Metric page sizes show up
-as these non-round numbers because the format's underlying unit is the point.
+**Why does a frame on the left page have a negative x?**
+Because the left page of a facing spread lies left of the spine, at negative x in spread
+coordinates, and the frame's `ItemTransform` is written in those coordinates.
+
+**How do I convert an item's position to page coordinates?**
+Map the item's bounds through its transforms into spread space, then subtract the page's
+placement: map the page's `GeometricBounds` through the page's `ItemTransform` and measure
+from that rectangle's top-left corner.
+
+**Why is 595.276 such a common number?**
+It is 210 mm, the A4 width, in points (210 × 72 / 25.4). 841.89 is the A4 height.

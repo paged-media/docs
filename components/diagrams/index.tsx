@@ -84,22 +84,27 @@ export function PackageGraph() {
   );
 }
 
-/** Page coordinate space: origin top-left, Y down, a frame placed by ItemTransform. */
+/** Spread coordinate space: spine at x = 0, Y down, pages placed by their ItemTransform, a frame placed in spread space. */
 export function CoordinateSpace() {
   return (
-    <Figure caption="IDML units are points; the origin is the page's top-left and Y grows downward. ItemTransform places a frame." viewBox="0 0 460 320">
+    <Figure caption="Spread coordinates: points, Y growing downward, the spine at x = 0. In InDesign's own files the pages' vertical centre is y = 0. Each page is placed by its own ItemTransform; a frame's ItemTransform is in the same spread space, so a frame on the left page has negative x." viewBox="0 0 520 330">
       <defs>{arrow('cs')}</defs>
-      <rect className="dbox dfill" x="40" y="40" width="300" height="240" />
-      <text className="dsub" x="44" y="34">origin (0, 0)</text>
-      <circle cx="40" cy="40" r="3" fill="var(--color-ink)" />
-      <line className="dbox" markerEnd="url(#cs)" x1="40" y1="40" x2="150" y2="40" />
-      <text className="dlabel" x="156" y="44">X →</text>
-      <line className="dbox" markerEnd="url(#cs)" x1="40" y1="40" x2="40" y2="150" />
-      <text className="dlabel" x="46" y="150">Y ↓</text>
-      <line className="dmut" markerEnd="url(#cs)" strokeDasharray="3 3" x1="40" y1="40" x2="160" y2="120" />
-      <text className="dsub" x="92" y="96">tx, ty</text>
-      <rect className="dacc daccfill" x="160" y="120" width="140" height="100" />
-      <text className="dacclabel" x="230" y="174" textAnchor="middle">TextFrame</text>
+      <rect className="dbox dfill" x="60" y="40" width="200" height="250" />
+      <rect className="dbox dfill" x="260" y="40" width="200" height="250" />
+      <text className="dsub" x="160" y="306" textAnchor="middle">left page: x &lt; 0</text>
+      <text className="dsub" x="360" y="306" textAnchor="middle">right page: x &gt; 0</text>
+      <line className="dmut" strokeDasharray="4 3" x1="260" y1="20" x2="260" y2="318" />
+      <text className="dsub" x="266" y="28">spine x = 0</text>
+      <circle cx="260" cy="165" r="3" fill="var(--color-ink)" />
+      <text className="dsub" x="200" y="160" textAnchor="end">(0, 0)</text>
+      <line className="dbox" markerEnd="url(#cs)" x1="260" y1="165" x2="340" y2="165" />
+      <text className="dlabel" x="346" y="169">X →</text>
+      <line className="dbox" markerEnd="url(#cs)" x1="260" y1="165" x2="260" y2="240" />
+      <text className="dlabel" x="266" y="244">Y ↓</text>
+      <rect className="dacc daccfill" x="90" y="80" width="140" height="70" />
+      <text className="dacclabel" x="160" y="120" textAnchor="middle">TextFrame</text>
+      <line className="dmut" markerEnd="url(#cs)" strokeDasharray="3 3" x1="258" y1="163" x2="94" y2="83" />
+      <text className="dsub" x="150" y="68" textAnchor="middle">tx &lt; 0, ty &lt; 0</text>
     </Figure>
   );
 }

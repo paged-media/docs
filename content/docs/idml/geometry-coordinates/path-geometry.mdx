@@ -1,143 +1,118 @@
 ---
 title: PathGeometry
-description: PathGeometry is the anchor-point outline of an IDML page item — nested GeometryPathType, PathPointArray, and PathPointType elements with Bézier handles, plus the PathOpen flag.
+description: PathGeometry is an IDML page item's outline — GeometryPathType contours of PathPointType anchors with Bézier handles, plus PathOpen, and how an Oval is spelled.
 tier: pro
 diataxis: reference
 status: published
 owner: paged-docs
+describes: [geometry-coordinates.bezier-path-geometry, frames-paths.corner-options]
+reviewed: 2026-10-11
 ---
 
-**`PathGeometry` is how IDML records a page item's actual outline — anchor by anchor, with Bézier handles.**
+**`PathGeometry` records a page item's outline anchor by anchor, with Bézier handles, and it is the shape the item is drawn from.**
 
-**In short:** `PathGeometry` is how IDML records the *actual outline* of a page
-item. While [`GeometricBounds`](/docs/idml/geometry-coordinates/geometric-bounds)
-gives only the bounding box, `PathGeometry` carries the real shape — anchor by
-anchor, with Bézier control points — and real InDesign exports serialise it for
-every shape, including plain rectangles. It nests four elements deep:
-`PathGeometry` holds one or more `GeometryPathType` contours, each contour holds
-a `PathPointArray`, and each array holds `PathPointType` points with an on-curve
-anchor and two Bézier handles. A per-contour `PathOpen` flag decides whether each
-loop is sealed. It lives inside the item's `<Properties>` element.
+**In short:** Every page item's outline lives in a `PathGeometry` inside its `<Properties>`
+child. It holds one or more `GeometryPathType` contours; each contour holds a
+`PathPointArray` of `PathPointType` points; each point has an on-curve `Anchor` and two
+Bézier handles. `PathOpen` on a contour says whether it closes. InDesign draws every shape
+from this path, a rectangle and an `<Oval>` included: an oval is an ellipse only because
+its path is one.
 
-## The element nesting
+## The nesting
 
-The outline is four elements deep, each with a single job:
-
-```xml
-<PathGeometry>
-  <GeometryPathType PathOpen="false">
-    <PathPointArray>
-      <PathPointType Anchor="0 0" LeftDirection="0 0" RightDirection="0 0"/>
-      <PathPointType Anchor="0 120" LeftDirection="0 120" RightDirection="0 120"/>
-      ...
-    </PathPointArray>
-  </GeometryPathType>
-</PathGeometry>
+```text
+Rectangle / Oval / Polygon / GraphicLine / TextFrame
+└── Properties
+    └── PathGeometry
+        └── GeometryPathType   PathOpen="false"     one contour
+            └── PathPointArray
+                ├── PathPointType  Anchor  LeftDirection  RightDirection
+                └── …
 ```
 
-- **`PathGeometry`** — the container; holds one or more contours.
-- **`GeometryPathType`** — one contour (one closed or open loop). More than one
-  of these makes a [compound path](/docs/idml/geometry-coordinates/compound-paths).
-- **`PathPointArray`** — the ordered list of points for that contour.
-- **`PathPointType`** — one point on the outline, with its on-curve anchor and
-  two Bézier handles.
+More than one `GeometryPathType` makes a [compound path](/docs/idml/geometry-coordinates/compound-paths).
+All coordinates are in the item's own space, which its
+[`ItemTransform`](/docs/idml/geometry-coordinates/item-transform) maps into the parent.
 
-## PathPointType: anchor and handles
+## `PathPointType`: an anchor and two handles
 
-Each point carries three coordinate pairs, every one written `x y` (note: this is
-plain `x y` order, *unlike* `GeometricBounds`):
+Each point carries three `x y` pairs (x first, unlike
+[`GeometricBounds`](/docs/idml/geometry-coordinates/geometric-bounds)):
 
-<AttrTable
-  element="PathPointType"
-  rows={[
-    { attr: 'Anchor', type: '"x y" (pt)', support: 'supported', note: 'The on-curve point the outline passes through.' },
-    { attr: 'LeftDirection', type: '"x y" (pt)', support: 'supported', note: 'Incoming Bézier control handle. Equal to Anchor for a corner (no curve in).' },
-    { attr: 'RightDirection', type: '"x y" (pt)', support: 'supported', note: 'Outgoing Bézier control handle. Equal to Anchor for a corner (no curve out).' },
-  ]}
-/>
+- `Anchor`: the point the outline passes through;
+- `LeftDirection`: the handle controlling the curve that arrives at the anchor;
+- `RightDirection`: the handle controlling the curve that leaves it.
 
-The parser reads `Anchor` first; if it is missing the point is dropped. When
-`LeftDirection` or `RightDirection` is absent, that handle defaults to the anchor
-itself — i.e. a straight corner. A rectangle's four points therefore set all
-three pairs equal per point, which the renderer reads as four straight corners.
+A handle equal to its anchor means no curve on that side. A rectangle's four points set all
+three pairs equal, so every segment is straight. InDesign walks a rectangle top-left,
+bottom-left, bottom-right, top-right.
 
-All three pairs are in the item's **inner** coordinate space, the same space its
-bounds use, placed onto the page by the item's
-[`ItemTransform`](/docs/idml/geometry-coordinates/item-transform).
+<AttrTable element="PathPointType" />
 
-## GeometryPathType: one contour, open or closed
+## `GeometryPathType`: one contour
 
-A single `GeometryPathType` is one contour. Its one attribute decides whether the
-loop is sealed:
+`PathOpen="false"` closes the contour with a segment from the last point back to the
+first. `PathOpen="true"` leaves it open: the shape is a stroke that starts and ends at its
+end anchors. A `GraphicLine` is a two-point open contour, which may be curved; its ends
+are its first and last anchors, in the order they are written.
 
-<AttrTable
-  element="GeometryPathType"
-  rows={[
-    { attr: 'PathOpen', type: 'boolean ("true" | "false")', support: 'supported', note: 'true → the contour is left open (no closing segment back to the first anchor). false (default) → closed. Unparseable / missing is treated as false.' },
-  ]}
-/>
-
-When `PathOpen` is `false` (or absent), the renderer closes the contour by
-joining the last anchor back to the first. When it is `true`, that closing
-segment is omitted — the path is a stroke that starts and ends where its anchors
-do. The parser lifts this flag onto a per-contour `subpath_open` record so the
-renderer knows, contour by contour, whether to auto-close.
-
-## An open path
-
-The shape below is a three-anchor contour with `PathOpen="true"` — a chevron.
-Because the path is open, the renderer draws only the two segments between the
-three anchors and does *not* add a third segment closing the "V" into a triangle.
+<AttrTable element="GeometryPathType" />
 
 <ExampleEmbed example="open-path">
-  A three-anchor open contour: PathOpen="true" leaves the loop unclosed.
+  A three-anchor contour with PathOpen="true": two segments and no closing one.
 </ExampleEmbed>
 
-Flip `PathOpen` to `false` and the contour seals — the chevron would close into a
-triangle. That single boolean is the whole difference between a line and a region.
+Set `PathOpen` to `false` and the chevron closes into a triangle.
 
-## Corner options render per variant
+## How an `<Oval>` is spelled
 
-IDML can ask for decorative corner treatments on a rectangle via `CornerOption`
-(and the per-corner `TopLeftCornerOption` and siblings). The parser recognises
-the full set of names, and the renderer now emits bespoke geometry for each one
-— per corner, honouring the per-corner radius and the frame's join/miter/cap:
+An `<Oval>` is drawn from its path like any other shape. InDesign writes an ellipse as
+four anchors at the midpoints of its bounding box's edges, in the order bottom, right, top,
+left, each with handles along its edge at κ·r from the anchor, where κ = 0.5523 and r is the
+half-width (for the horizontal handles) or half-height (for the vertical ones). An `<Oval>`
+whose path is four corner points is drawn by InDesign as a rectangle.
 
-<AttrTable
-  element="CornerOption values"
-  rows={[
-    { attr: 'None', type: 'enum', support: 'supported', note: 'Square corner. The default.' },
-    { attr: 'Rounded', type: 'enum', support: 'supported', note: 'Rounded corner — rendered as drawn.' },
-    { attr: 'Inverse / Bevel', type: 'enum', support: 'supported', note: 'Concave quarter-circle (Inverse) and straight chamfer (Bevel), generated per corner.' },
-    { attr: 'Inset / Fancy', type: 'enum', support: 'supported', note: 'Inset is a fold-in notch; Fancy is a three-arc scallop. Both emit real geometry (calibrated).' },
-  ]}
-/>
+<ExampleEmbed example="filled-shapes">
+  A Rectangle with four corner anchors, and an Oval with InDesign's four mid-edge anchors
+  and κ·r handles: a 240 pt circle.
+</ExampleEmbed>
 
-<SupportBadge status="supported" note="all five corner options emit per-corner geometry (Fancy = 3-arc scallop, Inset = fold-in notch); per-corner radii + join/miter/cap honoured" />
+## Corner options
 
-A second, related gap: decorative *path* and *stroke* treatments beyond the plain
-outline are not generated either — the path you get is the anchor outline as
-written, closed or open per `PathOpen`.
+A rectangle's corners can be shaped without changing its path: `CornerOption` with
+`CornerRadius` applies to all four corners, and `TopLeftCornerOption`,
+`TopLeftCornerRadius` and their siblings override single corners. The values InDesign
+writes are `None`, `RoundedCorner`, `InverseRoundedCorner`, `InsetCorner`, `BevelCorner`
+and `FancyCorner`. The path keeps the square corners; the treatment is applied on top.
+
+> **In Paged:** all five treatments draw their own corner geometry, with per-corner radii.
+> <SupportBadge feature="frames-paths.corner-options" /> On polygons the support is partial.
+> <SupportBadge feature="frames-paths.corner-options-polygon" />
+
+## What else rides on a path
+
+- **Strokes** follow the path: `StrokeWeight`, `StrokeType` (solid, dashed, dotted, striped,
+  wavy and custom stroke styles), `StrokeAlignment`, `EndCap`, `EndJoin`, and line ends on
+  open paths. See [page-item types](/docs/idml/frames-paths/page-item-types).
+- **Text on a path**: a `<TextPath>` child flows a story along the item's outline.
+  <SupportBadge feature="frames-paths.text-on-path" />
 
 ## Frequently asked questions
 
-**How are PathGeometry elements nested?**
-The outline is four elements deep: `PathGeometry` holds one or more
-`GeometryPathType` contours, each `GeometryPathType` holds a `PathPointArray`,
-and each `PathPointArray` holds `PathPointType` points. Every `PathPointType`
-carries an `Anchor` and two Bézier handles, `LeftDirection` and `RightDirection`.
+**How are the path elements nested?**
+`PathGeometry` holds `GeometryPathType` contours; each holds a `PathPointArray` of
+`PathPointType` points; each point has an `Anchor`, a `LeftDirection` and a
+`RightDirection`. The whole block sits inside the item's `<Properties>`.
 
-**What coordinate order do PathPointType anchors use?**
-Each of `Anchor`, `LeftDirection`, and `RightDirection` is written `x y` — plain
-horizontal-then-vertical order, *unlike*
-[`GeometricBounds`](/docs/idml/geometry-coordinates/geometric-bounds), which puts Y
-first. The parser reads `Anchor` first and drops the point if it is missing; an
-absent handle defaults to the anchor itself, which the renderer reads as a
-straight corner.
+**What coordinate order do path points use?**
+`x y`, horizontal first, in the item's own space. `GeometricBounds` is the one geometry
+value that puts y first.
 
-**What does the PathOpen attribute do?**
-`PathOpen` is a per-contour boolean on `GeometryPathType`. When it is `false` (or
-absent, the default) the renderer closes the contour by joining the last anchor
-back to the first; when it is `true` the closing segment is omitted and the
-contour stays an open stroke. The parser lifts the flag onto a per-contour
-`subpath_open` record so each contour can be closed on its own terms.
+**How do I write an ellipse?**
+As an `<Oval>` with four anchors at the edge midpoints (bottom, right, top, left), each
+with handles 0.5523 × the radius along its edge. Four corner anchors make InDesign draw a
+rectangle, whatever the element is called.
+
+**What does PathOpen do?**
+It decides per contour whether the last point joins back to the first. `false` (the
+default) closes the contour; `true` leaves it open.

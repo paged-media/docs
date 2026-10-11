@@ -1,120 +1,114 @@
 ---
 title: ItemTransform
-description: ItemTransform is the six-number affine matrix (a b c d tx ty) that maps a page item's inner coordinate space onto the page, encoding translation, scale, rotation, and shear.
+description: ItemTransform is the six-number affine matrix (a b c d tx ty) that maps an IDML element's inner space into its parent's space; InDesign writes it everywhere.
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
+describes: [geometry-coordinates.item-transform, layout-model.spread-item-transform, geometry-coordinates.image-content-transform]
+reviewed: 2026-10-11
 ---
 
-**`ItemTransform` is the six-number affine matrix that maps a page item's inner space onto the page.**
+**`ItemTransform` is the six-number affine matrix that maps an element's inner space into its parent's space.**
 
-**In short:** `ItemTransform` is the attribute that answers "where does this
-shape actually go?" A page item is authored in its own inner coordinate space —
-usually with its outline starting at `(0, 0)` — and `ItemTransform` maps that
-whole space into its parent's space: the page, an enclosing `Group`, or the
-spread. The value is six whitespace-separated numbers, `a b c d tx ty`, the free
-entries of a 2D affine matrix that together encode translation, scale, rotation,
-and shear. The identity transform, which places a shape with no change, is
-`1 0 0 1 0 0`.
+**In short:** An item draws its outline in its own space, usually starting at `0, 0`.
+`ItemTransform` maps that space into the item's parent: the spread, an enclosing `Group`,
+or the frame the item was pasted into. The value is six numbers, `a b c d tx ty`, the free
+entries of a 2D affine matrix: translation, scale, rotation and shear. `1 0 0 1 0 0` is the
+identity. InDesign writes an `ItemTransform` on every spread, page and page item, identity
+included, and does not treat a missing one as the identity.
 
-## The six-tuple
+## The six numbers
 
-The value is six whitespace-separated numbers:
+The value is six numbers separated by spaces. Applied to a point `(x, y)` of the inner
+space, it gives the point in the parent space:
 
-```
-ItemTransform="a b c d tx ty"
-```
-
-These are the six free entries of a 2D affine transformation matrix. The parser
-reads exactly six numbers; anything else is rejected and the transform is treated
-as absent (identity). Applied to an inner point `(x, y)`, the result is:
-
-```
+```text
 x' = a·x + c·y + tx
 y' = b·x + d·y + ty
 ```
 
-So `a` and `d` scale, `b` and `c` shear/rotate, and `tx` / `ty` translate. The
-identity transform — the one that places a shape with no change — is
-`1 0 0 1 0 0`: leave X and Y alone, move by nothing.
+| Entry | Role |
+|---|---|
+| `a`, `d` | horizontal and vertical scale (and part of any rotation) |
+| `b`, `c` | shear; together with `a` and `d` they express rotation |
+| `tx`, `ty` | translation in points; a positive `ty` moves down, because Y grows downward |
 
-<AttrTable
-  element="ItemTransform (a b c d tx ty)"
-  rows={[
-    { attr: 'a', type: 'number', support: 'supported', note: 'X scale factor (and part of any rotation/shear). 1 for no horizontal scaling.' },
-    { attr: 'b', type: 'number', support: 'supported', note: 'Vertical shear of the X axis (part of rotation). 0 when upright.' },
-    { attr: 'c', type: 'number', support: 'supported', note: 'Horizontal shear of the Y axis (part of rotation). 0 when upright.' },
-    { attr: 'd', type: 'number', support: 'supported', note: 'Y scale factor (and part of any rotation/shear). 1 for no vertical scaling.' },
-    { attr: 'tx', type: 'number (pt)', support: 'supported', note: 'Horizontal translation, in points.' },
-    { attr: 'ty', type: 'number (pt)', support: 'supported', note: 'Vertical translation, in points. Positive moves down (Y grows downward).' },
-  ]}
-/>
+A rotation by θ is `cos θ  sin θ  -sin θ  cos θ  tx ty`. A horizontal flip is a negative `a`.
 
 ## Where it appears
 
-`ItemTransform` is read off every page item the parser handles — `TextFrame`,
-`Rectangle`, `Oval`, `GraphicLine`, `Polygon` — and also off the structural
-elements above them:
+| Element | Maps | Notes |
+|---|---|---|
+| `Spread`, `MasterSpread` | the spread onto the pasteboard | InDesign uses the translation to stack spreads down the pasteboard; it cancels out per page. A rotation turns the whole spread. |
+| `Page` | the page's `GeometricBounds` into spread space | puts the left page of a facing spread at negative x; see [units & origin](/docs/idml/geometry-coordinates/units-and-origin) |
+| page items: `TextFrame`, `Rectangle`, `Oval`, `GraphicLine`, `Polygon`, `Group` | the item into its parent | the parent is the spread, a `Group`, or a host frame |
+| `Image`, `EPS`, `PDF` inside a frame | the placed content into the frame | how an image is scaled, moved and cropped inside its frame |
+| `Page` · `MasterPageTransform` | the applied master page onto this page | same six numbers; see [master items and stamping](/docs/idml/master-spreads-overrides/master-items-and-stamping) |
 
-<AttrTable
-  element="ItemTransform carriers"
-  rows={[
-    { attr: 'Spread / MasterSpread', type: 'a b c d tx ty', support: 'parsed-not-rendered', note: 'Maps the spread into the pasteboard. Per-page rendering does not need it (each page already lives in spread space); it is parsed for whole-document fidelity.' },
-    { attr: 'Page', type: 'a b c d tx ty', support: 'supported', note: 'Maps the page’s inner space into the spread. Identity for single-page-size layouts.' },
-    { attr: 'Page · MasterPageTransform', type: 'a b c d tx ty', support: 'supported', note: 'Positions master-page items on this specific page (the Master Page Overlay).' },
-    { attr: 'Group', type: 'a b c d tx ty', support: 'supported', note: 'The group transform is composed into each member’s effective transform; the un-composed value is also retained.' },
-    { attr: 'page items', type: 'a b c d tx ty', support: 'supported', note: 'TextFrame / Rectangle / Oval / GraphicLine / Polygon.' },
-  ]}
-/>
+A page item is never a child of a `<Page>`, so a page is never an item's parent space.
 
 ## Transforms compose
 
-When a shape sits inside one or more `Group` elements, its placement is the
-*composition* of the group transforms with its own. The parser walks the stack of
-enclosing group transforms outermost-first and composes each one, then composes
-the item's own `ItemTransform` last, so the value stored on the item is already
-the full inner-to-page mapping. A bare top-level item — no groups — just keeps its
-own transform unchanged.
+A parent's transform applies on top of its children's. A rectangle inside a group inside
+a spread reaches spread space as `group ∘ rectangle`: first the rectangle's own matrix,
+then the group's. Nesting composes at every level, so a member two groups deep is
+`outer ∘ inner ∘ member`.
 
-Composition follows the usual rule: applying `A ∘ B` to a point means apply `B`
-first, then `A`. So the item's own transform acts before the group's, which is
-what you want — the shape is positioned within the group, then the group is
-positioned on the page.
+The same holds for content pasted into a frame (*Paste Into* in InDesign). The pasted item
+is written as a child element of the host `Rectangle`, `Oval` or `Polygon`, its
+`ItemTransform` is relative to the host, and the host's path clips it. A placed image is
+the common case: the frame's transform places the frame, the `<Image>` transform places
+the picture inside it.
+
+<ExampleEmbed example="a-group">
+  Two rectangles in a group. Each member's ItemTransform is relative to the group; the
+  group's ItemTransform moves both.
+</ExampleEmbed>
 
 ## A shape at the origin, placed by its transform
 
-The cleanest way to see `ItemTransform` at work is a shape whose outline is
-authored at `(0, 0)` and moved entirely by its translation. The rectangle below
-has a `300 × 120` outline starting at the origin and an `ItemTransform` of
-`1 0 0 1 150 200` — no scale, no rotation, just slide it 150 pt right and 200 pt
-down.
+The rectangle below draws a `300 × 120` outline from `0, 0` and is placed with
+`ItemTransform="1 0 0 1 150 200"`: no scale, no rotation, moved 150 pt right and 200 pt
+down. Change `tx` and `ty` and it moves; change `a` or `d` and it scales. The anchors stay
+the same.
 
 <ExampleEmbed example="framed-rectangle">
-  A rectangle authored at the origin, then placed on the page by its translation.
+  A rectangle drawn at the origin and placed by the translation of its ItemTransform.
 </ExampleEmbed>
 
-Edit the `tx` / `ty` numbers and the red rectangle moves; edit `a` or `d` away
-from `1` and it scales. The outline anchors never change — only the transform
-that carries them onto the page.
+## Always write it
+
+InDesign's own packages carry `ItemTransform` on every `<Spread>`, `<Page>` and page item,
+even when the value is `1 0 0 1 0 0`. InDesign does not read a missing attribute as the
+identity: in a measured case, every transform-less item of a facing-page document opened one
+page width to the left, leaving the left pages empty, and the same file with
+`ItemTransform="1 0 0 1 0 0"` added to each item opened correctly. A writer should spell it
+out every time.
+
+Precision matters as well. The values are decimal text; a writer that rounds them through
+single-precision floats drifts items by fractions of a point on every save. Writing the
+value back exactly as read, when it has not changed, avoids that.
+
+> **In Paged:** a missing `ItemTransform` is read as the identity on import, and the
+> exporter always writes one. Spread rotation and scale are applied when rendering.
+> <SupportBadge feature="geometry-coordinates.item-transform" />
 
 ## Frequently asked questions
 
 **What do the six numbers in ItemTransform mean?**
-They are the free entries `a b c d tx ty` of a 2D affine matrix. Applied to an
-inner point `(x, y)`, the result is `x' = a·x + c·y + tx` and `y' = b·x + d·y +
-ty` — so `a` and `d` scale, `b` and `c` shear or rotate, and `tx` / `ty`
-translate (with positive `ty` moving down, since Y grows downward).
+They are `a b c d tx ty` of a 2D affine matrix: `x' = a·x + c·y + tx` and
+`y' = b·x + d·y + ty`. `a` and `d` scale, `b` and `c` shear or rotate, `tx` and `ty`
+translate, with a positive `ty` moving down.
 
-**What is the identity ItemTransform?**
-The identity transform is `1 0 0 1 0 0`: it leaves X and Y unchanged and moves by
-nothing. The parser requires exactly six numbers, and any value it cannot read as
-six is treated as absent, which is equivalent to applying this identity.
+**What is an item's ItemTransform relative to?**
+Its parent: the spread for a top-level item, the group for a group member, and the host
+frame for content pasted into a frame. It is never relative to a page.
 
-**How do nested Group transforms combine with an item's own transform?**
-When a shape sits inside one or more `Group` elements, the parser composes the
-enclosing group transforms (outermost-first) and then the item's own transform
-last, so the value stored on the item is already the full inner-to-page mapping.
-Composition follows `A ∘ B` order — the item's own transform acts first, then the
-group's — so the shape is positioned within the group and the group is then
-positioned on the page.
+**Can I leave out ItemTransform when it is the identity?**
+No. InDesign writes `1 0 0 1 0 0` explicitly and does not read a missing attribute as the
+identity. Write it on every spread, page and page item.
+
+**How do nested Group transforms combine?**
+By composition, innermost first: the member's own matrix, then each enclosing group's,
+out to the spread. A member two groups deep is `outer ∘ inner ∘ member`.
