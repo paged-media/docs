@@ -1,119 +1,80 @@
 ---
-title: Why it's not parsed yet
-description: The Paged renderer reads the layout stories, not the tagged-XML tree. Where in the parser the backing story, tags, and mapping are skipped — and what supporting them would take.
+title: Reading and preserving tagged XML
+description: What an application needs to read IDML's tagged-XML layer, and what it must keep intact when it edits and saves a document without reading it.
 tier: pro
 diataxis: explanation
 status: published
 owner: paged-docs
+describes:
+  - tagged-xml.structure
+  - plugin-publish.byte-identity-sweep
+reviewed: 2026-10-11
 ---
 
-**Paged is a layout renderer: it reads the layout view and never walks the tagged-XML tree, so a document renders identically with or without XML tags.**
+**An application can ignore the tagged-XML layer for layout, but one that saves a document has to carry it through unchanged.**
 
-**In short:** The [structured-content layer](/docs/idml/tagged-xml/the-structured-content-layer)
-is a real part of every IDML package, yet the Paged renderer ignores it. Paged
-turns documents into pages, and everything it needs lives in the *layout* view —
-spreads, stories, and styles — not in the tagged-XML tree, which organizes the
-same content by meaning rather than position. This page explains why that is true,
-points at the two exact places in the parser where the layer is skipped, and
-sketches what supporting it would take. It describes a deliberate scoping decision,
-not a bug — and a format the renderer does not act on today.
+**In short:** Reading the layer means following the design map's `idPkg:Tags` and
+`idPkg:BackingStory` references, reading the `XMLTag` list, and walking the `XmlStory`
+for `XMLElement` nodes and the placed content they point at. Most documents need little
+of this: an untagged InDesign document has one `Root` element and nothing else.
+Preserving the layer is simpler and matters more: copy the `XML/` parts as they are,
+keep the design map's references to them, and keep the ids of the stories and frames
+the tree points at.
 
-The [structured-content layer](/docs/idml/tagged-xml/the-structured-content-layer) is
-a real part of every IDML package, and yet the Paged renderer produces the same
-pages whether or not a document carries any XML tags. This page explains why that
-is true, and points at the exact places in the parser where the layer stops at
-the door.
+## Reading the layer
 
-## The renderer reads layout, not structure
+The layer has no effect on where anything lands on a page, so a renderer or a text
+extractor can skip it. An application that wants the structure, for example to export
+content by tag, reads it in four steps:
 
-Paged is a layout renderer. Its job is to turn a document into pages, and the
-information it needs for that lives entirely in the *layout* view: spreads place
-frames, frames pull text from [stories](/docs/idml/package-anatomy/content-parts), and
-styles decide how the text is set. The tagged-XML layer is a *second* view of the
-same content, organised by meaning rather than by position. Nothing in it changes
-where a glyph lands on a page.
+1. **Find the parts.** The design map names `XML/Tags.xml` in `idPkg:Tags` and
+   `XML/BackingStory.xml` in `idPkg:BackingStory`. It does not reference
+   `XML/Mapping.xml`, which InDesign does not write.
+2. **Read the tags.** Each `XMLTag` in `Tags.xml` is a `Self` and a `Name`.
+3. **Walk the tree.** The `XmlStory` in the backing story is shaped like a story;
+   `XMLElement` nodes sit among its character ranges and nest inside each other. Each
+   names its tag in `MarkupTag`.
+4. **Resolve placed content.** An `XMLElement` that labels content already on a page
+   names it by `Self` in `XMLContent`; the text itself stays in the layout story.
 
-So the parser follows the layout view and only the layout view. It opens the
-container, confirms the IDML mimetype, reads `designmap.xml`, and from there
-walks to the spreads, master spreads, stories, and resource parts it needs. The
-backing story, the tag list, and the style-mapping table are simply not on that
-path.
+If the backing story holds only the `Root` element, the document is untagged and there
+is nothing more to read. That is the case for almost every document in the census.
 
-## Where the layer is skipped
+## Preserving the layer
 
-There are two concrete places in the engine where the tagged-XML layer is
-present but goes unread.
+An application that opens a document, changes something and saves it is responsible for
+everything it did not change, including a layer it never read:
 
-**The design map drops the backing-story reference.** A package's design map
-lists `XML/BackingStory.xml` through an `idPkg:BackingStory` element, exactly as
-it lists spreads and stories (see
-[the design map](/docs/idml/package-anatomy/the-design-map)). The design-map parser
-matches only the references it acts on — `idPkg:Spread`, `idPkg:Story`,
-`idPkg:MasterSpread` — and a catch-all arm silently ignores everything else,
-`idPkg:BackingStory` included. So the pointer to the backing story is read past
-and discarded before anything could follow it.
-<SupportBadge status="not-yet-parsed" note="core/crates/paged-parse/src/designmap.rs — idPkg:BackingStory falls through the match's catch-all arm" />
+- **Copy the `XML/` parts unchanged.** Regenerating them from nothing would drop the
+  author's structure; the zero-width `U+FEFF` characters in the backing story are part of
+  it.
+- **Keep the design map references** `idPkg:Tags` and `idPkg:BackingStory`.
+- **Keep the ids the tree points at.** An `XMLElement` refers to placed content by its
+  `Self`, so renaming a story or a frame on save breaks that link.
 
-**Nothing parses the `XML/` tree.** When the container is opened, every entry in
-the archive is decompressed into an in-memory map, so the bytes of
-`XML/BackingStory.xml`, `XML/Tags.xml`, and `XML/Mapping.xml` *are* available.
-But the parser only ever turns one entry — `designmap.xml` — into a typed tree;
-the rest are kept as raw bytes for the higher layers to pull on demand, and no
-layer asks for the `XML/` parts. There is no `XMLElement`, `XMLStory`,
-`XMLTag`, or mapping reader anywhere in the crate to ask with.
-<SupportBadge status="not-yet-parsed" note="core/crates/paged-parse/src/lib.rs — Container::open decompresses all entries but parses only designmap.xml" />
+"Not read" and "not kept" are different things. A tool can leave the layer alone and
+still return it intact.
 
-Because the bytes are retained, supporting the layer later is purely additive: a
-new reader could be pointed at the already-present `XML/` entries without changing
-how the container is opened.
-
-## What supporting it would take
-
-Reading the layer is not the hard part — the work is deciding what a layout
-renderer should *do* with structure that does not affect layout. A first pass
-would look roughly like this:
-
-1. **Follow the reference.** Give the design-map parser an arm for
-   `idPkg:BackingStory` so the pointer to `XML/BackingStory.xml` is captured
-   instead of dropped.
-2. **Parse three new parts.** Add readers for the `<XMLStory>` /
-   `<XMLElement>` tree in `BackingStory.xml`, the `<XMLTag>` list in `Tags.xml`,
-   and the `<XMLExportMap>` / `<XMLImportMap>` entries in `Mapping.xml`,
-   producing typed structures the way the existing story and style readers do.
-3. **Resolve the cross-references.** Tie each `<XMLElement>`'s `XMLContent` back
-   to the layout item it labels (a `Story`, `Rectangle`, or `TextFrame`), and each
-   `MarkupTag` back to its `<XMLTag>`. This is where tagged-but-unplaced content
-   in the backing story would need a home.
-4. **Decide the consumer.** Surface the resolved tree to something that wants it.
-   This is structured *data*, not pixels, so the natural consumer is introspection
-   or round-tripping, not the page rasteriser — the renderer would keep producing
-   the same pages.
-
-Until those steps exist, the chapter stays honest about its status: the format is
-[documented in full](/docs/idml/tagged-xml/the-structured-content-layer), and the
-renderer reads none of it.
+> **In Paged:** no part of the XML layer is read: there is no reader for `XMLTag`,
+> `XmlStory` or `XMLElement`, and the design map's `idPkg:BackingStory` reference is not
+> followed. The XML parts are kept as raw bytes and copied byte for byte on save, like
+> every part Paged does not model; an unedited round trip of the corpus reproduces all
+> 99 tested packages exactly. The [`.paged` container](/docs/idml/package-anatomy/the-paged-container)
+> keeps the same parts. <SupportBadge feature="tagged-xml.structure" />
 
 ## Frequently asked questions
 
-**Why doesn't Paged parse the tagged-XML layer?**
-Because nothing in it affects layout. Paged turns a document into pages, and the
-position of every glyph and frame is decided entirely by the layout view —
-spreads, stories, and styles. The tagged-XML tree is a second view organized by
-meaning, so skipping it is a deliberate scoping decision, not a bug.
+**Does a renderer need the tagged-XML layer?**
+No. The layout comes entirely from the spreads, stories and styles; the XML layer labels
+that content without changing it.
 
-**Where in the parser is the layer skipped?**
-In two places. The design-map parser matches only the references it acts on
-(`idPkg:Spread`, `idPkg:Story`, `idPkg:MasterSpread`) and lets `idPkg:BackingStory`
-fall through its catch-all arm; and although `Container::open` decompresses every
-archive entry into memory, only `designmap.xml` is turned into a typed tree, so the
-`XML/` parts are never read. Both spots carry a **Not yet parsed** badge above.
+**How do I tell whether a document is tagged?**
+Look at `XML/BackingStory.xml`. An untagged document's `XmlStory` holds a single
+`XMLElement` with `MarkupTag="XMLTag/Root"`; a tagged one has more elements.
 
-**Will tagged XML ever be supported?**
-It is not on a committed timeline here. Because the bytes are already retained in
-memory, adding support would be purely additive — but the open question is what a
-layout renderer should *do* with structure that does not affect layout, which
-points toward introspection or round-tripping rather than the page rasteriser.
+**What must a tool keep when it saves an IDML file?**
+The `XML/` parts as they were, the design map's `idPkg:Tags` and `idPkg:BackingStory`
+references, and the `Self` ids of stories and frames that the XML tree refers to.
 
-**Does ignoring the layer ever change the rendered pages?**
-No. A document renders identically whether or not it carries any XML tags, since
-the renderer never reads the backing story, the tag list, or the mapping table.
+**Does Paged keep the XML layer when it saves?**
+Yes. It does not read the layer, but it copies the XML parts byte for byte on save.

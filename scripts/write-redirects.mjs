@@ -37,6 +37,7 @@ const MOVED_IDML_PAGES = {
   'stories-text/why-ranges-not-spans': 'stories-text/the-paragraph-model',
   'stories-text/text-variables': 'sections-numbering-variables/text-variables',
   'layout-model/override-resolution': 'master-spreads-overrides/override-resolution',
+  'tagged-xml/why-its-not-parsed-yet': 'tagged-xml/reading-and-preserving',
 };
 
 // IDML pages that described Paged rather than the format, now on
