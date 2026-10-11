@@ -17,7 +17,7 @@ This file is the work list for the chapter rewrites; each wave closes its rows.
 | 2 | overview, foundations, package anatomy, glossary fixes, meta | rewritten |
 | 3 | geometry, layout model, frames & paths, masters, layers | rewritten |
 | 4 | styles, typography, tables | rewritten |
-| 5 | colour, images, anchored objects, effects & transparency (new), colour management (new) | in progress |
+| 5 | colour, images, anchored objects, effects & transparency (new), colour management (new) | rewritten |
 | 6 | cross-references & hyperlinks, sections, conditional text, tagged XML, table of contents (new) | rewritten |
 | 7 | companion formats, round-tripping, edge cases, comparisons, cookbook, glossary, home | in progress |
 
@@ -74,6 +74,14 @@ Not documentation work; reported to the engine:
   bottom (the angle turns counter-clockwise from left-to-right). Paged draws it top-down,
   and `cookbook/apply-a-gradient` describes Paged's direction. Found by the InDesign
   verification of `examples/gradient-fill` (ADR 806, worst-page mean ΔE 4.0).
+- Gradient `Midpoint` is applied to the blend after its stop; InDesign's files put
+  non-default midpoints on later stops (usually the last), so it governs the blend before.
+- `FillTint` on a process colour previews too light (blended in linear RGB, not through
+  the profile); InDesign renders a 40 % `<Tint>` and `FillTint="40"` identically
+  (`examples/named-tint`).
+- Opacity and effects in `Fill`/`Stroke`/`ContentTransparencySetting` are applied to the
+  whole object; graphic-line opacity and blend mode, `IsolateBlending`, `KnockoutGroup`,
+  `GradientFillStart` (linear) and `AnchorSpaceAbove` are not read or applied.
 - Placement the importer does not read (found from the census during wave 2):
   `ColorGroup` (InDesign writes it in the design map with `ColorGroupSwatch` children),
   `NumberingList` (design map), `DocumentPreference` / `FootnoteOption` / `GridPreference`

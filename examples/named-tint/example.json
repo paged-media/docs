@@ -41,5 +41,19 @@
   "elements": [
     "Tint",
     "Color"
-  ]
+  ],
+  "verified": {
+    "status": "verified",
+    "indesignVersion": "20.0.1.32",
+    "verifiedAt": "2026-10-11",
+    "partsHash": "sha256:833c387f13accfa7e155e2989994a60d2bcd8cdd35df6a4818821b89fdfe160d",
+    "pages": 1,
+    "roundTrip": true,
+    "fidelity": {
+      "meanDE": 0.495,
+      "p99DE": 10.739,
+      "ssim": 0.999,
+      "fontsMatched": true
+    }
+  }
 }
