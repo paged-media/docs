@@ -1,0 +1,43 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "text-frame-columns",
+  "title": "A two-column text frame with balanced columns",
+  "tier": "intermediate",
+  "chapter": "frames-paths",
+  "concept": "A TextFramePreference sets two columns with a 24 pt gutter, balances them by line count, and spells its insets as InDesign does: a typed InsetSpacing list inside Properties.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Spreads/Spread_uspread.xml",
+    "language": "xml",
+    "label": "Spreads/Spread_uspread.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree",
+    "live"
+  ],
+  "annotations": [
+    {
+      "lines": "18",
+      "note": "Two columns 24 pt apart. VerticalBalanceColumns levels the number of lines per column: ten one-line paragraphs set five and five. Set it to false and all ten stay in the first column, which has room for them."
+    },
+    {
+      "lines": "20-25",
+      "note": "The insets as InDesign writes them: a typed list in the order top, left, bottom, right. An InsetSpacing attribute on TextFramePreference is ignored by InDesign."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 1
+  },
+  "pathological": false,
+  "license": "MIT",
+  "elements": [
+    "TextFrame",
+    "TextFramePreference"
+  ]
+}

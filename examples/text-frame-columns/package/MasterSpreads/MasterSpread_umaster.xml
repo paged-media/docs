@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<idPkg:MasterSpread xmlns:idPkg="http://ns.adobe.com/AdobeInDesign/idml/1.0/packaging" DOMVersion="20.0">
+  <MasterSpread Self="umaster" Name="$ID/None" PageCount="1" ShowMasterItems="false" ItemTransform="1 0 0 1 0 0">
+    <Page Self="umasterpage" Name="" AppliedMaster="n" ItemTransform="1 0 0 1 0 0" GeometricBounds="0 0 841.89 595.276"/>
+  </MasterSpread>
+</idPkg:MasterSpread>

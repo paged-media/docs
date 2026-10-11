@@ -1,149 +1,143 @@
 ---
 title: Text frames
-description: The IDML TextFramePreference block — InsetSpacing, VerticalJustification, FirstBaselineOffset, and AutoSizingType.
+description: The IDML TextFramePreference — columns and balancing, typed InsetSpacing, vertical justification, first baseline, and auto-sizing as InDesign fits a frame.
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
+describes: [layout-model.frame-autosizing, layout-model.vertical-justification, layout-model.first-baseline-offset]
+reviewed: 2026-10-11
 ---
 
-**A `TextFrame` is the page item that holds text, and its `TextFramePreference` child controls how that text sits inside the frame.**
+**A `TextFrame` holds a story; its `TextFramePreference` child decides how the text sits inside the frame.**
 
-**In short:** A `TextFrame` is the IDML page item bound to a story: it points at
-the story through its `ParentStory`, and the frame's outline sets where the text
-can go. A single optional child element, `TextFramePreference`, controls *how*
-the text sits inside that outline — through four attributes: `InsetSpacing` (the
-text inset box), `VerticalJustification` (where the block sits in the column
-height), `FirstBaselineOffset` (where the first line lands), and `AutoSizingType`
-(whether the frame may grow). This page is the reference for all four.
+**In short:** A `TextFrame` names its story in `ParentStory`, and its outline is the room the
+text has. The optional `TextFramePreference` child sets how that room is used: the number of
+columns and the gutter, whether the columns are balanced, the inset between outline and text,
+where the text block sits vertically, where the first baseline falls, and whether the frame
+fits itself to its text. All of these are attributes, except the inset: InDesign writes
+`InsetSpacing` as a typed `<Properties>` child and ignores it as an attribute. A
+`TextFramePreference` in an object style or in `Resources/Preferences.xml` supplies the
+defaults a frame does not set.
 
-A `TextFrame` is the page item that holds text: it points at a story through its
-`ParentStory`, and its `ContentType` is `TextType`. The frame's *outline* (from
-its [`PathGeometry`](/docs/idml/geometry-coordinates/path-geometry)) sets where text
-can go; a single optional child element, `TextFramePreference`, controls *how*
-the text sits inside that outline.
+<ExampleEmbed example="text-frame-columns">
+  Two columns 24 pt apart, balanced by line count, with the insets written as a typed list.
+  Ten one-line paragraphs set five and five.
+</ExampleEmbed>
 
-```xml
-<TextFrame Self="uframe" ParentStory="ustory" ContentType="TextType" ...>
-  <Properties>
-    <PathGeometry>...</PathGeometry>
-  </Properties>
-  <TextFramePreference
-    InsetSpacing="6 8 10 12"
-    VerticalJustification="CenterAlign"
-    FirstBaselineOffset="CapHeight"
-    AutoSizingType="HeightOnly"/>
-</TextFrame>
-```
+## Columns
 
-All four attributes are optional; when absent the frame uses InDesign's
-defaults. The parser reads them off `TextFramePreference` only while a
-`TextFrame` is the open element — the same attributes on a non-text shape are
-ignored.
+- **`TextColumnCount`**: the number of columns (default 1).
+- **`TextColumnGutter`**: the space between columns, in points.
+- **`UseFixedColumnWidth`** with **`TextColumnFixedWidth`**: columns of a fixed width, the
+  frame width following from them. **`UseFlexibleColumnWidth`** with **`TextColumnMaxWidth`**:
+  as many columns as fit under a maximum width.
+- **`VerticalBalanceColumns`**: balance the columns of the frame. InDesign levels the **line
+  count**, not the height: each column takes at most `ceil(lines / columns)` lines, and the
+  space below stays empty. Forty-four single-line paragraphs in a balanced two-column frame
+  set 22 and 22; the same frame unbalanced sets 35 and 9.
 
-## InsetSpacing — the text inset box
+Columns split the area inside the insets: the left and right insets apply once to the whole
+frame, not to every column.
 
-`InsetSpacing` shrinks the area text may occupy inside the frame outline. It is a
-space-separated list of four numbers in points, in IDML's
-`top left bottom right` order. The parser stores them as a `(top, left, bottom,
-right)` tuple; the composer lays text out against the inset box rather than the
-raw outline.
+## `InsetSpacing`: the text inset
 
-<AttrTable
-  element="TextFramePreference — InsetSpacing"
-  rows={[
-    { attr: 'InsetSpacing', type: '"top left bottom right" (pt)', support: 'supported', note: 'Four points of padding pulled in from each edge. Omitted → no inset.' },
-  ]}
-/>
+The inset pulls the text area in from the frame's outline. InDesign writes it inside the
+preference's `<Properties>`, in one of two forms:
 
-## VerticalJustification — text within the column height
+- a list of four `type="unit"` items in the order **top, left, bottom, right**, as in the
+  example above, when the sides differ;
+- a single `<InsetSpacing type="unit">6</InsetSpacing>` when all four sides are equal.
 
-`VerticalJustification` decides where the composed text block sits between the
-top and bottom insets when it does not fill the frame. `Top` is the default.
+Across 271 real-world packages there are 13,893 list forms, 45 single values and no
+`InsetSpacing` attribute at all. Opened in InDesign, a package that writes the insets as an
+attribute (`InsetSpacing="6 8 10 12"` on `TextFramePreference`) gets no insets.
 
-<AttrTable
-  element="TextFramePreference — VerticalJustification"
-  rows={[
-    { attr: 'TopAlign', type: 'enum', support: 'supported', note: 'Default. First line at the top inset.' },
-    { attr: 'CenterAlign', type: 'enum', support: 'supported', note: 'Text block centred between the insets.' },
-    { attr: 'BottomAlign', type: 'enum', support: 'supported', note: 'Last line at the bottom inset.' },
-    { attr: 'JustifyAlign', type: 'enum', support: 'supported', note: 'Inter-paragraph gaps grow so the last baseline reaches the bottom; within-paragraph leading is preserved.' },
-  ]}
-/>
+A frame with a non-rectangular outline keeps its text inside the outline, pulled in by the
+inset.
 
-## FirstBaselineOffset — where the first line lands
+## `VerticalJustification`
 
-`FirstBaselineOffset` sets how far below the top inset the first line's baseline
-falls. `AscentOffset` is the IDML default. The renderer honours each policy at
-layout time; the metric-driven ones (`CapHeight`, `XHeight`) need the frame's
-font, and the `LeadingOffset` / `FixedHeight` pair reads the companion
-`MinimumFirstBaselineOffset` value (in points).
+Where the text block sits between the top and bottom insets when it does not fill the frame:
 
-<AttrTable
-  element="TextFramePreference — FirstBaselineOffset"
-  rows={[
-    { attr: 'AscentOffset', type: 'enum', support: 'supported', note: 'Default. Baseline one ascender below the top inset. Used for any unrecognised value too.' },
-    { attr: 'CapHeight', type: 'enum', support: 'supported', note: 'One cap-height below the inset (needs font metrics).' },
-    { attr: 'XHeight', type: 'enum', support: 'supported', note: 'One x-height below the inset (needs font metrics).' },
-    { attr: 'EmBoxHeight', type: 'enum', support: 'supported', note: 'One em-box-height below the inset.' },
-    { attr: 'LeadingOffset', type: 'enum', support: 'supported', note: 'Distance comes from MinimumFirstBaselineOffset (pt).' },
-    { attr: 'FixedHeight', type: 'enum', support: 'supported', note: 'Same source as LeadingOffset — the MinimumFirstBaselineOffset value.' },
-  ]}
-/>
+| Value | Effect |
+|---|---|
+| `TopAlign` | The default. Text starts at the top inset. |
+| `CenterAlign` | The block is centred between the insets. |
+| `BottomAlign` | The last line sits on the bottom inset. |
+| `JustifyAlign` | Space is added between paragraphs (up to `VerticalThreshold`, then between lines) so the text fills the height. |
 
-## AutoSizingType — letting the frame grow
+## `FirstBaselineOffset`
 
-`AutoSizingType` lets a frame's bounds grow at composition time so a display
-headline or dynamic copy does not clip against an undersized authored box. `Off`
-is the default — a static frame whose bounds are authoritative.
+How far below the top inset the first baseline falls:
 
-<AttrTable
-  element="TextFramePreference — AutoSizingType"
-  rows={[
-    { attr: 'Off', type: 'enum', support: 'supported', note: 'Default. Static frame; the authored bounds win.' },
-    { attr: 'WidthOnly', type: 'enum', support: 'supported', note: 'The renderer estimates the longest line and widens the wrap column to fit (honouring MinimumWidthForAutoSizing).' },
-    { attr: 'HeightOnly', type: 'enum', support: 'supported', note: 'A height-growing frame grows to fit its text instead of clipping overset lines.' },
-    { attr: 'HeightAndWidth', type: 'enum', support: 'supported', note: 'Both the width estimate and height growth apply.' },
-    { attr: 'HeightAndWidthProportionally', type: 'enum', support: 'supported', note: 'As HeightAndWidth.' },
-  ]}
-/>
+| Value | First baseline at |
+|---|---|
+| `AscentOffset` | The default. The ascent of the first line's font. |
+| `CapHeight` | The cap height of the first line. |
+| `XHeight` | The x-height of the first line. |
+| `EmBoxHeight` | The em-box height. |
+| `LeadingOffset` | The first line's leading. |
+| `FixedHeight` | Exactly `MinimumFirstBaselineOffset` points. |
 
-<SupportBadge status="supported" note="Width + height growth applied — a height-growing frame grows to fit rather than dropping overset. The visible fill/stroke box stretch and the text-wrap cascade for neighbouring frames are the remaining piece." />
+`MinimumFirstBaselineOffset` is also a floor for the other values: the baseline never sits
+higher than it.
 
-## Insets, justification, and the first baseline together
+## Auto-sizing
 
-The frame outline, the inset box, the vertical justification, and the first
-baseline stack up in that order: the outline is the room, the insets pull a
-margin in, the first-baseline policy places the top line, and vertical
-justification distributes whatever slack is left. Get the inset wrong and every
-later number shifts with it.
+`AutoSizingType` makes a frame fit its text. It is a **fit**, not a growth: the frame shrinks
+below its written size as readily as it grows past it.
 
-## Attributes at a glance
+| Value | What changes |
+|---|---|
+| `Off` | The default. The written size is final. |
+| `HeightOnly` | The height becomes what the text needs; the width stays. |
+| `WidthOnly` | The height stays, so the frame keeps its number of lines; the width becomes the smallest at which the text fits in them. |
+| `HeightAndWidth` | The width becomes the smallest at which no line overflows a column, and the height follows the lines. |
+| `HeightAndWidthProportionally` | Both sides scale by one factor until the text fits, keeping the proportions. |
 
-These are the `TextFrame` attributes the parser recognises, generated from the
-engine's own catalog — so this table grows with the renderer. Settable attributes
-link to the [`paged.set` path](/docs/paged/scripting/settable-paths) that writes
-them, so you can jump straight from "what this attribute is" to "how to change it
-in a script."
+`AutoSizingReferencePoint` names the point that stays put while the frame changes:
+`TopLeftPoint`, `TopCenterPoint`, `TopRightPoint`, `CenterLeftPoint`, `CenterPoint` (what
+InDesign writes by default), `CenterRightPoint` and the three bottom points.
+`MinimumHeightForAutoSizing` and `MinimumWidthForAutoSizing`, switched on by
+`UseMinimumHeightForAutoSizing` and `UseMinimumWidthForAutoSizing`, set a floor.
+`UseNoLineBreaksForAutoSizing` keeps paragraphs on one line where the width can grow.
 
-<AttrTable element="TextFrame" />
+The frame's path in the file is the size it was written at. A reader that composes the text
+computes the fitted size from it.
+
+> **In Paged:** auto-sizing is a fit with the real composer, honouring the reference point and
+> both minimums; the frame paints at its fitted size and neighbouring frames wrap around it.
+> Columns, balancing, vertical justification and every first-baseline value are applied.
+> Fixed and flexible column widths are not read.
+> <SupportBadge feature="layout-model.frame-autosizing" />
+> <SupportBadge feature="layout-model.vertical-justification" />
+> <SupportBadge feature="layout-model.first-baseline-offset" />
+
+## All attributes
+
+<AttrTable element="TextFramePreference" limit={20} />
+
+`IgnoreWrap` makes the frame's text ignore text wrap from other objects. The
+`Footnotes…` and `ColumnRule…` attributes set footnote placement and rules between columns
+for this frame.
 
 ## Frequently asked questions
 
-**What is the TextFramePreference element in IDML?**
-`TextFramePreference` is an optional child of a `TextFrame` that controls how text
-sits inside the frame outline. It carries four attributes — `InsetSpacing`,
-`VerticalJustification`, `FirstBaselineOffset`, and `AutoSizingType` — and when it
-is absent the frame falls back to InDesign's defaults.
+**How is InsetSpacing written?**
+As a typed child: `<TextFramePreference><Properties><InsetSpacing type="list">` with four
+`<ListItem type="unit">` values in the order top, left, bottom, right, or one
+`<InsetSpacing type="unit">` value for all four sides. InDesign ignores an `InsetSpacing`
+attribute.
 
-**What order does InsetSpacing use?**
-`InsetSpacing` is a space-separated list of four points in IDML's
-`top left bottom right` order. The parser stores them as a
-`(top, left, bottom, right)` tuple, and the composer lays text out against the
-resulting inset box rather than the raw frame outline.
+**What does VerticalBalanceColumns balance?**
+The number of lines. Each column takes at most the total line count divided by the number of
+columns, rounded up; the columns are not stretched to equal heights.
 
-**Does the renderer support auto-sizing text frames?**
-Only partially. `WidthOnly` is honoured — the renderer estimates the longest line
-and widens the wrap column to fit — but the height-growth variants (`HeightOnly`,
-`HeightAndWidth`, `HeightAndWidthProportionally`) are parsed and only their width
-component is applied; vertical growth is still on the roadmap.
+**Does auto-sizing only make frames bigger?**
+No. Every auto-sizing mode fits the frame to its text, so a frame with little text shrinks.
+`AutoSizingReferencePoint` decides which point of the frame stays where it is.
+
+**Where do the defaults come from when a frame has no TextFramePreference?**
+From the frame's object style, and from the `TextFramePreference` in
+`Resources/Preferences.xml`.

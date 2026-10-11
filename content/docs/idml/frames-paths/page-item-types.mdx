@@ -1,172 +1,143 @@
 ---
 title: Page-item types
-description: The six IDML page-item elements — TextFrame, Rectangle, Oval, GraphicLine, Polygon, and Group — the key attributes of each, and which ones the renderer honours.
+description: The six IDML page-item elements — TextFrame, Rectangle, Oval, GraphicLine, Polygon, Group — their shared attributes and the fields that set each apart.
 tier: pro
 diataxis: reference
 status: published
 owner: paged-docs
+describes: [frames-paths.page-item-kinds, frames-paths.corner-options, frames-paths.arrowheads]
+reviewed: 2026-10-11
 ---
 
-**IDML has six page-item elements, and they all share one skeleton — they differ only in a handful of fields.**
+**IDML has six page-item elements; they share one skeleton and differ in a few fields each.**
 
-**In short:** The six page-item elements are `TextFrame`, `Rectangle`, `Oval`,
-`GraphicLine`, `Polygon`, and `Group`. Every one of them carries the same
-skeleton — a `Self` id, an `ItemTransform`, a `PathGeometry`, paint attributes,
-and an `AppliedObjectStyle` — and the differences between them come down to a few
-extra fields each. This page is the reference: one attribute table per element,
-with each attribute marked, from the parser, for exactly what our renderer does
-with it.
-
-The two filled shapes below — a `Rectangle` with a red fill and an `Oval` with a
-blue fill — are the smallest example that exercises this page. Neither carries
-text or an image; the `FillColor` alone makes them paint.
+**In short:** `TextFrame`, `Rectangle`, `Oval`, `GraphicLine`, `Polygon` and `Group` all
+carry a `Self` id, an `ItemTransform`, an outline in `<Properties><PathGeometry>`, paint
+attributes, an object style, a layer, and `Visible`, `Locked` and `Name`. What sets them
+apart: a text frame names a story, a rectangle can shape its corners, an oval is an ellipse
+by its path, a line can carry arrowheads, a polygon can hold several contours, and a group
+holds other items. This page is the reference for both parts.
 
 <ExampleEmbed example="filled-shapes">
-  A Rectangle and an Oval, each painted by nothing but a FillColor swatch.
+  A Rectangle and an Oval, painted by nothing but a FillColor swatch. The Oval's path is
+  InDesign's four-anchor ellipse.
 </ExampleEmbed>
 
-## Attributes shared by every page item
+## Attributes every page item shares
 
-These appear on all six elements (the `Color/*` references resolve against
-[`Resources/Graphic.xml`](/docs/idml/package-anatomy/the-design-map)):
+<AttrTable element="Rectangle" attrs={['Self', 'ItemTransform', 'ItemLayer', 'Visible', 'Locked', 'Name', 'AppliedObjectStyle', 'FillColor', 'FillTint', 'StrokeColor', 'StrokeWeight', 'StrokeType', 'StrokeTint', 'GradientFillAngle', 'GradientFillLength', 'GradientFillStart']} />
 
-<AttrTable
-  element="(common page-item attributes)"
-  rows={[
-    { attr: 'Self', type: 'string id', support: 'supported', note: 'The item id. Used by groups, threading (NextTextFrame), and ItemLayer references.' },
-    { attr: 'ItemTransform', type: '"a b c d tx ty"', support: 'supported', note: 'Affine placement onto the page. Composed with any enclosing Group transform.' },
-    { attr: 'PathGeometry', type: 'child element', support: 'supported', note: 'The anchor outline. Real exports carry it even for plain rectangles. See the geometry chapter.' },
-    { attr: 'FillColor', type: 'swatch ref (e.g. "Color/Red")', support: 'supported', note: 'Resolved against Graphic.xml. "Swatch/None" → no fill.' },
-    { attr: 'FillTint', type: 'double (0–100, or -1)', support: 'supported', note: 'Tints the resolved swatch toward paper. -1 inherits.' },
-    { attr: 'StrokeColor', type: 'swatch ref', support: 'supported', note: '"Swatch/None" → no stroke.' },
-    { attr: 'StrokeWeight', type: 'double (pt)', support: 'supported', note: 'Stroke thickness. 0 → no stroke drawn.' },
-    { attr: 'StrokeType', type: 'stroke-style ref', support: 'supported', note: 'Built-in Solid / Dashed / Dotted map to dash patterns; custom StrokeStyle defs fall back to solid.' },
-    { attr: 'AppliedObjectStyle', type: 'ObjectStyle ref', support: 'supported', note: 'Supplies defaults for unset fill / stroke / inset. Resolved by the scene layer.' },
-    { attr: 'ItemLayer', type: 'Layer ref', support: 'supported', note: 'The item is skipped when its layer is hidden or non-printable.' },
-  ]}
-/>
+- **`FillColor` / `StrokeColor`** name a swatch in `Resources/Graphic.xml` (`Color/…`,
+  `Tint/…`, `Gradient/…`), or `Swatch/None` for none.
+- **`FillTint` / `StrokeTint`** are percentages. `-1` is InDesign's *unset* value: the swatch's
+  own tint applies.
+- **`StrokeType`** names a stroke style: the built-in solid, dashed, dotted, striped and wavy
+  styles, or a custom style defined in the document.
+- **`GradientFillAngle`, `GradientFillLength`, `GradientFillStart`** place a gradient fill on
+  the item: its direction, its length and its start point in the item's space.
+- **`Visible="false"`** hides this item alone. **`Locked="true"`** only blocks editing.
+  **`Name`** is the item's name in the Layers panel; `$ID/` means unnamed.
+- Effects (drop shadows, glows, feathers, opacity and blend modes) are written as
+  `<TransparencySetting>`, `<StrokeTransparencySetting>` and related child elements.
+
+> **In Paged:** all of these are read and honoured, including dashed, dotted, striped and wavy
+> strokes and gap colours. <SupportBadge feature="frames-paths.stroke-striped-wavy" />
 
 ## TextFrame
 
-A `TextFrame` is the only member with a `ParentStory`: the story id whose
-paragraphs flow into the frame. Its `ContentType` is `TextType`. Everything
-else is shared.
+The only member with a `ParentStory`: the story whose text it holds. `PreviousTextFrame`
+and `NextTextFrame` thread it to other frames (`n` for none). Its `TextFramePreference`
+child (columns, insets, vertical justification, first baseline, auto-sizing) has its own
+page: [text frames](/docs/idml/frames-paths/text-frames).
 
-<AttrTable
-  element="TextFrame"
-  rows={[
-    { attr: 'ParentStory', type: 'Story id (e.g. "u10")', support: 'supported', note: 'The story whose text this frame composes. Resolved against the design map’s story list.' },
-    { attr: 'ContentType', type: '"TextType"', support: 'parsed-not-rendered', note: 'Role marker. The parser infers "text" from the element name + ParentStory rather than reading this attribute.' },
-    { attr: 'NextTextFrame', type: 'TextFrame id', support: 'supported', note: 'The frame that continues the story when it overflows. Drives threading.' },
-    { attr: 'AppliedObjectStyle', type: 'ObjectStyle ref', support: 'supported', note: 'Real-world frames lean on this for fill / stroke far more than the per-element attributes.' },
-  ]}
-/>
-
-The `TextFramePreference` child — insets, vertical justification, auto-sizing,
-first baseline — has its own [reference page](/docs/idml/frames-paths/text-frames).
+<AttrTable element="TextFrame" attrs={['ParentStory', 'PreviousTextFrame', 'NextTextFrame', 'ContentType']} />
 
 ## Rectangle
 
-The workhorse. A `Rectangle` with a `FillColor` is a colour panel; with a nested
-`<Image>` it is a picture frame; with neither it is an empty outline. Its
-`ContentType` is `GraphicType` (or `Unassigned`).
+A panel when filled, a picture frame when it holds an `<Image>`, `<EPS>` or `<PDF>`, an
+outline otherwise. Its path has four corner anchors.
 
-<AttrTable
-  element="Rectangle"
-  rows={[
-    { attr: 'PathGeometry', type: 'child element', support: 'supported', note: 'Four corner anchors for a plain rect. The parser keeps the anchors and routes non-rectangular outlines through the polygon path.' },
-    { attr: 'CornerOption', type: 'enum', support: 'parsed-not-rendered', note: 'None renders square; every non-square variant (Rounded, Bevel, Inset, …) is drawn as Rounded for now. See the geometry chapter.' },
-    { attr: 'StrokeAlignment', type: 'Center / Inside / Outside', support: 'supported', note: 'Inside / Outside approximated by inset/outsetting the path by half the stroke weight.' },
-    { attr: 'GradientFillAngle', type: 'double (deg)', support: 'supported', note: 'Direction of a gradient fill around the frame centre. Pairs with GradientFillLength.' },
-    { attr: 'FillColor / StrokeColor / StrokeWeight', type: 'see common', support: 'supported', note: 'The paint that makes the shape visible.' },
-  ]}
-/>
+Corners can be shaped without changing the path. `CornerOption` and `CornerRadius` apply to
+all four corners; `TopLeftCornerOption` and `TopLeftCornerRadius` (and their siblings) set
+one corner. The values InDesign writes are `None`, `RoundedCorner`, `InverseRoundedCorner`,
+`InsetCorner`, `BevelCorner` and `FancyCorner`.
+
+`StrokeAlignment` places the stroke centred on the path, inside it or outside it
+(`CenterAlignment`, `InsideAlignment`, `OutsideAlignment`). `EndJoin` and `MiterLimit` shape
+the corners of the stroke.
+
+<AttrTable element="Rectangle" attrs={['CornerOption', 'CornerRadius', 'TopLeftCornerOption', 'TopLeftCornerRadius', 'StrokeAlignment', 'EndJoin', 'MiterLimit', 'ContentType']} />
+
+> **In Paged:** all five corner treatments draw their own geometry, per corner.
+> <SupportBadge feature="frames-paths.corner-options" /> Inside and outside stroke alignment is
+> exact on rectangles; on polygons and open paths the stroke stays centred.
+> <SupportBadge feature="frames-paths.stroke-alignment" />
 
 ## Oval
 
-Same fill and stroke story as `Rectangle`. Its geometry is the ellipse
-*inscribed* in the path's bounding box — a square outline yields a circle, as in
-the example above.
+An ellipse, because its path is one: four anchors at the midpoints of the edges (bottom,
+right, top, left) with handles along each edge. An `<Oval>` with a four-corner path is drawn
+by InDesign as a rectangle; the element name does not make the curve. See
+[how an oval is spelled](/docs/idml/geometry-coordinates/path-geometry).
 
-<AttrTable
-  element="Oval"
-  rows={[
-    { attr: 'PathGeometry', type: 'child element', support: 'supported', note: 'The bounding-box outline. The renderer inscribes the ellipse inside it.' },
-    { attr: 'FillColor / FillTint', type: 'swatch ref / double', support: 'supported', note: 'Fills the ellipse.' },
-    { attr: 'StrokeColor / StrokeWeight', type: 'swatch ref / double', support: 'supported', note: 'Strokes the ellipse outline.' },
-    { attr: 'AppliedObjectStyle', type: 'ObjectStyle ref', support: 'supported', note: 'Defaults for unset paint.' },
-  ]}
-/>
+<AttrTable element="Oval" attrs={['ItemTransform', 'FillColor', 'StrokeColor', 'StrokeWeight', 'ContentType']} />
 
 ## GraphicLine
 
-A straight stroke with no fill region. IDML stores the line implicitly: its two
-endpoints are the top-left and bottom-right corners of the path's bounding box.
-A `GraphicLine` has no `FillColor` field — only stroke attributes mean anything.
+A rule: an open path of two anchors, which may be curved. Its ends are its first and last
+anchors, in the order they are written; nothing is derived from a bounding box. It has no
+fill region worth painting.
 
-<AttrTable
-  element="GraphicLine"
-  rows={[
-    { attr: 'PathGeometry', type: 'child element', support: 'supported', note: 'Two anchors. The endpoints are the bounds’ opposite corners.' },
-    { attr: 'StrokeColor', type: 'swatch ref', support: 'supported', note: 'The line colour. "Swatch/None" makes the line invisible.' },
-    { attr: 'StrokeWeight', type: 'double (pt)', support: 'supported', note: 'Line thickness.' },
-    { attr: 'StrokeType', type: 'stroke-style ref', support: 'supported', note: 'Dash pattern for dashed / dotted lines.' },
-  ]}
-/>
+Line ends are set with `LeftLineEnd` (at the first anchor) and `RightLineEnd` (at the last),
+scaled by `LeftArrowHeadScale` and `RightArrowHeadScale` (percent, default 100). The values are
+`None`, `SimpleArrowHead`, `SimpleWideArrowHead`, `TriangleArrowHead`,
+`TriangleWideArrowHead`, `BarbedArrowHead`, `CurvedArrowHead`, `CircleArrowHead`,
+`CircleSolidArrowHead`, `SquareArrowHead`, `SquareSolidArrowHead` and `BarArrowHead`. An open
+`Polygon` (a pen or pencil path) can carry them too. `EndCap` shapes the ends without
+arrowheads.
 
-<SupportBadge feature="frames-paths.arrowheads" note="Arrowheads (LeftLineEnd / RightLineEnd) drawn — triangle / circle / bar at each end; exact size calibration and rarer shapes pending." />
+<AttrTable element="GraphicLine" attrs={['StrokeColor', 'StrokeWeight', 'StrokeType', 'EndCap', 'LeftLineEnd', 'RightLineEnd']} />
+
+> **In Paged:** arrowheads are drawn at both ends of lines and open polygons, scaled by the
+> arrowhead scale. <SupportBadge feature="frames-paths.arrowheads" />
 
 ## Polygon
 
-An arbitrary closed outline — charts, stars, cut-out shapes. The parser keeps
-the full anchor list (and per-contour boundaries for
-[compound paths](/docs/idml/geometry-coordinates/compound-paths)).
+Any other outline: stars, charts, curves, pen paths. Several `GeometryPathType` contours make
+a [compound path](/docs/idml/geometry-coordinates/compound-paths), and an open contour makes
+a path that is only stroked.
 
-<AttrTable
-  element="Polygon"
-  rows={[
-    { attr: 'PathGeometry', type: 'child element', support: 'supported', note: 'The full anchor outline. Multiple GeometryPathType children make a compound path (e.g. a shape with a hole).' },
-    { attr: 'FillColor / FillTint', type: 'swatch ref / double', support: 'supported', note: 'Fills the closed outline.' },
-    { attr: 'StrokeColor / StrokeWeight', type: 'swatch ref / double', support: 'supported', note: 'Strokes the outline.' },
-    { attr: 'AppliedObjectStyle', type: 'ObjectStyle ref', support: 'supported', note: 'Defaults for unset paint.' },
-  ]}
-/>
+<AttrTable element="Polygon" limit={8} />
 
 ## Group
 
-A `Group` is not a shape — it is a container. Its children are the page items it
-clusters, and its own `ItemTransform` composes onto each of them so the whole
-cluster moves, scales, or rotates as one. It carries no fill or stroke of its
-own.
+A container. Its members are child elements, in their own back-to-front order; each member's
+`ItemTransform` is relative to the group, and the group's own transform moves them all. A
+group can carry its own transparency (opacity, blend mode, drop shadow) applied to the
+members as a whole, and its `ItemLayer` decides the layer of all its members. See
+[groups](/docs/idml/frames-paths/groups).
 
-<AttrTable
-  element="Group"
-  rows={[
-    { attr: 'Self', type: 'string id', support: 'supported', note: 'The group id.' },
-    { attr: 'ItemTransform', type: '"a b c d tx ty"', support: 'supported', note: 'Composed onto every member. The parser lifts each child out with the composed transform already applied.' },
-    { attr: '(member page items)', type: 'child elements', support: 'supported', note: 'Rectangle / Oval / GraphicLine / Polygon / TextFrame / nested Group, in document order.' },
-  ]}
-/>
-
-Group membership and the group-level transparency block get a fuller treatment
-on the [Groups page](/docs/idml/frames-paths/groups).
+<AttrTable element="Group" attrs={['Self', 'ItemTransform', 'ItemLayer', 'Visible', 'Locked', 'Name']} />
 
 ## Frequently asked questions
 
-**Which attributes do all six page items share?**
-Every page item carries a `Self` id, an `ItemTransform`, a `PathGeometry`, paint
-attributes (`FillColor`, `FillTint`, `StrokeColor`, `StrokeWeight`, `StrokeType`),
-an `AppliedObjectStyle`, and an `ItemLayer` reference. The renderer honours all of
-these; the per-element tables above cover only the fields that differ.
+**Which attributes do all page items share?**
+`Self`, `ItemTransform`, the `PathGeometry` outline, the paint attributes (`FillColor`,
+`FillTint`, `StrokeColor`, `StrokeWeight`, `StrokeType`, `StrokeTint`), `AppliedObjectStyle`,
+`ItemLayer`, `Visible`, `Locked` and `Name`.
 
-**What is the difference between a Rectangle and an Oval in IDML?**
-Both share the same fill-and-stroke story, but their geometry differs: a
-`Rectangle` paints the path outline directly, while an `Oval` paints the ellipse
-*inscribed* in the path's bounding box — so a square `Oval` outline yields a
-circle.
+**What is the difference between a Rectangle and an Oval?**
+Their paths. A rectangle's path has four corner anchors; an oval's path has four mid-edge
+anchors with curve handles. InDesign draws each from its path, so an `<Oval>` written with
+corner anchors comes out as a rectangle.
 
-**Are corner options and line arrowheads rendered?**
-Not fully. `CornerOption` is parsed but every non-square variant (Rounded, Bevel,
-Inset, and so on) is drawn as Rounded for now, and `GraphicLine` arrowheads
-(`LeftLineEnd` / `RightLineEnd`) are parsed but not yet drawn — the line renders as
-a plain stroke.
+**What does FillTint="-1" mean?**
+It is InDesign's unset value: no tint of the item's own, so the swatch applies as defined.
+
+**Are corner options and arrowheads part of the path?**
+No. Corner options are attributes applied on top of the square corners of the path, and
+arrowheads are drawn at the path's end anchors. The path stays as written.
+
+**How are the ends of a GraphicLine determined?**
+By its first and last path anchors. `LeftLineEnd` belongs to the first anchor, `RightLineEnd`
+to the last.

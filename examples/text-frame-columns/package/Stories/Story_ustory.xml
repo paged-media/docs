@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<idPkg:Story xmlns:idPkg="http://ns.adobe.com/AdobeInDesign/idml/1.0/packaging" DOMVersion="20.0">
+  <Story Self="ustory">
+    <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
+      <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+        <Content>Paragraph one.</Content>
+        <Br/>
+        <Content>Paragraph two.</Content>
+        <Br/>
+        <Content>Paragraph three.</Content>
+        <Br/>
+        <Content>Paragraph four.</Content>
+        <Br/>
+        <Content>Paragraph five.</Content>
+        <Br/>
+        <Content>Paragraph six.</Content>
+        <Br/>
+        <Content>Paragraph seven.</Content>
+        <Br/>
+        <Content>Paragraph eight.</Content>
+        <Br/>
+        <Content>Paragraph nine.</Content>
+        <Br/>
+        <Content>Paragraph ten.</Content>
+      </CharacterStyleRange>
+    </ParagraphStyleRange>
+  </Story>
+</idPkg:Story>

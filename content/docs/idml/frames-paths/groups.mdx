@@ -1,106 +1,100 @@
 ---
 title: Groups
-description: How an IDML Group clusters page items, how its transform and transparency reach the members, and what the renderer does inside one.
+description: How an IDML Group holds its members as child elements, how its transform, transparency and layer apply to them, and how groups nest and paint.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
+describes: [frames-paths.groups, effects-transparency.transparency-groups]
+reviewed: 2026-10-11
 ---
 
-**A `Group` is the one page item that holds no marks of its own — it is a container that clusters other page items so they move as one.**
+**A `Group` holds no marks of its own: it is a container whose members move, stack and can be made transparent as one object.**
 
-**In short:** A `Group` is the IDML page item that holds no marks of its own. It
-is a *container*: its children are the page items it clusters so they can be
-moved, scaled, rotated, or made translucent as a single object. On disk a group's
-members are written as child elements of the `<Group>`, and the group's
-`ItemTransform` composes onto each of them. This page explains how membership and
-the composed transform work, how group-level transparency is captured, and what
-our renderer does inside a group today.
-
-A `Group` is the one page item that holds no marks of its own. It is a
-*container*: its children are the page items it clusters so they can be moved,
-scaled, rotated, or made translucent as a single object. In the IDML on disk a
-group's members are written as child elements of the `<Group>`, exactly the way
-the [page-item reference](/docs/idml/frames-paths/page-item-types) shapes appear as
-children of a `<Spread>`.
-
-The example below is the smallest meaningful group: two filled rectangles
-wrapped so a single transform places the pair.
+**In short:** A `<Group>` lists its members as child elements: shapes, text frames and other
+groups, in their own back-to-front order. Each member's `ItemTransform` is relative to the
+group, and the group's own `ItemTransform` places the whole cluster in its parent. A group
+can carry transparency (opacity, blend mode, drop shadow) that applies to the members
+composited together, not to each one separately. All members are on the group's layer, set
+by the group's `ItemLayer`.
 
 <ExampleEmbed example="a-group">
-  A Group around two rectangles. The group's ItemTransform moves both at once.
+  Two rectangles in a group. The members' transforms are relative to the group; the group's
+  ItemTransform moves both at once.
 </ExampleEmbed>
 
-## Membership and the composed transform
+## Members and transforms
 
-When the parser meets a `<Group>` it records the group and then walks its
-children. Each member — `Rectangle`, `Oval`, `GraphicLine`, `Polygon`,
-`TextFrame`, or a nested `Group` — is **lifted out** onto the spread's normal
-page-item lists, but with the group's `ItemTransform` already *composed* onto
-the member's own transform. Nesting composes through every level: a member two
-groups deep ends up with `outer ∘ inner ∘ member`.
+A member is any page item written inside the `<Group>` element: `Rectangle`, `Oval`,
+`GraphicLine`, `Polygon`, `TextFrame` or another `Group`. Its `ItemTransform` maps it into the
+group's space; the group's transform maps that into the group's parent. Nesting composes at
+every level: a member two groups deep reaches the spread as `outer ∘ inner ∘ member`.
 
-The upshot is that downstream layers do not have to special-case groups to place
-things correctly — every member already carries its final transform. The
-original `Group` record is kept alongside (with its member list and its own
-un-composed transform) so a renderer that wants to bracket the cluster — for a
-shared opacity, blend mode, or drop shadow — still can. Both rectangles in the
-example paint at their composed positions; nothing is dropped.
+A grouped text frame is an ordinary text frame: it holds its story and can be threaded to
+frames outside the group. Groups can also sit inside a frame as pasted-in content, and a
+frame inside a group can host pasted-in content of its own.
 
-## Group-level transparency
+## Stacking
 
-A group can carry a transparency block that applies to all of its members at
-once — the reason to group shapes in the first place is often a single uniform
-effect:
+A group paints at its own position in its parent's order. Its members paint in the order
+they are written inside it, back to front, as one block: nothing outside the group can come
+between two of its members.
 
-<AttrTable
-  element="Group transparency (from BlendingSetting / DropShadowSetting)"
-  rows={[
-    { attr: 'Opacity', type: 'double (0–100)', support: 'parsed-not-rendered', note: 'From a <BlendingSetting> attached to the Group. Captured for a whole-group composite.' },
-    { attr: 'BlendMode', type: 'Normal | Multiply | Screen | …', support: 'parsed-not-rendered', note: 'Blend mode for the group as a unit.' },
-    { attr: 'DropShadow', type: '<DropShadowSetting>', support: 'parsed-not-rendered', note: 'A shadow cast by the flattened group, captured against the group rather than each child.' },
-  ]}
-/>
+## Group transparency
 
-The parser routes a `<DropShadowSetting>` or `<BlendingSetting>` that sits
-directly under a `<Group>` (not under a `StrokeTransparencySetting` or
-`ContentTransparencySetting` wrapper) into that group's transparency record, so
-the renderer can one day bracket the member range with a single transparency
-group instead of compositing each shape independently.
+A group carries the same `<TransparencySetting>` child as any page item, with
+`<BlendingSetting>` (`Opacity`, `BlendMode`) and `<DropShadowSetting>` among others. On a group
+these apply to the members **as one image**: a group at 50% opacity composites its members
+together first and then fades the result, so overlapping members do not show through each
+other, and a group drop shadow is cast by the combined silhouette.
 
-## What the renderer does inside a group today
+Settings wrapped in `<StrokeTransparencySetting>` or `<ContentTransparencySetting>` target only
+the stroke or the content of the object that carries them.
 
-Group *members* render: the lift-and-compose pass means each shape paints at its
-correct place, as the example proves. What is not yet honoured is the
-group-level transparency block — opacity, blend mode, and the group drop shadow
-are parsed and attached to the `Group` record but the whole-group composite that
-would apply them is still on the roadmap.
+> **In Paged:** members render at their composed positions, and a group's opacity, blend mode
+> and drop shadow are composited over the group as a whole. A drop shadow or wide stroke that
+> reaches beyond the members' outline can still be cut at the group's edge.
+> <SupportBadge feature="frames-paths.groups" />
+> <SupportBadge feature="effects-transparency.transparency-groups" />
 
-<SupportBadge status="parsed-not-rendered" note="Group-level transparency (Opacity / BlendMode / DropShadow on a <Group>) is parsed and recorded but not yet composited as a whole-group effect (spread.rs:207–224)." />
+## Groups and layers
 
-One historical note for readers of the parser: a `skipped_nested_frames` counter
-exists on the spread record and is surfaced by `paged-inspect`. It dates from an
-earlier pass that dropped group-nested text frames; the current parser lifts
-those frames out instead, so the counter stays `0` (spread.rs:116–119). If you
-see it report a non-zero value, that is a signal worth investigating, not the
-expected case.
+A group and all its members are on one layer: the group's `ItemLayer`. An `ItemLayer` on a
+member that names another layer does not move the member out of its group's layer. A
+`<Group>` written without `ItemLayer` lands on the document's **first** layer, the bottom one,
+and takes its members with it, even if every member names a different layer. A writer should
+always give a group the `ItemLayer` its members belong on.
+
+## The `Group` element
+
+<AttrTable element="Group" limit={8} />
+
+A group carries no fill or stroke that draws anything of its own. `AllowOverrides` and
+`OverriddenPageItemProps` matter only on masters; see
+[override resolution](/docs/idml/master-spreads-overrides/override-resolution).
+
+> **In Paged:** a group pasted into a frame is drawn without the frame's clip.
 
 ## Frequently asked questions
 
 **What does a Group do in IDML?**
-A `Group` clusters several page items so a single transform, opacity, or effect
-can apply to all of them at once. It holds no fill or stroke of its own — its only
-content is the members written as child elements of the `<Group>`.
+It clusters page items so they move together, stack as one block, and can share one
+transparency setting. Its only content is its members.
 
 **How does a group's transform reach its members?**
-When the parser meets a `<Group>` it lifts each member out onto the spread's
-normal page-item lists with the group's `ItemTransform` already *composed* onto
-the member's own transform. Nesting composes through every level, so a member two
-groups deep ends up with `outer ∘ inner ∘ member` — and downstream layers never
-have to special-case groups to place things correctly.
+By composition. Each member's `ItemTransform` is relative to the group, and the group's
+`ItemTransform` places the group in its parent; a member's position in the spread is
+`group ∘ member`, through every level of nesting.
 
-**Does the renderer apply group-level opacity and drop shadows?**
-Not yet. A group's `Opacity`, `BlendMode`, and drop shadow are parsed and attached
-to the `Group` record, but the whole-group composite that would apply them is
-still on the roadmap; the members themselves render at their correct composed
-positions today.
+**Is group opacity the same as giving each member that opacity?**
+No. The group's members are composited together first and the result is made transparent, so
+overlapping members do not show through each other. Giving each member the opacity lets them
+show through.
+
+**Which layer are a group's members on?**
+The group's layer. A group without `ItemLayer` goes to the first layer of the document, along
+with all its members.
+
+**Can a group contain text frames?**
+Yes. A grouped text frame holds its story like any other and can be threaded to frames
+outside the group.
