@@ -1,0 +1,106 @@
+---
+title: Transparency and blending
+description: The IDML BlendingSetting (Opacity, BlendMode, KnockoutGroup, IsolateBlending) and the object, fill, stroke and content transparency levels it can sit in.
+tier: intermediate
+diataxis: reference
+status: published
+owner: paged-docs
+describes: [effects-transparency.opacity, effects-transparency.blend-modes, effects-transparency.transparency-groups]
+reviewed: 2026-10-11
+---
+
+**`<BlendingSetting>` sets how much of an object shows (`Opacity`) and how its colours combine with what is beneath (`BlendMode`).**
+
+**In short:** `Opacity` is a percentage, 100 fully opaque. `BlendMode` is one of InDesign's
+blend modes, `Normal` unless set. On a group, `IsolateBlending` keeps the members' blend modes
+from reaching below the group and `KnockoutGroup` stops members from showing through each
+other. The setting sits in one of four containers: `TransparencySetting` for the whole
+object, or `FillTransparencySetting`, `StrokeTransparencySetting` or
+`ContentTransparencySetting` for one part of it.
+
+## `<BlendingSetting>`
+
+<AttrTable element="BlendingSetting" />
+
+InDesign's default, as its preferences write it: `BlendMode="Normal" Opacity="100"
+KnockoutGroup="false" IsolateBlending="false"`.
+
+### `Opacity`
+
+A percentage from 0 (invisible) to 100 (opaque), written as a whole number in the surveyed
+files. At the object level it fades everything the object draws together: fill, stroke,
+content and effects. Opacity is not a tint: a 50 % tint is a lighter colour that still covers
+what is beneath; 50 % opacity lets it show through.
+
+### `BlendMode`
+
+How the object's colours combine with the colours beneath it. The surveyed documents use
+`Normal`, `Multiply`, `Screen`, `Overlay`, `SoftLight`, `Darken`, `Lighten` and `ColorBurn`,
+`Multiply` most often after `Normal`. A blend mode affects everything beneath the object down
+to the page, unless a group isolates it.
+
+Blending happens in the document's blending space, `BlendingSpace` on the
+`<TransparencyPreference>` in `Preferences.xml`: `CMYK` in nearly every surveyed file.
+
+### `IsolateBlending` and `KnockoutGroup`
+
+Both matter on a group:
+
+- **`IsolateBlending="true"`**: the members' blend modes combine only with each other, not with
+  what lies beneath the group.
+- **`KnockoutGroup="true"`**: members do not show through one another; each member blends only
+  with what is beneath the group.
+
+Both are `false` in every surveyed file.
+
+## The four levels
+
+The same `<BlendingSetting>` can sit in four containers, written as children of the page item
+after its `<Properties>`:
+
+| Container | Opacity and blend mode apply to |
+|---|---|
+| `TransparencySetting` | the whole object |
+| `FillTransparencySetting` | the fill only |
+| `StrokeTransparencySetting` | the stroke only |
+| `ContentTransparencySetting` | the content: the text of a text frame or the picture in a graphic frame |
+
+A rectangle with a 30 % fill opacity and a fully opaque stroke is written as
+`FillTransparencySetting` with `Opacity="30"`, while the object level stays at 100.
+Object-level opacity multiplies with each part's own.
+
+## Groups
+
+A `<Group>`'s `TransparencySetting` treats the group as one: its members are composed first,
+and the result is faded or blended as a whole. Three overlapping 50 %-opaque shapes look
+different from the same shapes in a 50 %-opaque group: in the group they do not show through
+each other.
+
+> **In Paged:** object-level `Opacity` and `BlendMode` are applied to rectangles, ovals,
+> polygons, text frames and groups; a group is composed as a unit. Paged also reads
+> `HardLight`, `ColorDodge`, `Difference`, `Exclusion`, `Hue`, `Saturation`, `Color` and
+> `Luminosity`. Opacity and blend mode on a graphic line are not applied yet, and
+> `IsolateBlending` and `KnockoutGroup` are not read. The fill, stroke and content levels are
+> not kept apart: an opacity or blend mode found there is applied to the whole object.
+> <SupportBadge feature="effects-transparency.opacity" /> <SupportBadge feature="effects-transparency.blend-modes" /> <SupportBadge feature="effects-transparency.transparency-groups" />
+
+## Frequently asked questions
+
+**How do I make an object 50 % transparent in IDML?**
+Give it `<TransparencySetting><BlendingSetting Opacity="50"/></TransparencySetting>` after its
+`<Properties>`.
+
+**What blend modes appear in real files?**
+`Normal`, then `Multiply`, and also `Screen`, `Overlay`, `SoftLight`, `Darken`, `Lighten` and
+`ColorBurn` in the surveyed documents.
+
+**How do I fade only the fill and keep the stroke opaque?**
+Put the `BlendingSetting` in `FillTransparencySetting` instead of `TransparencySetting`.
+
+**Is opacity on a group the same as opacity on each member?**
+No. A group's opacity applies to the composed group, so its members do not show through one
+another.
+
+**What do `IsolateBlending` and `KnockoutGroup` do?**
+On a group, `IsolateBlending` confines the members' blend modes to the group and
+`KnockoutGroup` keeps members from showing through each other.

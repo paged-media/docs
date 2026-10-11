@@ -1,0 +1,88 @@
+---
+title: Effects & transparency
+description: How IDML stores opacity, blend modes, shadows, glows and feathers on a page item, in a TransparencySetting with one child per effect.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+describes: [effects-transparency.opacity, effects-transparency.drop-shadow, effects-transparency.feather]
+reviewed: 2026-10-11
+---
+
+**Transparency and effects live in a `<TransparencySetting>` child of the page item: one `<BlendingSetting>` for opacity and blend mode, and one element per effect.**
+
+**In short:** A page item that is see-through, blends with what is beneath it, or casts a
+shadow carries a `<TransparencySetting>` after its `<Properties>`. Inside it,
+`<BlendingSetting>` holds `Opacity` and `BlendMode`, and each effect has its own element:
+`DropShadowSetting`, `InnerShadowSetting`, `OuterGlowSetting`, `InnerGlowSetting`,
+`BevelAndEmbossSetting`, `SatinSetting`, `FeatherSetting`, `DirectionalFeatherSetting` and
+`GradientFeatherSetting`. Three more containers apply the same settings to only the fill,
+only the stroke, or only the content of the item. An effect's numbers follow InDesign's
+Effects dialog: sizes in points, opacities and spreads in percent, angles naming where the
+light comes from.
+
+## One container per level
+
+| Container | Applies to |
+|---|---|
+| `TransparencySetting` | the whole object |
+| `FillTransparencySetting` | the fill only |
+| `StrokeTransparencySetting` | the stroke only |
+| `ContentTransparencySetting` | the content only: the text of a text frame, the picture in a graphic frame |
+
+All four hold the same children. In the surveyed documents the object level is by far the
+most used: groups carry it in 170 documents, polygons in 53, rectangles in 49 and text frames
+in 31. The fill, stroke and content levels appear in a handful of files.
+
+## Switched on, or only written down
+
+InDesign writes every effect's settings even when the effect is off, so a file that mentions
+a `DropShadowSetting` does not necessarily have a shadow. What switches an effect on:
+
+- a drop shadow: `Mode="Drop"` (off is `Mode="None"`);
+- a basic feather: `Mode="Standard"` (off is `Mode="None"`);
+- every other effect: `Applied="true"`.
+
+Each document's `Preferences.xml` carries a `<TransparencyDefaultContainerObject>`: the four
+containers with every effect switched off, holding InDesign's default values. These are the
+defaults for new objects, not effects on anything in the document.
+
+<ExampleEmbed example="drop-shadow">
+  A rectangle whose TransparencySetting carries a DropShadowSetting with Mode="Drop", offset
+  12 pt right and down.
+</ExampleEmbed>
+
+## Pages in this chapter
+
+- [Transparency and blending](/docs/idml/effects-transparency/transparency-and-blending):
+  `BlendingSetting`, opacity, blend modes, knockout and isolation, and the four levels.
+- [Shadows and glows](/docs/idml/effects-transparency/shadows-and-glows): drop and inner
+  shadow, outer and inner glow, bevel and emboss, satin, and how InDesign measures them.
+- [Feathering](/docs/idml/effects-transparency/feathering): basic, directional and gradient
+  feather.
+
+Transparency is independent of colour. A tint makes a colour lighter but keeps it opaque;
+opacity lets what is beneath show through. See
+[gradients & tints](/docs/idml/color-swatches/gradients-and-tints).
+
+> **In Paged:** object-level opacity, blend modes and all nine effects are read and drawn; the
+> effects follow InDesign's parameters as measured against InDesign's own output. The fill,
+> stroke and content levels are only partly kept apart; see the pages that follow.
+> <SupportBadge feature="effects-transparency.opacity" /> <SupportBadge feature="effects-transparency.drop-shadow" />
+
+## Frequently asked questions
+
+**Where does IDML store an object's opacity?**
+In `<TransparencySetting><BlendingSetting Opacity="…">`, a child of the page item written
+after its `<Properties>`. Opacity is a percentage.
+
+**Why does my file mention a drop shadow when nothing has one?**
+InDesign writes each effect's settings whether or not it is on. A drop shadow is on only with
+`Mode="Drop"`; the other effects need `Applied="true"`, and a basic feather `Mode="Standard"`.
+
+**Can a shadow apply to only the stroke of a frame?**
+Yes. Effects inside `StrokeTransparencySetting` apply to the stroke alone, inside
+`FillTransparencySetting` to the fill, and inside `ContentTransparencySetting` to the content.
+
+**Is a tint the same as opacity?**
+No. A tint lightens a colour but stays opaque; opacity makes the object see-through.

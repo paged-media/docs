@@ -1,0 +1,83 @@
+---
+title: Feathering
+description: The IDML FeatherSetting, DirectionalFeatherSetting and GradientFeatherSetting, which fade an object's own edges or fade it across a gradient of opacity.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+describes: [effects-transparency.feather, effects-transparency.gradient-feather]
+reviewed: 2026-10-11
+---
+
+**A feather fades the object itself, not a copy of it: a basic feather softens every edge, a directional feather chosen sides, and a gradient feather fades the whole object along a ramp of opacity stops.**
+
+**In short:** `FeatherSetting` softens all edges over `Width` points and is switched on by
+`Mode="Standard"`. `DirectionalFeatherSetting` gives each side its own width (`LeftWidth`,
+`RightWidth`, `TopWidth`, `BottomWidth`). `GradientFeatherSetting` fades the object along a
+linear or radial ramp defined by `<OpacityGradientStop>` children. The last two are switched on
+by `Applied="true"`. All three sit with the other effects in a `TransparencySetting` (or a
+fill, stroke or content one).
+
+## Basic feather
+
+<AttrTable element="FeatherSetting" />
+
+- **`Mode`** is `Standard` when the feather is on and `None` when it is off. Unlike the other
+  effects, the basic feather has no `Applied` attribute.
+- **`Width`** is how far in from the edge the fade reaches, in points. InDesign's default is 9.
+- **`ChokeAmount`** moves the fade inward, as a percentage of the width.
+- **`CornerType`** shapes the fade at corners; `Diffusion` is the default and the only value in
+  the surveyed files.
+- **`Noise`** adds grain to the fade.
+
+## Directional feather
+
+<AttrTable element="DirectionalFeatherSetting" />
+
+Each side fades over its own width; a side with width 0 keeps a hard edge. `Angle` rotates the
+directions the widths apply to. `FollowShapeMode` (`LeadingEdge` in every surveyed file)
+decides how the widths follow a shape that is not a rectangle. `ChokeAmount` and `Noise` work as
+for the basic feather.
+
+## Gradient feather
+
+<AttrTable element="GradientFeatherSetting" />
+
+A gradient feather fades the object along a ramp, like a gradient fill whose stops are
+opacities instead of colours:
+
+- **`Type`** is `Linear` or `Radial`.
+- **`GradientStart`** is the start of the ramp, an `x y` pair in the object's coordinates;
+  **`Length`** its length in points; **`Angle`** its direction in degrees.
+- **`HiliteAngle`** and **`HiliteLength`** are written alongside; they do not set the ramp's
+  direction.
+- The ramp is defined by **`<OpacityGradientStop>`** children, each with an `Opacity` (percent),
+  a `Location` (percent along the ramp) and a `Midpoint`, as on a gradient swatch's stops.
+
+<AttrTable element="OpacityGradientStop" />
+
+Gradient feather settings appear on page items in about twenty of the surveyed documents,
+with opacity stops in six.
+
+> **In Paged:** all three feathers are drawn. The basic feather reads `CornerType`
+> `Diffusion`, `Rounded` and `Sharp`; the gradient feather takes its direction from `Angle`, not
+> from `HiliteAngle`. <SupportBadge feature="effects-transparency.feather" /> <SupportBadge feature="effects-transparency.gradient-feather" />
+
+## Frequently asked questions
+
+**How is a basic feather switched on?**
+With `Mode="Standard"` on `<FeatherSetting>`. It has no `Applied` attribute; `Mode="None"` is
+off.
+
+**What does `Width` mean on a feather?**
+How far the fade reaches in from the object's edge, in points.
+
+**Can a feather fade only one side?**
+Yes, with `DirectionalFeatherSetting`: give that side a width and leave the others at 0.
+
+**How are a gradient feather's opacities written?**
+As `<OpacityGradientStop>` children of `<GradientFeatherSetting>`, each with `Opacity`,
+`Location` and `Midpoint`.
+
+**Is a gradient feather the same as a gradient fill to transparent?**
+No. A gradient feather fades the whole object, stroke and content included, whatever its fill.

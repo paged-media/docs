@@ -1,0 +1,45 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "drop-shadow",
+  "title": "A rectangle with a drop shadow",
+  "tier": "intermediate",
+  "chapter": "effects-transparency",
+  "concept": "A <TransparencySetting> after the rectangle's <Properties> carries a <DropShadowSetting>; Mode=\"Drop\" switches it on, XOffset/YOffset move it and Size sets the width of its soft edge.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Spreads/Spread_uspread.xml",
+    "language": "xml",
+    "label": "Spreads/Spread_uspread.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree",
+    "live"
+  ],
+  "annotations": [
+    {
+      "lines": "18",
+      "note": "Object-level effects live in a <TransparencySetting> child of the page item, written after its <Properties>."
+    },
+    {
+      "lines": "19",
+      "note": "Mode=\"Drop\" turns the shadow on (Mode=\"None\" keeps the settings but draws nothing). XOffset and YOffset are the offset in points, positive to the right and down. Size is the width of the soft band, Opacity a percentage, EffectColor the shadow colour."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 2,
+    "paragraphs": 1,
+    "runs": 1
+  },
+  "pathological": false,
+  "license": "MIT",
+  "elements": [
+    "TransparencySetting",
+    "DropShadowSetting"
+  ]
+}

@@ -1,0 +1,159 @@
+---
+title: Shadows and glows
+description: The IDML drop shadow, inner shadow, outer and inner glow, bevel and emboss and satin settings, and how InDesign reads Size, Spread, Choke and Angle.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+describes: [effects-transparency.drop-shadow, effects-transparency.inner-shadow, effects-transparency.glows]
+reviewed: 2026-10-11
+---
+
+**Six effects darken or lighten an object's edges. Their numbers are InDesign's: `Size` is the width of the soft band, `Spread` and `Choke` are percentages of it, and `Angle` says where the light comes from.**
+
+**In short:** A drop shadow is offset by `XOffset` and `YOffset`; an inner shadow, a satin
+and a bevel by an `Angle` and a `Distance`, where the angle names the direction of the light,
+so the shadow falls the opposite way. `Size` is how wide the soft edge is, not a blur radius:
+an outer shadow or glow has faded to about a sixth of its strength `Size / 2` beyond the
+object's edge and is nearly gone at `Size`. `Spread` (outer effects) and `ChokeAmount`
+(inner effects) are percentages of `Size` that harden the edge. The drop shadow is on with
+`Mode="Drop"`, the others with `Applied="true"`.
+
+## How InDesign reads the numbers
+
+These rules were measured by having InDesign draw each effect and comparing its output with
+the values in its own IDML.
+
+- **`Size` is the width of the band.** For effects that spill outside the object (drop shadow,
+  outer glow) the edge is a Gaussian falloff with a standard deviation of `Size / 2`: at
+  `Size / 2` outside the outline about 16 % of the strength is left, at `Size` about 2 %.
+  Effects that stay inside the object (inner shadow, inner glow) fall off with a standard
+  deviation of about `0.4 × Size`. Reading `Size` as the blur radius doubles the softness.
+- **`Spread` and `ChokeAmount` are percentages of `Size`.** Spread grows the shape outward
+  before the falloff; choke moves the edge inward. Neither is a distance in points.
+- **`Angle` names the light.** It is measured in degrees counter-clockwise from the right,
+  and the shadow falls away from the light: with y pointing down the page, the offset is
+  `x = −Distance × cos(Angle)` and `y = +Distance × sin(Angle)`. InDesign's default, 120°,
+  puts the light at the upper left and the shadow down and to the right.
+- **A drop shadow's offset is written as `XOffset` and `YOffset`.** Positive is right and down.
+  Inner shadows and satins are written with `Angle` and `Distance`.
+- **`UseGlobalLight="true"`** takes the angle from the document's light, `GlobalLightAngle`
+  (and for a bevel `GlobalLightAltitude`) on `<TransparencyPreference>`. It is `false` in every
+  surveyed file.
+
+`Opacity` is a percentage of the effect's strength, `Noise` a percentage of grain, and
+`EffectColor` names a palette colour; `n` leaves the effect's default colour.
+
+## Drop shadow
+
+<AttrTable element="DropShadowSetting" />
+
+On with `Mode="Drop"`, off with `Mode="None"`. InDesign's default is a black, 75 %-opaque
+`Multiply` shadow, 7 pt right and 7 pt down, `Size` 5. `KnockedOut="true"` hides the shadow
+behind a semi-transparent object; `HonorOtherEffects` lets other effects shape the shadow. In
+the surveyed documents, drop shadows are switched on in 10.
+
+<ExampleEmbed example="drop-shadow">
+  Mode="Drop", XOffset and YOffset 12 pt, Size 10, Opacity 75, black, Multiply.
+</ExampleEmbed>
+
+### What casts the shadow
+
+A drop shadow is cast by what the object paints. InDesign follows these rules for every kind of
+shape:
+
+- **A filled shape** casts the shadow of its outline, grown by the part of a visible stroke
+  that lies outside the outline. A rounded rectangle casts a rounded shadow, an ellipse an
+  elliptical one.
+- **A shape with no fill and a visible stroke** casts the shadow of its stroke band only.
+- **A line** casts the shadow of its stroke, at the stroke's width, with its caps.
+- **A text frame with no fill** casts the shadow of its text, glyph by glyph.
+
+A shadow inside `StrokeTransparencySetting` is cast by the stroke alone; one inside
+`ContentTransparencySetting` by the content alone.
+
+> **In Paged:** drop shadows are drawn for rectangles, ovals, polygons, lines and text frames
+> by these rules, matched to InDesign on test pages for lines, ovals, polygons and rectangles.
+> A group's shadow is drawn for the group as a whole. A shadow at the stroke level is kept as
+> the stroke's shadow; one at the content level is not drawn.
+> <SupportBadge feature="effects-transparency.drop-shadow" />
+
+## Inner shadow
+
+<AttrTable element="InnerShadowSetting" />
+
+A shadow inside the object's edge, as if the object were cut out of the page. Positioned by
+`Angle` and `Distance` (default 120° and 7 pt), softened by `Size`, hardened by
+`ChokeAmount`. Default `Multiply`, 75 %.
+
+> **In Paged:** inner shadows are drawn by the rules above, the light angle included.
+> <SupportBadge feature="effects-transparency.inner-shadow" />
+
+## Outer glow and inner glow
+
+<AttrTable element="OuterGlowSetting" />
+
+<AttrTable element="InnerGlowSetting" />
+
+A glow is an unoffset band of colour around the outside of the edge (outer) or inside it
+(inner). `Size` sets its width, `Spread` hardens it. Inner glows spell their choke `Spread`
+too. `Source` on an inner glow is `EdgeSourced` (from the edge inward) or `CenterSourced`
+(from the centre outward). `Technique` is `Softer` in every surveyed file. The default blend
+mode is `Screen`, which lightens; a black glow under `Screen` draws nothing.
+
+> **In Paged:** both glows are drawn; a glow whose `EffectColor` does not resolve is drawn
+> white, a shadow black. <SupportBadge feature="effects-transparency.glows" />
+
+## Bevel and emboss
+
+<AttrTable element="BevelAndEmbossSetting" />
+
+Shading that makes the object look raised or sunk. `Style` chooses the kind (`InnerBevel` by
+default), `Technique` the profile (`SmoothContour`, `ChiselHard`, `ChiselSoft`), and `Direction`
+(`Up` by default) whether it is raised or sunk. The light comes from `Angle` at the height `Altitude`. The facet is `Size`
+wide; `Depth`, a percentage that can go far above 100, makes it steeper rather than scaling the
+result; `Soften` blurs it. The highlight and shadow each have a colour, an opacity and a blend
+mode (`Screen` and `Multiply` by default).
+
+> **In Paged:** bevels are drawn with a facet `Size` wide, shaded against the light. Where the
+> facet is wider than half the object, InDesign fades it and Paged does not yet.
+> <SupportBadge feature="effects-transparency.bevel-emboss" />
+
+## Satin
+
+<AttrTable element="SatinSetting" />
+
+A soft, inner shading made of two offset copies of the shape: `Angle` and `Distance` set the
+offset, `Size` the softness, `InvertEffect` swaps the light and dark areas. Default
+`Multiply`, 50 %.
+
+> **In Paged:** satin is drawn from two offset, softened copies of the shape; it is not yet
+> matched to InDesign as closely as the other effects. <SupportBadge feature="effects-transparency.satin" />
+
+## Stacking
+
+An outer glow and a drop shadow are drawn beneath the object; the inner effects (inner shadow,
+inner glow, bevel, satin) are drawn on top of its fill.
+
+## Frequently asked questions
+
+**Is `Size` a blur radius?**
+No. It is the width of the soft band. Outer effects fall off with a standard deviation of
+`Size / 2`, inner effects about `0.4 × Size`.
+
+**Which way does a shadow fall for `Angle="120"`?**
+Down and to the right. The angle names where the light is, counter-clockwise from the right, and
+the shadow falls the opposite way.
+
+**Are `Spread` and `ChokeAmount` in points?**
+No. They are percentages of `Size`.
+
+**How is a drop shadow's offset written?**
+As `XOffset` and `YOffset` in points, positive right and down.
+
+**Does a frame with no fill cast a shadow?**
+Yes, from what it does paint: its stroke band, or, for a text frame, its text.
+
+**How do I tell whether an effect is on?**
+A drop shadow is on with `Mode="Drop"`; the other effects here with `Applied="true"`.
+InDesign writes the settings even when the effect is off.

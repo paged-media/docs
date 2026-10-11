@@ -1,0 +1,10 @@
+{
+  "title": "Effects & transparency",
+  "icon": "renderer",
+  "pages": [
+    "index",
+    "transparency-and-blending",
+    "shadows-and-glows",
+    "feathering"
+  ]
+}
