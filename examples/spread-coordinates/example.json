@@ -55,5 +55,19 @@
     "Page",
     "TextFrame",
     "MasterSpread"
-  ]
+  ],
+  "verified": {
+    "status": "verified",
+    "indesignVersion": "20.0.1.32",
+    "verifiedAt": "2026-10-11",
+    "partsHash": "sha256:55636ff6fa95b34e1aad3fb6f799382c4e9467e8aa2728422ae7fb04849bf847",
+    "pages": 2,
+    "roundTrip": true,
+    "fidelity": {
+      "meanDE": 0.036,
+      "p99DE": 0,
+      "ssim": 0.999,
+      "fontsMatched": true
+    }
+  }
 }

@@ -45,5 +45,19 @@
   "elements": [
     "ObjectStyle",
     "RootObjectStyleGroup"
-  ]
+  ],
+  "verified": {
+    "status": "verified",
+    "indesignVersion": "20.0.1.32",
+    "verifiedAt": "2026-10-11",
+    "partsHash": "sha256:bb476e96239946f69acd91c5512ea4949eec7d6cb7809fd06ea2ad8abafd5d33",
+    "pages": 1,
+    "roundTrip": true,
+    "fidelity": {
+      "meanDE": 2.066,
+      "p99DE": 12.613,
+      "ssim": 0.994,
+      "fontsMatched": true
+    }
+  }
 }

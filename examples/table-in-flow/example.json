@@ -59,5 +59,19 @@
     "Row",
     "Column",
     "Cell"
-  ]
+  ],
+  "verified": {
+    "status": "verified",
+    "indesignVersion": "20.0.1.32",
+    "verifiedAt": "2026-10-11",
+    "partsHash": "sha256:2ffe47b77a8b656e83be746fc693590a6a46ac16f39b69ba3c6fc74081d3a886",
+    "pages": 1,
+    "roundTrip": true,
+    "fidelity": {
+      "meanDE": 0.178,
+      "p99DE": 0,
+      "ssim": 0.991,
+      "fontsMatched": true
+    }
+  }
 }

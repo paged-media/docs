@@ -39,5 +39,19 @@
   "elements": [
     "TextFrame",
     "TextFramePreference"
-  ]
+  ],
+  "verified": {
+    "status": "verified",
+    "indesignVersion": "20.0.1.32",
+    "verifiedAt": "2026-10-11",
+    "partsHash": "sha256:3f444840317b909ec0d3aa728e3b478b29333a6c8fd9bcdc20ab034df55ea403",
+    "pages": 1,
+    "roundTrip": true,
+    "fidelity": {
+      "meanDE": 0.156,
+      "p99DE": 1.008,
+      "ssim": 0.993,
+      "fontsMatched": true
+    }
+  }
 }
