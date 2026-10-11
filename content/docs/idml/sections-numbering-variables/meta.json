@@ -3,7 +3,7 @@
   "icon": "paragraph",
   "pages": [
     "index",
-    "text-variables",
-    "sections-and-numbering"
+    "sections-and-numbering",
+    "text-variables"
   ]
 }

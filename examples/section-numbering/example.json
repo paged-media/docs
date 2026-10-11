@@ -1,0 +1,53 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "section-numbering",
+  "title": "Two sections: Roman front matter, then a restart at 1",
+  "tier": "intermediate",
+  "chapter": "sections-numbering-variables",
+  "concept": "Two Section elements in the design map restart page numbering: the left page is numbered ii in lowercase Roman, the right page starts a new section at 1 with a section marker.",
+  "packageDir": "package",
+  "editable": {
+    "part": "designmap.xml",
+    "language": "xml",
+    "label": "designmap.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree",
+    "live"
+  ],
+  "annotations": [
+    {
+      "lines": "10",
+      "note": "Sections come after the idPkg:Spread references and before the stories."
+    },
+    {
+      "lines": "11",
+      "note": "PageStart names the Self of the page the section begins on. ContinueNumbering=\"false\" comes before PageNumberStart: InDesign applies the start number only once it has read the restart."
+    },
+    {
+      "lines": "12-14",
+      "note": "The numbering style is a typed Properties child, not an attribute. LowerRoman makes page 2 of this section print as ii."
+    },
+    {
+      "lines": "16",
+      "note": "The second section restarts at 1 on the right page. Marker is the text a section marker (<?ACE 19?>) prints on pages of this section."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 2,
+    "stories": 2,
+    "frames": 4,
+    "paragraphs": 2,
+    "runs": 2
+  },
+  "pathological": false,
+  "license": "MIT",
+  "elements": [
+    "Section",
+    "Page"
+  ]
+}
