@@ -1,123 +1,113 @@
 ---
-title: Conditions and applied conditions
-description: The <Condition> and <ConditionSet> elements in Styles.xml, the attributes our parser reads from them, and how a run opts in through AppliedConditions.
+title: Conditions and condition sets
+description: The Condition and ConditionSet elements in designmap.xml, AppliedConditions on a run, and ConditionalTextPreference — spelled the way InDesign reads them.
 tier: pro
 diataxis: reference
 status: published
 owner: paged-docs
+describes:
+  - conditional-text.applied-conditions
+  - conditional-text.visibility-filtering
+reviewed: 2026-10-11
 ---
 
-**Conditional text is wired through a `<Condition>` toggle, an optional `<ConditionSet>` that groups toggles, and an `AppliedConditions` attribute that attaches a run to one or more conditions.**
+**A `Condition` is a named switch in the design map; a run names the switches that govern it in `AppliedConditions`.**
 
-**In short:** Three named pieces make conditional text work in IDML. A
-`<Condition>` defines an on/off visibility toggle, an optional `<ConditionSet>`
-groups several toggles for an editor, and an `AppliedConditions` attribute on a
-run names the conditions that govern it. The `<Condition>` and `<ConditionSet>`
-elements live once at the document level in `Resources/Styles.xml`; the
-`AppliedConditions` attribute lives on a `<CharacterStyleRange>` inside a story.
-This page is the reference for each of these — the attributes our parser reads,
-which ones drive layout, and how a run opts in.
-
-Conditional text is wired through three named pieces: a `<Condition>` that defines
-a toggle, an optional `<ConditionSet>` that groups toggles, and an
-`AppliedConditions` attribute that attaches a run to one or more conditions. The
-first two live in `Resources/Styles.xml`; the third lives on a
-`<CharacterStyleRange>` inside a story.
-
-The example below is one story with two runs. The first carries no condition; the
-second names `Condition/Draft`, which the document declares `Visible="false"`.
-Because that condition is hidden, the second run is dropped before layout: our
-parser reads two runs from the story, but the rendered page reports one.
+**In short:** Conditions are direct children of `Document` in `designmap.xml`. Each
+`Condition` has a `Self` id, a `Name`, a `Visible` flag and an on-screen indicator whose
+colour is a typed `IndicatorColor` property. A `ConditionSet` stores a saved combination
+of visibilities as `<Properties><SetConditions>` with one `VisibilityPair` per
+condition. A `ConditionalTextPreference` follows them. In a story, a
+`CharacterStyleRange` lists the conditions that govern it, space-separated, in
+`AppliedConditions`.
 
 <ExampleEmbed example="conditional-run">
-  A run tagged with a hidden condition — present in the XML, absent from the page.
+  One hidden condition in the design map and a run that names it: the run is in the
+  story and does not print.
 </ExampleEmbed>
 
-## `<Condition>`
+## `Condition`
 
-A document-level visibility toggle, declared once in `Resources/Styles.xml`
-alongside the style groups. Its `Self` id is the value a run refers to in
-`AppliedConditions`. Our parser reads the four attributes below; the remaining
-indicator-appearance attributes and the `IndicatorColor` child are read past, not
-acted on, because the renderer never draws the indicator (see
-[visibility resolution](/docs/idml/conditional-text/visibility)).
+A `Condition` is a direct child of `Document` in the design map. InDesign 20.0.1 reads
+conditions there, before the `idPkg:Preferences` reference or after the layers.
+Conditions wrapped in a `RootConditionalTextGroup` element in `Resources/Styles.xml`, a
+spelling some generated files use, are invisible to InDesign.
 
-<AttrTable
-  element="Condition"
-  rows={[
-    { attr: 'Self', type: 'string id (e.g. "Condition/Draft")', support: 'supported', note: 'The condition id. This is what a run names in AppliedConditions.' },
-    { attr: 'Name', type: 'string', support: 'supported', note: 'The human-readable condition name shown in an editor. Required by the format; the renderer keys off Self, not Name.' },
-    { attr: 'Visible', type: 'boolean', support: 'supported', note: 'Whether the condition is currently on. Absent means visible — a missing or unparseable value is treated as true.' },
-    { attr: 'IndicatorMethod', type: 'None | Underline | Highlight', support: 'parsed-not-rendered', note: 'How an editor should flag the governed text. Captured for round-trip; never drawn on the page.' },
-  ]}
-/>
+- `Self` is the id a run names, conventionally `Condition/<name>`.
+- `Name` is the name shown in InDesign's Conditional Text panel.
+- `Visible="false"` hides every run that names the condition.
+- `IndicatorMethod` is how the condition is marked on screen; InDesign writes
+  `UseHighlight`.
+- The indicator colour is a typed property,
+  `<Properties><IndicatorColor type="enumeration">Red</IndicatorColor></Properties>`.
+  An `IndicatorColor` attribute is ignored.
 
-`Visible` is the only attribute the layout pass reads. When it is `false`, every
-run that names this condition is removed; when it is `true` or absent, those runs
-are kept. There is no inheritance and no cascade here — the value on the
-`<Condition>` element is the whole story.
+<AttrTable element="Condition" />
+
+The indicator marks the text while editing. Whether it shows, and whether it prints, is
+set document-wide in `ConditionalTextPreference`.
 
 ## `AppliedConditions` on a run
 
-A `<CharacterStyleRange>` opts in to conditions through a single
-`AppliedConditions` attribute: a **space-separated list** of `<Condition>`
-references. A run with no `AppliedConditions` (the common case) is never gated and
-is always laid out.
+A `CharacterStyleRange` names its conditions in `AppliedConditions`, a space-separated
+list of `Condition` ids such as `"Condition/Print Condition/Draft"`. A range without the
+attribute is not conditional. A run with one condition prints when that condition is
+visible and is left out when it is hidden. What happens to a run with several
+conditions, some visible and some hidden, is covered in
+[visibility](/docs/idml/conditional-text/visibility).
 
-<AttrTable
-  element="CharacterStyleRange"
-  rows={[
-    { attr: 'AppliedConditions', type: 'space-separated Condition/… refs', support: 'supported', note: 'The conditions governing this run. The run is laid out only when every referenced condition resolves to Visible; if any is hidden, the whole run is dropped.' },
-  ]}
-/>
+<AttrTable element="CharacterStyleRange" attrs={['AppliedConditions']} />
 
-The combination is **AND**: listing two conditions means the run survives only
-when *both* are visible. A reference that does not resolve to any declared
-`<Condition>` is treated as visible (an unknown name cannot hide a run), so a stray
-or mistyped condition id never silently removes text.
+## `ConditionSet`
 
-## `<ConditionSet>`
+A `ConditionSet` is a named, saved combination of condition visibilities, the kind an
+author switches between ("Print edition", "Web edition"). It is a direct child of
+`Document`, after the conditions. Its contents are a typed list:
+`<Properties><SetConditions>` holding one
+`<VisibilityPair Condition="Condition/…" Visibility="true"/>` per condition, each pairing
+a condition with the visibility the set gives it.
 
-A `<ConditionSet>` is a named grouping of conditions — the unit an editor's
-Conditions panel toggles together (for instance, a "Print preview" set that flips
-several conditions at once). It also lives in `Resources/Styles.xml`. Our parser
-reads it for round-trip fidelity, but the layout pass does not branch on it: a run
-is gated by the individual conditions it names, never by which set is "active". See
-[visibility resolution](/docs/idml/conditional-text/visibility) for why.
+A space-separated `Conditions="a b"` attribute on `ConditionSet`, another generated-file
+spelling, is ignored by InDesign, and a set written that way silently captures every
+condition in the document.
 
-<AttrTable
-  element="ConditionSet"
-  rows={[
-    { attr: 'Self', type: 'string id', support: 'parsed-not-rendered', note: 'The set id. Stored; not consulted during layout.' },
-    { attr: 'Name', type: 'string', support: 'parsed-not-rendered', note: 'The set name shown in an editor.' },
-    { attr: 'Conditions', type: 'space-separated Condition/… refs', support: 'parsed-not-rendered', note: 'The conditions collected into this set, stored as-parsed. The renderer does not use set membership to decide visibility.' },
-  ]}
-/>
+<AttrTable element="ConditionSet" attrs={['Self', 'Name']} />
 
-With the three pieces in hand — a condition that defines a toggle, a run that names
-it, and the visibility value that decides the outcome — the next page walks the
-resolution rule end to end and pins down which parts are drawn and which are not.
+## `ConditionalTextPreference`
+
+One `ConditionalTextPreference` follows the conditions in the design map.
+`ShowConditionIndicators` controls the indicators; with `ShowIndicators`, the only value
+in the census, they appear on screen and do not print. `ActiveConditionSet` names the
+set currently applied, or `n` for none. All 271 InDesign-exported documents in the
+census carry it, with no set active.
+
+<AttrTable element="ConditionalTextPreference" />
+
+> **In Paged:** conditions and sets are read from the design map and, for older files,
+> from `Styles.xml` in either spelling; saving writes InDesign's spelling. A condition
+> id that names no `Condition` counts as visible. A set's `VisibilityPair`s are read as
+> its members, whatever their `Visibility` value, and the active-set preference is not
+> read. Scripts can show or hide a condition, or activate a set, which shows its members
+> and hides every other condition. <SupportBadge feature="conditional-text.applied-conditions" />
 
 ## Frequently asked questions
 
-**Which attribute on `<Condition>` decides whether text is shown?**
-`Visible` is the only attribute the layout pass reads. When it is `false`, every
-run that names the condition is removed; when it is `true` or absent, those runs
-are kept. There is no inheritance or cascade — the value on the element is the
-whole story.
+**Where are conditions defined in an IDML file?**
+In `designmap.xml`, as direct children of `Document`. InDesign does not see conditions
+placed inside a `RootConditionalTextGroup` in `Styles.xml`.
 
-**How does a run reference more than one condition?**
-Through a single `AppliedConditions` attribute holding a space-separated list of
-`<Condition>` references. The combination is AND: the run survives only when every
-referenced condition resolves to visible, so naming two conditions means both must
-be on for the run to be laid out.
+**How is a condition's indicator colour written?**
+As a typed property: `<Properties><IndicatorColor type="enumeration">Red</IndicatorColor></Properties>`.
+The attribute form is ignored.
 
-**What happens if `AppliedConditions` names a condition that does not exist?**
-An unresolved reference is treated as visible, so a stray or mistyped condition id
-never silently removes text. It takes a declared `<Condition>` with `Visible="false"`
-to hide a run.
+**How does a run name more than one condition?**
+With a space-separated list in `AppliedConditions`, for example
+`"Condition/Print Condition/Draft"`.
 
-**Does a `<ConditionSet>` control what gets rendered?**
-No. Our parser reads `<ConditionSet>` for round-trip fidelity, but the layout pass
-never branches on set membership. A run is gated only by the individual conditions
-it names, never by which set an editor considers "active".
+**How does a condition set list its conditions?**
+As `VisibilityPair` elements inside `<Properties><SetConditions>`, one per condition,
+each with `Condition` and `Visibility` attributes. A `Conditions` attribute is ignored.
+
+**Does the condition indicator print?**
+Not with `ShowConditionIndicators="ShowIndicators"`, the value in every census document:
+the indicator then appears on screen only.

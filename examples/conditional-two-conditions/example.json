@@ -1,0 +1,52 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "conditional-two-conditions",
+  "title": "One run under a visible and a hidden condition",
+  "tier": "pro",
+  "chapter": "conditional-text",
+  "concept": "A run that names two conditions, one visible and one hidden, isolates the multi-condition rule; control runs show each condition on its own.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Stories/Story_ustory.xml",
+    "language": "xml",
+    "label": "Stories/Story_ustory.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree"
+  ],
+  "annotations": [
+    {
+      "lines": "5-7",
+      "note": "No AppliedConditions: this run always prints."
+    },
+    {
+      "lines": "8-10",
+      "note": "Control: only Condition/Print, which the design map declares Visible=\"true\". This run prints."
+    },
+    {
+      "lines": "11-13",
+      "note": "Control: only Condition/Draft, declared Visible=\"false\". This run does not print."
+    },
+    {
+      "lines": "14-16",
+      "note": "The test: AppliedConditions lists both conditions, separated by a space. If BOTH prints, one visible condition is enough to show a run; if it does not, one hidden condition hides it."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 1,
+    "paragraphs": 1,
+    "runs": 2
+  },
+  "pathological": false,
+  "license": "MIT",
+  "elements": [
+    "Condition",
+    "CharacterStyleRange"
+  ]
+}

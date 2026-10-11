@@ -13,5 +13,4 @@
   <RootObjectStyleGroup>
     <ObjectStyle Self="ObjectStyle/$ID/[None]" Name="$ID/[None]" FillColor="Swatch/None" StrokeColor="Swatch/None" StrokeWeight="0" AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]" CornerOption="None" CornerRadius="0" EndCap="ButtEndCap" EndJoin="MiterEndJoin" MiterLimit="4" StrokeAlignment="CenterAlignment" StrokeType="StrokeStyle/$ID/Solid" Nonprinting="false"/>
   </RootObjectStyleGroup>
-  <Condition Self="Condition/Draft" Name="Draft" Visible="false" IndicatorMethod="Underline"/>
 </idPkg:Styles>

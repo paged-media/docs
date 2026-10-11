@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <?aid style="50" type="document" readerVersion="6.0" featureSet="257" product="20.0(32)"?>
-<Document xmlns:idPkg="http://ns.adobe.com/AdobeInDesign/idml/1.0/packaging" DOMVersion="20.0" Self="d" StoryList="ustory" Name="smallest-valid.indd" CMYKProfile="Coated FOGRA39 (ISO 12647-2:2004)" RGBProfile="sRGB IEC61966-2.1" SolidColorIntent="UseColorSettings" AfterBlendingIntent="UseColorSettings" DefaultImageIntent="UseColorSettings">
+<Document xmlns:idPkg="http://ns.adobe.com/AdobeInDesign/idml/1.0/packaging" DOMVersion="20.0" Self="d" StoryList="ustory" Name="conditional-run.indd" CMYKProfile="Coated FOGRA39 (ISO 12647-2:2004)" RGBProfile="sRGB IEC61966-2.1" SolidColorIntent="UseColorSettings" AfterBlendingIntent="UseColorSettings" DefaultImageIntent="UseColorSettings">
   <idPkg:Graphic src="Resources/Graphic.xml"/>
   <idPkg:Fonts src="Resources/Fonts.xml"/>
   <idPkg:Styles src="Resources/Styles.xml"/>
+  <Condition Self="Condition/Draft" Name="Draft" IndicatorMethod="UseHighlight" Visible="false">
+    <Properties>
+      <IndicatorColor type="enumeration">Red</IndicatorColor>
+    </Properties>
+  </Condition>
+  <ConditionalTextPreference ShowConditionIndicators="ShowIndicators" ActiveConditionSet="n"/>
   <idPkg:Preferences src="Resources/Preferences.xml"/>
   <idPkg:Tags src="XML/Tags.xml"/>
   <idPkg:MasterSpread src="MasterSpreads/MasterSpread_umaster.xml"/>

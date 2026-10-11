@@ -4,12 +4,12 @@
   "title": "A run hidden by a condition",
   "tier": "pro",
   "chapter": "conditional-text",
-  "concept": "A CharacterStyleRange that names a hidden Condition via AppliedConditions is dropped before layout — the parser reads two runs, the renderer lays out one.",
+  "concept": "A Condition is defined in designmap.xml as a direct child of Document; a run names it in AppliedConditions, and while the condition is hidden the run is not printed.",
   "packageDir": "package",
   "editable": {
-    "part": "Stories/Story_ustory.xml",
+    "part": "designmap.xml",
     "language": "xml",
-    "label": "Stories/Story_ustory.xml"
+    "label": "designmap.xml"
   },
   "views": [
     "raw",
@@ -18,16 +18,20 @@
   ],
   "annotations": [
     {
-      "lines": "5-7",
-      "note": "The first run carries no AppliedConditions, so it is always laid out."
-    },
-    {
-      "lines": "8",
-      "note": "The second run names Condition/Draft via AppliedConditions — a space-separated list of Condition references."
+      "lines": "7",
+      "note": "The Condition is a direct child of Document in the design map, not part of Resources/Styles.xml. Its Self id is what a run names in AppliedConditions. Visible=\"false\" hides every run that names it."
     },
     {
       "lines": "8-10",
-      "note": "Condition/Draft is declared Visible=\"false\" in Resources/Styles.xml, so the renderer drops this whole run before layout. The page shows only the first run."
+      "note": "The indicator colour is a typed Properties child. InDesign ignores an IndicatorColor attribute. IndicatorMethod=\"UseHighlight\" is the spelling InDesign writes."
+    },
+    {
+      "lines": "12",
+      "note": "ConditionalTextPreference follows the conditions: whether indicators are shown, and which condition set is active (n means none)."
+    },
+    {
+      "lines": "13",
+      "note": "Conditions come before the idPkg:Preferences reference. The story's second CharacterStyleRange carries AppliedConditions=\"Condition/Draft\", so its text does not print."
     }
   ],
   "expect": {
@@ -54,5 +58,10 @@
       "ssim": 0.997,
       "fontsMatched": true
     }
-  }
+  },
+  "elements": [
+    "Condition",
+    "ConditionalTextPreference",
+    "CharacterStyleRange"
+  ]
 }

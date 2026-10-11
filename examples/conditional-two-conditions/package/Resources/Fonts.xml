@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<idPkg:Fonts xmlns:idPkg="http://ns.adobe.com/AdobeInDesign/idml/1.0/packaging" DOMVersion="20.0">
+  <FontFamily Self="FontFamily/OpenSans" Name="Open Sans">
+    <Font Self="Font/OpenSans" FontFamily="Open Sans" Name="Open Sans" PostScriptName="OpenSans" Status="Installed" FontStyleName="Regular" FontType="TrueType"/>
+  </FontFamily>
+</idPkg:Fonts>
