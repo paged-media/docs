@@ -54,20 +54,41 @@
       "files": {
         "openapi.json": "generated/openapi.json"
       }
+    },
+    "idml-coverage": {
+      "$comment": "Which IDML (element, attribute) pairs Paged's importer reads and its exporter writes, extracted from the plugin-publish source by tools/idml-coverage (gated by idml_coverage_json_is_current). Feeds the element reference (ADR 805 / gen-idml-reference). Pinned to a commit, bumped deliberately.",
+      "repo": "plugin-publish",
+      "ref": "74c6ccc",
+      "files": {
+        "idml-coverage.json": "docs/reference/idml-coverage.json"
+      }
     }
   },
   "activity": {
     "$comment": "Cross-repo recent-commit feed. Pulled at build time via `gh api` (token-authenticated; private repos included by user decision). perRepo = commits fetched per repo.",
     "perRepo": 12,
     "repos": [
-      "core", "editor", "editor-server", "docs", "state",
-      "plugin-sdk", "plugin-draw", "plugin-web", "plugin-image",
-      "plugin-sheets", "plugin-data", "plugin-template",
-      "viewer", "website", "brand", "thoughts", "corpus"
+      "core",
+      "editor",
+      "editor-server",
+      "docs",
+      "state",
+      "plugin-sdk",
+      "plugin-draw",
+      "plugin-web",
+      "plugin-image",
+      "plugin-sheets",
+      "plugin-data",
+      "plugin-template",
+      "viewer",
+      "website",
+      "brand",
+      "thoughts",
+      "corpus"
     ]
   },
   "demos": {
-    "$comment": "Live-app demo sessions (rrweb JSON) captured by the editor's journey tests in CI and uploaded as GitHub Release assets. Committed seeds in docs/demos/ ship today; when enabled, the latest editor release's *.rrweb.json OVERRIDE the seeds (pull-sources copies seeds first, then release-downloads with --clobber). Safe before any release exists — the download just warns and the seeds remain. The editor demo-capture workflow dispatches docs (repository_dispatch source-updated) after each release so this re-pulls automatically.",
+    "$comment": "Live-app demo sessions (rrweb JSON) captured by the editor's journey tests in CI and uploaded as GitHub Release assets. Committed seeds in docs/demos/ ship today; when enabled, the latest editor release's *.rrweb.json OVERRIDE the seeds (pull-sources copies seeds first, then release-downloads with --clobber). Safe before any release exists \u2014 the download just warns and the seeds remain. The editor demo-capture workflow dispatches docs (repository_dispatch source-updated) after each release so this re-pulls automatically.",
     "enabled": true,
     "repo": "editor",
     "tag": "latest",

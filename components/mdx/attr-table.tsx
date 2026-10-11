@@ -1,17 +1,20 @@
 import type { CSSProperties } from 'react';
 import Link from '@/components/site-link';
 import { SupportBadge, type SupportStatus } from './support-badge';
-import { getIdmlElement } from '@/lib/generated';
+import { getIdmlElement, getRefElement, type RefAttribute } from '@/lib/generated';
 
 /**
  * A consistent element-reference table. Two modes:
  *
  *  - Hand-authored: `<AttrTable element="…" rows={[…]} />` — the reference page
  *    declares the rows (names/value domains are facts; `support` is honest status).
- *  - Generated: `<AttrTable element="TextFrame" />` (no `rows`) — pulls the
- *    element's attributes from the engine catalog (.generated/idml-schema.json),
- *    so the table grows with the parser and each settable attribute links to the
- *    `paged.set` path that mutates it.
+ *  - Generated: `<AttrTable element="TextFrame" />` (no `rows`) — the element's
+ *    most-used attributes from the element reference (.generated/idml-reference
+ *    .json: the corpus census, the engine's typed properties, Paged's importer
+ *    and exporter), with a link to the element's full reference page. `limit`
+ *    caps the rows (default 10); `attrs` picks specific attributes instead.
+ *    Falls back to the engine catalog's curated rows for an element the
+ *    reference lacks.
  *
  * Editorial styling (brand ReferenceTable): a 2px ink header rule, uppercase
  * IBM Plex Sans column labels, hairline row dividers, and a mono first column in
@@ -54,10 +57,24 @@ const tdMono: CSSProperties = {
   letterSpacing: '-0.01em',
 };
 
-export function AttrTable({ element, rows }: { element?: string; rows?: AttrRow[] }) {
-  // Generated mode: no rows + a known element → render from the engine catalog,
-  // with each settable attribute linking to its paged.set path.
-  if (!rows && element) return <GeneratedAttrTable element={element} />;
+export function AttrTable({
+  element,
+  rows,
+  limit = 10,
+  attrs,
+}: {
+  element?: string;
+  rows?: AttrRow[];
+  limit?: number;
+  attrs?: string[];
+}) {
+  // Generated mode: no rows + a known element → render from the element
+  // reference, linking to the full page.
+  if (!rows && element) {
+    const ref = getRefElement(element);
+    if (ref) return <ReferenceAttrTable element={element} slug={ref.slug} attributes={ref.attributes} limit={limit} attrs={attrs} />;
+    return <GeneratedAttrTable element={element} />;
+  }
   const list = rows ?? [];
   return (
     <figure className="not-prose" style={{ margin: 'var(--space-5) 0', overflowX: 'auto' }}>
@@ -84,6 +101,78 @@ export function AttrTable({ element, rows }: { element?: string; rows?: AttrRow[
           ))}
         </tbody>
       </table>
+    </figure>
+  );
+}
+
+function valuesOf(a: RefAttribute): string {
+  const members = a.typed?.type?.members;
+  if (members?.length) return members.join(' | ');
+  if (a.values) return Object.keys(a.values).join(' | ');
+  if (a.refKinds?.length) return `${a.refKinds.join(' / ')} reference`;
+  const t = a.typed?.type;
+  if (t?.kind) return t.unit ? `${t.kind} (${t.unit})` : t.kind;
+  return a.types.filter((x) => x !== 'nil' && x !== 'empty').join(' / ') || '—';
+}
+
+/** Rows from the element reference: what real documents use, typed, with
+ *  Paged's support, linking to the element's full page. */
+function ReferenceAttrTable({
+  element,
+  slug,
+  attributes,
+  limit,
+  attrs,
+}: {
+  element: string;
+  slug: string;
+  attributes: RefAttribute[];
+  limit: number;
+  attrs?: string[];
+}) {
+  const shown = attrs ? attrs.map((n) => attributes.find((a) => a.name === n)).filter((a): a is RefAttribute => !!a) : attributes.slice(0, limit);
+  const showPaged = shown.some((a) => a.paged);
+  return (
+    <figure className="not-prose" style={{ margin: 'var(--space-5) 0', overflowX: 'auto' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-sans)' }}>
+        <thead>
+          <tr>
+            <th style={th}>
+              Attribute<span style={{ color: 'var(--color-muted)', fontWeight: 400 }}> · {element}</span>
+            </th>
+            <th style={th}>Values</th>
+            {showPaged ? <th style={th}>Paged</th> : null}
+            <th style={th}>paged.set</th>
+          </tr>
+        </thead>
+        <tbody>
+          {shown.map((a) => (
+            <tr key={a.name}>
+              <td style={{ ...tdMono, color: 'var(--code-tag)' }}>
+                {a.name}
+                {a.kind === 'properties-child' ? <div style={{ color: 'var(--color-muted)', fontSize: 11 }}>in Properties</div> : null}
+              </td>
+              <td style={{ ...tdMono, color: 'var(--color-ink-soft)' }}>{valuesOf(a)}</td>
+              {showPaged ? (
+                <td style={td}>
+                  {a.paged ? [a.paged.imported && 'read', a.paged.exported && 'written'].filter(Boolean).join(' · ') || 'not read' : '—'}
+                </td>
+              ) : null}
+              <td style={td}>
+                {a.typed?.path ? (
+                  <Link href="/docs/paged/scripting/settable-paths" style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                    {a.typed.path}
+                  </Link>
+                ) : null}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <figcaption style={{ fontSize: 12.5, color: 'var(--color-muted)', marginTop: 6 }}>
+        {attrs ? 'Selected attributes.' : `The ${shown.length} attributes real documents use most.`}{' '}
+        <Link href={`/docs/idml/reference/${slug}`}>All {attributes.length} attributes of {element} →</Link>
+      </figcaption>
     </figure>
   );
 }

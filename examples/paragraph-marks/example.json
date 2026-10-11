@@ -1,0 +1,72 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "paragraph-marks",
+  "title": "Paragraph marks, a forced line break and a style run",
+  "tier": "intermediate",
+  "chapter": "stories-text",
+  "concept": "Three paragraphs in two ParagraphStyleRanges: <Br/> ends a paragraph, a U+2028 forced line break does not, and a new range starts only where paragraph attributes change.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Stories/Story_ustory.xml",
+    "language": "xml",
+    "label": "Stories/Story_ustory.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree",
+    "live"
+  ],
+  "annotations": [
+    {
+      "lines": "4",
+      "note": "The first ParagraphStyleRange: a style run holding two paragraphs that share the same paragraph attributes."
+    },
+    {
+      "lines": "7",
+      "note": "<Br/> is the paragraph mark: the first paragraph ends here."
+    },
+    {
+      "lines": "8",
+      "note": "&#x2028; is a forced line break (U+2028). The line breaks, but the paragraph goes on: no new indent, no space before."
+    },
+    {
+      "lines": "9",
+      "note": "This <Br/> ends the second paragraph. It belongs to the range before the attribute change."
+    },
+    {
+      "lines": "12",
+      "note": "The third paragraph has its own SpaceBefore, so it starts a new ParagraphStyleRange. As the story's last paragraph it ends without a mark."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 1
+  },
+  "pathological": false,
+  "license": "MIT",
+  "elements": [
+    "Story",
+    "ParagraphStyleRange",
+    "CharacterStyleRange",
+    "Content",
+    "Br"
+  ],
+  "verified": {
+    "status": "verified",
+    "indesignVersion": "20.0.1.32",
+    "verifiedAt": "2026-10-11",
+    "partsHash": "sha256:02f879827385af9a3abdd1f71aaa02d6836635e5b4935a58568071a0063840a9",
+    "pages": 1,
+    "roundTrip": true,
+    "fidelity": {
+      "meanDE": 0.018,
+      "p99DE": 0,
+      "ssim": 1,
+      "fontsMatched": true
+    }
+  }
+}

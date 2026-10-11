@@ -1,144 +1,103 @@
 ---
 title: Text variables
-description: The document-level TextVariable definition in IDML, its VariableType kinds, and the frozen ResultText each TextVariableInstance carries.
+description: IDML text variables and page markers — the TextVariable definition, its VariableType kinds, TextVariableInstance in a story, and the <?ACE?> page-number codes.
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
+describes:
+  - sections-numbering-variables.text-variables
+  - stories-text.page-number-markers
+reviewed: 2026-10-11
 ---
 
-**A text variable is a named, computed string — like a file name or chapter number — that IDML splits into a `TextVariable` definition under `Document` and a `TextVariableInstance` carrying the baked value where it appears.**
+**A text variable is defined once in the design map and placed in stories as instances; page numbers and section names are markers instead.**
 
-**In short:** A text variable is a named, computed string — a file name, a chapter
-number, a running header, a date — that InDesign places into the flowing text and
-re-derives whenever the document changes. IDML records it at two altitudes: a
-`TextVariable` **definition** that lives once under `Document` in the design map, and
-one or more `TextVariableInstance` **instances** that sit in the stories where the
-value actually appears. Each instance carries its evaluated value frozen in a
-`ResultText` attribute — a snapshot from the last export. This page is the
-document-level reference for the definition, the `VariableType` kinds it can take,
-and the shape of the value an instance carries; our parser records the definition
-and inlines the instance's `ResultText` verbatim without ever recomputing it.
-
-A text variable is a named, computed string — a file name, a chapter number, a
-running header, a date — that InDesign places into the flowing text and re-derives
-whenever the document changes. IDML splits it into two parts at two altitudes: a
-**definition** that lives once under `Document` in the design map, and one or more
-**instances** that sit in the stories where the value actually appears.
-
-This page is the document-level reference: the `TextVariable` definition and the
-shape of the value an instance carries. The run-level mechanics — how an instance
-becomes characters inside a `CharacterStyleRange`, and how page-number markers
-differ — are documented once in
-[stories & text → text variables](/docs/idml/stories-text/text-variables). This page
-links there rather than repeating it.
+**In short:** A `TextVariable` in `designmap.xml` defines a piece of computed text: its
+`VariableType` says what it computes (a running header, the last page number, the file
+name, a date, a fixed string) and a typed `…VariablePreference` child holds its settings.
+A story places it with a `TextVariableInstance`, which also stores the value InDesign last
+composed as `ResultText`. The current, next and previous page number and the section
+name are not variables but markers inside `Content`: `<?ACE 18?>` and `<?ACE 19?>`.
 
 ## The definition: `TextVariable`
 
-Each text variable is declared by a `TextVariable` element directly under
-`Document` in `designmap.xml`. The parser records three things from it — the id, the
-display name, and the kind — at `paged-parse/src/designmap.rs:227`.
+Each variable is a direct child of `Document` in the design map, after the preferences and
+before the layers and spreads. Its settings are a typed child named after the kind of
+variable:
 
-<AttrTable
-  element="TextVariable (designmap.xml)"
-  rows={[
-    { attr: 'Self', type: 'string id (TextVariable/…)', support: 'supported', note: 'The id an instance references back to via AssociatedTextVariable.' },
-    { attr: 'Name', type: 'string', support: 'supported', note: 'The variable’s display name in InDesign, e.g. "Chapter Number" or "File Name".' },
-    { attr: 'VariableType', type: 'VariableTypes enumeration', support: 'parsed-not-rendered', note: 'What kind of variable it is. Recorded, but not used to recompute a value — the baked ResultText is trusted instead.' },
-  ]}
-/>
+| `VariableType` | Settings child | Computes |
+|---|---|---|
+| `CustomTextType` | `CustomTextVariablePreference` | `TextBefore` + the fixed `Contents` + `TextAfter` |
+| `MatchParagraphStyleType` | `MatchParagraphStylePreference` | text of the first or last paragraph in a style on the page (running header) |
+| `MatchCharacterStyleType` | `MatchCharacterStylePreference` | the same, over text in a character style |
+| `LastPageNumberType` | `PageNumberVariablePreference` | the label of the last page, of the document or of the section (`Scope`) |
+| `ChapterNumberType` | `ChapterNumberVariablePreference` | the document's chapter number |
+| `FileNameType` | `FileNameVariablePreference` | the document's file name, optionally with path and extension |
+| `CreationDateType`, `ModificationDateType`, `OutputDateType` | `DateVariablePreference` | a date in the variable's `Format` |
 
-### `VariableType` kinds
+A custom variable keeps its value as a typed property:
+`<CustomTextVariablePreference TextBefore="" TextAfter=""><Properties><Contents type="string">Draft</Contents></Properties></CustomTextVariablePreference>`.
 
-`VariableType` names the rule InDesign *would* run to produce the value. The
-enumeration covers the variable families InDesign offers:
+<AttrTable element="TextVariable" limit={6} />
 
-<AttrTable
-  element="VariableType values"
-  rows={[
-    { attr: 'CustomTextType', type: 'enum', support: 'supported', note: 'A fixed user-supplied string (TextBefore + Contents + TextAfter), re-composed at render.' },
-    { attr: 'FileNameType', type: 'enum', support: 'supported', note: 'The document’s file name, taken from the document Name.' },
-    { attr: 'ChapterNumberType', type: 'enum', support: 'supported', note: 'The section’s chapter number, styled per the <Section> numbering rules.' },
-    { attr: 'PageCountType / LastPageNumberType', type: 'enum', support: 'supported', note: 'The real total body-page count — e.g. for "page 3 of 12" footers.' },
-    { attr: 'OutputDateType / CreationDateType / ModificationDateType', type: 'enum', support: 'supported', note: 'A date stamp (output, creation, or last-modified), formatted from a deterministic render-time clock.' },
-    { attr: 'MatchParagraphStyleType / MatchCharacterStyleType', type: 'enum', support: 'supported', note: 'Running header / footer: the text of the nearest paragraph or character run in a named style on the same page, resolved post-layout.' },
-    { attr: 'XrefPageNumberType / XrefChapterNumberType', type: 'enum', support: 'parsed-not-rendered', note: 'The page or chapter number of a cross-reference target. Falls back to the baked value.' },
-    { attr: 'LiveCaptionType', type: 'enum', support: 'parsed-not-rendered', note: 'A caption derived from a placed image’s metadata. Falls back to the baked value.' },
-  ]}
-/>
+## The rules InDesign applies
 
-For most kinds the renderer now **runs the rule** at emit time instead of trusting
-the baked snapshot: a `ChapterNumberType` re-derives the section's chapter number,
-a date stamp re-formats from a deterministic clock, and a running-header variable
-picks up the live heading text on its page. The remaining kinds (cross-reference
-page/chapter numbers, live captions) fall back to the baked `ResultText`.
+These were measured by building each construct in InDesign 20.0.1 and reading its PDF:
 
-<SupportBadge status="supported" note="VariableType is executed at emit for custom / file-name / page-count / dates / chapter-number / running-header; cross-ref-number + live-caption fall back to baked ResultText" />
+- **The last page number is a label, not a count.** In a five-page document whose
+  numbering restarts at page 3, `LastPageNumberType` with document scope prints "3". Use it
+  for "page X of Y" only when numbering is continuous.
+- **The chapter number belongs to the document,** set in `ChapterNumberPreference`
+  (default 1), not to sections.
+- **A running header carries forward.** A page with no paragraph in the matched style shows
+  the value from the last page that had one. `DeleteEndPunctuation` and `ChangeCase`
+  apply afterwards.
+- **Dates format the document's own clock** for creation and modification, and the time of
+  output for `OutputDateType`.
 
-## The instance: `TextVariableInstance` and `ResultText`
+## The instance: `TextVariableInstance`
 
-Where the variable's value appears in the text, the story carries a
-`TextVariableInstance` element inside a `CharacterStyleRange`'s `Content`. It holds
-the value verbatim in `ResultText` and points back at its definition through
-`AssociatedTextVariable`. When the parser reaches one, it appends `ResultText` to the
-current run — `paged-parse/src/story.rs:1643` — so by the time you hold a run string,
-the variable is just more characters.
+Inside a story, a `TextVariableInstance` sits in a `CharacterStyleRange` where the value
+appears. `AssociatedTextVariable` names the definition, and `ResultText` holds the value
+InDesign last composed for that spot. A reader that does not compute variables can show
+`ResultText`, knowing it reflects the layout at the time the file was saved.
 
-<AttrTable
-  element="TextVariableInstance (inside a CharacterStyleRange)"
-  rows={[
-    { attr: 'ResultText', type: 'string', support: 'supported', note: 'The computed value as of the last export, inlined into the run text exactly as written.' },
-    { attr: 'AssociatedTextVariable', type: 'string ref (TextVariable/…)', support: 'parsed-not-rendered', note: 'Back-reference to the definition. Read, but not used to recompute the value.' },
-    { attr: 'Self / Name', type: 'string id / string', support: 'parsed-not-rendered', note: 'Identity of the instance; not needed to produce the run text.' },
-  ]}
-/>
+<AttrTable element="TextVariableInstance" limit={5} />
 
-`ResultText` is the **snapshot** InDesign computed the last time it composed the
-document — but the renderer no longer trusts it blindly. For the kinds it knows
-how to run (above), it re-derives the value from the current model and layout and
-substitutes that for the snapshot, so a running header *does* update when you move
-the paragraph it tracks, and a chapter number reflects the current section. The
-baked `ResultText` survives only as the fallback for kinds the renderer does not
-yet recompute.
+## Page numbers and section markers
 
-<SupportBadge feature="sections-numbering-variables.text-variables" note="known VariableTypes re-resolve against the current model/layout at render; ResultText is the fallback for the rest — paged-renderer/src/pipeline/links.rs" />
+The current page number is not a variable. It is a processing instruction inside
+`Content`:
 
-## What this means in practice
+| In `Content` | Range attribute | Shows |
+|---|---|---|
+| `<?ACE 18?>` | none | the current page number |
+| `<?ACE 18?>` | `PageNumberType="NextPageNumber"` | the number of the page the story continues on |
+| `<?ACE 18?>` | `PageNumberType="PreviousPageNumber"` | the number of the page the story came from |
+| `<?ACE 19?>` | none | the section marker of the page's section |
 
-- **Re-display is faithful, recomputation is not.** Because the value is baked, a
-  consumer reproduces exactly what InDesign last showed — but it will not catch up to
-  edits made outside InDesign.
-- **The page-number variable is a separate path.** The current- and next-page
-  numbers are *not* stored as `TextVariableInstance`; they are processing
-  instructions (`<?ACE 18?>` / `<?ACE 19?>`) that resolve to the live page label at
-  render time. That mechanism — and the private-use marker codepoints it uses — is
-  detailed in [stories & text → text variables](/docs/idml/stories-text/text-variables),
-  and the labels it resolves to are explained in
-  [sections and numbering](/docs/idml/sections-numbering-variables/sections-and-numbering).
-- **For extraction**, a `TextVariableInstance` contributes its `ResultText` like any
-  other characters; see [extract all text](/docs/idml/stories-text/extract-all-text).
+`PageNumberType` goes on the `CharacterStyleRange` that holds the marker. The number's
+style (Arabic, Roman, letters) and the section marker's text come from the page's
+`Section`; see [sections and numbering](/docs/idml/sections-numbering-variables/sections-and-numbering).
+
+> **In Paged:** every variable kind in the table above is recomputed for the page it lands
+> on; any other kind shows its `ResultText`. Custom variables can be created and placed by
+> scripts. <SupportBadge feature="sections-numbering-variables.text-variables" />
 
 ## Frequently asked questions
 
-**What is a text variable in IDML?**
-A text variable is a named, computed string — such as a file name, chapter number,
-running header, or date — that InDesign places into the flowing text. IDML stores it
-as a `TextVariable` definition under `Document` plus a `TextVariableInstance` in each
-story where the value appears.
+**Where is a text variable defined?**
+In `designmap.xml`, as a `TextVariable` child of `Document`, with a typed settings child
+such as `PageNumberVariablePreference`.
 
-**What does the `ResultText` attribute hold?**
-`ResultText` holds the variable's value as a literal string, computed as of the last
-export and inlined into the run text exactly as written. It is a frozen snapshot, so
-our renderer reproduces what InDesign last showed but never re-derives the value from
-the current layout.
+**What is `ResultText`?**
+The value InDesign last composed for one instance. It is correct for the layout at save
+time and goes stale when text moves to other pages.
 
-**Does the renderer recompute a chapter number or running header?**
-No. The `VariableType` is recorded so a consumer can tell *what* kind of variable it
-is, but the rule it names is never executed — the parsed value is always the frozen
-`ResultText`, not a recomputed chapter count or a re-tracked header.
+**Is the page number a text variable?**
+No. The current, next and previous page numbers are `<?ACE 18?>` markers in the text;
+only the *last* page number is a variable (`LastPageNumberType`).
 
-**Is the current page number stored as a text variable?**
-No. The current- and next-page numbers are not `TextVariableInstance` elements; they
-are processing instructions (`<?ACE 18?>` / `<?ACE 19?>`) that resolve to the live
-page label at render time. That separate path is detailed in
-[stories & text → text variables](/docs/idml/stories-text/text-variables).
+**What does `<?ACE 19?>` mean?**
+It is the section marker: the text the page's section defines as its marker.

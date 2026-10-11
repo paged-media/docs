@@ -1,61 +1,73 @@
 ---
 title: Your first story
-description: The smallest story that renders one line of text — three nested ranges around a single line of Content, walked from the inside out.
+description: Build up an IDML story in three steps — one line of text, a second paragraph with the <Br/> mark, then a change of formatting with a new range.
 tier: beginner
 diataxis: tutorial
-status: draft
+status: published
 owner: paged-docs
+describes:
+  - stories-text.story-model
+reviewed: 2026-10-11
 ---
 
-**The smallest story that renders a line of text is three nested ranges wrapped around one line of `Content`.**
+**A story is text plus the runs that format it. Three small steps show the whole model: one line, a second paragraph, a change of formatting.**
 
-**In short:** A story is the smallest interesting thing in an IDML document — the
-text itself. The minimal version is a `Story` element containing one
-`ParagraphStyleRange`, containing one `CharacterStyleRange`, containing one `Content`
-element with a single line of text. Reading it from the inside out shows the spine
-that every IDML story shares; longer stories just add more ranges. This page walks
-that minimal story line by line.
+**In short:** The smallest story is a `Story` holding one `ParagraphStyleRange`, holding
+one `CharacterStyleRange`, holding one `Content` element. To add a paragraph you do not
+add an element: you end the first paragraph with a `<Br/>` mark and keep writing. To
+change formatting you split the run where the formatting changes. Each step below is a
+complete package, checked by opening it in InDesign and rendered live on this page.
 
-A story is the smallest interesting thing in an IDML document: the text itself.
-Here is the complete story from the smallest valid package — three nested ranges
-and one line of `Content`. Edit the `Content` text and, once the live preview
-lands, the page will re-render.
+## Step 1: one line of text
+
+Here is the complete story from the smallest valid package. Read it from the inside out:
+`Content` holds the characters; the `CharacterStyleRange` around it says how they are
+formatted (here, the default character style); the `ParagraphStyleRange` says how the
+paragraph is formatted (the default paragraph style); and the `Story` carries the `Self`
+id that a text frame points at to display the text.
 
 <ExampleEmbed example="smallest-valid">
-  The whole story: one paragraph range, one character range, one line of text.
+  The whole story: one paragraph run, one character run, one line of text.
 </ExampleEmbed>
 
-Read it inside out:
+## Step 2: a second paragraph
 
-1. `Content` holds the literal text.
-2. The `CharacterStyleRange` around it says how those characters are styled — here,
-   the default character style.
-3. The `ParagraphStyleRange` around that says which paragraph the run belongs to —
-   here, the default paragraph style.
-4. The `Story` wraps the lot and carries the `Self` id that a frame points at to
-   display this text.
+To start a second paragraph, end the first one with `<Br/>`, the paragraph mark, and add
+the next text. Both paragraphs share the same formatting, so they stay in the same runs.
+The last paragraph of a story never ends with a mark.
 
-That nesting — story › paragraph range › character range › content — is the spine
-of all IDML text. Longer stories just have more ranges.
+<ExampleEmbed example="two-paragraphs">
+  One run, two paragraphs: the `<Br/>` on line 7 is where the first one ends.
+</ExampleEmbed>
 
-> 🚧 The next steps (adding a second paragraph, changing the style) are being
-> written; the example above is real and validated against the renderer.
+## Step 3: a change of formatting
+
+Formatting changes split runs. Here both runs apply the same character style, `Emphasis`,
+and the second overrides its size on the range itself, so the text is split into two
+`CharacterStyleRange` elements at the point where the size changes. A change of
+*paragraph* formatting would split the `ParagraphStyleRange` the same way, at a
+paragraph's end.
+
+<ExampleEmbed example="local-override">
+  The same style twice; the second run overrides `PointSize`, so the text splits into
+  two character runs.
+</ExampleEmbed>
+
+That is the whole model: text, with paragraph marks in it, under two layers of
+non-overlapping runs. [Story structure](/docs/idml/stories-text/story-structure) is the
+full reference, and [the paragraph model](/docs/idml/stories-text/the-paragraph-model)
+explains why IDML works this way.
 
 ## Frequently asked questions
 
-**What is the minimum a story needs to render a line of text?**
-A `Story` element wrapping one `ParagraphStyleRange`, wrapping one
-`CharacterStyleRange`, wrapping one `Content` element with the text. The example
-above is exactly that — the complete story from the smallest valid package.
+**What is the minimum a story needs to show a line of text?**
+A `Story` wrapping one `ParagraphStyleRange`, wrapping one `CharacterStyleRange`,
+wrapping one `Content` element with the text, as in step 1.
 
-**Why are there three nested elements around a single line of text?**
-Each level carries a different kind of meaning: the `ParagraphStyleRange` says which
-paragraph the text belongs to, the `CharacterStyleRange` says how those characters
-are styled, and the `Content` holds the literal characters. The outer `Story` carries
-the `Self` id a frame points at to display the text.
+**How do I add a second paragraph?**
+End the first one with `<Br/>` and continue the text. You only need a new
+`ParagraphStyleRange` if the new paragraph is formatted differently.
 
-**How does a story grow beyond one line?**
-By adding more ranges. A second paragraph is another `ParagraphStyleRange` sibling;
-a change in character formatting is another `CharacterStyleRange`. The story › paragraph
-range › character range › content nesting stays the same — see
-[story structure](/docs/idml/stories-text/story-structure) for the full model.
+**When does a new `CharacterStyleRange` start?**
+Wherever any character attribute changes: the style, or a local override such as the
+size, font or colour.

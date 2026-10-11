@@ -54,6 +54,10 @@
         result.stories = doc.stories.length;
         result.spreads = doc.spreads.length;
         result.hyperlinks = doc.hyperlinks.length;
+        // InDesign's own paragraph count: the arbiter of where a paragraph
+        // ends (a <Br/> does, a forced line break does not).
+        result.paragraphs = 0;
+        for (var ps = 0; ps < doc.stories.length; ps++) result.paragraphs += doc.stories[ps].paragraphs.length;
         result.overset = [];
         for (var s = 0; s < doc.stories.length; s++) {
             if (doc.stories[s].overflows) result.overset.push(doc.stories[s].id);

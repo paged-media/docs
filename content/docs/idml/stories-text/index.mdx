@@ -1,57 +1,53 @@
 ---
 title: Stories & text
-description: In IDML, all text lives in stories — streams of text broken into nested paragraph and character ranges, displayed by frames that can thread across pages.
+description: In IDML, a document's text lives in stories — streams of characters under runs of shared formatting, shown by frames that can thread across pages.
 tier: beginner
 diataxis: explanation
 status: published
 owner: paged-docs
+describes:
+  - stories-text.story-model
+reviewed: 2026-10-11
 ---
 
-**In IDML, all of a document's text lives in stories — separate from the frames that show it.**
+**In IDML, all of a document's text lives in stories, separate from the frames that show it.**
 
-**In short:** A *story* is IDML's container for a stream of text. Each story is
-broken into nested ranges: runs that share a paragraph style, and inside those, runs
-that share character formatting, with the literal characters held in `Content`.
-Frames on pages then *display* a story rather than containing it, so one long story
-can thread through several frames, and any text that doesn't fit is *overset*. This
-section explains how stories are structured, how they flow across frames, and how to
-pull their text back out.
+**In short:** A *story* is IDML's container for one stream of text. The characters are
+grouped into runs of shared formatting: `ParagraphStyleRange` elements for paragraph
+formatting and, inside them, `CharacterStyleRange` elements for character formatting.
+Paragraphs are not elements; each one ends with a `<Br/>` mark in the text. Frames on
+pages *display* a story rather than containing it, so one story can thread through
+several frames, and text that doesn't fit is *overset*. This section explains how a story
+is built, how it flows, and how to read its text back out.
 
-Text in IDML lives in **stories**. A story is a stream of text broken into ranges:
-runs of text that share a paragraph style, and within those, runs that share
-character formatting. Frames on pages then display a story; a long story can thread
-through several frames, and the text that doesn't fit is overset.
+- 🟢 **[Your first story](/docs/idml/stories-text/your-first-story)**: tutorial. One line,
+  a second paragraph, a change of formatting.
+- 🔴 **[Story structure](/docs/idml/stories-text/story-structure)**: reference. The
+  elements, the characters that end paragraphs and break lines, and what else a story holds.
+- 🔴 **[The paragraph model](/docs/idml/stories-text/the-paragraph-model)**: explanation.
+  Why IDML stores style runs and a paragraph mark instead of paragraph elements.
+- 🔴 **[Threading and overset](/docs/idml/stories-text/threading-and-overset)**:
+  explanation. How one story flows across frames, and what happens to text that doesn't fit.
+- 🟡 **[Extract all text](/docs/idml/stories-text/extract-all-text)**: how-to. Walk every
+  story and rebuild its paragraphs as plain text.
 
-The pages below build up from the smallest story to the full element model, then
-cover the ways a story spans frames and carries computed text:
-
-- 🟢 **[Your first story](/docs/idml/stories-text/your-first-story)** — tutorial: the smallest story that renders a line.
-- 🔴 **[Story structure](/docs/idml/stories-text/story-structure)** — reference: the `Story` → `ParagraphStyleRange` → `CharacterStyleRange` → `Content` model.
-- 🔴 **[Threading and overset](/docs/idml/stories-text/threading-and-overset)** — explanation: how one story flows across frames, and what happens to text that doesn't fit.
-- 🟡 **[Text variables](/docs/idml/stories-text/text-variables)** — reference: how computed text and page-number markers become characters.
-- 🟡 **[Extract all text](/docs/idml/stories-text/extract-all-text)** — how-to: walk every story and concatenate its content.
-- 🔴 **[Why ranges, not spans](/docs/idml/stories-text/why-ranges-not-spans)** — explanation: why IDML nests ranges instead of wrapping spans.
-
-This section is also the reference's demonstration of the
-**[difficulty tiers and Diátaxis modes](/docs/idml/meta/style-guide)** — the pages
-deliberately span all four modes and three tiers.
+Page numbers, section markers and text variables are covered in
+[sections, numbering & variables](/docs/idml/sections-numbering-variables/text-variables).
 
 ## Frequently asked questions
 
 **What is a story in IDML?**
-A story is IDML's container for a stream of text. It holds the text broken into
-nested paragraph and character ranges, lives in its own `Stories/Story_*.xml` part,
-and is referenced by the frames that display it rather than living inside any one
-frame.
+A story is IDML's container for one stream of text. It lives in its own
+`Stories/Story_*.xml` part and is referenced by the frames that display it, rather than
+living inside any one frame.
 
-**How is text in a story structured?**
-A story nests four levels deep: the `Story` element contains `ParagraphStyleRange`
-blocks (one per paragraph), each of which contains `CharacterStyleRange` blocks (one
-per run of uniform character formatting), each of which contains `Content` elements
-holding the literal text. See [story structure](/docs/idml/stories-text/story-structure)
-for the full model.
+**How is the text in a story structured?**
+As two layers of runs over the characters: `ParagraphStyleRange` elements for stretches
+that share paragraph formatting, `CharacterStyleRange` elements inside them for stretches
+that share character formatting, and the characters in `Content`. A `<Br/>` in the text
+ends each paragraph except the last. See [story structure](/docs/idml/stories-text/story-structure).
 
 **Can one story appear in more than one frame?**
-Yes. A single story can *thread* across several frames in a chain, composed once and
-poured into the frames in order; text that still doesn't fit at the end is overset.
-See [threading and overset](/docs/idml/stories-text/threading-and-overset).
+Yes. A story can *thread* through a chain of frames, filling them in order; text that
+still doesn't fit at the end of the chain is overset. See
+[threading and overset](/docs/idml/stories-text/threading-and-overset).

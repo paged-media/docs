@@ -1,0 +1,84 @@
+---
+title: The paragraph model
+description: Why IDML stores text as flat style runs with an in-band paragraph mark, instead of one element per paragraph — and what that means when you read or write it.
+tier: pro
+diataxis: explanation
+status: published
+owner: paged-docs
+describes:
+  - stories-text.story-model
+reviewed: 2026-10-11
+---
+
+**IDML has no paragraph element. It stores flat runs of shared formatting, and marks where each paragraph ends with a character.**
+
+**In short:** HTML wraps each paragraph in a `<p>`. IDML does not. A story is a sequence
+of `ParagraphStyleRange` elements, each a run of text that shares one set of paragraph
+attributes, and paragraphs inside those runs are ended by the `<Br/>` mark, a character
+in the text like any other. This is the model of an editor's text buffer written to XML:
+the text is a stream of characters, formatting is a set of non-overlapping runs over it,
+and the paragraph break is one of the characters. Reading IDML correctly means counting
+marks, not elements.
+
+## Two layers over one stream of characters
+
+Think of a story as a single string. Over it lie two independent layers of runs:
+
+- **Paragraph runs.** Each `ParagraphStyleRange` covers a stretch of whole paragraphs that
+  share their paragraph attributes: style, alignment, indents, spacing.
+- **Character runs.** Inside each paragraph run, each `CharacterStyleRange` covers a
+  stretch of characters that share their character attributes: font, size, colour.
+
+The runs never overlap and never nest beyond those two levels. A change of formatting
+closes the current run and opens the next. The paragraph structure is not in the
+elements at all: it lives in the string, as `<Br/>` marks between paragraphs.
+
+<ExampleEmbed example="paragraph-marks">
+  Two paragraphs share the first paragraph run; the third has its own because its
+  `SpaceBefore` differs.
+</ExampleEmbed>
+
+## Why a mark, not a wrapper
+
+A paragraph break in a layout application is something the user types and deletes like
+any character. Merging two paragraphs is deleting one mark; splitting one is typing it.
+Storing the break as a character keeps that edit local: the runs around it stay as they
+were. If every paragraph were an element, merging two would mean restructuring the tree
+and deciding whose attributes survive.
+
+The same thinking explains the forced line break. U+2028 breaks the line without ending
+the paragraph, so it is also just a character, in `Content` this time, because it carries
+no paragraph semantics at all.
+
+## What follows when you read IDML
+
+- **Count paragraphs by marks.** A non-empty story has one more paragraph than it has
+  `<Br/>` marks. Counting `ParagraphStyleRange` elements counts style runs.
+- **A style change mid-paragraph splits both runs.** If one word in a paragraph is bold,
+  the `CharacterStyleRange` splits around it; the paragraph run does not.
+- **The mark belongs to the paragraph it ends.** When a heading and a body paragraph
+  differ in style, the heading's `<Br/>` is the last thing inside the heading's range.
+- **The last paragraph has no mark.** A story that ends with `<Br/>` ends with an empty
+  paragraph.
+- **Two marks in a row are an empty paragraph** between them.
+
+## What follows when you write IDML
+
+Write the marks. A writer that emits one `ParagraphStyleRange` per paragraph without
+`<Br/>` produces a file whose paragraphs InDesign runs together: it reads the ranges as
+style runs of one long paragraph. Writing one range per paragraph is allowed, as long as
+every paragraph but the last still ends with its mark.
+
+## Frequently asked questions
+
+**Is a `ParagraphStyleRange` a paragraph?**
+No. It is a run of one or more paragraphs that share their paragraph attributes. A
+paragraph ends at a `<Br/>`.
+
+**Can a paragraph span two `ParagraphStyleRange` elements?**
+No. All of a paragraph shares its paragraph attributes, so a paragraph never crosses a
+range boundary: a range ends at a paragraph's end.
+
+**Why does my parser find fewer paragraphs than InDesign shows?**
+It is probably counting ranges. Count the `<Br/>` marks instead, and include the
+paragraphs inside table cells and footnotes if you need those too.

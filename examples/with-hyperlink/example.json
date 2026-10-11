@@ -54,5 +54,10 @@
       "ssim": 1,
       "fontsMatched": true
     }
-  }
+  },
+  "elements": [
+    "Hyperlink",
+    "HyperlinkURLDestination",
+    "HyperlinkTextSource"
+  ]
 }

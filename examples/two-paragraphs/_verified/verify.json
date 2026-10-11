@@ -16,6 +16,7 @@
   ],
   "preset": "[Qualitativ hochwertiger Druck]",
   "stories": 1,
+  "paragraphs": 2,
   "overset": [],
   "perPage": [
     {

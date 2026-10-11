@@ -58,5 +58,10 @@
       "ssim": 0.998,
       "fontsMatched": true
     }
-  }
+  },
+  "elements": [
+    "ParagraphStyleRange",
+    "TabList",
+    "Content"
+  ]
 }

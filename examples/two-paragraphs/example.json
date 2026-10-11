@@ -14,7 +14,8 @@
   "views": [
     "raw",
     "annotated",
-    "tree"
+    "tree",
+    "live"
   ],
   "annotations": [
     {
@@ -54,5 +55,12 @@
       "ssim": 1,
       "fontsMatched": true
     }
-  }
+  },
+  "elements": [
+    "Story",
+    "ParagraphStyleRange",
+    "CharacterStyleRange",
+    "Content",
+    "Br"
+  ]
 }

@@ -32,6 +32,12 @@ const PAGED = 'https://docs.paged.media';
 // Keep in step with ENGINE_CHAPTERS in lib/site.ts.
 const ENGINE = ['the-renderer', 'parser-internals', 'test-corpus'];
 
+// Pages moved or merged inside the IDML reference: old path → new path.
+const MOVED_IDML_PAGES = {
+  'stories-text/why-ranges-not-spans': 'stories-text/the-paragraph-model',
+  'stories-text/text-variables': 'sections-numbering-variables/text-variables',
+};
+
 const chapters = (dir) =>
   readdirSync(join(ROOT, 'content/docs', dir)).filter((n) => statSync(join(ROOT, 'content/docs', dir, n)).isDirectory());
 const idmlChapters = chapters('idml');
@@ -49,6 +55,10 @@ if (SITE === 'paged') {
   for (const ch of ENGINE) {
     moved(`/docs/idml/${ch}`, `/engine/${ch}`);
     moved(`/docs/${ch}`, `/engine/${ch}`);
+  }
+  // Moved IDML pages go straight to their new home, ahead of the pillar splat.
+  for (const [from, to] of Object.entries(MOVED_IDML_PAGES)) {
+    rules.push([`/docs/idml/${from}`, `${IDML}/${to}/`], [`/docs/idml/${from}/`, `${IDML}/${to}/`]);
   }
   // The IDML pillar is now its own site.
   rules.push(['/docs/idml', `${IDML}/`], ['/docs/idml/', `${IDML}/`]);
@@ -68,6 +78,10 @@ if (SITE === 'paged') {
   for (const ch of ENGINE) {
     moved(`/docs/idml/${ch}`, `${PAGED}/engine/${ch}`);
     moved(`/${ch}`, `${PAGED}/engine/${ch}`);
+  }
+  for (const [from, to] of Object.entries(MOVED_IDML_PAGES)) {
+    rules.push([`/${from}`, `/${to}/`], [`/${from}/`, `/${to}/`]);
+    rules.push([`/docs/idml/${from}`, `/${to}/`], [`/docs/idml/${from}/`, `/${to}/`]);
   }
   rules.push(['/docs/idml', '/'], ['/docs/idml/', '/']);
   rules.push(['/docs/idml/*', '/:splat']);

@@ -39,6 +39,7 @@ interface InDesignResult {
   errors: string[];
   pages?: number;
   stories?: number;
+  paragraphs?: number;
   overset?: string[];
   missingFonts?: string[];
   missingLinks?: string[];
@@ -159,7 +160,7 @@ function verify(id: string, m: ExampleManifest): void {
   };
   writeFileSync(
     join(dest, 'verify.json'),
-    JSON.stringify({ ...record, pdfFonts: fonts, preset: r.preset, stories: r.stories, overset: r.overset, perPage: pages.map((p) => ({ meanDE: round(p.meanDE), p99DE: round(p.p99DE), ssim: round(p.ssim) })) }, null, 2) + '\n',
+    JSON.stringify({ ...record, pdfFonts: fonts, preset: r.preset, stories: r.stories, paragraphs: r.paragraphs, overset: r.overset, perPage: pages.map((p) => ({ meanDE: round(p.meanDE), p99DE: round(p.p99DE), ssim: round(p.ssim) })) }, null, 2) + '\n',
   );
   const manifestPath = join(exampleDir(id), 'example.json');
   const raw = JSON.parse(readFileSync(manifestPath, 'utf8'));

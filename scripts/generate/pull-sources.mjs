@@ -12,8 +12,8 @@
  *   - LOCAL (default when the sibling working copy exists under ~/paged/<repo>):
  *     copy the file straight from disk. Ideal for local iteration against the
  *     live workspace — what you see is what's on your machine right now.
- *     Exception: a source whose `ref` is "core.pin" is read at the commit
- *     core.pin names (`git show <sha>:<path>`), never from the working tree, so
+ *     Exception: a source whose `ref` is "core.pin", or a commit sha, is read
+ *     at that commit (`git show <sha>:<path>`), never from the working tree, so
  *     a stale or dirty local core cannot leak into the build (the catalog read a
  *     clone 7 protocols behind once, 2026-10-11).
  *   - REMOTE (forced with --remote, or used when no sibling exists): pull from
@@ -127,9 +127,12 @@ console.log(`pull-sources → ${OUT}  (${lock.mode})`);
 
 // ── data sources ──────────────────────────────────────────────────────────
 for (const [key, src] of Object.entries(PIN.sources)) {
-  const repoDir = join(SIBLINGS, src.repo);
+  // Plugin repos live one level down (~/paged/plugins/<repo>).
+  const repoDir = [join(SIBLINGS, src.repo), join(SIBLINGS, 'plugins', src.repo)].find((d) => existsSync(d)) ?? join(SIBLINGS, src.repo);
   const useLocal = !REMOTE && existsSync(repoDir);
-  const pinned = src.ref === 'core.pin' ? corePinSha() : null;
+  // A source pinned to a commit (core.pin, or a sha in `ref`) is read at that
+  // commit, never from the working tree.
+  const pinned = src.ref === 'core.pin' ? corePinSha() : /^[0-9a-f]{7,40}$/.test(src.ref) ? src.ref : null;
   const ref = pinned ?? src.ref;
   const keyDir = join(OUT, key);
   ensureDir(keyDir);

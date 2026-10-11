@@ -14,7 +14,8 @@
   "views": [
     "raw",
     "annotated",
-    "tree"
+    "tree",
+    "live"
   ],
   "annotations": [
     {
