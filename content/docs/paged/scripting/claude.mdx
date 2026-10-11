@@ -3,7 +3,7 @@ title: Scripting with Claude
 description: Claude writes and runs paged.* scripts for you — in the Script panel, the AI Assistant, File ▸ New from a brief, and the paged CLI — and scripts can ask Claude for text.
 tier: intermediate
 diataxis: how-to
-status: draft
+status: published
 owner: paged-docs
 reviewed: "2026-10-11"
 ---
@@ -39,7 +39,8 @@ the key and limits how much the deployment spends. A deployment without that ser
 ## From the command line
 
 The `paged` CLI from `@paged-media/cli` runs the same loop against a document file, with your
-own credential (`ANTHROPIC_API_KEY`):
+own credential (`ANTHROPIC_API_KEY`). The package is not on npm yet; until it is, run it from a
+checkout of the plugin SDK repository.
 
 ```bash
 # change an existing document
