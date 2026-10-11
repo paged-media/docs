@@ -4,7 +4,11 @@
     <CharacterStyle Self="CharacterStyle/$ID/[No character style]" Name="$ID/[No character style]"/>
   </RootCharacterStyleGroup>
   <RootParagraphStyleGroup>
-    <ParagraphStyle Self="ParagraphStyle/$ID/[No paragraph style]" Name="$ID/[No paragraph style]" AppliedFont="Open Sans" PointSize="12" FillColor="Color/Black"/>
+    <ParagraphStyle Self="ParagraphStyle/$ID/[No paragraph style]" Name="$ID/[No paragraph style]" PointSize="12" FillColor="Color/Black">
+      <Properties>
+        <AppliedFont type="string">Open Sans</AppliedFont>
+      </Properties>
+    </ParagraphStyle>
     <ParagraphStyle Self="ParagraphStyle/Body" Name="Body" BasedOn="ParagraphStyle/$ID/[No paragraph style]" PointSize="14" SpaceAfter="6"/>
     <ParagraphStyle Self="ParagraphStyle/Body Indented" Name="Body Indented" BasedOn="ParagraphStyle/Body" FirstLineIndent="18"/>
   </RootParagraphStyleGroup>
