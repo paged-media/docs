@@ -1,0 +1,95 @@
+---
+title: Swap text and images in a template
+description: Fill an IDML template from code — find frames by Name, replace the Content of the story a text frame points at, and put a linked Image into a graphic frame.
+tier: intermediate
+diataxis: how-to
+status: published
+owner: paged-docs
+describes: [stories-text.story-model, images-graphics.placed-images]
+reviewed: 2026-10-11
+---
+
+**A template is an IDML package whose frames have names. Find the frame, follow it to its story or its image, and change only what is inside.**
+
+**In short:** Give each slot in the template a `Name` in InDesign (the Layers panel names
+it), so the frame carries `Name="headline"` or `Name="photo"` in the spread. For a text
+slot, follow the frame's `ParentStory` to `Stories/Story_<id>.xml` and replace the text
+inside its `Content` elements, keeping the ranges around them so the formatting stays. For
+an image slot, add an `<Image>` with its own `ItemTransform`, a `GraphicBounds` pixel box
+and a `<Link>` to an absolute file URI, or change the `LinkResourceURI` of the image already
+there. Leave every other part as it is. [Download the sample template](/downloads/template-slots.idml).
+
+<ExampleEmbed example="template-slots">
+  A one-page template with two named slots: a text frame `headline` and an empty graphic
+  frame `photo`.
+</ExampleEmbed>
+
+## Swap the text
+
+1. **Find the frame.** In the spread parts, look for the `TextFrame` with the slot's `Name`.
+   An unnamed frame carries `Name="$ID/"`.
+2. **Follow `ParentStory`.** It names the story's `Self` id; the story is in
+   `Stories/Story_<id>.xml`, referenced from the design map.
+3. **Replace the text, not the structure.** Change the text inside the existing `Content`
+   elements and keep their `ParagraphStyleRange` and `CharacterStyleRange` parents, so the new
+   text keeps the template's styles and local formatting. For several paragraphs, separate
+   them with `<Br/>`; for a line break inside a paragraph, use U+2028.
+4. **Escape the text as XML:** `&amp;` for `&`, `&lt;` for `<`.
+
+If the frame is threaded to others, the story flows through all of them; there is still only
+one story to change. Text that no longer fits becomes overset rather than disappearing.
+
+## Swap the image
+
+1. **Find the frame.** Look for the `Rectangle` (or `Oval`, `Polygon`) with the slot's `Name`.
+   InDesign marks a frame meant for a picture `ContentType="GraphicType"`, whether it is empty
+   or not.
+2. **If it already holds an `<Image>`,** change the `LinkResourceURI` of its `<Link>`. If the
+   new picture has a different size or shape, also set the image's `GraphicBounds` to the new
+   pixel box and adjust its `ItemTransform` so the picture fills the frame the way you want.
+3. **If it is empty,** add an `<Image>` child as the frame's last child (InDesign writes it
+   after `<Properties>` and the frame's option elements):
+   an `ItemTransform` mapping the picture's pixels into the frame (for a picture `w` × `h`
+   pixels filling a frame `W` × `H` points wide and high, a scale of `W/w` and `H/h`, or the
+   smaller of the two to fit without distortion), `<Properties><GraphicBounds Left="0" Top="0"
+   Right="w" Bottom="h"/></Properties>`, and a `<Link>` with the file's `LinkResourceURI`.
+   The full structure is on [place an image in a frame](/docs/idml/cookbook/place-an-image).
+4. **Use an absolute URI** in InDesign's spelling, `file:/path/to/photo.jpg`. A relative one
+   opens as a missing link.
+
+## Things to get right
+
+- **Change only what you mean to.** Copy every part you do not touch byte for byte. A
+  template carries fonts, styles, preferences and metadata that your program may not
+  understand and InDesign still needs.
+- **Keep the ids.** Do not renumber `Self` ids; other parts point at them.
+- **Do not drop the ranges.** Replacing a whole `ParagraphStyleRange` with bare text loses the
+  template's formatting, and text outside a `CharacterStyleRange` is not where a reader looks
+  for it.
+- **A story named by no frame is dropped by InDesign.** If you add a story, place it in a
+  frame.
+
+> **In Paged:** the same swap can be made through Paged's editor or scripting, and saving
+> writes it back by patching the original package: only the changed story and spread are
+> rewritten. <SupportBadge feature="round-tripping.idml-reserialization" />
+
+## Frequently asked questions
+
+**How do I find a particular frame in an IDML template?**
+By its `Name`, set in InDesign's Layers panel and written as the `Name` attribute on the frame
+in the spread part. Unnamed frames carry `Name="$ID/"`. Script labels, stored as
+`<Properties><Label><KeyValuePair …/></Label></Properties>` on the frame, are another way to
+tag slots.
+
+**Why replace the text inside `Content` rather than the whole story?**
+Because the ranges around `Content` carry the formatting: the paragraph style, the character
+style and any local overrides. Keeping them keeps the template's look.
+
+**What happens if the new text is longer than the frame?**
+The text that does not fit becomes overset: it stays in the story but is not shown until the
+frame grows or another frame is threaded. See
+[threading and overset](/docs/idml/stories-text/threading-and-overset).
+
+**Do I need to embed the new image?**
+No. A link to the file is enough, provided the URI is absolute and the file is where it
+points when InDesign opens the package.

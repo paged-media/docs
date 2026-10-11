@@ -1,0 +1,46 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "template-slots",
+  "title": "A template with a named text slot and a named image slot",
+  "tier": "intermediate",
+  "chapter": "cookbook",
+  "concept": "A one-page template whose frames carry a Name: a text frame 'headline' pointing at its story, and an empty graphic frame 'photo' (ContentType=GraphicType) waiting for an <Image>.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Spreads/Spread_uspread.xml",
+    "language": "xml",
+    "label": "Spreads/Spread_uspread.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree",
+    "live"
+  ],
+  "annotations": [
+    {
+      "lines": "5",
+      "note": "The text slot: a TextFrame with Name=\"headline\". Its ParentStory names the story whose Content you replace; the frame itself holds no text."
+    },
+    {
+      "lines": "19",
+      "note": "The image slot: a Rectangle with Name=\"photo\" and ContentType=\"GraphicType\". It is empty; filling it means adding an <Image> child with its own ItemTransform, GraphicBounds and <Link>."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 2,
+    "paragraphs": 1,
+    "runs": 1
+  },
+  "pathological": false,
+  "license": "MIT",
+  "elements": [
+    "TextFrame",
+    "Rectangle",
+    "Story"
+  ]
+}

@@ -3,6 +3,10 @@
   "icon": "book",
   "pages": [
     "index",
+    "extract-text",
+    "generate-idml-from-code",
+    "swap-template-content",
+    "read-the-indesign-version",
     "build-a-table",
     "apply-a-gradient",
     "place-an-image"

@@ -1,0 +1,75 @@
+---
+title: Read which InDesign version wrote a file
+description: Find the InDesign build that wrote an IDML file in the <?aid ?> product field of designmap.xml, and the document-model revision in DOMVersion.
+tier: beginner
+diataxis: how-to
+status: published
+owner: paged-docs
+describes: [package-anatomy.core-import]
+reviewed: 2026-10-11
+---
+
+**Open `designmap.xml` and read two values: `product` in the `<?aid ?>` instruction names the InDesign build, `DOMVersion` names the document-model revision.**
+
+**In short:** The second line of `designmap.xml` is a processing instruction such as
+`<?aid style="50" type="document" readerVersion="6.0" featureSet="257" product="20.0(32)"?>`.
+Its `product` is the version and build of the InDesign that wrote the package: `20.0(32)` is
+InDesign 20.0, build 32. The `Document` element right after it carries `DOMVersion`, here
+`20.0`, which is repeated on the root element of every other part. Ignore `readerVersion` and
+`featureSet`: they are the same in every InDesign-written package. [Download a sample](/downloads/two-stories.idml)
+to try it on.
+
+## Steps
+
+1. **Read `designmap.xml` out of the ZIP.** It is at the root of the archive.
+2. **Find the `<?aid ?>` processing instruction** before the `Document` element and read its
+   `product`. The part before the parenthesis is the application version; the number in
+   parentheses is the build.
+3. **Read `DOMVersion`** on the `Document` element for the document-model revision.
+
+From a shell:
+
+```bash
+unzip -p two-stories.idml designmap.xml | head -n 3
+```
+
+<ExampleEmbed example="two-stories">
+  The top of a design map: the `<?aid ?>` instruction with `product="20.0(32)"`, then
+  `Document` with `DOMVersion="20.0"`.
+</ExampleEmbed>
+
+## Reading the numbers
+
+`DOMVersion` follows the application's major and minor version but is not raised by every
+point release, so InDesign 20.1 writes `DOMVersion="20.0"`. Use `product` to name the exact
+release and `DOMVersion` to know which vocabulary to expect.
+
+| Version in `product` | Release |
+|---|---|
+| `6.0` | InDesign CS4, the first to write IDML |
+| `7.x` | InDesign CS5 / CS5.5 |
+| `8.x` | InDesign CS6 |
+| `9.x`–`19.x` | InDesign CC through 2024 |
+| `20.x` | InDesign 2025 |
+| `21.x` | InDesign 2026 |
+
+A package written by another program may copy these values from an InDesign export, so they
+say what the program claims to follow, not necessarily what produced the file.
+
+The fields themselves are documented on
+[version markers](/docs/idml/round-tripping/version-markers).
+
+## Frequently asked questions
+
+**Where is the InDesign version stored in an IDML file?**
+In the `product` pseudo-attribute of the `<?aid ?>` processing instruction near the top of
+`designmap.xml`, for example `product="20.0(32)"`.
+
+**What is the difference between `product` and `DOMVersion`?**
+`product` is the exact build that wrote the file. `DOMVersion` is the revision of InDesign's
+document model the file follows; point releases often keep the previous one, so InDesign 20.1
+still writes `20.0`.
+
+**Can I tell the version without unzipping the whole file?**
+Yes. Read only the `designmap.xml` entry from the ZIP; the instruction is in its first few
+hundred bytes.

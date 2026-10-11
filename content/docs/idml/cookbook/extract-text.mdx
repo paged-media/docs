@@ -1,0 +1,65 @@
+---
+title: Extract text from an IDML file
+description: Get the plain text out of an IDML package — unzip it, list the stories in the design map, and walk each story's Content and Br marks.
+tier: beginner
+diataxis: how-to
+status: published
+owner: paged-docs
+describes: [stories-text.story-model]
+reviewed: 2026-10-11
+---
+
+**The text of an IDML file is in its story parts. Unzip the package, read the story list from the design map, and walk each story.**
+
+**In short:** An `.idml` file is a ZIP archive. `designmap.xml` names one
+`Stories/Story_<id>.xml` part per story. In each story, the characters are in `Content`
+elements, a `<Br/>` ends a paragraph, and tabs and forced line breaks are ordinary
+characters. No styles need resolving to get the text. The full recipe, with the details
+that trip people up, is [extract all text](/docs/idml/stories-text/extract-all-text); this
+page is the short route. [Download a sample](/downloads/threaded-story.idml) to try it on.
+
+## Steps
+
+1. **Unzip the package.** Any ZIP tool works; the parts are plain XML.
+2. **List the stories.** Each `<idPkg:Story src="Stories/Story_….xml"/>` in `designmap.xml`
+   is one story; `StoryList` on the `Document` element lists the same ids.
+3. **Walk each story in document order.** Append the text of every `Content` element and
+   emit a newline at every `<Br/>`. Ignore the boundaries of `ParagraphStyleRange` and
+   `CharacterStyleRange`: they mark formatting changes, not paragraphs.
+4. **Decide what to do with the markers.** `<?ACE 18?>` inside `Content` is a page number,
+   `<?ACE 19?>` a section marker; replace them with a placeholder or drop them.
+
+From a shell, the raw story XML of the sample is one command away:
+
+```bash
+unzip -p threaded-story.idml 'Stories/*.xml'
+```
+
+<ExampleEmbed example="threaded-story">
+  One story threaded through two frames: the text is in the story part, once, however many
+  frames show it.
+</ExampleEmbed>
+
+## Things to get right
+
+- **One story, many frames.** A story threaded through several frames is still one story
+  part. Extract stories, not frames, or you will read the same text twice.
+- **Story order is not reading order.** The design map lists stories in the order the
+  document holds them, which need not be the order a reader meets them on the page. For page
+  order, follow the spreads: each text frame names its story in `ParentStory`.
+- **Tables and notes live inside stories.** A table's cells hold their own paragraphs inside
+  the story that anchors the table; footnotes sit inside the story that refers to them.
+
+## Frequently asked questions
+
+**Do I need to resolve styles to extract text?**
+No. Styles change how text looks, not which characters it contains. The characters are all
+in `Content` elements.
+
+**How do I find where one paragraph ends?**
+At each `<Br/>`. A new `ParagraphStyleRange` only means the paragraph formatting changed.
+See [the paragraph model](/docs/idml/stories-text/the-paragraph-model).
+
+**Why do I get the same text twice?**
+You probably walked the text frames instead of the stories. Several frames threaded together
+show one story; read each story part once.

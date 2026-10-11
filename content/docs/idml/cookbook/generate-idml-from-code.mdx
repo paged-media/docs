@@ -1,0 +1,100 @@
+---
+title: Generate an IDML file from code
+description: The minimum IDML package a program has to write — mimetype first and uncompressed, META-INF/container.xml, the design map, resources, spreads and stories.
+tier: intermediate
+diataxis: how-to
+status: published
+owner: paged-docs
+describes: [package-anatomy.core-import, round-tripping.idml-reserialization]
+reviewed: 2026-10-11
+---
+
+**A generated IDML file is a ZIP with a fixed first entry, a root part, and the parts the root names. Start from a package InDesign is known to open and change it.**
+
+**In short:** Write a ZIP archive whose first entry is `mimetype`, stored without
+compression, holding `application/vnd.adobe.indesign-idml-package`. Add
+`META-INF/container.xml` pointing at `designmap.xml`. Write `designmap.xml` with an
+`<?aid ?>` instruction and a `Document` element that references every other part. Then
+the parts: resources (`Graphic.xml`, `Fonts.xml`, `Styles.xml`, `Preferences.xml`), a
+master spread, the spreads and the stories. The sample below is the smallest such package
+in this reference, and InDesign opens it as written.
+[Download it](/downloads/smallest-valid.idml).
+
+## The package, entry by entry
+
+| Entry | What it holds |
+|---|---|
+| `mimetype` | `application/vnd.adobe.indesign-idml-package`, no newline. First entry, stored (not compressed). |
+| `META-INF/container.xml` | A `rootfile` pointing at `designmap.xml`. |
+| `designmap.xml` | The `<?aid ?>` instruction, then `Document` with `DOMVersion`, `StoryList` and one `idPkg:` reference per part. |
+| `Resources/Graphic.xml` | Colours and swatches, including `Black` and `Paper`. |
+| `Resources/Fonts.xml` | One `<Font>` per face the text applies. |
+| `Resources/Styles.xml` | At least the default styles the items name: `[No paragraph style]`, `[No character style]`, and the object style `[None]`. |
+| `Resources/Preferences.xml` | Document preferences such as page size, margins and units. The sample's is empty. |
+| `MasterSpreads/MasterSpread_<id>.xml` | The master the pages apply. |
+| `Spreads/Spread_<id>.xml` | Pages and page items. |
+| `Stories/Story_<id>.xml` | The text, one story per part. |
+
+The `XML/` parts (`BackingStory.xml`, `Tags.xml`, `Mapping.xml`) hold the tagged-XML layer.
+InDesign writes them in every package; the sample includes them empty.
+
+<ExampleEmbed example="smallest-valid">
+  The smallest complete package in this reference: one page, one frame, one story, every
+  part InDesign writes.
+</ExampleEmbed>
+
+## Steps
+
+1. **Start from a known-good package.** Unzip the sample (or an InDesign export of the
+   version you target), and generate only the parts you change: usually spreads and stories.
+2. **Keep the ids consistent.** Every story's `Self` must appear in the design map's
+   `StoryList` and in an `idPkg:Story` reference, and a text frame names it in `ParentStory`
+   (see [how parts reference each other](/docs/idml/package-anatomy/how-parts-reference)).
+3. **Spell things the way InDesign does.** An `ItemTransform` on every spread, page and item;
+   `PageCount` and `BindingLocation` on every spread; the font as
+   `<Properties><AppliedFont type="string">`; `<Br/>` between paragraphs; tabs as `&#9;`.
+   The full list is on
+   [what InDesign needs to open a file](/docs/idml/package-anatomy/what-indesign-requires).
+4. **Zip it with `mimetype` first and uncompressed,** then everything else. With the
+   Info-ZIP command-line tool, from inside the unzipped folder:
+
+```bash
+zip -X0 ../out.idml mimetype
+zip -rX9 ../out.idml . -x mimetype
+```
+
+5. **Open the result in InDesign.** Your own reader shares your writer's assumptions; only
+   InDesign shows whether it reads the file the way you meant.
+
+## Things to get right
+
+- **The `mimetype` rule is about bytes, not names.** It must be the first entry in the
+  archive and stored, so its text sits at a fixed place in the file. Most ZIP libraries
+  compress by default; set the method to "stored" for that one entry.
+- **Name parts in the design map, not by convention.** A reader finds parts through the
+  design map's references. A story part the design map does not reference is not in the
+  document, and InDesign discards a story that no text frame references.
+- **Declare every face you apply.** A face the text applies but `Fonts.xml` does not declare
+  is reported as not available when InDesign opens the file.
+
+> **In Paged:** the importer needs only the `mimetype` and `designmap.xml` to start, and every
+> part the design map names; the resource parts are optional to it. A package that Paged
+> opens can still open differently in InDesign, which is why the examples in this reference
+> are checked in InDesign. <SupportBadge feature="package-anatomy.core-import" />
+
+## Frequently asked questions
+
+**What is the minimum an IDML package must contain?**
+To be read at all: a first, uncompressed `mimetype` entry, `designmap.xml`, and every part
+the design map names. To open in InDesign the way you intend, follow InDesign's own packages:
+container file, resources, a master spread, spreads with transforms on everything, and
+stories with paragraph marks. The [sample](/downloads/smallest-valid.idml) has all of them.
+
+**Why must `mimetype` be the first entry and uncompressed?**
+So a program can recognise the file from its first bytes without unzipping it. It follows
+the same container convention as other ZIP-based document formats; see
+[the ZIP container](/docs/idml/package-anatomy/zip-container).
+
+**Can I generate only the stories and keep the rest from a template?**
+Yes, and it is the safest approach: keep every other part as InDesign wrote it, and make
+sure the design map's `StoryList` and story references match the stories you write.
