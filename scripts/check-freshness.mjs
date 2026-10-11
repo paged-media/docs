@@ -91,14 +91,15 @@ for (const file of existsSync(CONTENT) ? walk(CONTENT) : []) {
     continue;
   }
   checked++;
-  const reviewedT = Date.parse(reviewed);
   for (const id of describes) {
     const f = support[id];
     if (!f) {
       info.push(`${rel}: describes "${id}" (not a registry feature id — not freshness-checked)`);
       continue;
     }
-    if (f.updatedAt && Date.parse(f.updatedAt) > reviewedT) {
+    // `reviewed` is a day: evidence from later that same day does not make
+    // the page stale, so compare calendar days (ISO dates sort as strings).
+    if (f.updatedAt && f.updatedAt.slice(0, 10) > reviewed.slice(0, 10)) {
       stale.push(`${rel}: "${id}" changed ${f.updatedAt.slice(0, 10)} > reviewed ${reviewed} — re-review and bump \`reviewed\``);
     }
   }
