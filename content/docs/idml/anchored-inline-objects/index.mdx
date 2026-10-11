@@ -1,96 +1,83 @@
 ---
 title: Anchored & inline objects
-description: An anchored object is a frame that lives inside a run of text instead of standing free on the spread — how IDML expresses that nesting and what our parser reads from it.
+description: An anchored object is a page item written inside a run of text instead of on the spread, so it moves with the words; how IDML expresses that nesting.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
+describes: [anchored-inline-objects.anchored-frames, anchored-inline-objects.anchor-alignment]
+reviewed: 2026-10-11
 ---
 
-**An anchored object is a frame that lives inside a run of text, not parked on the spread.**
+**An anchored object is a frame that lives inside a run of text, not on the spread.**
 
-**In short:** Most objects on a page sit on a spread at a fixed position — a
-rectangle, a text frame, an image — and text flows around or ignores them. An
-*anchored object* is the exception: it is a frame nested *inside* a run of text, as
-a child of a `CharacterStyleRange`, so it moves with the words around it the way an
-emoji moves when you type ahead of it. IDML writes the frame exactly where it
-belongs in the text and tags it with one extra child that records where it should
-land. This chapter explains what anchored objects are, how IDML expresses them, and
-exactly how far our parser and renderer carry them today.
+**In short:** Most page items sit on a spread at a fixed position. An anchored object is
+written inside a story instead, as a child of a `CharacterStyleRange`, at the point in the
+text where it is anchored. Edit the text before it and it moves along. A child
+`<AnchoredObjectSetting>` says where it goes: in the line like a character (inline), on a line
+of its own above the anchor (above line), or at a position measured from the text frame, the
+column or the page (custom).
 
-Most objects on a page sit on a spread: a rectangle, a text frame, an image. They
-have a fixed position in spread coordinates and the text flows around — or
-ignores — them. An **anchored object** is different. It does not live on the
-spread; it lives *inside* a run of text, as a child of a `CharacterStyleRange`.
-Edit the words before it and it moves with them, the way an emoji moves when you
-type ahead of it.
+## Why an author anchors an object
 
-That single placement decision — frame nested in a run, not parked on the spread —
-is the whole idea of this chapter. Everything else (where exactly it lands, whether
-it sits on the baseline or floats above the line) is a refinement layered on top.
+A free frame belongs to a place on the page. An anchored object belongs to a point in the
+text: an icon in a sentence, a figure that must stay with the paragraph that describes it, a
+side note that follows its paragraph when the text reflows. Because the object is part of the
+story, reflow carries it along instead of leaving it behind.
 
-## Why an author reaches for one
+## How IDML writes it
 
-A free spread frame is the right tool when a graphic belongs to a *place* on the
-page. An anchored object is the right tool when a graphic belongs to a *point in
-the text*: an icon mid-sentence, a small figure that must stay beside the paragraph
-that describes it, a pull-quote that should ride along as copy is edited above it.
-Because the object is part of the text stream, it survives reflow that would leave
-a free frame stranded.
-
-## How IDML expresses it
-
-The frame is written exactly where it belongs — between the `Content` of a run and
-the close of that run's `CharacterStyleRange`. The element is an ordinary
-`<Rectangle>`, `<TextFrame>`, or `<Group>` (the same elements you would find on a
-spread), but its *position in the document tree* is what makes it anchored. Beside
-its geometry it carries one extra child, `<AnchoredObjectSetting>`, that records
-the placement intent: inline on the baseline, above the line, or at a custom point.
+The object element is written in the story, between the `<Content>` before the anchor and the
+`<Content>` after it, inside the same `CharacterStyleRange`. Its place among the content is the
+anchor's position in the text. The element is an ordinary page item, with its outline in
+`<Properties><PathGeometry>` like any other, plus one extra child:
 
 ```text
 ParagraphStyleRange
 └── CharacterStyleRange
-    ├── Content                     the text the object is anchored into
-    └── Rectangle / TextFrame / Group   the anchored object (nested in the run)
-        └── AnchoredObjectSetting   where it should land relative to the anchor
+    ├── Content                     text before the anchor
+    ├── Rectangle / TextFrame / Group      the anchored object, at the anchor
+    │   ├── Properties / PathGeometry      its outline, as for any page item
+    │   └── AnchoredObjectSetting          where it goes, relative to the anchor
+    └── Content                     text after the anchor
 ```
 
-## What this chapter covers
+An anchored text frame has its own story, named by `ParentStory`, like any text frame. In the
+surveyed documents the anchored objects are text frames, rectangles and groups.
 
-- 🔴 **[Anchored objects](/docs/idml/anchored-inline-objects/anchored-objects)** —
-  reference: the nested `<Rectangle>` / `<TextFrame>` / `<Group>` and every
-  attribute of `<AnchoredObjectSetting>`, with our parser's honest support status.
-- 🔴 **[Inline vs anchored positioning](/docs/idml/anchored-inline-objects/inline-vs-anchored)** —
-  explanation: what *inline*, *above the line*, and *custom* placement each mean,
-  and exactly how far our renderer carries them today.
+<ExampleEmbed example="anchored-frame">
+  A 36 x 18 pt rectangle anchored inline in the middle of a sentence. It takes its own width in
+  the line, and the text after it continues to its right.
+</ExampleEmbed>
 
-## Where this sits
+## Pages in this chapter
 
-An anchored object is a frame *and* a piece of text at once, so it draws on two
-other chapters. The frame itself — its bounds, fill, stroke, and path — is the
-same machinery covered in [frames & paths](/docs/idml/frames-paths). The run it nests
-inside is the `CharacterStyleRange` from [stories & text](/docs/idml/stories-text); if
-the `Story` → `ParagraphStyleRange` → `CharacterStyleRange` shape is not yet
-familiar, read [story structure](/docs/idml/stories-text/story-structure) first — this
-chapter assumes it.
+- [Anchored objects](/docs/idml/anchored-inline-objects/anchored-objects): the element model and
+  every attribute of `<AnchoredObjectSetting>`.
+- [Inline vs anchored positioning](/docs/idml/anchored-inline-objects/inline-vs-anchored): what
+  inline, above-line and custom placement do to the object and to the lines around it.
+
+The frame itself works as in [frames & paths](/docs/idml/frames-paths); the run it lives in is
+explained in [story structure](/docs/idml/stories-text/story-structure).
+
+> **In Paged:** anchored objects are drawn at their anchors in all three modes, and inline and
+> above-line objects take room in their lines. Text does not yet wrap around an anchored
+> object. <SupportBadge feature="anchored-inline-objects.anchored-frames" />
 
 ## Frequently asked questions
 
 **What is an anchored object in IDML?**
-An anchored object is a frame — a `<Rectangle>`, `<TextFrame>`, or `<Group>` —
-written as a child of a `CharacterStyleRange` rather than placed on a spread.
-Because it lives inside the text stream, it moves with the surrounding words when
-copy is edited, instead of staying pinned to a fixed spot on the page.
+A page item written inside a `CharacterStyleRange` of a story instead of on a spread. It is
+anchored at its position in the text and carries an `<AnchoredObjectSetting>`.
 
-**How is an anchored object different from a normal frame on a spread?**
-A normal frame sits on the spread at a fixed position in spread coordinates, and
-text flows around or ignores it. An anchored object has no spread position of its
-own — it is nested in a run, so its place in the document tree is what determines
-where it belongs, and it survives reflow that would leave a free frame stranded.
+**How is an anchored object different from a frame on the spread?**
+A spread frame has a fixed position on the spread. An anchored object's position follows its
+anchor in the text, so it moves when the text before it changes.
 
-**Does Paged render anchored objects at their anchor today?**
-No. Our parser reads the anchored frame's geometry, styling, and full
-`<AnchoredObjectSetting>` onto its host paragraph, but the renderer does not yet
-place it at the anchor or flow text around it. See
-[inline vs anchored positioning](/docs/idml/anchored-inline-objects/inline-vs-anchored)
-for the exact support status.
+**Where does the anchor sit in the text?**
+Where the object element is written: between the `<Content>` before it and the `<Content>`
+after it in the run.
+
+**Does Paged place anchored objects at their anchors?**
+Yes, inline, above-line and custom objects alike, and inline objects take room in their line.
+Text wrap around anchored objects is not applied yet.

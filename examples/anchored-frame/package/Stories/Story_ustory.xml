@@ -3,10 +3,23 @@
   <Story Self="ustory">
     <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
       <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
-        <Content>A paragraph that carries an anchored object.</Content>
-        <Rectangle Self="uanchor" AppliedObjectStyle="ObjectStyle/$ID/[None]" ItemTransform="1 0 0 1 0 0" GeometricBounds="0 0 36 72" FillColor="Color/Black" StrokeColor="Swatch/None" StrokeWeight="0">
+        <Content>A paragraph that carries an inline object </Content>
+        <Rectangle Self="uanchor" AppliedObjectStyle="ObjectStyle/$ID/[None]" ItemTransform="1 0 0 1 0 0" FillColor="Color/Black" StrokeColor="Swatch/None" StrokeWeight="0">
+          <Properties>
+            <PathGeometry>
+              <GeometryPathType PathOpen="false">
+                <PathPointArray>
+                  <PathPointType Anchor="0 0" LeftDirection="0 0" RightDirection="0 0"/>
+                  <PathPointType Anchor="0 18" LeftDirection="0 18" RightDirection="0 18"/>
+                  <PathPointType Anchor="36 18" LeftDirection="36 18" RightDirection="36 18"/>
+                  <PathPointType Anchor="36 0" LeftDirection="36 0" RightDirection="36 0"/>
+                </PathPointArray>
+              </GeometryPathType>
+            </PathGeometry>
+          </Properties>
           <AnchoredObjectSetting AnchoredPosition="InlinePosition" SpineRelative="false" LockPosition="false" AnchorPoint="BottomLeftAnchor" AnchorXoffset="0" AnchorYoffset="0"/>
         </Rectangle>
+        <Content> in the middle of its line.</Content>
       </CharacterStyleRange>
     </ParagraphStyleRange>
   </Story>

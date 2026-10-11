@@ -1,130 +1,122 @@
 ---
 title: Anchored objects
-description: The element model of an anchored object — a frame nested inside a CharacterStyleRange, plus every attribute of its AnchoredObjectSetting and our parser's support status.
+description: The element model of an IDML anchored object, a page item nested in a CharacterStyleRange, and every attribute of its AnchoredObjectSetting.
 tier: pro
 diataxis: reference
 status: published
 owner: paged-docs
+describes: [anchored-inline-objects.anchored-frames, anchored-inline-objects.anchor-alignment, anchored-inline-objects.anchored-ops]
+reviewed: 2026-10-11
 ---
 
-**An anchored object is a `<Rectangle>`, `<TextFrame>`, or `<Group>` written as a child of a `CharacterStyleRange`, carrying one `<AnchoredObjectSetting>`.**
+**An anchored object is a page item written as a child of a `CharacterStyleRange`, with one `<AnchoredObjectSetting>` child that says where it goes.**
 
-**In short:** An anchored object is built from two parts in IDML. The first is an
-ordinary frame element — a `<Rectangle>`, a `<TextFrame>`, or a `<Group>`, the same
-elements you would find on a spread — but written *inside* a run of text rather than
-on the spread. The second is a single extra child, `<AnchoredObjectSetting>`, that
-records where the frame should land relative to the anchor character. Our parser
-reads the frame's geometry and styling onto the host paragraph and reads the setting
-alongside it. This page is the reference for both: the frame element's attributes
-and every attribute of `<AnchoredObjectSetting>`, each with its honest support
-status.
+**In short:** The object is the same element it would be on a spread, a `<TextFrame>`,
+`<Rectangle>` or `<Group>`, with the same attributes and the same `<Properties>`: its outline,
+fill, stroke, transparency and text wrap. Its position in the run is its anchor. The
+`<AnchoredObjectSetting>` holds the placement: the mode (`InlinePosition`, `AboveLine` or
+`Anchored`), offsets, and for custom placement the reference points and alignments.
 
-An anchored object is a frame written as a child of a `CharacterStyleRange`. The
-frame is one of three familiar elements — a `<Rectangle>`, a `<TextFrame>`, or a
-`<Group>` — and it carries a single extra child, `<AnchoredObjectSetting>`, that
-describes where it should land relative to the anchor character. The parser reads
-the frame's geometry and styling onto the host paragraph and reads the setting
-alongside it.
+## The object element
 
 <ExampleEmbed example="anchored-frame">
-  A Rectangle nested inside a run, with an AnchoredObjectSetting. The renderer
-  reports `paragraphs: 1`, `runs: 1` — the anchored frame is read onto the
-  paragraph, not counted as a spread item.
+  A Rectangle nested in a run, between two Content elements, with an AnchoredObjectSetting.
+  The story has one run; laid out, the line has the text, the object, and the text again.
 </ExampleEmbed>
 
-## The frame element
+Everything about the object itself is written as for a page item on a spread:
 
-Any of three elements may appear directly inside a `CharacterStyleRange` to become
-an anchored object. Which one it is, the parser records as a frame *kind*; the rest
-of the attributes it reads mirror how the same element is read at spread level.
+- **The outline** is in `<Properties><PathGeometry>`, in the object's own coordinates. A
+  `GeometricBounds` attribute is not what InDesign uses for size.
+- **Paint** is `FillColor`, `StrokeColor`, `StrokeWeight`, `FillTint` and the rest, or an
+  `AppliedObjectStyle`.
+- **A text frame** has its own story, named by `ParentStory`.
+- **A group** holds its members as on a spread.
+- **A graphic frame** holds its `<Image>` as on a spread.
+- **Effects and text wrap** are a `TransparencySetting` and a `TextWrapPreference`.
 
-<AttrTable
-  element="Rectangle / TextFrame / Group (nested in a CharacterStyleRange)"
-  rows={[
-    { attr: 'Self', type: 'string id', support: 'parsed-not-rendered', note: 'The frame’s id. Recorded on the anchored-frame record.' },
-    { attr: 'GeometricBounds', type: 'string "y1 x1 y2 x2" (pt)', support: 'parsed-not-rendered', note: 'The frame’s box. Read here; an explicit GeometricBounds wins over bounds derived from a nested PathGeometry.' },
-    { attr: 'ItemTransform', type: 'string "a b c d e f" (matrix)', support: 'parsed-not-rendered', note: 'The frame’s transform. For an anchored frame it positions content in the frame’s own coordinates, not on the spread.' },
-    { attr: 'ParentStory', type: 'string ref (Story/…)', support: 'parsed-not-rendered', note: 'TextFrame only — the story whose text fills the anchored frame. Absent for Rectangle and Group.' },
-    { attr: 'FillColor', type: 'string ref (Color/… or Swatch/None)', support: 'parsed-not-rendered', note: 'Fill swatch. None ⇒ inherit from the applied object style cascade.' },
-    { attr: 'StrokeColor', type: 'string ref (Color/… or Swatch/None)', support: 'parsed-not-rendered', note: 'Stroke swatch.' },
-    { attr: 'StrokeWeight', type: 'double (pt)', support: 'parsed-not-rendered', note: 'Stroke width.' },
-    { attr: 'FillTint', type: 'double (0–100)', support: 'parsed-not-rendered', note: 'Tint percentage of the fill.' },
-    { attr: 'GradientFillAngle', type: 'double (deg)', support: 'parsed-not-rendered', note: 'Angle of a gradient fill.' },
-    { attr: 'AppliedObjectStyle', type: 'string ref (ObjectStyle/…)', support: 'parsed-not-rendered', note: 'The object style applied to the frame.' },
-  ]}
-/>
+The object's `ItemTransform` is written as for any item, but where it lands on the page follows
+from the anchor and the setting, not from the transform alone.
 
-A few things the parser deliberately does **not** recurse into on an anchored
-frame: nested transparency settings, and — beyond a nested `<Image>`'s link URI
-and transform on an anchored `<Rectangle>` — image styling. A `<Group>` records its
-child frames in z-order; a `<TextFrame>` records its `ParentStory`, and the
-renderer now chases that story content and places the frame at the anchor.
-What is not yet flowed is the inline advance reservation (an `InlinePosition`
-object does not push following text along) and text wrap around the object.
-<SupportBadge status="parsed-not-rendered" note="placed at the anchor (above/below + custom position); inline advance reservation and text-wrap around the object are the remaining flow integration — paged-parse/src/story.rs:264" />
+## `<AnchoredObjectSetting>`
 
-## `AnchoredObjectSetting`
+<AttrTable element="AnchoredObjectSetting" />
 
-The placement block. It sits inside the frame element and records *intent* — where
-the object should land relative to the anchor — without itself moving anything. The
-parser stores each attribute's value verbatim; an absent attribute falls back to
-the cascaded default.
+The same element appears in object styles, where it gives anchored objects that use the style
+their placement, and in the document preferences as the default. On an object, a missing
+attribute comes from the object style, then from those defaults.
 
-<AttrTable
-  element="AnchoredObjectSetting"
-  rows={[
-    { attr: 'AnchoredPosition', type: 'InlinePosition | AboveLine | Anchored', support: 'parsed-not-rendered', note: 'The placement mode. Absent ⇒ inline. See inline vs anchored positioning for what each mode means.' },
-    { attr: 'AnchorPoint', type: 'TopLeftAnchor | TopCenterAnchor | TopRightAnchor | LeftCenterAnchor | CenterAnchor | RightCenterAnchor | BottomLeftAnchor | BottomCenterAnchor | BottomRightAnchor', support: 'parsed-not-rendered', note: 'Which point of the object is pinned to the anchor.' },
-    { attr: 'AnchorXoffset', type: 'double (pt)', support: 'parsed-not-rendered', note: 'Horizontal nudge from the anchor point. 0 when absent.' },
-    { attr: 'AnchorYoffset', type: 'double (pt)', support: 'parsed-not-rendered', note: 'Vertical nudge from the anchor point. 0 when absent.' },
-    { attr: 'SpineRelative', type: 'boolean', support: 'parsed-not-rendered', note: 'true flips the offset direction on facing pages. false is the default.' },
-    { attr: 'LockPosition', type: 'boolean', support: 'parsed-not-rendered', note: 'true pins the object so it can’t be dragged. false is the default.' },
-    { attr: 'HorizontalReferencePoint', type: 'AnchorLocation | ColumnEdge | TextFrame | PageMargins | PageEdge', support: 'parsed-not-rendered', note: 'For custom positioning — which rectangle the horizontal alignment measures from. Absent ⇒ AnchorLocation.' },
-    { attr: 'HorizontalAlignment', type: 'LeftAlign | CenterAlign | RightAlign | TextAlign', support: 'parsed-not-rendered', note: 'For custom positioning — which side of the horizontal reference the object sits against.' },
-    { attr: 'VerticalReferencePoint', type: 'LineBaseline | LineXHeight | LineCapHeight | TopOfLeading | Column | TextFrame | PageMargins | PageEdge', support: 'parsed-not-rendered', note: 'For custom positioning — which line or page feature the vertical alignment measures from.' },
-    { attr: 'VerticalAlignment', type: 'TopAlign | CenterAlign | BottomAlign', support: 'parsed-not-rendered', note: 'For custom positioning — vertical alignment against the vertical reference.' },
-  ]}
-/>
+### The mode: `AnchoredPosition`
 
-## Why the count doesn't change
+| Value | Placement |
+|---|---|
+| `InlinePosition` | In the line, like a character. The default, and the only value in the surveyed documents' own objects. |
+| `AboveLine` | On a line of its own above the line that holds the anchor. |
+| `Anchored` | Custom: positioned against a reference point, a frame, the column or the page. |
 
-The example above adds a whole `<Rectangle>` to the story, yet the renderer still
-reports `frames: 1`, `paragraphs: 1`, `runs: 1`. That is the point of an anchored
-object being *inside* a run: it is recorded on the host paragraph, not promoted to
-a spread-level frame, so it does not inflate the frame count — and the run that
-hosts it is still one run. The frame on the spread (`frames: 1`) is the page's text
-frame; the anchored rectangle is data hanging off the paragraph within it.
-
-## Next
-
-What `AnchoredPosition`, `AnchorPoint`, and the reference/alignment attributes
-actually *do* — and how much of it the renderer carries today — is the subject of
+What each mode does to the object and the surrounding lines is explained on
 [inline vs anchored positioning](/docs/idml/anchored-inline-objects/inline-vs-anchored).
+
+### Offsets and spacing
+
+- **`AnchorYoffset`** moves an inline object up from the baseline (positive is up). For an
+  above-line object it is the space after the object, before the anchor's line. For a custom
+  object it is the vertical offset from the reference point.
+- **`AnchorXoffset`** is the horizontal offset of a custom object.
+- **`AnchorSpaceAbove`** is the space above an above-line object.
+
+### Custom placement
+
+A custom (`Anchored`) object is placed by matching a point of the object to a point of a
+reference:
+
+- **`AnchorPoint`**, one of nine (`TopLeftAnchor`, `TopCenterAnchor`, … `BottomRightAnchor`),
+  is the point on the object.
+- **`HorizontalReferencePoint`** is what it is measured from across: `AnchorLocation` (the
+  anchor character), `ColumnEdge`, `TextFrame`, `PageMargins` or `PageEdge`.
+- **`VerticalReferencePoint`** is what it is measured from down: a line of the anchor
+  (`LineBaseline`, `LineXHeight`, `LineCapHeight`, `TopOfLeading`), or `TextFrame`,
+  `PageMargins`, `PageEdge`.
+- **`HorizontalAlignment`** (`LeftAlign`, `CenterAlign`, `RightAlign`) and
+  **`VerticalAlignment`** (`TopAlign`, `CenterAlign`, `BottomAlign`) say which side of the
+  reference the object goes to. For an above-line object, `HorizontalAlignment` places it in
+  the column.
+- **`SpineRelative`** mirrors the horizontal placement on facing pages, so an object on the
+  outside margin stays outside.
+- **`LockPosition`** keeps the object from being dragged by hand. It does not change where
+  the object is placed. **`PinPosition`** is written beside it, `true` in nearly every
+  surveyed file.
+
+> **In Paged:** all three modes are placed at their anchors. Custom objects resolve every
+> horizontal and vertical reference above against the anchor line's real font metrics and the
+> page's margins, and apply the offsets. `AnchorSpaceAbove` is not applied yet, and text wrap
+> around an anchored object is not applied. Anchored objects can be inserted and edited in
+> Paged. Paged also accepts the spellings `Custom` and
+> `AbovePosition`. <SupportBadge feature="anchored-inline-objects.anchored-frames" /> <SupportBadge feature="anchored-inline-objects.anchor-alignment" /> <SupportBadge feature="anchored-inline-objects.anchored-ops" />
+
+## Anchored objects and counts
+
+An anchored object belongs to its story, not to the spread: it is not a spread item, and the
+run that holds it stays one run in the XML. Laid out, an inline object occupies a position in
+its line like a character, so tools that count laid-out runs see one more piece on that line.
 
 ## Frequently asked questions
 
-**Which elements can be an anchored object?**
-Exactly three: a `<Rectangle>`, a `<TextFrame>`, or a `<Group>`, written directly
-inside a `CharacterStyleRange`. These are the same elements you would find on a
-spread; the parser records which one it is as the frame's *kind* and reads the rest
-of its attributes the way it reads them at spread level.
+**Which elements can be anchored?**
+Page items. The surveyed documents anchor text frames, rectangles and groups. The element is
+written exactly as it would be on a spread, inside a `CharacterStyleRange`.
 
-**What does `<AnchoredObjectSetting>` do?**
-It is the placement block nested inside the frame element. It records *intent* —
-where the object should land relative to the anchor, via attributes like
-`AnchoredPosition`, `AnchorPoint`, and the offset and reference/alignment pairs —
-without itself moving anything. The parser stores each attribute verbatim, and an
-absent attribute falls back to its cascaded default.
+**Where does an anchored object's size come from?**
+From its outline, `<Properties><PathGeometry>`, as for any page item.
 
-**Why doesn't adding an anchored object change the frame, paragraph, or run count?**
-Because the object is recorded on its host paragraph rather than promoted to a
-spread-level frame. The frame count reflects the page's text frame, the paragraph
-still has one paragraph, and the run that hosts the object is still one run — so the
-renderer reports `frames: 1`, `paragraphs: 1`, `runs: 1` even though a whole
-`<Rectangle>` was added to the story.
+**What does `AnchoredPosition="Anchored"` mean?**
+Custom placement: the object is positioned against the reference points named by
+`HorizontalReferencePoint` and `VerticalReferencePoint`, with `AnchorPoint`, the alignments
+and the offsets.
 
-**Does the parser read everything inside an anchored frame?**
-No. It deliberately skips nested transparency settings and, beyond a nested
-`<Image>`'s link URI and transform on an anchored `<Rectangle>`, image styling. A
-`<Group>` records its child frames in z-order, and a `<TextFrame>` records its
-`ParentStory` so the renderer can chase the story content once placement lands.
+**Do object styles carry anchoring settings?**
+Yes. An object style can contain an `<AnchoredObjectSetting>`, and the document preferences
+carry the defaults.
+
+**Does `LockPosition` change where the object appears?**
+No. It only prevents moving the object by hand in InDesign.

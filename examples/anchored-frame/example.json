@@ -1,10 +1,10 @@
 {
   "$schema": "../_schema/manifest.schema.json",
   "id": "anchored-frame",
-  "title": "A rectangle anchored inside a run",
+  "title": "An inline object anchored in the middle of a line",
   "tier": "pro",
   "chapter": "anchored-inline-objects",
-  "concept": "A Rectangle nested inside a CharacterStyleRange is an anchored object; the parser reads it (geometry + AnchoredObjectSetting) onto the host paragraph instead of treating it as a free spread item.",
+  "concept": "A Rectangle written inside a CharacterStyleRange, between two Content elements, is an anchored object at that character position; with AnchoredPosition=\"InlinePosition\" it sits in the line like a character as wide as the object.",
   "packageDir": "package",
   "editable": {
     "part": "Stories/Story_ustory.xml",
@@ -19,19 +19,23 @@
   "annotations": [
     {
       "lines": "5",
-      "note": "The host run. The anchored object is a child of this CharacterStyleRange, not a sibling of the frame on the spread."
+      "note": "The host run. The anchored object is a child of this CharacterStyleRange, not an item on the spread."
     },
     {
       "lines": "6",
-      "note": "Content comes first — the literal text the object is anchored into."
+      "note": "The text before the anchor."
     },
     {
-      "lines": "7",
-      "note": "A Rectangle nested directly inside the run is an anchored object. GeometricBounds and FillColor are read just like a spread-level frame; the bounds give it a 36x72pt box."
+      "lines": "7-19",
+      "note": "A Rectangle nested in the run is an anchored object, anchored at this point in the text. Its size comes from its PathGeometry, here 36 x 18 pt, as for any page item."
     },
     {
-      "lines": "8",
-      "note": "AnchoredObjectSetting carries the placement intent. AnchoredPosition=\"InlinePosition\" requests inline (glyph-space) anchoring; AnchorPoint names which corner of the object lands on the anchor. Inline, the object is a character of its line: it takes its own width on the line, so the laid-out page has two runs (the text and the object) while the story still has one."
+      "lines": "20",
+      "note": "AnchoredObjectSetting says where the object goes. InlinePosition puts it in the line: it takes its width on the line and its bottom sits on the baseline, raised by AnchorYoffset."
+    },
+    {
+      "lines": "22",
+      "note": "The text after the anchor continues on the same line, after the object."
     }
   ],
   "expect": {
@@ -41,7 +45,7 @@
     "stories": 1,
     "frames": 1,
     "paragraphs": 1,
-    "runs": 2
+    "runs": 3
   },
   "pathological": false,
   "license": "MIT",
@@ -58,5 +62,8 @@
       "ssim": 0.981,
       "fontsMatched": true
     }
-  }
+  },
+  "elements": [
+    "AnchoredObjectSetting"
+  ]
 }
