@@ -23,8 +23,7 @@ here; two CI workflows check out the engine repository to build tools from it.
 | `data/` | `scripting/`: 117 script examples with their starter documents. `comparison.json`: an editorial comparison table. |
 | `scripts/` | `examples/` (assembler and gate), `scripting/` (script gate), `generate/` (the source pull and ten projections), and single-file scripts. |
 | `cleanroom/` | The similarity check: normalizer, checker, vocabulary. |
-| `demos/` | Three recorded editor sessions. |
-| `public/` | `_headers`, `_redirects`, brand assets. `public/preview/` and `public/demos/` are filled at build time and are not committed. |
+| `public/` | `_headers`, `_redirects`, brand assets. `public/preview/` is filled at build time and is not committed. |
 | `core.pin`, `sources.pin` | The engine commit the gates build from; the list of cross-repository sources. |
 | `.github/workflows/` | Six workflows, described under "Build, checks and deploy". |
 
@@ -41,7 +40,6 @@ examples/<id>/ ── lib/examples.ts, assembleIdml ─────────�
 sources.pin ── pull-sources ──> .generated/sources/ ── gen-* ──> .generated/*.json
                                                   └─ lib/generated.ts ────┤
 @paged-media/idml-viewer (npm) ── prepare-preview-wasm ──> public/preview/ ┤
-demos/, editor release assets ── pull-sources ──> public/demos/ ──────────┤
                                                                           v
                                       next build (output: 'export') ──> out/
                                       wrangler pages deploy out ──────> host
@@ -127,16 +125,15 @@ and loaded from there on demand; it needs WebGPU
 ([ADR 803](adr/803-live-preview-uses-viewer-package.md)).
 
 `<LiveDemo>` and `<ScriptingPlayground>` embed the running editor from the playground origin
-in an iframe. This is why the host sends cross-origin isolation headers. `<Demo>` plays a
-recorded session with the player from `@paged-media/demo-replay`
+in an iframe. This is why the host sends cross-origin isolation headers
 ([ADR 804](adr/804-static-export-hosting.md)).
 
 ## Where data is stored
 
-- **Committed:** pages, examples, the script corpus, three demo recordings, the two pin
+- **Committed:** pages, examples, the script corpus, the two pin
   files, `data/comparison.json`.
 - **Produced by a build and ignored by git:** `.source/`, `.generated/`, `public/preview/`,
-  `public/demos/`, `.next/`, `out/`, `dist/`.
+  `.next/`, `out/`, `dist/`.
 - **At run time:** nothing. The site is static files; it has no database and no server
   state. `components/analytics.tsx` adds up to two third-party analytics scripts: one when
   `NEXT_PUBLIC_ANALYTICS` is `1`, one in every production build.
@@ -147,8 +144,7 @@ recorded session with the player from `@paged-media/demo-replay`
 |---|---|
 | `core` | `paged-inspect` and `paged-run`, built in CI at the commit in `core.pin`; three pulled JSON files (scripting catalog, viewer API catalog, command-line tree); the npm package `@paged-media/idml-viewer` at an exact version; the byte rules that `scripts/examples/assemble.ts` repeats. |
 | `plugin-sdk` | The manifest schema `packages/plugin-api/src/manifest.schema.json`, pulled. |
-| `editor` | The playground deployment that the iframes embed, with its query parameters and messages; recorded sessions from its release assets. |
-| `demo-replay` | The recording player, a git dependency pinned to a commit. |
+| `editor` | The playground deployment that the iframes embed, with its query parameters and messages. |
 | `state`, `editor-server` | The feature registry with the capability matrix, and the OpenAPI document, pulled as JSON. |
 | a separate baseline repository | The fingerprint file the similarity check compares against. |
 

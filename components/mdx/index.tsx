@@ -27,7 +27,6 @@ import { SurfaceReach } from './surface-reach';
 import { PluginCapabilities } from './plugin-capabilities';
 import { RestApiReference } from './rest-api-reference';
 import { ActivityFeed, RepoActivity } from './activity-feed';
-import { Demo } from './demo';
 import { LiveDemo } from './live-demo';
 import { AttrTable } from './attr-table';
 import { ElementReference, ElementIndex } from './element-reference';
@@ -79,7 +78,6 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     RestApiReference,
     ActivityFeed,
     RepoActivity,
-    Demo,
     LiveDemo,
     AttrTable,
     ElementReference,

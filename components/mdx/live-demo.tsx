@@ -1,8 +1,8 @@
 'use client';
 /**
  * <LiveDemo> — embeds the REAL editor running a demo script inline, live, via the
- * playground (play.paged.media). The successor to <Demo> (rrweb recording): the
- * actual app driven by its own scripting layer, scrubbable + interactive.
+ * playground (play.paged.media): the actual app driven by its own scripting
+ * layer, scrubbable + interactive.
  *
  *   <LiveDemo script="draw-fill" />   loads play.paged.media/?script=draw-fill
  *

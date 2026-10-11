@@ -30,7 +30,6 @@
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
-    "@paged-media/demo-replay": "github:paged-media/demo-replay#685b976af0bbe70a50476ccb2aa12f907b91c7c4",
     "@paged-media/idml-viewer": "0.71.3",
     "fflate": "^0.8.3",
     "fumadocs-core": "^16.15.8",
@@ -39,7 +38,6 @@
     "next": "^16.3.4",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "rrweb": "^2.1.4",
     "shiki": "^1.29.2",
     "zod": "^4.6.1"
   },
