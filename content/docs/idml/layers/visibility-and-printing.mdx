@@ -1,127 +1,84 @@
 ---
 title: Visibility and printing
-description: An item is drawn only when its layer is both Visible and Printable — how those two switches gate the renderer, why Locked does not, and the layer features the model leaves flat.
+description: When an IDML page item is drawn and printed — the layer's Visible and Printable, the item's own Visible and Nonprinting, and why Locked changes nothing.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
+describes: [layers.model, layers.nested-groups, layers.ops]
+reviewed: 2026-10-11
 ---
 
-**An item is drawn only when its layer is both `Visible` and `Printable`; everything else a layer records is ignored at render time.**
+**An item shows when its layer is visible and the item itself is visible; it prints when, in addition, its layer is printable and the item is not marked non-printing.**
 
-**In short:** Of all the switches a layer carries, only two change the renderer's
-output: `Visible` and `Printable`. An item is painted only if the layer its
-`ItemLayer` names is **both** visible and printable — either one turned off drops
-the item, and both default to on. `Locked` is read but never affects what is
-drawn, and nested layer folders are flattened to a single peer list. This page
-explains exactly when content is suppressed, and is equally clear about the layer
-attributes that look like they should matter but do not.
+**In short:** Four switches decide whether a page item appears. On the layer: `Visible`
+(hidden layers show nothing) and `Printable` (a non-printing layer shows on screen but not in
+print or PDF). On the item: `Visible` (hides that item alone) and `Nonprinting` (shows on screen
+only). `Locked`, on the layer or the item, only stops editing. All of them default to showing
+and printing.
 
-Of everything a layer records, only two switches change what comes out of the
-renderer: `Visible` and `Printable`. They are the reason layers are worth
-documenting before the rest of the layer model — get these two wrong in a fixture
-and content silently vanishes. This page explains exactly when that happens, and
-is equally clear about the layer attributes that look like they should matter but
-do not.
+## The layer's switches
 
-## One test, two switches
+- **`Visible="false"`**: the layer is hidden. None of its items are drawn, on screen or in
+  output.
+- **`Printable="false"`**: the layer is a non-printing layer. Its items show while editing but
+  are left out of print and export.
+- **`Locked="true"`**: its items cannot be selected or moved. It changes nothing about what is
+  drawn.
 
-When the renderer walks a spread, every page item is checked against the layer its
-`ItemLayer` names. The rule is a single AND: an item is drawn only if its layer is
-**both** visible **and** printable. Either switch turned off is enough to drop the
-item.
-
-- `Visible="false"` — the layer is hidden. None of its items are drawn.
-- `Printable="false"` — the layer is marked non-printing. The current renderer
-  treats this the same as hidden: its items are suppressed from output.
-
-<SupportBadge status="supported" note="Visible and Printable both gate the render" />
-
-Both default to on. A layer that omits `Visible` is visible; a layer that omits
-`Printable` prints. And an item whose `ItemLayer` is missing, or which names a
-layer that is not defined, is also drawn — the renderer only suppresses an item
-when it can resolve `ItemLayer` to a real layer that is explicitly off. A missing
-or dangling reference never makes content disappear by accident.
-
-Because the two switches collapse into one decision, the renderer precomputes a
-single `visible && printable` answer per layer before it starts painting, then
-consults that one flag for each item. There is no separate "printing pass" today —
-on-screen and to-output are the same suppression.
+All three default to the showing state: visible, printable, unlocked. For a group, the switches
+of the group's layer apply to all its members.
 
 <ExampleEmbed example="layer-visibility">
-  The blue rectangle sits on a layer with `Visible="false"`. It parses, but it
-  never paints. Set that layer's `Visible` to `true` to see it return.
+  The blue rectangle is on a layer with Visible="false". It is in the file, but it is not drawn.
+  Set that layer's Visible to true to bring it back.
 </ExampleEmbed>
 
-The example makes the parse-versus-render distinction concrete. Inspecting the
-package, the spread reports **two** rectangles — both are well-formed and the
-parser builds both. But the rendered page reports a single frame and a single
-paint command: the rectangle on the hidden layer is gone by the time the page is
-drawn. "It is in the XML" and "it is on the page" are two different statements,
-and the layer's switches are what separate them.
+The spread holds two rectangles; the page shows one. "It is in the XML" and "it is on the
+page" are different statements, and the layer's switches are the difference.
 
-## `Locked` is read, but the renderer ignores it
+## The item's own switches
 
-A layer can also be marked `Locked`. In an editor, locking a layer stops you from
-selecting or moving the items on it — it is a guard against accidental edits. The
-parser reads `Locked` and keeps it on the layer model, but it has no bearing on
-output: a locked layer renders exactly like an unlocked one. Locking is an
-authoring-time concern that belongs to a canvas and its selection logic, not to a
-renderer that only draws.
+- **`Visible="false"`** on a page item hides that item only, whatever its layer. In InDesign it
+  is the eye on the object's row in the Layers panel.
+- **`Nonprinting="true"`** keeps the item on screen and out of print and export, like a
+  non-printing layer for one item.
+- **`Locked="true"`** blocks selection, like a locked layer.
 
-<SupportBadge status="parsed-not-rendered" note="Layer Locked — parsed, but an editor concern; never changes the rendered output" />
+## Nested layers
 
-So if you are reading an IDML to understand what a page *looks like*, you can
-ignore `Locked` entirely. It matters only to tools that let a user push the
-pixels around.
+If a layer is written inside another `<Layer>`, it inherits its parent's state: a visible
+layer inside a hidden parent is hidden, and a layer inside a locked parent is locked. See
+[the layer model](/docs/idml/layers/the-layer-model).
 
-## Layer folders are flattened
+> **In Paged:** the renderer draws an item only when its layer is visible, its layer is
+> printable and the item is visible; a nested layer inherits a hidden or locked parent. The
+> renderer makes no difference between screen and print, so a non-printing layer is hidden in
+> the rendered page too. Locked layers and items are drawn and only block selection in the
+> editor. <SupportBadge feature="layers.model" /> <SupportBadge feature="layers.ops" />
 
-InDesign's Layers panel can nest layers inside *layer groups* (folders). The
-model carries that nesting: each `<Layer>` records its parent group, and the
-render-time visibility / lock resolution walks the ancestor chain — an item on a
-visible child layer inside a *hidden* (or locked) group resolves hidden (or
-locked), matching the panel. A top-level layer simply has no parent, so flat
-documents behave exactly as before.
+## When content goes missing
 
-<SupportBadge feature="layers.nested-groups" note="Layer-group nesting parsed; a child inside a hidden/locked group inherits that state" />
+1. Read the item's `ItemLayer`, or its group's.
+2. Find that `<Layer>` in `designmap.xml`, and any `<Layer>` it is nested in.
+3. Check `Visible` and `Printable` there.
+4. Check the item's own `Visible` and `Nonprinting`.
 
-## What to check when content goes missing
-
-The practical payoff of this page is a short checklist. When a frame you can see
-in the spread XML does not appear on the rendered page, and the geometry looks
-fine, walk the layer link:
-
-1. Read the item's `ItemLayer` to find which layer it claims.
-2. Find that `<Layer>` in `designmap.xml`.
-3. Check its `Visible` and `Printable`. If either is `false`, that is your answer.
-
-If the item has no `ItemLayer`, or it points at a layer that is not in the design
-map, layers are not your problem — the renderer would have drawn it on the default
-layer, so the disappearance is something else (geometry, color, or threading).
+If all of these show the item, the cause is elsewhere: geometry (off the page, on the
+pasteboard), paint (`Swatch/None`), or text that is overset.
 
 ## Frequently asked questions
 
-**When is a page item's layer allowed to keep it off the page?**
-An item is drawn only when its layer is **both** `Visible` and `Printable`. Either
-switch set to `false` is enough to suppress the item; both must be on (their
-default) for it to paint.
+**When is a page item drawn?**
+When its layer is visible and the item's own `Visible` is not `false`. For printing and export,
+its layer must also be printable and the item must not be `Nonprinting`.
 
-**Does `Printable="false"` behave differently from `Visible="false"`?**
-Not in the current renderer. There is no separate printing pass: on-screen and
-to-output are the same suppression, so a non-printing layer hides its items exactly
-as a non-visible one does. The renderer precomputes a single `visible && printable`
-flag per layer and consults that.
+**Does Printable="false" hide items?**
+Not while editing in InDesign: the layer shows on screen and is left out of print and PDF.
+A renderer that only produces output treats it like a hidden layer.
 
-**Does a `Locked` layer affect the rendered output?**
-No. `Locked` is read into the layer model but never changes what is drawn — a
-locked layer renders exactly like an unlocked one. Locking is an authoring-time
-guard against accidental edits, a concern for an editor's selection logic, not for
-a renderer.
+**Does a Locked layer change the output?**
+No. Locking only stops items from being selected or moved.
 
-**Are nested layer folders (layer groups) preserved?**
-No. InDesign's layer groups are purely organizational, so the model flattens them
-to a single ordered list of peer layers with no parent/child relationship. This
-costs nothing at render time — a folder never affected whether its layers' items
-drew — but the model cannot tell you which folder a layer was in, because no
-folder is retained.
+**Can one item be hidden without hiding its layer?**
+Yes, with `Visible="false"` on the item.

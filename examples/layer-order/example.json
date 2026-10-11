@@ -1,0 +1,45 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "layer-order",
+  "title": "Layer order beats document order",
+  "tier": "intermediate",
+  "chapter": "layers",
+  "concept": "The design map lists layers from bottom to top. The red rectangle comes first in the spread but sits on the second-listed layer, so it paints above the blue rectangle on the first-listed layer.",
+  "packageDir": "package",
+  "editable": {
+    "part": "designmap.xml",
+    "language": "xml",
+    "label": "designmap.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree",
+    "live"
+  ],
+  "annotations": [
+    {
+      "lines": "4",
+      "note": "Listed first, so this is the bottom layer. The blue rectangle names it through ItemLayer."
+    },
+    {
+      "lines": "5",
+      "note": "Listed second, so this layer sits above the first. The red rectangle is on it and covers the blue one, although the spread writes the red rectangle first. Swap the two lines and the blue rectangle comes to the front."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 2,
+    "paragraphs": 0,
+    "runs": 0
+  },
+  "pathological": false,
+  "license": "MIT",
+  "elements": [
+    "Layer",
+    "Rectangle"
+  ]
+}
