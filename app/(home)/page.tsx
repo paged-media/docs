@@ -53,8 +53,8 @@ const HOME: Record<typeof SITE_ID, HomeCopy> = {
     lede:
       'An independent, in-depth reference for IDML, the open XML package an InDesign document ' +
       'becomes when it travels as text: the package, spreads and pages, stories, styles, tables, ' +
-      'colour and graphics. Written from first principles, with every example validated against a ' +
-      'working renderer.',
+      'colour and graphics. Written from first principles, and every example is checked by opening ' +
+      'it in InDesign.',
     start: '/docs/idml/foundations',
     browse: '/docs/idml/overview',
     cards: [

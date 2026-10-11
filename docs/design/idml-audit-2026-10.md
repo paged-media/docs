@@ -19,7 +19,7 @@ This file is the work list for the chapter rewrites; each wave closes its rows.
 | 4 | styles, typography, tables | rewritten |
 | 5 | colour, images, anchored objects, effects & transparency (new), colour management (new) | rewritten |
 | 6 | cross-references & hyperlinks, sections, conditional text, tagged XML, table of contents (new) | rewritten |
-| 7 | companion formats, round-tripping, edge cases, comparisons, cookbook, glossary, home | in progress |
+| 7 | companion formats, round-tripping, edge cases, comparisons, cookbook, glossary, home | rewritten |
 
 Every example is verified in InDesign 20.0.1 (ADR 806).
 

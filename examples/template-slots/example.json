@@ -42,5 +42,19 @@
     "TextFrame",
     "Rectangle",
     "Story"
-  ]
+  ],
+  "verified": {
+    "status": "verified",
+    "indesignVersion": "20.0.1.32",
+    "verifiedAt": "2026-10-11",
+    "partsHash": "sha256:a39f8d91e49ede3753122704624de4ad6f5dc4c6c3330eec8517dbcde13c5001",
+    "pages": 1,
+    "roundTrip": true,
+    "fidelity": {
+      "meanDE": 0.923,
+      "p99DE": 2.896,
+      "ssim": 0.997,
+      "fontsMatched": true
+    }
+  }
 }
