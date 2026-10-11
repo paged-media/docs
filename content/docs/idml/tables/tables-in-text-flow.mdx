@@ -1,116 +1,86 @@
 ---
 title: Tables in the text flow
-description: What it means for a table to be anchored in a story's paragraph — how it draws where the flow reaches it, breaks across threaded frames, and repeats its header and footer rows.
+description: How a table sits in a story as its own paragraph's content, ends with that paragraph's Br, breaks across threaded frames, repeats headers and oversets.
 tier: pro
 diataxis: explanation
 status: published
 owner: paged-docs
+describes: [tables.model, tables.header-footer-repeat, stories-text.overset]
+reviewed: 2026-10-11
 ---
 
-**An IDML table is part of the text flow: it draws where its host paragraph lands, breaks across threaded frames, and can repeat its header and footer rows.**
+**A table is part of the text flow: it is the content of a paragraph, draws where that paragraph lands, and breaks across frames between rows.**
 
-**In short:** A `<Table>` is an inline element anchored in a story's paragraph, so
-it has no position of its own — it draws wherever the host paragraph lands as the
-story flows down its text frame. When a table is taller than the frame it starts
-in, it splits across the threaded frame chain, filling each frame and continuing
-the remaining rows in the next. Its header rows can reappear at the top of each
-continuation frame and its footer rows at the bottom of each frame but the last.
-This page explains where a table goes, as opposed to what it is.
+**In short:** A `<Table>` sits inside a `<CharacterStyleRange>` of a paragraph, normally as that
+paragraph's only content. The paragraph before it ends with its `<Br/>`, and when text follows
+the table, a `<Br/>` right after `</Table>` ends the table's paragraph. The table draws where
+its paragraph lands as the story flows through its frames. When it does not fit, it continues
+in the next frame of the thread, breaking between rows, with its header and footer rows repeated.
+Rows that no frame can hold are overset.
 
-The [table model](/docs/idml/tables/the-table-model) and its
-[rows, columns, and cells](/docs/idml/tables/rows-columns-cells) describe what a table
-*is*. This page is about where it *goes* — and the answer is the thread that ties
-the whole chapter together: a table is part of the text flow.
+## A table is a paragraph's content
 
-## A table rides on a paragraph
+<ExampleEmbed example="table-in-flow">
+  Three paragraphs: a line of text, a table, and a line of text. The table's paragraph ends with
+  the `<Br/>` right after `</Table>`.
+</ExampleEmbed>
 
-A `<Table>` is an inline element. It sits inside a `<CharacterStyleRange>`, inside
-a `<ParagraphStyleRange>`, inside a story — the same place a run of text sits. The
-run that hosts the table carries no text of its own; its job is simply to be the
-anchor the table rides on.
+Because a table rides on a paragraph, it has no position of its own. It starts where its
+paragraph starts: at the paragraph's place in the column, after the text above it. Whatever
+follows the table in the story continues below it. Moving the paragraph moves the table.
 
-```xml
-<Story Self="ustory">
-  <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
-    <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
-      <Table Self="utable" …> … </Table>
-    </CharacterStyleRange>
-  </ParagraphStyleRange>
-</Story>
-```
+The table's paragraph follows the [paragraph model](/docs/idml/stories-text/the-paragraph-model)
+like any other: its mark is the last thing in it, after `</Table>`, inside the same
+`<CharacterStyleRange>`. Without that `<Br/>`, the text after the table would be part of the
+table's paragraph. A table at the very end of a story needs no mark, like any last paragraph.
 
-This is why a table has no position of its own. It draws *where the host paragraph
-lands*. The story flows down its [text frame](/docs/idml/stories-text) — paragraph
-after paragraph, top to bottom — and when the flow reaches the paragraph that
-hosts the table, the renderer lays the table's grid out there, starting at the
-left edge of the text column and running down from the current vertical cursor.
-Whatever follows the table in the story resumes below it. Move the host paragraph,
-and the table moves with it; you never position a table directly.
+The paragraph's attributes still apply to the table as a whole. Its alignment places a table that
+is narrower than the column, and its space before and after separate the table from its
+neighbours, together with the table's own `SpaceBefore` and `SpaceAfter`.
 
-## Breaking across threaded frames
+> **In Paged:** a table that shares a `<CharacterStyleRange>` with the text paragraphs before and
+> after it is currently drawn after the following text instead of between the paragraphs. Writing
+> the table's paragraph in a range of its own, as the example does, places it correctly. This is a
+> known engine issue.
 
-A story can be [threaded](/docs/idml/stories-text) through a chain of frames, so its
-text flows from one frame into the next. A table caught in that flow can be taller
-than the frame it starts in. When that happens, the table splits: the renderer
-fills the first frame with as many rows as fit, then continues the remaining rows
-at the top of the next frame in the chain, and so on down the chain.
+## Breaking across frames
 
-This works for the common case — body rows flowing from one frame into the next —
-but the splitter is deliberately simple. A single row taller than a whole frame is
-not itself split across the break; the table only advances to a new frame when
-there is a next frame in the chain to advance into; and the row's
-`KeepWithNextRow` constraint is not consulted when choosing where to break.
-<SupportBadge status="supported" note="table break across threaded frames — common case; row-level keep-together not yet honoured" />
+A story can be [threaded](/docs/idml/stories-text/threading-and-overset) through a chain of
+frames. A table taller than the room left in its frame continues in the next frame of the chain:
+the first frame holds as many rows as fit, and the rest follow at the top of the next. A table
+breaks between rows. A row with `KeepWithNextRow="true"` moves to the next frame together with
+the row after it, and a row with `StartRow` set starts in the next column, frame or page.
 
-## Repeating headers and footers
+Header rows repeat at the top of each continuation and footer rows at the bottom of each part but
+the last; see [the table model](/docs/idml/tables/the-table-model) for `BreakHeaders`,
+`BreakFooters`, `SkipFirstHeader` and `SkipLastFooter`.
 
-When a table breaks across frames, its header rows can reappear at the top of each
-continuation frame, and its footer rows at the bottom of each frame but the last,
-so a reader of any frame sees the column headings. The
-[`RepeatingHeader` and `RepeatingFooter`](/docs/idml/tables/the-table-model#header-and-footer-repetition)
-booleans on the `<Table>` control this. Both default to repeating when absent; an
-explicit `false` makes the header or footer appear only once, in its original
-position.
+> **In Paged:** a table breaks between rows across the frames of its thread, honouring
+> `KeepWithNextRow`, and repeats its header and footer rows once per frame. A row is never split
+> across frames. <SupportBadge feature="tables.header-footer-repeat" />
 
-The renderer implements both: when repetition is on, it reserves space for the
-replayed footer at the bottom of each non-last frame and re-draws the header rows
-at the top of each continuation. The placement is the straightforward
-once-per-frame replay; the finer `BreakHeaders` / `BreakFooters` placement modes
-(per text column versus per page) and the `SkipFirstHeader` / `SkipLastFooter`
-flags that IDML can also carry are not yet read.
-<SupportBadge feature="tables.header-footer-repeat" note="repeating header/footer — once-per-frame replay; BreakHeaders/BreakFooters modes and SkipFirst/SkipLast not yet read" />
+## Overset rows
 
-## Why this matters
+When the last frame of the thread cannot hold the remaining rows, they are overset: they stay in
+the story but are not drawn, exactly like overset text.
 
-Because a table lives in the flow rather than on the page, everything you know
-about stories applies to it. Its width follows the text column. Its vertical
-position follows the paragraphs above it. Its continuation follows the frame
-chain. The grid, the cells, and the borders from the other pages are *what* draws;
-the flow is *where*. The two together are the whole picture of an IDML table.
+> **In Paged:** rows the last frame cannot hold are overset and reported, following InDesign's own
+> output for tables that do not fit. <SupportBadge feature="stories-text.overset" />
 
 ## Frequently asked questions
 
 **How is a table positioned on the page?**
-A table is not positioned directly. It rides on a host paragraph and draws where
-that paragraph lands — at the left edge of the text column, running down from the
-current vertical cursor. Move the host paragraph and the table moves with it.
+It is not positioned directly. It is the content of a paragraph and draws where that paragraph
+lands in the story's frames.
+
+**Does the paragraph that holds a table need a `<Br/>`?**
+Yes, when more text follows. The `<Br/>` comes right after `</Table>`, in the same
+`<CharacterStyleRange>`, and ends the table's paragraph. A table at the end of the story needs
+none.
 
 **What happens when a table is taller than its frame?**
-If the story is threaded through a chain of frames, the table splits: the renderer
-fills the first frame with as many rows as fit, then continues the remaining rows
-at the top of the next frame, and so on down the chain. A single row taller than a
-whole frame is not itself split, and the table only advances when there is a next
-frame to advance into.
+It continues in the next frame of the thread, breaking between rows. Header and footer rows
+repeat in each part. Rows that no frame can hold are overset.
 
-**Do header and footer rows repeat when a table breaks across frames?**
-Yes, by default. The `RepeatingHeader` and `RepeatingFooter` booleans on the
-`<Table>` control it; both default to repeating when absent, and an explicit
-`false` makes the header or footer appear only once. The renderer redraws the
-header at the top of each continuation frame and reserves space for the footer at
-the bottom of each non-last frame.
-
-**Is `KeepWithNextRow` honoured when choosing where a table breaks?**
-No. The break splitter is deliberately simple and does not consult a row's
-`KeepWithNextRow` constraint, nor the finer `BreakHeaders` / `BreakFooters`
-placement modes or `SkipFirstHeader` / `SkipLastFooter` flags, when deciding where
-to break.
+**Can I keep two rows together across a frame break?**
+Yes. Set `KeepWithNextRow="true"` on the first `<Row>`, and the two rows always share a frame.

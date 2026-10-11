@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<idPkg:Story xmlns:idPkg="http://ns.adobe.com/AdobeInDesign/idml/1.0/packaging" DOMVersion="20.0">
+  <Story Self="ustory">
+    <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
+      <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+        <Content>The table below rides on the second paragraph of this story.</Content>
+        <Br/>
+      </CharacterStyleRange>
+    </ParagraphStyleRange>
+    <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
+      <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+        <Table Self="utable" HeaderRowCount="1" BodyRowCount="2" FooterRowCount="0" ColumnCount="2" AppliedTableStyle="TableStyle/$ID/[Basic Table]">
+          <Row Self="urow0" Name="0" SingleRowHeight="20"/>
+          <Row Self="urow1" Name="1" SingleRowHeight="20"/>
+          <Row Self="urow2" Name="2" SingleRowHeight="20"/>
+          <Column Self="ucol0" Name="0" SingleColumnWidth="120"/>
+          <Column Self="ucol1" Name="1" SingleColumnWidth="120"/>
+          <Cell Self="ucell00" Name="0:0" RowSpan="1" ColumnSpan="1" AppliedCellStyle="CellStyle/$ID/[None]"
+                TextTopInset="4" TextLeftInset="4" TextBottomInset="4" TextRightInset="4"
+                TopEdgeStrokeColor="Color/Black" TopEdgeStrokeWeight="0.5" BottomEdgeStrokeColor="Color/Black" BottomEdgeStrokeWeight="0.5"
+                LeftEdgeStrokeColor="Color/Black" LeftEdgeStrokeWeight="0.5" RightEdgeStrokeColor="Color/Black" RightEdgeStrokeWeight="0.5">
+            <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
+              <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+                <Content>Size</Content>
+              </CharacterStyleRange>
+            </ParagraphStyleRange>
+          </Cell>
+          <Cell Self="ucell10" Name="1:0" RowSpan="1" ColumnSpan="1" AppliedCellStyle="CellStyle/$ID/[None]"
+                TextTopInset="4" TextLeftInset="4" TextBottomInset="4" TextRightInset="4"
+                TopEdgeStrokeColor="Color/Black" TopEdgeStrokeWeight="0.5" BottomEdgeStrokeColor="Color/Black" BottomEdgeStrokeWeight="0.5"
+                LeftEdgeStrokeColor="Color/Black" LeftEdgeStrokeWeight="0.5" RightEdgeStrokeColor="Color/Black" RightEdgeStrokeWeight="0.5">
+            <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
+              <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+                <Content>Price</Content>
+              </CharacterStyleRange>
+            </ParagraphStyleRange>
+          </Cell>
+          <Cell Self="ucell01" Name="0:1" RowSpan="1" ColumnSpan="1" AppliedCellStyle="CellStyle/$ID/[None]"
+                TextTopInset="4" TextLeftInset="4" TextBottomInset="4" TextRightInset="4"
+                TopEdgeStrokeColor="Color/Black" TopEdgeStrokeWeight="0.5" BottomEdgeStrokeColor="Color/Black" BottomEdgeStrokeWeight="0.5"
+                LeftEdgeStrokeColor="Color/Black" LeftEdgeStrokeWeight="0.5" RightEdgeStrokeColor="Color/Black" RightEdgeStrokeWeight="0.5">
+            <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
+              <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+                <Content>A5</Content>
+              </CharacterStyleRange>
+            </ParagraphStyleRange>
+          </Cell>
+          <Cell Self="ucell11" Name="1:1" RowSpan="1" ColumnSpan="1" AppliedCellStyle="CellStyle/$ID/[None]"
+                TextTopInset="4" TextLeftInset="4" TextBottomInset="4" TextRightInset="4"
+                TopEdgeStrokeColor="Color/Black" TopEdgeStrokeWeight="0.5" BottomEdgeStrokeColor="Color/Black" BottomEdgeStrokeWeight="0.5"
+                LeftEdgeStrokeColor="Color/Black" LeftEdgeStrokeWeight="0.5" RightEdgeStrokeColor="Color/Black" RightEdgeStrokeWeight="0.5">
+            <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
+              <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+                <Content>4.00</Content>
+              </CharacterStyleRange>
+            </ParagraphStyleRange>
+          </Cell>
+          <Cell Self="ucell02" Name="0:2" RowSpan="1" ColumnSpan="1" AppliedCellStyle="CellStyle/$ID/[None]"
+                TextTopInset="4" TextLeftInset="4" TextBottomInset="4" TextRightInset="4"
+                TopEdgeStrokeColor="Color/Black" TopEdgeStrokeWeight="0.5" BottomEdgeStrokeColor="Color/Black" BottomEdgeStrokeWeight="0.5"
+                LeftEdgeStrokeColor="Color/Black" LeftEdgeStrokeWeight="0.5" RightEdgeStrokeColor="Color/Black" RightEdgeStrokeWeight="0.5">
+            <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
+              <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+                <Content>A4</Content>
+              </CharacterStyleRange>
+            </ParagraphStyleRange>
+          </Cell>
+          <Cell Self="ucell12" Name="1:2" RowSpan="1" ColumnSpan="1" AppliedCellStyle="CellStyle/$ID/[None]"
+                TextTopInset="4" TextLeftInset="4" TextBottomInset="4" TextRightInset="4"
+                TopEdgeStrokeColor="Color/Black" TopEdgeStrokeWeight="0.5" BottomEdgeStrokeColor="Color/Black" BottomEdgeStrokeWeight="0.5"
+                LeftEdgeStrokeColor="Color/Black" LeftEdgeStrokeWeight="0.5" RightEdgeStrokeColor="Color/Black" RightEdgeStrokeWeight="0.5">
+            <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
+              <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+                <Content>6.50</Content>
+              </CharacterStyleRange>
+            </ParagraphStyleRange>
+          </Cell>
+        </Table>
+        <Br/>
+      </CharacterStyleRange>
+    </ParagraphStyleRange>
+    <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
+      <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+        <Content>Text after the table continues in the next paragraph.</Content>
+      </CharacterStyleRange>
+    </ParagraphStyleRange>
+  </Story>
+</idPkg:Story>

@@ -1,0 +1,63 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "table-in-flow",
+  "title": "A table between two paragraphs",
+  "tier": "pro",
+  "chapter": "tables",
+  "concept": "A table is the content of its own paragraph: the <Br/> before it ends the text paragraph above, and the <Br/> right after </Table> ends the table's paragraph, so the text after it starts a new one.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Stories/Story_ustory.xml",
+    "language": "xml",
+    "label": "Stories/Story_ustory.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree",
+    "live"
+  ],
+  "annotations": [
+    {
+      "lines": "4-9",
+      "note": "An ordinary first paragraph, ended by its <Br/>."
+    },
+    {
+      "lines": "10-12",
+      "note": "The Table is the second paragraph's only content. It has no position of its own: it draws where that paragraph lands in the frame. Each paragraph has its own range here; one range over all three paragraphs would be just as valid, since a range is a style run."
+    },
+    {
+      "lines": "13-17",
+      "note": "One Row per row and one Column per column. HeaderRowCount 1 plus BodyRowCount 2 is three rows."
+    },
+    {
+      "lines": "18-21",
+      "note": "Each Cell names its grid position (column:row) and holds its own paragraphs; here every edge carries a 0.5 pt black stroke."
+    },
+    {
+      "lines": "78-79",
+      "note": "The table's paragraph ends with a <Br/> right after </Table>, in the same CharacterStyleRange. Without it the text that follows would join the table's paragraph."
+    },
+    {
+      "lines": "82-84",
+      "note": "The third paragraph: text after the table starts below it."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 1,
+    "paragraphs": 3,
+    "runs": 2
+  },
+  "pathological": false,
+  "license": "MIT",
+  "elements": [
+    "Table",
+    "Row",
+    "Column",
+    "Cell"
+  ]
+}
