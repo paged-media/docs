@@ -1,9 +1,7 @@
 {
-  "title": "Edge cases & real-world quirks",
+  "title": "Malformed packages",
   "icon": "parser",
   "pages": [
-    "index",
-    "the-error-model",
-    "graceful-degradation"
+    "index"
   ]
 }

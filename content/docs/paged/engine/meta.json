@@ -6,6 +6,7 @@
     "how-paged-reads-idml",
     "the-renderer",
     "parser-internals",
+    "edge-cases",
     "test-corpus"
   ]
 }

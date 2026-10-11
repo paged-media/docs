@@ -1,0 +1,110 @@
+---
+title: The error model
+description: The failures that stop Paged's IDML import — ParseError from opening the archive, OpenError from resolving the design map — and what each one carries.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+describes: [package-anatomy.core-import, plugin-publish.idml-importer]
+reviewed: 2026-10-11
+---
+
+**An IDML import can fail in two stages, each with a small set of named errors. If none fires, the document is complete; there is no partial result.**
+
+**In short:** The IDML importer (`idml-import`, kept in the plugin-publish repository and
+compiled into the engine) first opens the archive: it unzips every entry, checks the
+`mimetype` and finds `designmap.xml`. Its failures are `ParseError`. It then parses the
+design map and every part the design map names. A named part that is missing is
+`OpenError::MissingEntry`; a part that is present but not well-formed is a `ParseError`
+wrapped as `OpenError::Parse`. A `.paged` file whose native model part is current skips
+the second stage: the model is rebuilt from that part instead.
+
+## Stage 1: opening the archive
+
+`open_source_archive` reads every entry of the ZIP into memory, then checks two entries.
+Entries nobody asks for are kept, unread, so a later save can copy them back.
+
+| `ParseError` | Raised when | Carries |
+|---|---|---|
+| `Zip` | The bytes are not a readable ZIP archive. | The ZIP library's error. |
+| `Io` | An entry cannot be read out of the archive. | The I/O error. |
+| `MissingEntry` | There is no `mimetype` entry, or no `designmap.xml`. | The entry name. |
+| `NotIdml` | `mimetype` is not UTF-8, or its text (trimmed of surrounding whitespace) is not `application/vnd.adobe.indesign-idml-package`. | What was found. |
+
+The checks run in that order, so the first failure is the one reported. `ParseError` has
+one more variant, `Xml`, which carries the XML parser's error with its position; it arises
+in the second stage, when a part is parsed. The importer does
+not check that `mimetype` is the first entry or that it is stored uncompressed; InDesign's
+own packages always do both, and a writer should too (see
+[the ZIP container](/docs/idml/package-anatomy/zip-container)).
+
+## Stage 2: resolving the design map
+
+`import_idml_archive` parses `designmap.xml`, then reads the optional resource parts
+(`Resources/Preferences.xml`, `Resources/Graphic.xml`, `Resources/Styles.xml`) when they
+exist, then every master spread, spread and story the design map lists.
+
+| `OpenError` | Raised when | Carries |
+|---|---|---|
+| `MissingEntry` | The design map names a master spread, spread or story that the archive does not contain. | The path the design map named. |
+| `Parse` | A part is present but cannot be parsed. | The underlying `ParseError`. |
+
+A missing resource part is not an error: the importer falls back to an empty palette or
+an empty stylesheet. A missing named content part is, because a frame that points at a
+story the document claims to own has nothing to draw, and the importer does not invent a
+replacement.
+
+<ExampleEmbed example="dangling-story">
+  The design map still lists a story whose part has been removed from the archive. The
+  import stops with `MissingEntry` and names the path.
+</ExampleEmbed>
+
+Run over that package, `paged-inspect` stops before producing a report and prints the
+error with its cause:
+
+```text
+Error: open IDML
+
+Caused by:
+    manifest lists Stories/Story_ustory.xml but archive has no such entry
+```
+
+## What a caller gets back
+
+`import_idml` returns either the document together with its source archive, or exactly one
+error. The variant says which kind of problem it is; the payload says which entry, which
+mimetype or which XML position. `paged-inspect` turns any error into a non-zero exit status
+with the message on standard error, which makes it usable as a pass/fail gate for a
+pipeline.
+
+Once a document has opened, nothing structural can fail any more. What the build does with
+odd values inside it is the subject of
+[graceful degradation](/docs/paged/engine/edge-cases/graceful-degradation).
+
+> **The `.paged` path.** A `.paged` file is an IDML package that also carries Paged's model
+> in `paged/core/model/document.pgm`. When that part exists and its format version matches,
+> the model is rebuilt from it and the IDML parts are not parsed, so the IDML errors above
+> do not arise. Otherwise the IDML parts are imported as described. See
+> [how Paged reads IDML](/docs/paged/engine/how-paged-reads-idml).
+
+## Frequently asked questions
+
+**What is the difference between `ParseError::MissingEntry` and `OpenError::MissingEntry`?**
+`ParseError::MissingEntry` means one of the two entries every package needs, `mimetype` or
+`designmap.xml`, is absent: the file cannot be confirmed as IDML. `OpenError::MissingEntry`
+means the package is IDML but incomplete: the design map names a spread, master spread or
+story that is not in the archive. It carries the path that was named.
+
+**Can the import return a partly loaded document?**
+No. The import returns a complete document or one error. Tolerance for odd values inside a
+document happens later, during the build, and never turns a failed import into a partial
+one.
+
+**Why does an XML error inside a story come back as an `OpenError`?**
+The story is parsed during the second stage, so its `ParseError::Xml` is wrapped as
+`OpenError::Parse`. A caller matches one error type for the whole import, and the original
+error, with its position, is kept inside.
+
+**Does a corrupt or non-IDML file crash Paged?**
+No. A broken ZIP is `ParseError::Zip`, a wrong mimetype is `ParseError::NotIdml`, and so
+on. Every failure is a returned value, not a panic.

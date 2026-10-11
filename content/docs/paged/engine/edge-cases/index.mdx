@@ -1,0 +1,49 @@
+---
+title: Edge cases
+description: What Paged does with an incomplete or malformed IDML package — which problems stop an import, and which ones it reads past and reports.
+tier: pro
+diataxis: explanation
+status: published
+owner: paged-docs
+describes: [package-anatomy.core-import, edge-cases.diagnostics-channel]
+reviewed: 2026-10-11
+---
+
+**Paged is strict about what a package promises and forgiving about what a document leaves unsaid. This chapter is the catalogue of both.**
+
+**In short:** An import fails only when the package is not an IDML package at all, or
+when the design map names a part the archive does not contain or that is not
+well-formed XML. Everything else is read past: an absent attribute inherits, an unknown
+value is ignored, a style chain or a frame thread that loops is cut off, and a missing
+image is drawn as InDesign's placeholder. The lossy outcomes are reported as render
+diagnostics. These pages describe Paged's behaviour. What the format itself allows and
+requires is on [malformed packages](/docs/idml/edge-cases) in the IDML Reference.
+
+- **[The error model](/docs/paged/engine/edge-cases/the-error-model)** — the failures that
+  stop an import, what each one carries, and what a caller gets back.
+- **[Graceful degradation](/docs/paged/engine/edge-cases/graceful-degradation)** — what the
+  importer and the renderer read past, the caps that keep a malformed file from looping,
+  and the diagnostics that report a lossy render.
+
+The parser's side of the same rules, at the level of individual readers, is in
+[validation and recovery](/docs/paged/engine/parser-internals/validation-and-recovery).
+
+## Frequently asked questions
+
+**Which problems stop Paged from opening an IDML file?**
+Three kinds: the archive is not a ZIP, or has no `mimetype` naming the IDML package type,
+or has no `designmap.xml`; the design map names a spread, master spread or story the
+archive does not contain; or one of the parts it reads is not well-formed XML. Each is
+returned as a typed error. See [the error model](/docs/paged/engine/edge-cases/the-error-model).
+
+**What does Paged do with a document that opens but is partly wrong?**
+It renders what it can. Absent or unknown values fall back through the style cascade,
+loops are cut off at a fixed depth, and missing images are drawn as InDesign's
+placeholder. Overset text, missing or undecodable images, substituted fonts and similar
+losses are reported as diagnostics. See
+[graceful degradation](/docs/paged/engine/edge-cases/graceful-degradation).
+
+**Is it safe to give Paged untrusted IDML?**
+A malformed package comes back as an error value, not a crash, and the loop caps keep a
+self-referencing file from hanging the build. Whether a document that opened rendered
+everything it asked for is a separate question, answered by its diagnostics.

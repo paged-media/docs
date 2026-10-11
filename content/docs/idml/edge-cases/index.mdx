@@ -1,83 +1,119 @@
 ---
-title: Edge cases & real-world quirks
-description: How the Paged renderer behaves when an IDML package is incomplete, contradictory, or malformed — the error model that draws the line between recoverable and fatal, and the graceful-degradation rules that keep imperfect documents rendering.
+title: Malformed packages
+description: What an IDML package must contain to be read at all, which odd-looking values are legal, and what a reader should tolerate in a package that is wrong.
 tier: pro
 diataxis: explanation
 status: published
 owner: paged-docs
+describes: [package-anatomy.core-import]
+reviewed: 2026-10-11
 ---
 
-**This section is about what happens when an IDML package is *wrong* — and why a
-renderer's answer to that question is the part worth citing.**
+**A package can be wrong in two ways: structurally, so nothing can be read, or locally, so one value or reference makes no sense. A reader has to refuse the first and should read past the second.**
 
-**In short:** every page before this one describes IDML as it is *supposed* to be:
-a complete package, every reference resolvable, every value in range. Real
-documents are messier. They arrive with a story the manifest still advertises but
-that someone deleted, an attribute value from a newer InDesign than the renderer
-knows, a `BasedOn` chain that loops back on itself, an image link pointing at a
-file that never shipped. This section documents exactly what the Paged renderer
-does with each of those — what it quietly tolerates, what it caps, and what it
-refuses to guess about and stops on. That behavior *is* the contract, so we write
-it down.
+**In short:** Every package needs a `mimetype` entry naming the IDML package type and a
+`designmap.xml`, and every part the design map names must be in the archive. Without those
+there is no document to assemble. Inside a complete package, most attributes are optional
+and their absence means "inherit", several values that look wrong are legal (`-1` tints,
+`n` for no next frame, `$ID/` names), and hand-edited files can contain references that
+name nothing, style chains that loop, and links to files that are not there. This page
+separates the format's rules from the tolerance a reader has to bring.
 
-A specification tells you what a *valid* document looks like. It is mostly quiet
-about what a reader should do with an invalid one — and that silence is where real
-renderers diverge from each other and from the page you expected. Two tools can
-both "support IDML" and disagree completely the moment a package is a little
-broken: one drops the bad story and renders the rest, one substitutes a default,
-one throws. None of that is in the format definition; all of it is in the code. A
-reference that only describes the happy path is describing the easy half of the
-problem.
+## What must be there
 
-So this is the half that makes the rest worth trusting. When you are debugging why
-a document rendered blank, or deciding whether to feed user-uploaded IDML straight
-into a pipeline, or writing a tool that *generates* IDML and wants to know which
-shortcuts the renderer will forgive — the answer lives here, pinned to the actual
-behavior of `Document::open` and the parse layer beneath it, not to a hopeful
-reading of the spec. Where the renderer's behavior is a deliberate limitation
-rather than a feature, we say so plainly and badge it; honest gaps are more useful
-than flattering ones.
+A reader cannot start without three things:
 
-The two pages under this section split the topic along its natural seam:
+- **the `mimetype` entry**, whose text is `application/vnd.adobe.indesign-idml-package`.
+  InDesign writes it as the first entry in the archive and stores it uncompressed; all 271
+  InDesign-written packages in our corpus do;
+- **`designmap.xml`**, the root part that names every other part (see
+  [the design map](/docs/idml/package-anatomy/the-design-map));
+- **every part the design map names.** A design map that lists a story the archive does
+  not contain describes a document with a hole in it: a frame names the story in
+  `ParentStory`, the design map counts it in `StoryList`, and there is no text to put
+  there.
 
-- **[The error model](/docs/idml/edge-cases/the-error-model)** is the reference: the
-  precise set of failures that stop a load, what each one means, and what a
-  consumer gets back. This is the line between "recoverable" and "fatal."
-- **[Graceful degradation](/docs/idml/edge-cases/graceful-degradation)** is the other
-  side: everything the renderer *doesn't* stop on — the missing attributes that
-  become defaults, the unknown values it ignores, the cycles it caps, the missing
-  image it stands in for. The forgiving reads that keep an imperfect document
-  rendering instead of failing.
+<ExampleEmbed example="dangling-story">
+  A package whose design map still lists a story part that has been removed from the
+  archive. The annotated view marks the two lines that still refer to it.
+</ExampleEmbed>
 
-Read the error model first if you want to know what will make a load fail outright;
-read graceful degradation if you want to know what will quietly change what you
-see on the page.
+Parts the design map does not name are a different matter. Extra entries in the ZIP are
+not part of the document, and a reader can ignore them. A tool that writes the package back
+should keep them, because another application may have put them there.
+
+## Absence usually means "inherit"
+
+Almost every attribute in IDML is optional. A `CharacterStyleRange` with no `PointSize`
+takes the size of its character style, then of its paragraph style, then of the styles they
+are based on, then the document default (see [the cascade](/docs/idml/styles/the-cascade)).
+A reader should treat a missing attribute as "not set here", never as an error.
+
+There are exceptions where InDesign does not supply the obvious default. It does not read a
+missing `ItemTransform` as the identity: it places the item relative to the spread's first
+page, so on a facing spread every item meant for the right page lands on the left one. It
+needs `PageCount` and `BindingLocation` on every spread. Those rules matter to a writer more
+than to a reader; [what InDesign needs to open a file](/docs/idml/package-anatomy/what-indesign-requires)
+lists them.
+
+## Values that look wrong but are legal
+
+| Value | Where | Meaning |
+|---|---|---|
+| `-1` | `FillTint`, `StrokeTint` and other tint attributes | No tint override: the same as leaving the attribute out. |
+| `n` | `NextTextFrame`, `PreviousTextFrame`, other id-valued attributes | No such object: the end of a thread, an unset reference. |
+| `$ID/…` | `Name`, enumeration values, many string properties | A locale-independent key. `$ID/` on its own is an empty value, and `$ID/[No paragraph style]` names the built-in default style. |
+| `Swatch/None` | `FillColor`, `StrokeColor` | No paint at all. |
+
+A reader that rejects these, or reads `-1` as a tint of minus one per cent, misreads
+ordinary InDesign output.
+
+## What a reader should tolerate
+
+These problems do not occur in packages InDesign writes, but they do occur in packages
+edited by hand or generated by other tools.
+
+- **A reference that names nothing.** A `FillColor`, `AppliedParagraphStyle` or
+  `ParentStory` can name an id that no element defines. Falling back to the default (no
+  fill, the base style, an empty frame) keeps the rest of the document readable.
+- **A chain that loops.** A style can be `BasedOn` itself through a ring of other styles,
+  and a thread of `NextTextFrame` links can return to its first frame. A reader that
+  follows these chains needs a limit.
+- **A value it does not know.** A newer InDesign writes attributes and enumeration values an
+  older reader has never seen; the `DOMVersion` on each part says which revision wrote it
+  (see [version markers](/docs/idml/round-tripping/version-markers)). Skipping an unknown
+  value, and keeping it if the package is written back, is the forward-compatible answer.
+- **A link to a file that is not there.** A placed image names its file by
+  `LinkResourceURI`, and the file often does not travel with the package. InDesign keeps the
+  frame, its geometry and its crop, and shows a missing-link placeholder.
+
+How InDesign itself treats a package with a dangling part or a looping chain has not been
+measured for this reference.
+
+> **In Paged:** the import stops on the structural problems above, with an error that names
+> the entry, and reads past the local ones: absent and unknown values fall back, chains are
+> cut at a fixed depth, and missing images are drawn as InDesign's placeholder and reported.
+> The details are in [edge cases](/docs/paged/engine/edge-cases) on the Paged site.
+> <SupportBadge feature="package-anatomy.core-import" />
 
 ## Frequently asked questions
 
-**What is the difference between a recoverable and a fatal IDML problem in Paged?**
-A **fatal** problem is one that stops the load: the renderer returns a single typed
-error from `Document::open` and hands back no document at all. A **recoverable**
-problem is one the renderer reads past *inside* a load that otherwise succeeds — a
-missing attribute, an unknown value, a capped cycle, a broken image link. The line
-is structural: a part the manifest explicitly promised must exist and parse, but
-almost everything an *open* document leaves unsaid or says oddly is forgiven. The
-[error model](/docs/idml/edge-cases/the-error-model) is the catalogue of fatal failures;
-[graceful degradation](/docs/idml/edge-cases/graceful-degradation) is the catalogue of
-recoverable ones.
+**What is the minimum an IDML reader needs to open a package?**
+A ZIP archive with a `mimetype` entry naming `application/vnd.adobe.indesign-idml-package`,
+a `designmap.xml`, and every part that design map names. A small complete package is taken
+apart on [read one by hand](/docs/idml/foundations/read-one-by-hand), and can be
+[downloaded](/downloads/smallest-valid.idml).
 
-**Why does this section describe renderer behavior instead of just the IDML format?**
-Because the format definition is mostly quiet about invalid documents, and that
-silence is exactly where two tools that both "support IDML" diverge — one drops a
-bad story, one substitutes a default, one stops. None of that is in the format; all
-of it is in the renderer's code. So these pages are pinned to what the Paged
-renderer actually does at `Document::open` and the parse layer beneath it, not to a
-reading of the spec.
+**Is a `FillTint` of `-1` an error?**
+No. `-1` is how InDesign writes "no tint override" on a tint attribute. It means the same as
+leaving the attribute out.
 
-**Is it safe to feed untrusted or user-uploaded IDML to the Paged renderer?**
-Yes, in the sense that malformed input is returned as a typed error value rather
-than crashing the renderer: a broken archive, a non-IDML mimetype, or a dangling
-manifest reference each surface as a named failure a caller can act on. What this
-section adds is the rest of the picture — which imperfections will *not* stop a load
-but will quietly change the rendered page — so you can decide what "rendered
-successfully" should mean in your pipeline.
+**What should a reader do with an attribute it does not recognise?**
+Ignore it for reading, and keep it when writing the package back. IDML grows by adding
+vocabulary, so a file from a newer InDesign is mostly an older file plus things an older
+reader can skip.
+
+**Does a missing image make an IDML package invalid?**
+No. The link is a URI to a file outside the package, and packages routinely travel without
+their images. The frame, its geometry and its crop are all in the XML; only the pixels are
+missing.

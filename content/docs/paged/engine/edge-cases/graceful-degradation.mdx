@@ -1,0 +1,126 @@
+---
+title: Graceful degradation
+description: What Paged reads past in an IDML document that opened — absent and unknown values, looping chains, missing images and fonts — and which of those it reports.
+tier: pro
+diataxis: explanation
+status: published
+owner: paged-docs
+describes: [edge-cases.diagnostics-channel, images-graphics.missing-image-placeholder]
+reviewed: 2026-10-11
+---
+
+**Once a document has opened, Paged does not stop on a bad value. It falls back, renders the rest, and reports what it could not draw as asked.**
+
+**In short:** An absent attribute inherits through the style cascade. A value Paged does
+not recognise, or a number out of range, is treated as absent. A `BasedOn` chain is
+followed for at most 16 steps and a frame thread for at most 256 frames, so a loop ends.
+A placed image whose link does not resolve is drawn as InDesign's missing-image
+placeholder. Overset text, missing and undecodable images, substituted fonts and similar
+losses are recorded as **render diagnostics** alongside the page output. Two fallbacks
+are still silent: a dropped unknown value and a chain cut at its cap.
+
+## Absent values inherit
+
+Most attributes in IDML are optional, and their absence is normal. The importer reads a
+missing attribute as "not set", and the build resolves it through the applied style, the
+`BasedOn` parents and the document defaults, exactly as if it had been left out on
+purpose. A `CharacterStyleRange` that names no font, size or colour is three unset values,
+not an error.
+
+## Unknown and out-of-range values are dropped
+
+An enumerated attribute is matched against the values Paged knows. A value it does not
+know is read as unset and falls through to the default. A number that does not parse, or a
+tint percentage outside 0–100, is read the same way.
+
+One value looks out of range but is not: `FillTint="-1"` (and the other tint attributes
+set to `-1`) is how InDesign writes "no tint override". Paged reads it as unset because
+that is what it means, not because it is malformed.
+
+The fallback is silent today. A corner that should be bevelled, drawn square because its
+value came from a newer InDesign than Paged knows, leaves no diagnostic.
+
+## Loops are capped
+
+A `BasedOn` chain should end at a root style, and a thread of `NextTextFrame` links should
+end at a frame that names `n`. Nothing in a file prevents either from looping. Paged
+follows a style chain for at most 16 steps and a frame chain for at most 256 frames. Real
+chains are a few steps long, so a healthy document never reaches the caps; a looping one
+stops with what it had resolved.
+
+The caps are a safety measure, not a check: a chain cut at its cap is not reported.
+
+## Missing images are drawn as InDesign draws them
+
+A placed `<Image>`, `<EPS>`, `<PDF>` or `<ImportedPage>` names its file by
+`LinkResourceURI`. When the host cannot supply bytes for that link, the frame is drawn
+with InDesign's missing-image placeholder: a grey fill clipped to the frame, crossed by two
+diagonals. That is what InDesign itself puts into an exported page for a missing link, so
+the render matches InDesign's output for templates shipped with unresolved links.
+`paged-inspect --no-missing-image-placeholder` turns it off.
+
+<SupportBadge feature="images-graphics.missing-image-placeholder" />
+
+## What is reported
+
+The build returns a list of diagnostics with the page output. Each carries a severity, a
+code, a message, and, where it applies, the page index, the frame id, the story id or the
+image URI. `paged-inspect` prints the counts and the entries.
+
+| Code | Severity | Meaning |
+|---|---|---|
+| `OversetTextDropped` | warning | Lines past the last frame of a chain were not drawn, as in InDesign's PDF. Carries where the overset begins. |
+| `ImageLinkMissing` | warning | A link did not resolve; the placeholder was drawn. |
+| `ImageDecodeFailed` | warning | The bytes were found but could not be decoded. |
+| `ImageClippingPathDeferred` | info | The clipping path needs the image file itself (a Photoshop path, alpha channel or detected edges); the image is clipped to its frame only. |
+| `FootnoteOverflow` | warning | A footnote did not fit the space at the foot of its frame and was clipped. |
+| `SectionNumberingFallback` | info | A page carried no stored name, so its number was computed from the sections. |
+| `FontSubstituted` | warning | A requested face was not available and a substitute was used. Reported once per face. |
+| `ImageContentUnrenderable` | warning | Inline `<EPS>` or `<PDF>` content had no usable link and could not be drawn; only the frame's own fill was. |
+
+<SupportBadge feature="edge-cases.diagnostics-channel" />
+
+Separately, each spread reports `skipped_nested_frames`: page items nested in a way the
+importer flattens rather than nesting, such as a group pasted inside another frame or a
+child whose host has no `Self` id. Groups themselves, and items pasted into a frame, are
+read as nested items and do not count.
+
+## What degrades and what fails
+
+**Degrades — the document renders, with a fallback:**
+
+- an absent attribute: inherited;
+- an unknown value, an unparseable number, an out-of-range tint: treated as absent
+  (silent);
+- a `BasedOn` loop: cut at 16 steps (silent);
+- a frame-thread loop: cut at 256 frames (silent);
+- a missing image link: placeholder, reported;
+- a missing font: substitute, reported;
+- overset text: clipped, reported.
+
+**Fails — the import stops** (see [the error model](/docs/paged/engine/edge-cases/the-error-model)):
+
+- not a ZIP, no `mimetype`, a wrong `mimetype`, or no `designmap.xml`;
+- a master spread, spread or story the design map names but the archive lacks;
+- a part that is not well-formed XML.
+
+## Frequently asked questions
+
+**Why does Paged not fail on an unknown or malformed value?**
+IDML is large, it grows with every InDesign release, and it is written by many tools. If
+one unfamiliar value could stop a document, few real documents would render. Paged drops
+that one value to its default and renders everything else.
+
+**How can I tell whether a render was lossy?**
+Read the diagnostics. Overset text, missing and undecodable images, deferred clipping
+paths, footnote overflow, substituted fonts and unrenderable inline content are each
+reported with the page, frame, story or URI involved. `paged-inspect` prints them. Unknown
+values and capped chains are not reported yet.
+
+**Do the loop caps affect normal documents?**
+No. Real `BasedOn` chains are one to three steps and real threads are a handful of frames,
+far below 16 and 256.
+
+**Can I turn off the missing-image placeholder?**
+Yes. It is on by default because InDesign draws it in its own exports;
+`paged-inspect --no-missing-image-placeholder` turns it off.

@@ -44,6 +44,8 @@ const MOVED_IDML_PAGES = {
 // docs.paged.media: old IDML path → path on the Paged site.
 const MOVED_TO_PAGED = {
   'foundations/how-the-renderer-reads-it': 'engine/how-paged-reads-idml',
+  'edge-cases/the-error-model': 'engine/edge-cases/the-error-model',
+  'edge-cases/graceful-degradation': 'engine/edge-cases/graceful-degradation',
 };
 
 const chapters = (dir) =>

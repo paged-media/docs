@@ -4,7 +4,7 @@
   "title": "A dangling story reference",
   "tier": "pro",
   "chapter": "edge-cases",
-  "concept": "The manifest still advertises a story whose part has been removed from the archive. Document::open resolves every manifest reference, finds nothing for this one, and stops with a structured MissingEntry error instead of guessing.",
+  "concept": "The design map still lists a story whose part has been removed from the archive. A reader that resolves every part the design map names finds nothing for this one; Paged stops with a MissingEntry error that names the path instead of guessing.",
   "packageDir": "package",
   "editable": {
     "part": "designmap.xml",
