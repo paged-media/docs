@@ -1,116 +1,120 @@
 ---
 title: How the parts reference each other
-description: An IDML document's separate XML parts become one document through id references — almost every cross-part link is a Self id looked up in a table the parser builds at open time.
+description: An IDML package becomes one document through id references — an attribute names the Self id of something defined in another part, and a reader looks it up.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
+describes:
+  - foundations.designmap.structure
+  - package-anatomy.core-import
+reviewed: 2026-10-11
 ---
 
-**An IDML document's separate parts become one document through id references, each resolved by a table lookup.**
+**An IDML package becomes one document through id references: an attribute names the `Self` id of something defined elsewhere, and reading the document means looking it up.**
 
-**In short:** An IDML package is deliberately split — colors in one file, styles
-in another, each spread and each story in its own. That split only works because
-the parts point at each other, and almost every cross-part link is the same move:
-an attribute holds the `Self` id of something defined elsewhere, and reading the
-document means *resolving* that id by looking it up in a table the parser built at
-open time. Nothing is nested across files; everything is referenced. This page
-walks the one mechanism behind every link, why missing targets don't crash the
-parse, and the two references that chain rather than resolve in a single hop.
+**In short:** Colours are in one part, styles in another, each spread and each story in its
+own. The split works because the parts point at each other, and almost every link is the
+same move: an attribute holds the `Self` id of an element defined somewhere else in the
+package. Nothing is nested across parts; everything is referenced. This page lists the
+links, what happens when one dangles, and the three references that chain instead of
+resolving in one step.
 
 <PackageGraph />
 
-## One mechanism: a name, looked up
+## From the design map to the parts
 
-The design map sits at the top of the graph. It points at parts by `src` path,
-and our parser turns those paths into the parts it loads. From there the links
-are all id references, and each resolves by the same lookup pattern:
+The design map's `idPkg:*` elements name parts by path: `src="Stories/Story_u1a2.xml"`.
+The content parts carry their own id inside (`<Story Self="u1a2">`), and by InDesign's
+naming convention the file name repeats it. The resource parts have fixed paths:
+`Resources/Graphic.xml`, `Resources/Fonts.xml`, `Resources/Styles.xml` and
+`Resources/Preferences.xml`.
 
-- **`idPkg:* src` → a part.** The design map's `idPkg:Spread` / `idPkg:Story` /
-  `idPkg:MasterSpread` elements carry a `src` like `Stories/Story_ustory1.xml`.
-  The parser reads each referenced spread, master, and story, and derives that
-  part's `Self` id back from the file name. (The resource parts —
-  `Graphic.xml`, `Styles.xml` — it opens at their fixed paths rather than from
-  the `idPkg` entries.)
-- **`TextFrame@ParentStory` → a `Story`.** A frame in a spread names a story id;
-  the document indexes frames by their `ParentStory`, so a story finds the frame
-  that hosts it (and vice versa) without scanning.
-- **`Page@AppliedMaster` → a `MasterSpread`.** A body page names the master it
-  inherits from. Masters are loaded first and keyed by id, so the lookup is
-  ready before any page asks for it. The reference may be the bare id or the full
-  `MasterSpread/<id>` form; both resolve to the same master.
-- **`AppliedParagraphStyle` / `AppliedCharacterStyle` → a style.** A paragraph or
-  character range in a story names a style by id; resolution looks it up in the
-  style sheet loaded from `Styles.xml`.
-- **`FillColor` / `StrokeColor` → a `Color`.** A frame or run names a swatch id;
-  resolution looks it up in the palette loaded from `Graphic.xml`, following a
-  `Swatch` indirection one level when needed.
+## The id references
 
-Each of these is a key lookup in a table the parser built once at open time. The
-ids are global within the package, which is why a `Self` value defined in one
-file can be referenced from any other.
+| Attribute | On | Names |
+|---|---|---|
+| `ParentStory` | `TextFrame` | the `Story` that flows into the frame |
+| `NextTextFrame`, `PreviousTextFrame` | `TextFrame` | the neighbouring frames in the thread |
+| `AppliedMaster` | `Page` | the `MasterSpread` the page inherits from |
+| `ItemLayer` | every page item | the `Layer` in the design map |
+| `AppliedObjectStyle` | every page item | an `ObjectStyle` in `Styles.xml` |
+| `AppliedParagraphStyle` | `ParagraphStyleRange` | a `ParagraphStyle` |
+| `AppliedCharacterStyle` | `CharacterStyleRange` | a `CharacterStyle` |
+| `FillColor`, `StrokeColor` | page items, text, styles | a `Color`, `Tint`, `Gradient` or `Swatch` in `Graphic.xml` |
+| `BaseColor` | `Tint` | the `Color` the tint lightens |
+| `Source` | `Hyperlink` | a `HyperlinkTextSource` in a story |
+| `Destination` (typed property) | `Hyperlink` | a destination in the design map, or a text anchor in a story |
+| `AssociatedTextVariable` | `TextVariableInstance` | a `TextVariable` in the design map |
 
-## Resolution is forgiving
+The value is the target's `Self`, exactly. Named resources have a `Self` that spells their
+kind and name (`ParagraphStyle/Body`, `Color/Black`, `Swatch/None`), so references to them
+read the same way. Objects such as stories, frames, layers and masters have short generated
+ids (`u1a2`). Ids are unique across the whole package, which is why an id defined in one
+part can be named from any other.
 
-Because everything is a lookup, a *missing* target is not a crash — it is simply a
-lookup that returns nothing, and the consumer falls back. A `FillColor` naming a
-color that isn't in the palette resolves to no paint rather than aborting the
-parse. An `AppliedParagraphStyle` with no matching style yields an empty resolved
-set, so the cascade falls through to its defaults. This is deliberate: real
-documents drift, and a reader that resolves what it can is more useful than one
-that refuses the whole file over one dangling id.
+Two reference kinds point into stories rather than at whole elements. A hyperlink's text
+destination is a `HyperlinkTextDestination` marker inside a story's text, and a
+cross-reference's source is a `CrossReferenceSource` range there. Both are covered in
+[cross-references and hyperlinks](/docs/idml/cross-references-hyperlinks).
 
-## Two links that need more than a single lookup
+## A dangling reference
 
-Most references resolve in one hop. Two are worth calling out because they chain.
+An id that names nothing is not fatal to the format. A careful reader treats it as unset:
+a `FillColor` that names a missing colour paints nothing, an `AppliedParagraphStyle` with
+no match falls back to the default style. A missing **part** is different: if the design
+map names a part the archive lacks, the document is incomplete.
 
-**Style resolution walks `BasedOn`.** A style can be *based on* another style,
-inheriting any attribute it doesn't set itself. Resolving an applied style
-therefore means walking that chain — the run's own attributes first, then the
-applied character style, then the applied paragraph style, each hop filling in
-only what's still unset, down to the document's `$ID/[No … style]` defaults. The
-walk is depth-bounded so a self-referential `BasedOn` can't loop forever.
+Two dangling cases change what InDesign keeps. A story that no frame names is discarded
+when InDesign opens the file, and a `Hyperlink` whose destination it cannot bind is not
+a hyperlink to InDesign at all.
 
-**Story threading walks `NextTextFrame`.** A story longer than one frame flows
-into the next; each frame names the `Self` id of the frame that continues it. To
-lay out the whole story, the resolver finds the head frame (the one on the story
-that no other frame points to) and follows `NextTextFrame` from frame to frame
-until the chain ends. The walk is bounded too, so a cyclic chain stops rather than
-hangs.
+> **In Paged:** an unresolved id falls back; a part the design map names but the archive
+> lacks stops the import.
+> <SupportBadge feature="package-anatomy.core-import" />
+
+## Three references that chain
+
+**`BasedOn` builds a style.** A style names its parent in `BasedOn` and inherits every
+attribute it does not set. Resolving a style means walking up that chain to the reserved
+root (`$ID/[No paragraph style]`, `$ID/[No character style]`). A reader should bound the
+walk so a cycle cannot loop.
+
+**The applied styles build a run.** This is a different chain. A run's effective formatting
+starts from its own attributes, then takes what its character style sets, then what its
+paragraph style sets. Each style in that sequence has already been resolved through its own
+`BasedOn` chain. See [the cascade](/docs/idml/styles/the-cascade).
+
+**`NextTextFrame` builds a thread.** A story longer than one frame continues in the frame
+named by `NextTextFrame`. The thread starts at the frame whose `PreviousTextFrame` is `n`
+and follows the links until one is `n`. Again, a reader should stop on a cycle.
 
 <StoryThreading />
 
 ## Why the split is worth it
 
-The payoff of all this referencing is that each part stays small and editable on
-its own. Change a swatch and only `Graphic.xml` moves; rewrite a paragraph and
-only one `Story_*.xml` changes; the ids that connect everything stay put, so the
-rest of the graph still resolves. The cost is that you can't read any one part in
-isolation and know what it will look like — you have to resolve its references
-first. That resolution, an id at a time, is the whole job of opening an IDML
-document.
+Each part stays small and editable on its own. Change a swatch and only `Graphic.xml`
+moves; rewrite a paragraph and only one story part changes; the ids that connect
+everything stay put. The cost is that no part can be read in isolation: what a frame looks
+like depends on its object style, its swatches and its story, each in a different part.
 
 ## Frequently asked questions
 
-**How do the separate parts of an IDML document connect to each other?**
-Through id references. An attribute in one part holds the `Self` id of something
-defined in another — a `FillColor` names a `Color`, a `ParentStory` names a
-`Story`, an `AppliedParagraphStyle` names a style — and the parser resolves each by
-looking the id up in a table it built once at open time. The ids are global within
-the package, so a `Self` value defined in one file can be referenced from any
-other.
+**How do the separate parts of an IDML document connect?**
+Through `Self` ids. An attribute in one part holds the id of an element defined in another:
+`ParentStory` names a story, `AppliedParagraphStyle` a style, `FillColor` a swatch. Ids are
+unique across the package.
 
-**What happens when a reference points at something that doesn't exist?**
-The parse does not crash; the lookup simply returns nothing and the consumer falls
-back. A `FillColor` naming a missing color resolves to no paint, and an
-`AppliedParagraphStyle` with no match yields an empty set so the cascade falls
-through to its defaults. This forgiving resolution is deliberate, because real
-documents drift and a reader that resolves what it can is more useful than one that
-refuses the whole file over a single dangling id.
+**What happens when a reference points at something that does not exist?**
+A careful reader treats it as unset and falls back: no paint for a missing colour, the
+default style for a missing style. A part named in the design map but missing from the
+archive is a more serious fault, and InDesign itself drops a story no frame references.
 
-**Which references need more than a single lookup to resolve?**
-Two. Style resolution walks the `BasedOn` chain, with each hop filling in only the
-attributes still unset, down to the document's `$ID/[No … style]` defaults. Story
-threading walks `NextTextFrame` from the head frame through each continuation
-frame. Both walks are depth-bounded, so a cyclic chain stops rather than loops
-forever.
+**Is `BasedOn` the same as the style cascade?**
+No. `BasedOn` is how one style inherits from another. The cascade is how a run combines
+its own attributes with its character style and its paragraph style. A reader resolves
+each style through `BasedOn` first, then cascades.
+
+**Which references chain instead of resolving in one step?**
+Three: `BasedOn` between styles, the run → character style → paragraph style cascade, and
+`NextTextFrame` between frames. Each walk should stop on a cycle.

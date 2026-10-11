@@ -1,0 +1,184 @@
+---
+title: What InDesign needs to open a file
+description: The rules a program writing IDML must follow for InDesign to open the file as intended — transforms, spread attributes, typed properties, part order.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+describes:
+  - layout-model.spread-item-transform
+  - round-tripping.idml-reserialization
+  - cross-references-hyperlinks.hyperlinks
+reviewed: 2026-10-11
+---
+
+**A package that a lenient reader accepts can still open wrong in InDesign. These are the rules a writer must follow, each one measured by opening files in InDesign.**
+
+**In short:** InDesign does not read IDML the way a forgiving parser does. It does not
+treat a missing `ItemTransform` as identity, it needs `PageCount` and `BindingLocation` on
+every spread, it reads many properties only as typed `<Properties>` children and ignores
+the attribute of the same name, and it binds hyperlinks only when they come after the
+stories in the design map. Every rule below was found by writing a file, opening it in
+InDesign 20.0.1 and reading back what InDesign did. None of them shows up in a round trip
+through your own reader and writer, because both share the same assumptions.
+
+The safest model for any writer is InDesign's own export: spell everything the way an
+InDesign-written package spells it, and treat anything InDesign does not write as
+something it may not read.
+
+## Spreads and page items
+
+<ExampleEmbed example="two-page-spread">
+  A facing spread written the way InDesign writes it: `PageCount` and `BindingLocation`
+  on the spread, and an `ItemTransform` on the spread, on each page and on each frame.
+</ExampleEmbed>
+
+- **Write an `ItemTransform` on every `Spread`, every `Page` and every page item,** even
+  when it is the identity `1 0 0 1 0 0`. InDesign does not read an absent `ItemTransform`
+  as identity. In one measured book, 1,438 items without one each landed a page width to
+  the left on their facing spread, leaving whole pages blank; adding the identity matrix
+  to each placed every item correctly. InDesign's own packages carry one on every spread,
+  page and item.
+- **Write `PageCount` and `BindingLocation` on every `Spread`.** Without them, InDesign
+  read a one-page spread as a facing pair and opened it with an extra empty page: three
+  pages written, four shown. `PageCount` is the number of pages in the spread;
+  `BindingLocation` is the index of the spine, `0` for a single page and `1` for a facing
+  pair.
+- **Give every page item an `ItemLayer`.** Items without one all open on a single layer,
+  stacked by document order alone, and the layer structure is lost.
+- **Give every `Group` an `ItemLayer` too.** InDesign keeps a group's members on the
+  group's layer: a group without `ItemLayer` lands on the document's first layer and takes
+  its members with it, whatever their own `ItemLayer` says.
+- **Draw an `<Oval>` with an elliptical path.** An oval is an ellipse only through its
+  `PathGeometry`: four anchors at the mid-points of the edges, with curve handles. Written
+  with the four corners of its box, it opens as a rectangle.
+- **Write the `EndBracket` of a text path.** InDesign reads an absent `EndBracket` as 0:
+  the path shows no text and the story is overset. InDesign itself writes the path length
+  in points.
+
+## Text
+
+- **End every paragraph but the last with `<Br/>`.** A `ParagraphStyleRange` is a style
+  run, not a paragraph. Ranges without marks open as one paragraph: an eleven-entry table
+  of contents written that way came back as a single paragraph with its style dropped. An
+  empty paragraph still needs a `CharacterStyleRange` to hold its mark. See
+  [the paragraph model](/docs/idml/stories-text/the-paragraph-model).
+- **Write a tab as the character U+0009** inside `Content`. A `<Tab/>` element is ignored.
+- **Write a paragraph's local formatting as attributes on its `ParagraphStyleRange`.**
+  Space before and after, indents, keep options, drop caps and rules are read from the
+  range. Saved with only a style reference, they open as the style's values.
+- **Give every `Row` a `SingleRowHeight` and every `Column` a `SingleColumnWidth`.** A
+  table whose rows or columns lack them is dropped.
+
+## Properties InDesign reads only as typed children
+
+Many properties have two possible spellings: an attribute, and a typed child of the
+element's `<Properties>`. For these, InDesign reads only the child and ignores the
+attribute:
+
+| On | Property | InDesign's spelling |
+|---|---|---|
+| `CharacterStyleRange`, styles | `AppliedFont` | `<AppliedFont type="string">Open Sans</AppliedFont>` |
+| `ParagraphStyleRange`, styles | `TabList` | a `type="list"` of `ListItem type="record"` tab stops |
+| `ParagraphStyleRange`, styles | `NumberingFormat` | `<NumberingFormat type="string">1, 2, 3, 4...</NumberingFormat>` |
+| `ParagraphStyleRange`, styles | `AppliedNumberingList` | `type="object"`, naming a `NumberingList` that is defined |
+| `ParagraphStyleRange`, styles | `BulletsCharacterStyle`, `NumberingCharacterStyle` | `type="object"` |
+| `ParagraphStyleRange`, styles | `SpanSplitColumnCount` | `type="short"`, or `type="enumeration"` for `All` |
+| `TextFramePreference` | `InsetSpacing` | `type="unit"` when all four sides agree, else a `type="list"` of four in top, left, bottom, right order |
+| `Hyperlink` | `Destination` | `<Destination type="object">HyperlinkURLDestination/…</Destination>` |
+| `Condition` | `IndicatorColor` | `type="enumeration"` |
+| `ConditionSet` | `SetConditions` | a list of `VisibilityPair` records |
+| `Section` | `PageNumberStyle` | `type="enumeration"` |
+
+The font is the costliest case: a document whose runs named their font as an attribute
+opened entirely in InDesign's default face. An `InsetSpacing="4 4 4 4"` attribute opens as
+no inset at all.
+
+A text frame's auto-sizing is read from a `TextFramePreference` child of the
+`TextFrame`. Without it, a frame that should grow to fit its text opens overset.
+
+## Fonts
+
+**Declare every applied face in `Resources/Fonts.xml`,** one `<Font>` per face, inside its
+`<FontFamily>`. InDesign binds each `AppliedFont` and `FontStyle` pair through these
+declarations:
+
+- a face that the text applies but `Fonts.xml` does not declare is reported as not
+  available;
+- a declaration that names only the family comes back substituted even when the family is
+  installed. What binds is the instance, named the way InDesign names it: `Name` is the
+  family and style joined by a space, with the face's real `PostScriptName` and
+  `FontStyleName`.
+
+## The design map
+
+<ExampleEmbed example="with-hyperlink">
+  The hyperlink block comes after the last `idPkg:Story`, and the destination is a typed
+  `Properties` child.
+</ExampleEmbed>
+
+- **Put the hyperlink block after the last `idPkg:Story` reference.** Destinations,
+  hyperlinks and bookmarks written before the stories bind nothing: InDesign reported no
+  hyperlinks at all. Moving the block alone made them appear.
+- **Never combine a `Destination` attribute with `DestinationUniqueKey`** on a
+  `Hyperlink`. The attribute alone is ignored; together they make the file impossible to
+  open.
+- **Write a text destination as a marker in the story,** a `HyperlinkTextDestination`
+  inside the text where the link lands, not as an element in the design map.
+- **Give a `CrossReferenceSource` an `AppliedFormat`** naming a `CrossReferenceFormat`.
+  A source that names no format is dropped.
+- **Define conditions in the design map,** as direct children of `Document`. Wrapped in an
+  invented `RootConditionalTextGroup` in `Styles.xml`, they are invisible to InDesign.
+  List a condition set's members as `VisibilityPair` records: with a `Conditions`
+  attribute instead, every set silently captures every condition. A
+  `ConditionalTextPreference` follows the conditions.
+- **Write `Section` elements after the `idPkg:Spread` references,** with the numbering
+  style as a typed child.
+
+## What InDesign removes on open
+
+- **A story that no frame references is discarded.** A story stays only while a text frame,
+  or an anchored frame inside another placed story, names it in `ParentStory`. A file that
+  kept a story after its frame was deleted opened with one story fewer than it carried.
+- **A table without row heights or column widths is dropped,** as above.
+- **A text path without its text window shows nothing,** and its story is overset.
+
+## Preferences that change the result
+
+`TextPreference UseOpticalSize` decides how runs in a variable font with an optical-size
+axis are set. With `true`, InDesign's default, it re-instances each run at its point size,
+and some of those instances come back substituted; with `false`, runs use the font's
+default instance. A writer that composed text at the default instance should write
+`UseOpticalSize="false"`.
+
+> **In Paged:** the exporter applies every rule on this page, and rewrites older files
+> that use the private spellings when it saves them. A package that is already in
+> InDesign's spelling and unchanged is written back byte for byte, except that an
+> unreferenced story is dropped and missing font declarations are added.
+> <SupportBadge feature="round-tripping.idml-reserialization" />
+
+## Frequently asked questions
+
+**Why does my generated IDML open in InDesign with items in the wrong place?**
+Most likely some spreads, pages or items have no `ItemTransform`. InDesign does not read a
+missing transform as identity. Write `ItemTransform="1 0 0 1 0 0"` explicitly wherever there
+is no other value.
+
+**Why does InDesign add an empty page to my document?**
+The spreads probably lack `PageCount` and `BindingLocation`. Without them InDesign opens a
+one-page spread as a facing pair. Write both on every spread.
+
+**Why does all my text open in the wrong font?**
+The font is probably written as an `AppliedFont` attribute. InDesign reads it only as
+`<Properties><AppliedFont type="string">…</AppliedFont></Properties>`, and every applied
+face must also be declared in `Fonts.xml`.
+
+**Why are my hyperlinks missing in InDesign?**
+Check three things: the hyperlink block must come after the last `idPkg:Story` reference in
+the design map, the destination must be a typed `Properties` child rather than an
+attribute, and a text destination must be a marker in the story.
+
+**How were these rules found?**
+By writing small variants of a file, opening each in InDesign 20.0.1, and reading back the
+result through InDesign's scripting interface and its PDF export. The method is described in
+the [clean-room protocol](/docs/idml/meta/clean-room-protocol).

@@ -1,52 +1,92 @@
 ---
 title: Package anatomy
-description: An IDML document is a ZIP archive of XML parts — a self-identifying container, a design map that names everything, shared resource parts, and content parts, wired together by id references.
+description: An IDML document is a ZIP of XML parts — a self-identifying container, a design map that names everything, resource parts and content parts, linked by ids.
 tier: beginner
 diataxis: explanation
 status: published
 owner: paged-docs
+describes:
+  - foundations.container.open
+  - foundations.designmap.structure
+  - package-anatomy.core-import
+reviewed: 2026-10-11
 ---
 
 **An IDML document is a ZIP archive of small XML parts that point at each other by id.**
 
-**In short:** An IDML package is not one file but many — a ZIP container holding
-separate XML parts, each with a job. A *design map* names every other part; shared
-*resource parts* hold the colors, styles, and fonts the document reuses; *content
-parts* carry the pages and the text; and a web of id references wires them back
-together into a single document. This section walks the archive from the outside
-in, in the order our parser meets each part: the container itself, the manifest
-that names everything, the resource parts, the content parts, and finally the
-references that tie them together.
+**In short:** An IDML package is not one file but many: a ZIP container holding separate
+XML parts, each with a job. A *design map* names every other part; *resource parts* hold
+the colours, styles, fonts and preferences the document reuses; *content parts* carry the
+spreads, the master spreads and the text; and id references wire them back into one
+document. This section walks the archive from the outside in, then covers what InDesign
+needs before it will open a package you wrote.
 
-If you have not yet opened one, start with
-**[read one by hand](/docs/idml/foundations/read-one-by-hand)** — this section explains
-what you saw there.
+If you have not opened one yet, start with
+**[read one by hand](/docs/idml/foundations/read-one-by-hand)**. This section explains what
+you saw there.
 
-- **[The ZIP container](/docs/idml/package-anatomy/zip-container)**
-- **[The design map](/docs/idml/package-anatomy/the-design-map)**
-- **[Resource parts](/docs/idml/package-anatomy/resource-parts)**
-- **[Content parts](/docs/idml/package-anatomy/content-parts)**
-- **[How the parts reference each other](/docs/idml/package-anatomy/how-parts-reference)**
+## What is in the archive
+
+| Entry | What it holds |
+|---|---|
+| `mimetype` | The package's media type; the first entry, stored uncompressed |
+| `META-INF/container.xml` | The pointer to the root part, `designmap.xml` |
+| `META-INF/metadata.xml` | XMP metadata: creator tool, dates, document ids (InDesign writes it) |
+| `designmap.xml` | The manifest: document settings, document-level definitions, and a reference to every other part |
+| `Resources/Graphic.xml` | Colours, tints, gradients, inks and stroke styles |
+| `Resources/Fonts.xml` | The font families and faces the document uses |
+| `Resources/Styles.xml` | Paragraph, character, object, table and cell styles |
+| `Resources/Preferences.xml` | Document preferences and defaults |
+| `MasterSpreads/` | One part per master spread |
+| `Spreads/` | One part per spread: pages and the items on them |
+| `Stories/` | One part per story: the text and its formatting |
+| `XML/` | The tagged-XML layer: `BackingStory.xml` and `Tags.xml` |
+
+In the census of 305 documents behind the [element reference](/docs/idml/reference), every
+package has the design map, all four resource parts, master spreads, spreads and the `XML`
+folder. Only 121 have a story part at all: a template without text has none. The 271
+packages InDesign wrote also carry `META-INF/metadata.xml`.
+
+An archive can also carry entries that nothing references. InDesign reads only the parts
+the design map names and ignores the rest, which is how a tool keeps its own data inside a
+valid IDML file.
+
+## The pages
+
+- **[The ZIP container](/docs/idml/package-anatomy/zip-container)**: the two reserved
+  entries that make the archive self-identifying.
+- **[The design map](/docs/idml/package-anatomy/the-design-map)**: the root manifest and
+  the document-level definitions it holds itself.
+- **[Resource parts](/docs/idml/package-anatomy/resource-parts)**: the shared vocabulary.
+- **[Content parts](/docs/idml/package-anatomy/content-parts)**: spreads, master spreads
+  and stories.
+- **[How the parts reference each other](/docs/idml/package-anatomy/how-parts-reference)**:
+  the id lookups that make one document out of many parts.
+- **[What InDesign needs to open a file](/docs/idml/package-anatomy/what-indesign-requires)**:
+  the rules a writer must follow, as measured in InDesign.
+- **[The `.paged` container](/docs/idml/package-anatomy/the-paged-container)**: a package
+  that stays valid IDML while carrying extra parts.
 
 ## Frequently asked questions
 
 **What is inside an IDML file?**
-An IDML file is a ZIP archive of XML parts: a top-level `designmap.xml` manifest, a
-`Resources` folder of shared definitions (colors, styles, the font manifest, and
-preferences), and content folders — `Spreads`, `MasterSpreads`, and `Stories` —
-that hold the pages and the text. A small `mimetype` entry and a `META-INF` folder
-identify the archive as an IDML package.
+A ZIP archive of XML parts: a `designmap.xml` manifest, a `Resources` folder of shared
+definitions (colours, fonts, styles, preferences), the content folders `MasterSpreads`,
+`Spreads` and `Stories`, an `XML` folder for tagged content, and a `mimetype` entry plus a
+`META-INF` folder that identify the archive as IDML.
 
 **Why is an IDML document split into so many separate parts?**
-Splitting the document keeps each part small and editable on its own: change a
-color and only `Graphic.xml` moves; rewrite a paragraph and only one story file
-changes. The cost is that no single part is self-contained — the parts point at
-each other by id, so reading the document means resolving those references.
+Each part stays small and editable on its own: change a colour and only `Graphic.xml`
+moves; rewrite a paragraph and only one story part changes. The cost is that no part is
+self-contained: the parts point at each other by id, and reading the document means
+resolving those references.
+
+**Can an IDML package contain files that are not IDML parts?**
+Yes. Entries that the design map does not reference are ignored by InDesign, so a tool can
+store its own data in the same archive. A `.paged` file does exactly this.
 
 **In what order should I read these pages?**
-The pages follow the archive from the outside in, which is also the order our
-parser meets each part: the [ZIP container](/docs/idml/package-anatomy/zip-container)
-first, then the [design map](/docs/idml/package-anatomy/the-design-map) that names
-everything, the [resource parts](/docs/idml/package-anatomy/resource-parts) and
-[content parts](/docs/idml/package-anatomy/content-parts) they describe, and finally
-[how the parts reference each other](/docs/idml/package-anatomy/how-parts-reference).
+From the outside in: the ZIP container, the design map, the resource parts and content
+parts it names, and how they reference each other. If you write IDML, read
+[what InDesign needs to open a file](/docs/idml/package-anatomy/what-indesign-requires)
+before you ship anything.

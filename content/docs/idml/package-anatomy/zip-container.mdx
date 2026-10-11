@@ -1,54 +1,78 @@
 ---
 title: The ZIP container
-description: An IDML file is an ordinary ZIP archive with two conventions that make it self-identifying — a leading uncompressed mimetype entry and a META-INF/container.xml that names the document's root.
+description: An IDML file is a ZIP archive made self-identifying by a leading, uncompressed mimetype entry and a META-INF folder that points at designmap.xml.
 tier: beginner
 diataxis: reference
 status: published
 owner: paged-docs
+describes:
+  - foundations.container.open
+reviewed: 2026-10-11
 ---
 
-**An IDML file is an ordinary ZIP archive made self-identifying by two reserved entries.**
+**An IDML file is an ordinary ZIP archive made self-identifying by a few reserved entries.**
 
-**In short:** The outermost layer of an IDML document is a plain ZIP archive, but
-it follows two conventions borrowed from other open document formats. A tiny
-`mimetype` entry comes first and is stored uncompressed, so a tool can read the
-archive's opening bytes and know it is holding an IDML package without
-decompressing anything. A `META-INF/container.xml` then points at the document's
-root manifest, `designmap.xml`. This page covers the archive's shape, the
-`mimetype` entry, and the entry that names the document's starting point.
+**In short:** The outer layer of an IDML document is a plain ZIP archive that follows the
+conventions of other open document formats. A tiny `mimetype` entry comes first and is
+stored uncompressed, so a tool can read the opening bytes of the file and know what it
+holds. A `META-INF` folder carries `container.xml`, which points at the document's root
+part, `designmap.xml`, and usually `metadata.xml`, the document's XMP metadata. Everything
+else is the document itself.
 
-**The `mimetype` entry comes first, and is stored uncompressed.** The very first
-entry in the archive is a tiny file named `mimetype` whose contents are exactly the
-media type of an IDML package, with no trailing newline. Because it is first and
-stored (not deflated), a tool can read the first few bytes of the archive and know
-what it is holding without decompressing anything. Our renderer checks this entry
-when it opens a package.
+## The `mimetype` entry
 
-**`META-INF/container.xml` names the entry point.** Inside a `META-INF` folder, a
-small `container.xml` points at the part that is the document's root manifest —
-`designmap.xml`. This is the "start here" pointer: a consumer reads the container,
-follows it to the design map, and the design map names everything else.
+The first entry in the archive is a file named `mimetype` whose content is exactly
+`application/vnd.adobe.indesign-idml-package`, with no trailing newline. Because it is
+first and stored rather than deflated, its text sits at a fixed offset near the start of
+the file, and a tool can identify the archive without decompressing anything.
 
-Everything after those two is the document itself: the design map, a `Resources`
-folder, `Spreads`, `Stories`, and so on. The next page reads the design map, which
-is where the document's structure begins.
+A writer should therefore:
+
+- write `mimetype` as the first entry;
+- store it with no compression;
+- write the media type exactly, with no line break after it.
+
+> **In Paged:** the importer requires a `mimetype` entry with exactly this text (it
+> tolerates surrounding whitespace) and rejects anything else before reading a part. It
+> does not check that the entry is first or stored. The exporter writes it first and
+> stored. <SupportBadge feature="foundations.container.open" />
+
+## The `META-INF` folder
+
+- **`container.xml`** names the document's root part, `designmap.xml`. It is the "start
+  here" pointer: a consumer that follows the container convention reads it, then the
+  design map, and the design map names everything else. In practice the design map is
+  always at the archive root under that name, and many readers go to it directly.
+- **`metadata.xml`** is an XMP packet: the creating application, creation and
+  modification dates, document and instance ids, the fonts and swatches used, page
+  thumbnails. InDesign writes it in every package it exports; it is descriptive, and the
+  document's layout does not depend on it.
+
+Everything after these is the document: `designmap.xml`, the `Resources` folder, the
+`MasterSpreads`, `Spreads` and `Stories` folders, and the `XML` folder. The next page reads
+the design map.
+
+> **In Paged:** a `.paged` file uses the same container with the same `mimetype`, so
+> InDesign opens it as IDML. Its extra parts are described in
+> [the `.paged` container](/docs/idml/package-anatomy/the-paged-container).
 
 ## Frequently asked questions
 
 **Is an IDML file just a renamed ZIP file?**
-Essentially, yes — an IDML file is an ordinary ZIP archive, and you can unzip it
-with any ZIP tool to see the XML parts inside. The only twist is the two
-conventions it follows: a leading, uncompressed `mimetype` entry and a
-`META-INF/container.xml`, both borrowed from other open document formats.
+Yes, with conventions. Any ZIP tool can unpack it to show the XML parts inside. What makes
+it IDML is the leading `mimetype` entry, the `META-INF` folder and a `designmap.xml` at the
+root.
 
 **Why is the `mimetype` entry stored first and uncompressed?**
-So the archive is self-identifying. Because the `mimetype` entry comes first and
-is stored rather than deflated, a tool can read the first few bytes of the file
-and confirm it is an IDML package without decompressing anything. Our renderer
-checks this entry when it opens a package.
+So the archive identifies itself. A tool can read the media type at a fixed position near
+the start of the file without decompressing anything, the same trick EPUB and OpenDocument
+use.
 
 **What does `META-INF/container.xml` do?**
-It is the "start here" pointer: a small XML file that names the document's root
-manifest, `designmap.xml`. A consumer reads the container, follows it to the
-design map, and the design map names everything else. (Our parser goes straight to
-`designmap.xml` at its fixed path rather than reading the container first.)
+It names the document's root part, `designmap.xml`. A consumer following the container
+convention reads it first, then the design map, which names everything else.
+
+**Do I have to write `META-INF/metadata.xml`?**
+It is descriptive metadata, not layout. InDesign writes it in every export, but it opens
+packages without one: none of the examples in this reference carries a `metadata.xml`,
+and each was opened and saved by InDesign.

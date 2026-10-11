@@ -1,98 +1,138 @@
 ---
 title: The design map
-description: designmap.xml is an IDML document's root manifest — it carries document-level settings on its Document element and names every other part in the package through idPkg:* reference elements.
+description: designmap.xml is the root of an IDML package — document settings, the definitions that belong to the whole document, and an idPkg reference to every part.
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
+describes:
+  - foundations.designmap.structure
+  - foundations.domversion-capture
+reviewed: 2026-10-11
 ---
 
-**`designmap.xml` is the root manifest that names every other part in an IDML package.**
+**`designmap.xml` is the root of an IDML package: it holds the document's own settings and definitions, and names every other part.**
 
-**In short:** The design map, `designmap.xml`, is the part a reader — and our
-parser — opens first. Its root `Document` element carries a handful of
-document-level settings and lists the document's stories in `StoryList`, while a
-set of `idPkg:*` reference elements names every other part in the package by a
-`src` path. Open the design map and you can see the whole shape of the document —
-its resources, spreads, and stories — before reading anything else. This page
-covers the `Document` element, the `idPkg:*` references, and two things the design
-map deliberately leaves to other parts.
+**In short:** The design map's root `Document` element carries document-wide attributes:
+the DOM version, the story list, the colour profiles and rendering intents. Its children are
+of two kinds. `idPkg:*` elements reference the other parts by a `src` path. The rest are
+definitions that belong to the whole document rather than to one part: layers, sections,
+text variables, hyperlinks and bookmarks, conditions, numbering lists and colour groups.
+Open the design map and you see the whole shape of the document before reading anything
+else.
 
 <PackageGraph />
 
-The package below has two stories in two frames. The view shows its design map:
-note how `StoryList` enumerates the stories and how each `idPkg:*` element points
-at a part file by `src`.
+The package below has two stories in two frames. Note how `StoryList` enumerates the
+stories and how each `idPkg:*` element points at a part by `src`.
 
 <ExampleEmbed example="two-stories">
-  The design map of a two-story document — the manifest that ties the package together.
+  The design map of a two-story document, the manifest that ties the package together.
 </ExampleEmbed>
+
+## The processing instruction
+
+Before the root element, InDesign writes an `<?aid … ?>` processing instruction. Its
+pseudo-attributes record the package style, the reader version the file targets, a feature
+set and the exporting product build, for example `product="20.0(32)"`. It describes the
+file; the document's content does not depend on it. See
+[version markers](/docs/idml/round-tripping/version-markers).
 
 ## The `Document` element
 
-The root element carries the document's identity and a few global settings. Our
-parser reads these and ignores the rest; everything structural lives in the parts
-the design map references.
+<AttrTable element="Document" limit={9} />
 
-<AttrTable
-  element="Document"
-  rows={[
-    { attr: 'Self', type: 'string id', support: 'supported', note: 'The document id, conventionally "d".' },
-    { attr: 'DOMVersion', type: 'string (e.g. "20.0")', support: 'parsed-not-rendered', note: 'Read but not yet used to branch behavior — the parser targets a modern DOM.' },
-    { attr: 'StoryList', type: 'space-separated ids', support: 'supported', note: 'The ids of the document’s stories; each should have a matching idPkg:Story.' },
-    { attr: 'Name', type: 'string', support: 'parsed-not-rendered', note: 'The .indd file name; informational.' },
-    { attr: 'CMYKProfile', type: 'string', support: 'supported', note: 'ICC profile name; passed to color management.' },
-    { attr: 'RGBProfile', type: 'string', support: 'supported', note: 'ICC profile name; passed to color management.' },
-  ]}
-/>
+- **`DOMVersion`** names the scripting-DOM revision the package was written for, such as
+  `20.0`. Every part repeats it on its root element.
+- **`StoryList`** lists the ids of the document's stories, one per `idPkg:Story`.
+- **`CMYKProfile`, `RGBProfile`** name the document's colour profiles, and
+  **`SolidColorIntent`, `AfterBlendingIntent`, `DefaultImageIntent`** the rendering intents
+  for solid colours, transparency blending and images. See
+  [colour and swatches](/docs/idml/color-swatches).
+- **`Name`** is the file name of the document it was exported from; descriptive only.
 
-## The `idPkg:*` references
+## The part references
 
-Each child of `Document` in this namespace names one other part by a `src` path
-relative to the package root. The parser follows the ones it needs to build the
-document and resolves the rest lazily.
+Each `idPkg:*` child names one part by a `src` path relative to the package root. A reader
+expects every named part to be in the archive; entries the design map does not name are
+not part of the document.
 
-<AttrTable
-  element="idPkg:* (src on each)"
-  rows={[
-    { attr: 'idPkg:Graphic', type: 'src="Resources/Graphic.xml"', support: 'supported', note: 'Colors, swatches, and gradients.' },
-    { attr: 'idPkg:Fonts', type: 'src="Resources/Fonts.xml"', support: 'parsed-not-rendered', note: 'A font manifest; actual fonts are provided to the renderer separately.' },
-    { attr: 'idPkg:Styles', type: 'src="Resources/Styles.xml"', support: 'supported', note: 'Paragraph, character, object, cell, and table styles.' },
-    { attr: 'idPkg:Preferences', type: 'src="Resources/Preferences.xml"', support: 'not-yet-parsed', note: 'Document/UI preferences; read past, not acted on.' },
-    { attr: 'idPkg:MasterSpread', type: 'src="MasterSpreads/MasterSpread_*.xml"', support: 'supported', note: 'One per master spread.' },
-    { attr: 'idPkg:Spread', type: 'src="Spreads/Spread_*.xml"', support: 'supported', note: 'One per spread (the pages and their items).' },
-    { attr: 'idPkg:Story', type: 'src="Stories/Story_*.xml"', support: 'supported', note: 'One per story; matched to StoryList.' },
-    { attr: 'idPkg:BackingStory', type: 'src="XML/BackingStory.xml"', support: 'not-yet-parsed', note: 'The tagged-XML backing store; skipped today.' },
-  ]}
-/>
+| Reference | Part | How many |
+|---|---|---|
+| `idPkg:Graphic` | `Resources/Graphic.xml` | one |
+| `idPkg:Fonts` | `Resources/Fonts.xml` | one |
+| `idPkg:Styles` | `Resources/Styles.xml` | one |
+| `idPkg:Preferences` | `Resources/Preferences.xml` | one |
+| `idPkg:Tags` | `XML/Tags.xml` | one |
+| `idPkg:MasterSpread` | `MasterSpreads/MasterSpread_<id>.xml` | one per master spread |
+| `idPkg:Spread` | `Spreads/Spread_<id>.xml` | one per spread, in page order |
+| `idPkg:Story` | `Stories/Story_<id>.xml` | one per story |
+| `idPkg:BackingStory` | `XML/BackingStory.xml` | one |
 
-## Two things the design map does *not* do
+The order of the spread references is the order of the spreads in the document. The
+resource parts are described in [resource parts](/docs/idml/package-anatomy/resource-parts),
+the spreads and stories in [content parts](/docs/idml/package-anatomy/content-parts).
 
-The container's `META-INF/container.xml` (the UCF "start here" pointer) names the
-design map as the document's root. Our parser does not read it — it goes straight
-to `designmap.xml` at the fixed package path. <SupportBadge status="not-yet-parsed" note="META-INF/container.xml" />
+## Definitions that live in the design map
 
-And while the design map *lists* the stories, it does not contain them. The text
-lives in the [content parts](/docs/idml/package-anatomy/content-parts); the design map
-only points the way. How those pointers resolve — `ParentStory`, `AppliedMaster`,
-`src` — is the subject of [how the parts reference each other](/docs/idml/package-anatomy/how-parts-reference).
+Some definitions belong to the document as a whole, so InDesign writes them as direct
+children of `Document` rather than in a resource part. The counts are from the census of
+305 packages behind the [element reference](/docs/idml/reference):
+
+| Element | What it defines | Packages |
+|---|---|---|
+| `TextVariable` | A computed piece of text, such as a running header or the file name | 273 |
+| `Layer` | A layer; a `Layer` inside a `Layer` is a layer group | 272 |
+| `Section` | Where page numbering restarts, and how it is styled | 272 |
+| `NumberingList` | A named list that numbered paragraphs continue across | 271 |
+| `ColorGroup` | A folder of swatches in the Swatches panel, members as `ColorGroupSwatch` | 265 |
+| `ConditionalTextPreference` | Which condition set is active, and whether indicators show | 271 |
+| `Condition`, `ConditionSet` | Conditional-text tags and saved visibility sets | when used |
+| `HyperlinkURLDestination`, `HyperlinkPageDestination`, `Hyperlink`, `Bookmark` | Hyperlinks and bookmarks | when used |
+
+Two placements were measured in InDesign 20.0.1 and matter to a writer:
+
+- **Conditions belong here**, not in `Styles.xml`. A condition set lists its members as
+  `VisibilityPair` records inside a typed `SetConditions` property.
+- **The hyperlink and bookmark block comes after the last `idPkg:Story`.** Placed earlier,
+  InDesign binds none of it.
+
+The full list of such rules is in
+[what InDesign needs to open a file](/docs/idml/package-anatomy/what-indesign-requires).
+
+> **In Paged:** the importer reads `Document`'s attributes, the part references, and the
+> layers (nested), sections, text variables, hyperlinks, bookmarks and conditions in the
+> design map. It reads conditions from `Styles.xml` too, for older files, and the design
+> map wins on a clash. It does not read `META-INF/container.xml`, the `XML/` parts, or
+> `Fonts.xml`. <SupportBadge feature="foundations.designmap.structure" />
+
+## What the design map does not hold
+
+It lists the stories but does not contain them: the text lives in the story parts. It
+names the spreads but holds no geometry. How the ids in one part find their targets in
+another (`ParentStory`, `AppliedMaster`, style and swatch references) is the subject of
+[how the parts reference each other](/docs/idml/package-anatomy/how-parts-reference).
 
 ## Frequently asked questions
 
 **What is the design map in an IDML file?**
-The design map is `designmap.xml`, the document's root manifest. It holds
-document-level settings on its `Document` element and names every other part in
-the package through `idPkg:*` reference elements, so it is the part a consumer
-reads first to learn the document's shape.
+`designmap.xml`, the package's root part. Its `Document` element holds document-wide
+settings, the definitions that belong to the whole document, and an `idPkg:*` reference to
+every other part.
 
 **What does the `StoryList` attribute do?**
-`StoryList` on the `Document` element is a space-separated list of the document's
-story ids. Each id should have a matching `idPkg:Story` reference naming the file
-that holds it — the link between the manifest's list of stories and the
-[content parts](/docs/idml/package-anatomy/content-parts) that contain the text.
+It lists the ids of the document's stories. Each id has a matching `idPkg:Story` naming
+the part that holds it, and the same id appears as `ParentStory` on the frames the story
+flows through.
+
+**Where are layers, sections and conditions defined?**
+In the design map, as direct children of `Document`. InDesign writes conditional-text
+conditions here too, not in `Styles.xml`.
+
+**Does the order of elements in the design map matter?**
+For some of them, yes. The spread references are in page order, and InDesign only binds
+hyperlinks and bookmarks that come after the last `idPkg:Story` reference.
 
 **Does the design map contain the document's text and pages?**
-No. The design map only *names* the parts; the pages live in the spread parts and
-the text lives in the story parts. It points the way, and the actual content is
-resolved by following the `src` paths and ids to the
-[content parts](/docs/idml/package-anatomy/content-parts).
+No. It names the parts; the pages are in the spread parts and the text is in the story
+parts.

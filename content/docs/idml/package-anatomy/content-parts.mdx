@@ -1,128 +1,148 @@
 ---
 title: Content parts
-description: The Spreads, MasterSpreads, and Stories parts hold an IDML document itself — the pages, the shapes that sit on them, and the text — each tied to the design map by a Self id derived from its file name.
+description: The Spreads, MasterSpreads and Stories parts hold the document itself — pages and the items on them, the master pages, and the text, each tied in by id.
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
+describes:
+  - layout-model.spreads-pages
+  - package-anatomy.story-parts
+  - frames-paths.nested-content
+reviewed: 2026-10-11
 ---
 
-**The content parts — `Spreads`, `MasterSpreads`, and `Stories` — hold the document itself: its pages, the shapes on them, and the text.**
+**The content parts, `Spreads`, `MasterSpreads` and `Stories`, hold the document itself: its pages, the items on them, and the text.**
 
-**In short:** If the resource parts are an IDML document's shared vocabulary, the
-content parts are the document itself: where the pages are, what shapes sit on
-them, and what text those shapes hold. Three folders carry it — `Spreads` (pages
-and the items on them), `MasterSpreads` (the template pages they inherit from), and
-`Stories` (the text and its formatting). Each part is one file, named so the design
-map can point at it and so the parser can derive its `Self` id back from the file
-name. This page covers what each folder holds and how those ids tie the parts to
-the design map.
+**In short:** A spread part holds one `<Spread>`: its pages and every page item placed
+across them, in the spread's own coordinate space. A master spread part has the same shape
+and holds the template pages body pages inherit from. A story part holds one `<Story>`:
+text and formatting with no geometry, as runs of paragraph and character attributes with
+the `<Br/>` paragraph mark in between. A text frame on a spread links the two by naming
+its story in `ParentStory`.
 
-The design map lists these parts with `idPkg:Spread`, `idPkg:MasterSpread`, and
-`idPkg:Story` elements, each carrying a `src` path. The embed below shows that
-manifest for a two-story document — note the two `idPkg:Story` entries that match
-the `StoryList` and the two text frames in the single spread.
+The design map lists these parts with `idPkg:Spread`, `idPkg:MasterSpread` and
+`idPkg:Story` elements. The package below has one spread with two frames and two stories:
 
 <ExampleEmbed example="two-stories">
   A one-page, two-story package: one spread with two frames, two stories, one master.
 </ExampleEmbed>
 
-## `Spreads/Spread_*.xml` — pages and the items on them
+## `Spreads/Spread_<id>.xml`: pages and the items on them
 
-A spread part holds one `<Spread>` element. Inside it are the `<Page>` elements
-(the spread's pages) and the page items that sit on those pages — `<TextFrame>`,
-`<Rectangle>`, `<Oval>`, `<GraphicLine>`, `<Polygon>`, and `<Group>`. The parser
-reads page bounds and a flat, z-ordered list of items per spread; a `<TextFrame>`
-is the bridge to text, because it names a story rather than containing the words
-itself.
+A spread part holds one `<Spread>`. Its children are the spread's `<Page>` elements, then
+its page items: `<TextFrame>`, `<Rectangle>`, `<Oval>`, `<Polygon>`, `<GraphicLine>` and
+`<Group>`, in stacking order from back to front.
 
-<AttrTable
-  element="Page"
-  rows={[
-    { attr: 'Self', type: 'string id', support: 'supported', note: 'The page id (e.g. "upage").' },
-    { attr: 'GeometricBounds', type: '"y1 x1 y2 x2" in points', support: 'supported', note: 'Page rectangle in the page’s own coordinate space. Y grows downward.' },
-    { attr: 'AppliedMaster', type: 'MasterSpread id', support: 'supported', note: 'The master this page inherits from; resolved to a MasterSpread by id. "n" means none.' },
-    { attr: 'ItemTransform', type: '6 numbers (affine)', support: 'supported', note: 'Maps the page’s coords into the spread. Absent ⇒ identity.' },
-    { attr: 'OverrideList', type: 'space-separated ids', support: 'supported', note: 'Master items this page has overridden; the originals are not stamped onto the page.' },
-    { attr: 'Name', type: 'string', support: 'supported', note: 'The page label as InDesign numbered it ("1", "iii", "A-3"); substituted for auto-page-number markers.' },
-  ]}
-/>
+Page items are not children of a page. They sit in the spread's coordinate space, and each
+`<Page>` is placed in that space by its own `ItemTransform`. In a facing spread the spine
+is at x = 0, so the left page sits at negative x. Which page an item belongs to is a
+matter of where it lies. The coordinate model is covered in
+[geometry and coordinates](/docs/idml/geometry-coordinates).
 
-<AttrTable
-  element="TextFrame"
-  rows={[
-    { attr: 'Self', type: 'string id', support: 'supported', note: 'The frame id (e.g. "uframe1"); the target of another frame’s NextTextFrame.' },
-    { attr: 'ParentStory', type: 'Story id', support: 'supported', note: 'The story whose text flows into this frame. This is the link from spread to story.' },
-    { attr: 'GeometricBounds / PathGeometry', type: 'bounds or path', support: 'supported', note: 'The frame’s shape; supplies the column box the text composes into.' },
-    { attr: 'ItemTransform', type: '6 numbers (affine)', support: 'supported', note: 'Places the frame in the spread. Absent ⇒ identity.' },
-    { attr: 'NextTextFrame', type: 'TextFrame id', support: 'supported', note: 'The frame this story continues into when it overflows. "n" / absent ends the chain.' },
-    { attr: 'AppliedObjectStyle', type: 'ObjectStyle id', support: 'supported', note: 'Fill / stroke / corner defaults; resolved against Styles.xml. Real documents rely on this over per-frame FillColor.' },
-    { attr: 'FillColor / StrokeColor', type: 'Color or Swatch id', support: 'supported', note: 'Per-frame paint overrides; resolved against the Graphic palette. Swatch/None means no paint.' },
-  ]}
-/>
+<AttrTable element="Spread" limit={6} />
 
-A text frame nested inside a `<Group>` is currently skipped, and the spread
-records a count of how many it dropped so a consumer can detect the loss.
-<SupportBadge status="parsed-not-rendered" note="TextFrame nested inside a Group" />
+The attributes InDesign needs on every spread (`PageCount`, `BindingLocation`, an
+`ItemTransform` on the spread, on each page and on each item) are listed in
+[what InDesign needs to open a file](/docs/idml/package-anatomy/what-indesign-requires).
 
-## `MasterSpreads/MasterSpread_*.xml` — the master pages
+### Pages
 
-A master spread is the template a body page inherits from. Its XML is the same
-shape as a regular spread — one `<MasterSpread>` element with `<Page>` children
-and the same kinds of page items — so the parser reuses the spread parser to read
-it. The parser loads every master first, before the body spreads, and keys each
-by the `Self` id derived from its file name (`MasterSpreads/MasterSpread_umaster.xml`
-→ `umaster`). A page's `AppliedMaster` resolves against that table, whether it
-gives the bare id or the full `MasterSpread/umaster` reference.
+A `<Page>` gives its size as `GeometricBounds`, the master it applies as `AppliedMaster`,
+the master items it has overridden as `OverrideList`, and its label as `Name` (the page
+number as InDesign displayed it: "1", "iii", "A-3"). Its children hold the page's margins
+and columns (`MarginPreference`), its ruler guides (`Guide`) and typed properties such as
+`PageColor`. The details are in [spreads and pages](/docs/idml/layout-model/spreads-and-pages).
 
-## `Stories/Story_*.xml` — the text
+<AttrTable element="Page" limit={6} />
 
-A story part holds one `<Story>` element: the text and its formatting, with no
-geometry. The parser reads it as a tree of `<ParagraphStyleRange>` →
-`<CharacterStyleRange>` → `<Content>`, collapsing the content runs into paragraphs
-of styled runs. The styles a story applies are *named*, not embedded — a paragraph
-range carries `AppliedParagraphStyle`, a character range carries
-`AppliedCharacterStyle` and any local overrides, and those names resolve against
-`Styles.xml`.
+### Page items
 
-<AttrTable
-  element="Story content"
-  rows={[
-    { attr: 'Story@Self', type: 'string id', support: 'supported', note: 'The story id (e.g. "ustory1"); matches an entry in the document’s StoryList and a TextFrame’s ParentStory.' },
-    { attr: 'ParagraphStyleRange@AppliedParagraphStyle', type: 'ParagraphStyle id', support: 'supported', note: 'The paragraph style for this range; resolved against Styles.xml. Also the layer the cascade falls through to.' },
-    { attr: 'CharacterStyleRange@AppliedCharacterStyle', type: 'CharacterStyle id', support: 'supported', note: 'The character style for this run; local attributes on the range override it.' },
-    { attr: 'Content', type: 'text', support: 'supported', note: 'The literal characters. A sibling <Br/> is a forced line break within the paragraph; a new <ParagraphStyleRange> starts a new paragraph.' },
-    { attr: 'StoryDirection', type: 'Horizontal | VerticalWritingDirection', support: 'parsed-not-rendered', note: 'CJK vertical-text flag. Captured; the layout does not yet honour vertical writing.' },
-  ]}
-/>
+Every page item has a `Self` id, an `ItemTransform` and its outline in
+`<Properties><PathGeometry>`. Most also carry a `Name` (the name shown in the Layers
+panel), `ItemLayer` (the layer it sits on), `Visible` and `Locked`, and an
+`AppliedObjectStyle`. A text frame adds the text links:
 
-## How the Self ids tie back to the design map
+- `ParentStory` names the story whose text flows into the frame;
+- `PreviousTextFrame` and `NextTextFrame` name the frames before and after it in the
+  thread, or `n` at either end;
+- a `TextFramePreference` child holds its columns, insets and auto-sizing.
 
-The design map's `StoryList` is just a list of story ids; each id should have a
-matching `idPkg:Story` whose `src` names the file, and the parser derives the
-story's `Self` id back from that file name (`Stories/Story_ustory1.xml` →
-`ustory1`). The same id appears again as a frame's `ParentStory` in some spread.
-That triple — listed in the manifest, named on a frame, carried on the story
-element — is what places a story's text on a page. Following those ids from part
-to part is the subject of [how the parts reference each other](/docs/idml/package-anatomy/how-parts-reference).
+A rectangle, oval or polygon can contain another item, as InDesign's Paste Into does: an
+image, a group, or a text frame, clipped by the host's path. The element types are covered
+in [page item types](/docs/idml/frames-paths/page-item-types) and
+[text frames](/docs/idml/frames-paths/text-frames).
+
+> **In Paged:** text frames inside groups and inside paste-into hosts are read, with their
+> transforms composed, and are clipped by the host. A group pasted into a host is not yet
+> read. <SupportBadge feature="frames-paths.nested-content" />
+
+## `MasterSpreads/MasterSpread_<id>.xml`: master pages
+
+A master spread has the same shape as a spread: one `<MasterSpread>` with `<Page>`
+children and page items. Body pages apply it by naming its id in `AppliedMaster`, and its
+items appear on every page that applies it unless the page overrides them. A master spread
+also records its name three ways: `NamePrefix` ("A"), `BaseName` ("Master") and the `Name`
+they compose ("A-Master"). Masters are covered in
+[master spreads and overrides](/docs/idml/master-spreads-overrides).
+
+## `Stories/Story_<id>.xml`: the text
+
+A story part holds one `<Story>`: the text and its formatting, with no geometry. Its
+content is a flat sequence of `<ParagraphStyleRange>` elements, each holding
+`<CharacterStyleRange>` elements, which hold the characters:
+
+- a **`ParagraphStyleRange`** is a run of one or more paragraphs that share their paragraph
+  attributes, including `AppliedParagraphStyle`;
+- a **`CharacterStyleRange`** is a run of characters that share their character attributes,
+  including `AppliedCharacterStyle`; the font is a typed child,
+  `<Properties><AppliedFont type="string">`;
+- **`Content`** holds the characters themselves;
+- **`<Br/>`** is the paragraph mark: it ends every paragraph except the story's last,
+  inside the last character range of that paragraph;
+- a forced line break is the character U+2028 and a tab is U+0009, both inside `Content`.
+
+A new `ParagraphStyleRange` does not start a new paragraph by itself; only a `<Br/>` does.
+See [the paragraph model](/docs/idml/stories-text/the-paragraph-model) and
+[story structure](/docs/idml/stories-text/story-structure).
+
+A story's own settings, such as its orientation for vertical CJK text, are in a
+`StoryPreference` child of `<Story>`.
+
+> **In Paged:** stories are read as paragraph and character runs, with tables, anchored
+> objects and markers in place. <SupportBadge feature="package-anatomy.story-parts" />
+
+## How the ids tie back to the design map
+
+The design map's `StoryList` lists the story ids; each has an `idPkg:Story` whose `src`
+names its part, and the part's `<Story Self="…">` carries the same id. The id appears once
+more as `ParentStory` on each frame the story flows through. Listed in the manifest, named
+on a frame, carried on the story element: that triple places a story's text on a page.
+InDesign discards a story that no frame references when it opens the file.
+Following ids from part to part is the subject of
+[how the parts reference each other](/docs/idml/package-anatomy/how-parts-reference).
 
 ## Frequently asked questions
 
-**What is the difference between a spread, a master spread, and a story?**
-A *spread* part holds the pages and the page items (text frames, rectangles, and
-the like) that sit on them. A *master spread* is the template a body page inherits
-from, written in the same shape as a regular spread. A *story* holds the text and
-its formatting, with no geometry — a text frame in a spread links to a story by
-naming it in `ParentStory`.
+**What is the difference between a spread, a master spread and a story?**
+A spread holds pages and the page items placed across them. A master spread holds the
+template pages and items that body pages inherit, in the same shape. A story holds text and
+its formatting with no geometry; a text frame on a spread links to it through
+`ParentStory`.
+
+**Are page items children of a `Page`?**
+No. They are children of the `Spread`, positioned in the spread's coordinate space. Pages
+are placed in the same space by their own `ItemTransform`, and an item belongs to the page
+it lies on.
 
 **How does a `TextFrame` connect to the text it displays?**
-A `TextFrame` does not contain words; it names a story in its `ParentStory`
-attribute. The story part holds the actual text, and the frame supplies the box the
-text composes into — which is why a frame is the bridge from a spread to a story.
+It names a story in `ParentStory`. The story part holds the text; the frame supplies the
+area it is composed into, and `NextTextFrame` names the frame the text continues in.
 
-**How is a content part's `Self` id related to its file name?**
-For spreads, master spreads, and stories, the parser derives the part's `Self` id
-from its file name — `Stories/Story_ustory1.xml` yields `ustory1`, and
-`MasterSpreads/MasterSpread_umaster.xml` yields `umaster`. That id is what the
-design map's `StoryList`, a frame's `ParentStory`, and a page's `AppliedMaster`
-resolve against.
+**Is `<Br/>` a line break?**
+No. `<Br/>` is the paragraph mark: it ends a paragraph. A line break that stays inside the
+paragraph is the character U+2028 in `Content`.
+
+**What happens to a story that no frame uses?**
+InDesign drops it when it opens the file. A story only stays in the document while a frame
+(or an anchored frame inside another story) places it.

@@ -1,0 +1,66 @@
+---
+title: The .paged container
+description: A .paged file is a valid IDML package with extra parts that the design map does not name, so InDesign opens it as ordinary IDML.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+describes:
+  - package-anatomy.paged-container
+  - package-anatomy.native-model-part
+reviewed: 2026-10-11
+---
+
+**A `.paged` file is an IDML package with extra entries: rename it to `.idml` and InDesign opens it.**
+
+**In short:** IDML readers find parts through the design map, and an entry the design map
+does not name is ignored. That leaves room for a tool to store its own data inside a file
+that stays valid IDML, the private-parts idiom EPUB and OpenDocument also allow. The
+`.paged` file of the Paged editor is built this way: the full set of IDML parts, plus a
+`paged/` folder and a `manifest.json` that only Paged reads.
+
+## The layout
+
+| Entry | What it is |
+|---|---|
+| `mimetype` | The IDML media type, first and stored, exactly as in any IDML package |
+| `META-INF/`, `designmap.xml`, `Resources/`, `MasterSpreads/`, `Spreads/`, `Stories/`, `XML/` | The IDML document, complete |
+| `paged/<plugin>/…` | Data that a plugin keeps with the document |
+| `paged/core/…` | Paged's own parts, such as its document model |
+| `manifest.json` | An index of the `paged/` entries |
+
+Nothing in the design map refers to `paged/` or `manifest.json`, so any IDML reader sees an
+ordinary package. The file keeps the IDML media type rather than inventing its own: a reader
+that checks the `mimetype` entry accepts it, and Paged recognises its own files by the
+extra entries instead.
+
+## What a reader should expect
+
+- **Read it as IDML.** Every rule in this section applies to the IDML half unchanged.
+- **Expect the extras to be invisible.** InDesign ignores them on open. A tool that
+  rewrites the package from its parsed content will not keep them unless it copies unknown
+  entries through.
+- **Do not rely on the extras for content.** The IDML parts describe the whole document on
+  their own; the private parts are a convenience for the tool that wrote them.
+
+> **In Paged:** the model part `paged/core/model/document.pgm` holds the document in Paged's
+> own model, so a `.paged` file opens without an IDML import when that part is current;
+> otherwise the IDML parts are read. A `.paged` save writes both, and an `.idml` export
+> writes the IDML parts alone. See
+> [how Paged reads IDML](/docs/paged/engine/how-paged-reads-idml).
+> <SupportBadge feature="package-anatomy.paged-container" />
+
+## Frequently asked questions
+
+**Can InDesign open a `.paged` file?**
+Yes, as IDML: the package carries every IDML part, the IDML media type and a design map that
+names only IDML parts. InDesign ignores the extra entries.
+
+**Is this a different format from IDML?**
+No. It is an IDML package with additional entries. The extra parts follow a convention
+other open package formats use: anything the manifest does not name is private.
+
+**Can I store my own data in an IDML package the same way?**
+Yes, with the same caveat: other tools ignore your entries, and one that rebuilds the
+package from its parsed content will drop them. Keep everything the document needs in the
+IDML parts.
