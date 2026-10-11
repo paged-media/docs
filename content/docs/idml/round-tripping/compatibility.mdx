@@ -1,135 +1,113 @@
 ---
 title: Compatibility
-description: Compatibility is what survives an IDML round trip, what the format leaves for the application to recompute, and why our reader targets one modern DOM without version negotiation.
+description: How IDML grows between InDesign versions, how it carries documents to older versions, and what a tool that rewrites a package must keep for InDesign.
 tier: pro
 diataxis: explanation
 status: published
 owner: paged-docs
+describes: [round-tripping.idml-reserialization, plugin-publish.byte-identity-sweep, plugin-publish.save-back-defects]
+reviewed: 2026-10-11
 ---
 
-**Compatibility is the dividing line between what survives an IDML round trip and what the format hands back to the application to recompute.**
+**IDML grows by addition, travels both up and down between InDesign versions, and survives a round trip through another tool only if that tool writes back what it did not understand.**
 
-**In short:** A round trip preserves whatever the XML writes down and loses whatever
-it does not. Structural facts — page and spread geometry, text and its flow order,
-styles, colors, references — cross intact; results-of-the-moment like resolved text
-variables and the application's private working state do not. The format's version
-is data stamped into each package rather than a single dial, and the vocabulary grows
-additively as the format gains capabilities. Our reader targets one modern DOM and
-does no version negotiation — an honest limitation this page is precise about.
+**In short:** Each InDesign version can add elements and attributes; it rarely removes or
+renames them, so a newer package is mostly an older one plus extra vocabulary. A newer
+InDesign opens an older package, and IDML is also how a document goes the other way: an
+older InDesign (CS4 or later) cannot open a newer `.indd`, but it can open an IDML export.
+A tool that rewrites a package in between has to keep the parts and attributes it did not
+read, and spell what it writes the way InDesign does, or InDesign opens the result
+differently from the file that went in.
 
-A round trip preserves whatever the XML writes down and loses whatever it does not.
-That sounds obvious, but the dividing line is specific, and knowing where it falls
-is the difference between trusting a generated file and being surprised by it. This
-page draws the line in two passes: what crosses intact, and what the format hands
-back to the application to figure out for itself.
+## The vocabulary grows by addition
 
-## What survives
+A package follows the document model named by its
+[`DOMVersion`](/docs/idml/round-tripping/version-markers). When InDesign gains a feature, its
+packages gain the elements and attributes that describe it. The package layout (the
+`mimetype`, the design map, the spread, story and resource parts) has not changed since
+the first version that wrote IDML. A reader built for one version therefore finds the
+parts it knows where it expects them in files from other versions, and the parts it does
+not know are additions it can skip.
 
-The interchange form is built to let a *second* tool reconstruct the document, so
-it keeps the things reconstruction needs: the page and spread geometry, the text
-and the order it flows in, the styles and how they cascade, the colors and swatches,
-and the references that bind the parts together. Those are structural facts, written
-explicitly into the XML, and they make the full trip out and back without loss.
-[The binary-to-XML lineage](/docs/idml/foundations/binary-to-xml-lineage) explains why
-that boundary exists in the first place: the XML carries the document's structure
-and intent, deliberately not the source application's runtime memory.
+`readerVersion` in the `<?aid ?>` instruction, the producer's claim about the oldest reader
+that can open the package, is `6.0` in every InDesign-written package we have seen, whatever
+version wrote it.
 
-## What is left to the application
+## Up and down between InDesign versions
 
-Some things are recorded as *results*, not as live instructions, and the format
-trusts whoever opens the file to refresh them if it cares to. The clearest case is a
-text variable: the package stores the text the variable resolved to at the moment of
-export, not a standing order to recompute it per page. The form says "this is what
-it read then," and recomputation is the reading application's job, not the file's.
+- **Upward.** A newer InDesign opens IDML written by an older one.
+- **Downward.** An `.indd` saved by a newer InDesign does not open in an older one. Exporting
+  IDML from the newer version and opening that in the older one is the way across. What the
+  older version has no model for cannot survive the trip.
+- **Before IDML.** InDesign CS3 and earlier had their own XML interchange format, INX. IDML
+  replaced it in CS4 (version 6.0, the `readerVersion` every package names).
 
-The application's private working state is the other half of what does not survive:
-caches it rebuilds on open, undo history, selection, and editor-only bookkeeping
-never enter the XML. They are not lost in transit — they were never written down,
-because they belong to one application's session rather than to the document.
+## Books are not IDML
 
-## The format's version is data, not a site version
+An InDesign book (`.indb`) is a separate file that lists several documents. IDML describes
+one document: each document of a book exports as its own package, and nothing in a package
+records that it belongs to a book.
 
-It is tempting to read a version stamp like `DOMVersion="20.0"` as "the version of
-the software" — a single dial that everything tracks. It is not that. The format's
-version is a property *of each package*: a fact the producer wrote into the file,
-describing the revision of the format that file follows. Different files in the same
-workflow can legitimately carry different stamps.
+## What a tool that rewrites a package must keep
 
-The version is data-shaped in a deeper way, too. When the format gains a capability,
-it does so by adding new elements and attributes that older files simply do not
-contain — the container's overall shape stays put while the vocabulary grows. A
-newer package is mostly an older one plus some extra elements. That is why a reader
-can often get a long way with a file from a different vintage than it was built for:
-the parts it knows are still where it expects them, and the parts it does not know
-are additions it can skip.
+A round trip through another tool and back to InDesign preserves the document only if the
+tool:
 
-There is also a defined story for going *backwards* between application versions,
-and notably it does not run through IDML. The interchange form is the
-forward-and-sideways path; moving a document to an older application generation uses
-a separate earlier interchange format (INX) rather than IDML. That asymmetry is part
-of why "version compatibility" is not one knob — it is a set of producer-stamped
-facts plus the conventions each reader applies to them.
+- **writes back every part it did not change,** including the ones it never read: fonts,
+  preferences, tags, metadata, the XML structure in `XML/BackingStory.xml`;
+- **keeps the attributes and child elements it did not understand** on the elements it does
+  rewrite, and the order of the elements it does not move;
+- **spells what it writes the way InDesign does.** InDesign reads some properties only as
+  typed `<Properties>` children, needs `PageCount` and `BindingLocation` on every spread, and
+  does not read a missing `ItemTransform` as the identity: it places the item relative to
+  the spread's first page, so an item meant for the right-hand page of a facing spread lands
+  on the left one. The full list is on
+  [what InDesign needs to open a file](/docs/idml/package-anatomy/what-indesign-requires).
 
-## What our reader does — honestly
+Two behaviours of InDesign on opening are worth knowing because they change a package
+without anyone editing it: a story that no text frame references is discarded, and a face
+the text applies but `Resources/Fonts.xml` does not declare is reported as not available.
 
-We do not negotiate on any of it. Our parser targets one modern DOM and reads every
-package through the same path, whatever version it claims. The
-[version markers](/docs/idml/round-tripping/version-markers) are recorded and then read
-past; none of them changes how the file is parsed. In practice this works because of
-the additive shape described above — the structure we target is present in the files
-we care about — but it is a real limitation, and it is worth being precise about its
-edges.
+A tool's own reader cannot check any of this. A file that its writer produces and its
+reader accepts can still open wrong in InDesign, because both share the same assumptions.
+Only opening the file in InDesign settles it.
 
-`DOMVersion`, `featureSet`, and `readerVersion` do not branch behavior. The reader
-is version-agnostic by construction: it never reads `DOMVersion`, never decodes the
-`featureSet` bitmask, and never compares `readerVersion` against a supported floor.
-
-<SupportBadge status="parsed-not-rendered" note="Version markers are recorded but never used to select behavior — DOMVersion / featureSet / readerVersion." />
-
-There is no backward-compatibility test matrix. We do not currently maintain a
-corpus of older-vintage packages that we assert parse correctly; our fixtures are
-generated against the modern DOM we target. A file from a markedly older vintage may
-parse fine — the additive shape makes that likely — but we make no guarantee we have
-exercised it.
-
-<SupportBadge status="not-yet-parsed" note="No backward-compatibility test suite against older IDML vintages." />
-
-Multi-document constructs are not supported. A document assembled from several linked
-documents (a book) is outside what our parser and scene builder handle today; we read
-a single self-contained package, not a set of cross-linked ones.
-
-<SupportBadge status="not-yet-parsed" note="Books / linked documents — multi-document assembly is not parsed." />
-
-None of these is a claim that the file is malformed — only that our reader, today,
-treats the version markers as facts to record rather than instructions to obey, and
-scopes itself to one modern, single-document DOM.
+> **In Paged:** Paged writes IDML by patching the package it read, never by regenerating it.
+> Every entry it did not change is copied with its original compressed bytes; spreads,
+> master spreads, stories, the design map and four resource parts are rewritten by a pass
+> that replaces only the attributes and text the edit touched; a new spread or story is
+> generated as a whole part and added to the design map. Over 99 corpus packages, an
+> unedited round trip came back byte-identical: 11,876 entries, no differences. Two changes
+> are made on purpose, both to match InDesign: a story no frame references is dropped, and
+> `Fonts.xml` gains every applied face it did not declare.
+>
+> An untouched `ItemTransform` or `StrokeWeight` keeps its source spelling, a `FillTint` of
+> `-1` is kept rather than deleted, and an identity `ItemTransform` is always written, never
+> removed. (Removing it once made every save toggle the attribute, and InDesign then drew
+> the right-hand pages of a book on the left ones.) Known gaps: a removed page leaves its
+> entry behind, a master spread created in Paged is not written, and an item's hidden state,
+> a name set in Paged and text variables authored in Paged do not reach the IDML yet. Export
+> returns a list of what the format could not carry.
+>
+> A `.paged` file is a valid IDML package with Paged's own parts added under `paged/`, so
+> InDesign opens it as IDML. <SupportBadge feature="round-tripping.idml-reserialization" />
 
 ## Frequently asked questions
 
-**What survives an IDML round trip?**
-The structural facts the interchange form writes down explicitly: page and spread
-geometry, the text and the order it flows in, the styles and how they cascade, the
-colors and swatches, and the references that bind the parts together. These are what
-a second tool needs to reconstruct the document, so they make the full trip out and
-back without loss.
+**Can an older version of InDesign open IDML from a newer one?**
+Yes, back to InDesign CS4, which is the reason IDML exists alongside `.indd`. Features the
+older version has no model for are lost on the way.
 
-**What does not survive a round trip?**
-Two kinds of things. First, results recorded as values rather than live instructions
-— for example, a text variable is stored as the text it resolved to at export, not as
-a standing order to recompute it. Second, the application's private working state —
-caches, undo history, selection, and editor-only bookkeeping — which never enters the
-XML because it belongs to one session, not to the document.
+**What is INX?**
+The XML interchange format of InDesign CS3 and earlier. IDML replaced it in CS4.
 
-**Does Paged do version negotiation when reading IDML?**
-No. The parser targets one modern DOM and reads every package through the same path,
-whatever version it claims. It never reads `DOMVersion`, never decodes the
-`featureSet` bitmask, and never compares `readerVersion` against a supported floor.
-In practice this works because the format grows additively — the structure we target
-is present in the files we care about — but it is a real limitation we are precise
-about.
+**Can IDML hold an InDesign book?**
+No. A book (`.indb`) is a list of documents; each document exports as its own IDML
+package, and the package does not record the book.
 
-**Can Paged open a book or multi-document project?**
-No. A document assembled from several linked documents — a book — is outside what our
-parser and scene builder handle today. We read a single self-contained package, not a
-set of cross-linked ones. This is not a claim that such a file is malformed, only
-that we scope ourselves to one modern, single-document DOM.
+**Why does a package written by my tool open differently in InDesign than in my tool?**
+Usually because the writer relies on a default InDesign does not apply: a missing
+`ItemTransform` read as identity, a property written as an attribute that InDesign reads
+only as a typed child, a spread without `PageCount`. Your reader shares the writer's
+assumptions, so only InDesign shows the difference. See
+[what InDesign needs to open a file](/docs/idml/package-anatomy/what-indesign-requires).

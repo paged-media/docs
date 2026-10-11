@@ -1,126 +1,106 @@
 ---
 title: Version markers
-description: Version markers are the two stamps that declare an IDML package's vintage — the <?aid?> processing instruction and Document@DOMVersion — and how much of each our parser acts on.
+description: The <?aid ?> processing instruction and the DOMVersion attribute — what each field names, and the values InDesign writes in real packages.
 tier: pro
 diataxis: reference
 status: published
 owner: paged-docs
+describes: [package-anatomy.core-import, plugin-publish.idml-exporter]
+reviewed: 2026-10-11
 ---
 
-**Version markers are the two stamps a package writes to declare its vintage: the `<?aid?>` processing instruction and the `Document@DOMVersion` attribute.**
+**A package declares its vintage twice: an `<?aid ?>` processing instruction at the top of `designmap.xml`, and a `DOMVersion` attribute on the root element of every part.**
 
-**In short:** Every IDML package records which format revision it follows and which
-application build wrote it, and it does so in two places at the very top of the
-design map. The `<?aid?>` processing instruction carries pseudo-attributes like
-`readerVersion`, `featureSet`, and `product`; the root `Document` element carries
-`DOMVersion`. This page names each field and is precise about one thing: our parser
-reads all of them and branches on none of them.
-
-A package declares its vintage in two places, both at the very top of the design
-map. The first is a processing instruction; the second is an attribute on the root
-element. Together they say which format revision the package follows and which
-application build wrote it. Open the design map of any real document and they are
-the first two lines you meet.
+**In short:** The `<?aid ?>` instruction sits between the XML declaration and the
+`Document` element of `designmap.xml`. Of its five pseudo-attributes, only `product`
+varies between files: it names the InDesign build that wrote the package, such as
+`20.0(32)`. `DOMVersion` names the revision of InDesign's document model the package
+follows, such as `20.0`, and the same value is repeated on the root element of every part.
+It tracks the application's major and minor version, but does not change with every
+point release.
 
 <ExampleEmbed example="two-stories">
-  The first two lines of a real design map: the <code>{`<?aid?>`}</code> processing instruction, then the <code>Document</code> element carrying <code>DOMVersion</code>.
+  The top of a design map: the XML declaration, the `<?aid ?>` instruction, then the
+  `Document` element carrying `DOMVersion`.
 </ExampleEmbed>
 
-## The `<?aid?>` processing instruction
+## The `<?aid ?>` processing instruction
 
-Before the root element, the design map carries a processing instruction whose
-target is `aid`. It is a sibling of the XML declaration, not an element, so it has
-no attributes in the XML sense — it is a single pseudo-attribute string the
-application parses itself. An application's IDML reader treats this instruction as
-mandatory: a package without it is rejected as an unrecognized format even when the
-archive is otherwise well-formed and the `DOMVersion` is correct.
+A processing instruction is not an element. Its target here is `aid`, and its content is a
+string of `name="value"` pairs that look like attributes but are parsed by the application,
+not by an XML parser. It appears only in `designmap.xml`.
 
-<AttrTable
-  element="<?aid …?> (pseudo-attributes)"
-  rows={[
-    { attr: 'style', type: 'integer (e.g. "50")', support: 'parsed-not-rendered', note: 'The IDML format style marker. We read past it; we do not branch on its value.' },
-    { attr: 'type', type: '"document" (vs. snippet / story)', support: 'parsed-not-rendered', note: 'Declares this is a top-level document rather than a fragment.' },
-    { attr: 'readerVersion', type: 'string (e.g. "6.0")', support: 'parsed-not-rendered', note: 'The minimum reader version the producer says is needed. We do not gate parsing on it.' },
-    { attr: 'featureSet', type: 'integer bitmask (e.g. "257")', support: 'parsed-not-rendered', note: 'A bitmask of features the document uses. We do not decode or act on it.' },
-    { attr: 'product', type: 'string (e.g. "20.0(32)")', support: 'parsed-not-rendered', note: 'The exporting application build. Informational.' },
-  ]}
-/>
+| Pseudo-attribute | Value in InDesign's packages | Meaning |
+|---|---|---|
+| `style` | `50` | The style of the processing-instruction syntax. |
+| `type` | `document` | The file is a whole document. Snippets and assignment files use other values (see [companion formats](/docs/idml/companion-formats/the-companion-formats)). |
+| `readerVersion` | `6.0` | The oldest reader the producer says can open the package. |
+| `featureSet` | `257` | A number identifying the set of features the package was written for. |
+| `product` | for example `20.0(32)` | The InDesign version and build that wrote the package. |
 
-`readerVersion` is a *floor*: the producer's claim about the oldest reader that can
-make sense of the package. `featureSet` is a *bitmask*: a compact record of which
-optional capabilities the document actually exercises, so a reader can in principle
-tell at a glance whether it will hit something it cannot handle. `product` is the
-exact application build that exported the file, useful as a forensic breadcrumb.
+Across the 271 InDesign-written packages in our corpus, written by InDesign versions 6.0
+to 21.2, `style`, `type`, `readerVersion` and `featureSet` never vary. `readerVersion="6.0"`
+points at InDesign CS4 (version 6.0), the first version that wrote IDML. `product` is the
+field that tells files apart.
 
-Our parser does none of that gating. It reads the design map straight through to
-the parts it needs and never decodes `featureSet` or compares `readerVersion`
-against anything. The one processing instruction the parser *does* interpret is a
-different one entirely — the `<?ACE?>` markers inside story content that stand in
-for auto page numbers — handled in `core/crates/paged-parse/src/story.rs`. The
-`<?aid?>` instruction on the design map is read past, not acted on.
+## `DOMVersion`
 
-<SupportBadge status="parsed-not-rendered" note="<?aid?> fields are present and read past; no field changes parsing behavior." />
+`DOMVersion` is an attribute on the root element of a part: on `Document` in
+`designmap.xml`, and on `idPkg:Spread`, `idPkg:Story`, `idPkg:Graphic`, `idPkg:Styles` and
+every other part's root. In every InDesign-written package of our corpus, all parts carry the same value as
+the design map. The `META-INF/` files are not IDML parts and carry none.
 
-## `Document@DOMVersion`
+<AttrTable element="Document" attrs={['DOMVersion']} />
 
-The root `Document` element carries a `DOMVersion` attribute naming the scripting
-DOM revision the package follows — for example `20.0`. This is the canonical
-"which version of the format" stamp, distinct from the application `product` build
-in the processing instruction above it.
+`DOMVersion` names the revision of the document model, which is what decides which elements
+and attributes can appear. It follows `product`'s major and minor version, but a point
+release of InDesign does not always raise it:
 
-<AttrTable
-  element="Document"
-  rows={[
-    { attr: 'DOMVersion', type: 'string (e.g. "20.0", "13.1")', support: 'parsed-not-rendered', note: 'The format/DOM revision the package targets. Present on the root Document. Our parser does not branch on it — see below.' },
-  ]}
-/>
+| `product` | `DOMVersion` |
+|---|---|
+| `20.0(32)` | `20.0` |
+| `20.1(71)` | `20.0` |
+| `17.2(105)` | `17.0` |
+| `16.4(54)` | `16.2` |
+| `13.1(76)` | `13.1` |
+| `6.0(352)` | `6.0` |
 
-This is the same attribute documented on the root element in
-[the design map](/docs/idml/package-anatomy/the-design-map). It is worth seeing in both
-places: there it is one of the document's identity attributes; here it is the
-version stamp that a version-aware reader would key off.
+In the corpus, `DOMVersion` ranges from `6.0` to `21.2`. The commonest value is `11.4`
+(InDesign CC 2015), followed by `20.0` (InDesign 2025).
 
-## What our parser does with all of this
+## Reading the markers
 
-It reads them and moves on. There is no version branch anywhere in the parse path:
-`core/crates/paged-parse/src/designmap.rs` extracts the document's identity, color
-settings, layers, and part references from the `Document` element, but it never
-reads `DOMVersion`, and the design-map parser never inspects the `<?aid?>`
-instruction at all. The reader targets one modern DOM and applies the same logic to
-every package, whatever vintage it claims.
+To find out which InDesign wrote a file, read `product` from the `<?aid ?>` instruction:
+it is the only marker that names the exact build. To find out which vocabulary to expect,
+read `DOMVersion`. The steps, with a downloadable sample, are on
+[read which InDesign version wrote a file](/docs/idml/cookbook/read-the-indesign-version).
 
-You can see that this is intentional rather than accidental: our own fixtures stamp
-`DOMVersion="20.0"`, while parser-level test fixtures in `core` deliberately carry
-`DOMVersion="13.1"`, and both parse through the identical code path with no
-special-casing. The markers are recorded facts about a package's origin; they are
-not switches that change how we read it. The consequences of that choice — and
-where it could bite — are the subject of [compatibility](/docs/idml/round-tripping/compatibility).
+A writer generating a package from scratch should stamp a `DOMVersion` it actually follows
+on every part and an `<?aid ?>` instruction in `designmap.xml`, copying an InDesign export
+of that version.
+
+> **In Paged:** the importer reads `DOMVersion` from the design map and keeps it. The writer
+> stamps it on every part it generates (new spreads and stories) and records it as
+> `domVersion` in a `.paged` file's manifest; a document with no `DOMVersion` gets `20.0`.
+> The `<?aid ?>` instruction is copied with the design map and not interpreted. Neither
+> marker changes how a package is read. <SupportBadge feature="plugin-publish.idml-exporter" />
 
 ## Frequently asked questions
 
 **Where does an IDML package declare its version?**
-In two places, both at the top of the design map. The `<?aid?>` processing
-instruction sits before the root element and carries pseudo-attributes such as
-`readerVersion`, `featureSet`, and `product`; the root `Document` element carries
-the `DOMVersion` attribute. Together they say which format revision the package
-follows and which application build wrote it.
+In two places: the `<?aid ?>` processing instruction near the top of `designmap.xml`,
+whose `product` names the InDesign build, and the `DOMVersion` attribute, which is on the
+root element of `designmap.xml` and repeated on the root element of every other part.
 
-**What is the `<?aid?>` processing instruction?**
-It is a processing instruction whose target is `aid`, sitting as a sibling of the
-XML declaration before the root element. Because it is not an element, it has no XML
-attributes — instead it holds a single pseudo-attribute string the application parses
-itself. An application's IDML reader treats it as mandatory: a package missing it is
-rejected as an unrecognized format even when the archive is otherwise well-formed.
+**What is the difference between `product` and `DOMVersion`?**
+`product` is the exact InDesign build that wrote the file, such as `20.1(71)`.
+`DOMVersion` is the revision of the document model the file follows, such as `20.0`. A point
+release of InDesign often keeps the previous `DOMVersion`, so the two can differ.
 
-**Does Paged's parser branch on `DOMVersion` or `featureSet`?**
-No. There is no version branch anywhere in the parse path. The design-map parser in
-`core/crates/paged-parse/src/designmap.rs` extracts identity, color settings, layers,
-and part references but never reads `DOMVersion`, and it never inspects the `<?aid?>`
-instruction at all. The reader targets one modern DOM and applies the same logic to
-every package, whatever vintage it claims.
+**Do `readerVersion` and `featureSet` change between InDesign versions?**
+Not in practice. In 271 packages written by InDesign 6.0 through 21.2 they are always
+`readerVersion="6.0"` and `featureSet="257"`.
 
-**Is `<?aid?>` the only processing instruction Paged interprets?**
-No — but it is *not* one Paged acts on. The instruction the parser does interpret is
-a different one entirely: the `<?ACE?>` markers inside story content that stand in
-for auto page numbers, handled in `core/crates/paged-parse/src/story.rs`. The
-`<?aid?>` instruction on the design map is read past, not acted on.
+**Does every part carry a `DOMVersion`?**
+Every IDML part does, on its root element, and in InDesign's packages the value is the same
+in all of them. The files in `META-INF/` are container files, not IDML parts, and carry none.
