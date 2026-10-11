@@ -1,0 +1,79 @@
+---
+title: Scripting with Claude
+description: Claude writes and runs paged.* scripts for you — in the Script panel, the AI Assistant, File ▸ New from a brief, and the paged CLI — and scripts can ask Claude for text.
+tier: intermediate
+diataxis: how-to
+status: draft
+owner: paged-docs
+reviewed: "2026-10-11"
+---
+
+**In short:** paged uses Claude (the `claude-haiku-5-5` model) to write `paged.*` scripts from
+plain-language requests. Claude writes a script, paged runs it, Claude reads what happened
+(errors, the console output, stories whose text no longer fits) and corrects until the request is
+done. Every script it runs is an ordinary script: you can read it, edit it and undo it.
+
+## In the editor
+
+**Script panel.** Type a request into **Ask Claude** at the top of the Script panel
+(**Window ▸ Script**), for example *"make every heading 24 pt and dark blue"*. The scripts
+Claude runs appear in the editor and in the log; its summary appears when it is done. Press
+**Stop** to end a run early. Each write is an undo step, like a script you run yourself.
+
+**AI Assistant.** The card at the bottom of the Properties panel describes the document's
+problems — overset text, low-resolution or missing images, missing fonts — without calling
+Claude. Click a suggestion, or type a request, and Claude makes that one change to the current
+selection. **Undo** reverts exactly Claude's change; it refuses once you have edited the
+document since, so it never undoes your own work.
+
+**Command palette.** A request typed into the palette (**Cmd+K**) offers **Ask Claude**, which
+hands it to the Script panel.
+
+**File ▸ New from a brief…** Describe a document and pick a page size; Claude builds it in a
+new document, styles and colours first, then page by page, checking each page as it goes.
+
+In the browser the editor never holds an API key: requests go to its own server, which adds
+the key and limits how much the deployment spends. A deployment without that service shows
+*AI unavailable*.
+
+## From the command line
+
+The `paged` CLI from `@paged-media/cli` runs the same loop against a document file, with your
+own credential (`ANTHROPIC_API_KEY`):
+
+```bash
+# change an existing document
+paged ai flyer.paged "shorten the body copy so nothing is overset" -o flyer-fixed.paged
+
+# build a new document from a brief
+paged ai --new a4 "a two-page spring catalogue for a tea shop" -o catalogue.paged --font Inter.ttf
+```
+
+`--verbose` prints each script and its result as it runs. Pass a font with `--font` when
+building from a blank page: without one, text is not laid out, so overset text cannot be
+measured.
+
+## Asking Claude from a script
+
+A script can ask Claude for text through the typed command `paged.ai.complete`. Like every
+host call from a script, it returns a promise of JSON text:
+
+```js
+const headline = JSON.parse(await paged.invoke("paged.ai.complete", {
+  prompt: "A four-word headline for a spring sale at a tea shop",
+}));
+const story = JSON.parse(paged.stories())[0].selfId;
+paged.insertText(story, 0, headline);
+```
+
+The editor answers it through its server; the CLI with your credential. A host allows 20 calls a
+minute; a declined request rejects with an error whose message starts with `refused`.
+
+## What Claude knows
+
+Claude is given the same reference this documentation is generated from: every
+[host function](/docs/paged/scripting/host-functions), the address grammar, the
+[settable property paths](/docs/paged/scripting/settable-paths) and the
+[constraints](/docs/paged/scripting/constraints), plus a short guide to how a paged document is
+built. It looks up a property's exact type before using one, and can render a page to check the
+layout.
