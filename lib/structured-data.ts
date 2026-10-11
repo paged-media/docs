@@ -12,6 +12,7 @@
  */
 import { site, SITE_ID } from '@/lib/site';
 import type { Tier } from '@/lib/frontmatter';
+import type { GlossaryTerm } from '@/lib/glossary';
 
 const BASE = site.origin;
 
@@ -69,8 +70,10 @@ export function buildJsonLd(opts: {
   tier?: Tier;
   crumbs: BreadcrumbCrumb[];
   faq: FaqPair[];
+  /** Glossary pages: the terms, emitted as a schema.org DefinedTermSet. */
+  terms?: GlossaryTerm[];
 }): object {
-  const { title, description, url, dateModified, tier, crumbs, faq } = opts;
+  const { title, description, url, dateModified, tier, crumbs, faq, terms } = opts;
   const graph: object[] = [];
 
   graph.push({
@@ -111,6 +114,24 @@ export function buildJsonLd(opts: {
         '@type': 'Question',
         name: p.q,
         acceptedAnswer: { '@type': 'Answer', text: p.a },
+      })),
+    });
+  }
+
+  if (terms && terms.length) {
+    const setId = `${BASE}${url}#terms`;
+    graph.push({
+      '@type': 'DefinedTermSet',
+      '@id': setId,
+      name: title,
+      url: `${BASE}${url}`,
+      hasDefinedTerm: terms.map((t) => ({
+        '@type': 'DefinedTerm',
+        '@id': `${BASE}${url}#${t.id}`,
+        name: t.name,
+        description: t.description,
+        url: `${BASE}${url}#${t.id}`,
+        inDefinedTermSet: { '@id': setId },
       })),
     });
   }

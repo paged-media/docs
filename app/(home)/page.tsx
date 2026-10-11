@@ -19,6 +19,18 @@ export const metadata: Metadata = {
  * grid. The copy comes from HOME[SITE_ID]; the layout is shared. The masthead +
  * WIP banner come from the layout; the colophon footer follows via SiteFooter.
  */
+/**
+ * The IDML site opens on questions instead of reader tiers: each is a thing
+ * people come to the format asking, answered by one chapter.
+ */
+const QUESTIONS: [icon: string, question: string, answer: string, href: string][] = [
+  ['package', 'What’s inside a package?', 'The ZIP container, the design map, and the parts it names.', '/docs/idml/package-anatomy'],
+  ['story', 'How is text stored?', 'Stories as style runs, paragraph marks, and the frames that show them.', '/docs/idml/stories-text/story-structure'],
+  ['spread', 'Where do things sit on the page?', 'Spread coordinates, transforms, bounds and paths.', '/docs/idml/geometry-coordinates'],
+  ['xml', 'What does this element mean?', 'Every element and attribute, with counts from real documents.', '/docs/idml/reference'],
+  ['search', 'What is in my file?', 'Open an .idml file in the browser and walk its parts. Nothing is uploaded.', '/docs/idml/tools/inspector'],
+];
+
 const TIERS: [icon: string, name: string, numeral: string, desc: string][] = [
   ['tierBeginner', 'Beginner', 'I', 'Plain-language explanations. Start here if IDML or paged media is new to you.'],
   ['tierIntermediate', 'Intermediate', 'II', 'Working knowledge — package structure, stories, styles, and how pages compose.'],
@@ -162,7 +174,44 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* READER TIERS */}
+      {/* QUESTIONS — the IDML site's entry points */}
+      {SITE_ID === 'idml' ? (
+        <section style={{ background: 'var(--color-paper-soft)', borderTop: '1px solid var(--color-rule)', borderBottom: '1px solid var(--color-rule)' }}>
+          <div style={{ maxWidth: 1320, margin: '0 auto', padding: 'var(--space-7) var(--space-6)' }}>
+            <div style={{ maxWidth: '44ch', marginBottom: 'var(--space-6)' }}>
+              <div className="section-label" style={{ color: 'var(--color-accent)', marginBottom: 'var(--space-3)' }}>
+                Start from a question
+              </div>
+              <h2 className="section-title" style={{ fontSize: 'clamp(26px, 3vw, 40px)', margin: 0 }}>
+                What do you need to know?
+              </h2>
+            </div>
+            <div className="start-grid">
+              {QUESTIONS.map(([icon, question, answer, href]) => (
+                <Link key={href} href={href} className="start-card">
+                  <Pic name={icon} size={22} color="var(--color-ink-soft)" />
+                  <h3
+                    style={{
+                      fontFamily: 'var(--font-text-serif)',
+                      fontWeight: 650,
+                      fontSize: 22,
+                      letterSpacing: '-0.02em',
+                      color: 'var(--color-ink)',
+                      margin: 'var(--space-3) 0 var(--space-2)',
+                    }}
+                  >
+                    {question}
+                  </h3>
+                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14.5, lineHeight: 1.5, color: 'var(--color-ink-soft)', margin: 0 }}>
+                    {answer}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : (
+        <>
       <section style={{ background: 'var(--color-paper-soft)', borderTop: '1px solid var(--color-rule)', borderBottom: '1px solid var(--color-rule)' }}>
         <div style={{ maxWidth: 1320, margin: '0 auto', padding: 'var(--space-7) var(--space-6)' }}>
           <div style={{ maxWidth: '44ch', marginBottom: 'var(--space-6)' }}>
@@ -210,6 +259,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+        </>
+      )}
 
       {/* WHERE TO BEGIN */}
       <section style={{ maxWidth: 1320, margin: '0 auto', padding: 'var(--space-7) var(--space-6) var(--space-8)' }}>

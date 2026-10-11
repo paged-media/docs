@@ -8,6 +8,7 @@ import { RelatedAcrossPillars } from '@/components/mdx/related-across-pillars';
 import { JsonLd } from '@/components/json-ld';
 import { pageRobots, canonicalPath, OG_IMAGE } from '@/lib/metadata';
 import { buildJsonLd, parseFaq, type BreadcrumbCrumb } from '@/lib/structured-data';
+import { parseGlossary } from '@/lib/glossary';
 import { getChapterCrosslink } from '@/lib/generated';
 import { site, SITE_ID } from '@/lib/site';
 import type { Tier, Diataxis, Status } from '@/lib/frontmatter';
@@ -47,6 +48,8 @@ export default async function Page(props: PageProps) {
     tier: page.data.tier as Tier,
     crumbs: breadcrumbs(params.slug, page.data.title, page.url),
     faq: parseFaq(processed),
+    // The glossary's entries become a DefinedTermSet (lib/glossary.ts).
+    terms: params.slug.length === 1 && params.slug[0] === 'glossary' ? parseGlossary(processed) : undefined,
   });
 
   return (

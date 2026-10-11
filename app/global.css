@@ -190,6 +190,16 @@ h1 {
   margin-bottom: var(--space-3);
 }
 
+/* Glossary entries carry an anchor (rehypeGlossaryAnchors): clear the sticky
+   header when one is the target, and mark the targeted entry. */
+.prose .paged-term {
+  scroll-margin-top: 6rem;
+}
+.prose .paged-term:target {
+  background: var(--color-paper-soft);
+  box-shadow: -8px 0 0 var(--color-paper-soft), 8px 0 0 var(--color-paper-soft);
+}
+
 /* =============================================================================
    Card list — navigation bullet lists (marked by rehypeCardList) rendered as
    the brand "where to begin" card grid: a 2px ink top rule, a serif card head

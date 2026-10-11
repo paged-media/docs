@@ -24,7 +24,7 @@
     },
     {
       "lines": "8-9",
-      "note": "Each GradientStop references a Color by StopColor and places it with Location, a percentage 0..100 along the gradient. Midpoint (13..87) biases where the halfway blend sits between this stop and the next."
+      "note": "Each GradientStop references a Color by StopColor and places it with Location, a percentage 0..100 along the gradient. Midpoint (13..87) places the halfway blend in the segment BEFORE this stop, between the previous stop and this one; on the first stop it has no segment to act on."
     },
     {
       "lines": "5-6",

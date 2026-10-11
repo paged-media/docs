@@ -1,6 +1,6 @@
 ---
 title: Glossary
-description: An A–Z glossary of the IDML terms used across this reference, each defined in a sentence or two and linked to the page that covers it in full.
+description: An A–Z glossary of IDML terms, each defined in a sentence or two, with a stable link and a pointer to the page that covers it in full.
 tier: beginner
 diataxis: reference
 status: published
@@ -17,8 +17,9 @@ reviewed: 2026-10-11
 **In short:** The rest of this reference defines each construct where it lives, in
 context and at length. This page is the fast lane: an A–Z list of the format terms you
 will meet elsewhere, each with a one- or two-sentence definition and a link to the page
-that covers it properly. The definitions are our own, written from files we build and
-from what InDesign does with them. Element and attribute names (the `CamelCase` ones) are
+that covers it properly. Each entry has its own link, `/glossary#<term>` (for example
+`#domversion` or `#br`), for pointing at one definition. The definitions are our own,
+written from files we build and from what InDesign does with them. Element and attribute names (the `CamelCase` ones) are
 facts of the format and are used as written.
 
 ## A
@@ -27,12 +28,12 @@ facts of the format and are used as written.
 `FontStyle` such as "Bold". InDesign reads it only as a typed property,
 `<Properties><AppliedFont type="string">`, and binds it through the faces declared in
 `Fonts.xml`. See
-[/docs/idml/typography/fonts-and-faces](/docs/idml/typography/fonts-and-faces).
+[fonts and faces](/docs/idml/typography/fonts-and-faces).
 
 **anchored object** — A page item (a frame, a shape, an image) attached to a
 position *inside* the text so it travels with the words around it instead of
 floating at fixed page coordinates. See
-[/docs/idml/anchored-inline-objects/anchored-objects](/docs/idml/anchored-inline-objects/anchored-objects).
+[anchored objects](/docs/idml/anchored-inline-objects/anchored-objects).
 
 **AppliedMaster** — The attribute on a `Page` naming the master spread it inherits
 from, by the master's `Self` id. See
@@ -43,12 +44,12 @@ from, by the master's `Self` id. See
 **BackingStory** — The `XML/BackingStory.xml` part: a story that holds IDML's
 tagged-XML structure tree, including any content that has been tagged but not yet
 placed on a page. See
-[/docs/idml/tagged-xml/the-structured-content-layer](/docs/idml/tagged-xml/the-structured-content-layer).
+[the structured-content layer](/docs/idml/tagged-xml/the-structured-content-layer).
 
 **BasedOn cascade** — A style can inherit from a parent named in its `BasedOn`
 attribute, so a paragraph, character, object, or table style only overrides the
 handful of properties it changes and inherits the rest up the chain. See
-[/docs/idml/styles/the-cascade](/docs/idml/styles/the-cascade).
+[the cascade](/docs/idml/styles/the-cascade).
 
 **BindingLocation** — The `Spread` attribute giving the index of the spine: `0` for a
 single page, `1` for a facing pair. InDesign needs it, with `PageCount`, on every spread.
@@ -57,7 +58,7 @@ See [what InDesign needs to open a file](/docs/idml/package-anatomy/what-indesig
 **Bookmark** — A named navigation target in the document, typically pointing at a
 text destination, that becomes a bookmark entry in exported PDF. Defined in the design
 map, after the last story reference. See
-[/docs/idml/cross-references-hyperlinks/hyperlinks-and-bookmarks](/docs/idml/cross-references-hyperlinks/hyperlinks-and-bookmarks).
+[hyperlinks & bookmarks](/docs/idml/cross-references-hyperlinks/hyperlinks-and-bookmarks).
 
 **`<Br/>`** — The paragraph mark: an element inside a `CharacterStyleRange` that ends a
 paragraph. Every paragraph except a story's last ends with one. It is not a line break.
@@ -67,47 +68,47 @@ See [the paragraph model](/docs/idml/stories-text/the-paragraph-model).
 
 **Cell** — One box in a table, sitting at a row/column position and holding its own
 text or content; cells carry their own formatting and can be styled by a
-`CellStyle`. See [/docs/idml/tables/rows-columns-cells](/docs/idml/tables/rows-columns-cells).
+`CellStyle`. See [rows, columns, and cells](/docs/idml/tables/rows-columns-cells).
 
 **CellStyle** — A named, reusable bundle of cell-level formatting (insets,
 strokes, fills, vertical alignment) applied to table cells through the style
-cascade. See [/docs/idml/styles/table-and-cell-styles](/docs/idml/styles/table-and-cell-styles).
+cascade. See [table and cell styles](/docs/idml/styles/table-and-cell-styles).
 
 **CharacterStyle** — A named, reusable set of character-level formatting (font,
 size, color, tracking) that a run can apply by reference. See
-[/docs/idml/styles/character-styles](/docs/idml/styles/character-styles).
+[character styles](/docs/idml/styles/character-styles).
 
 **CharacterStyleRange** — A run-level element inside a story: a stretch of text
 sharing one set of character properties, optionally referencing a `CharacterStyle`,
 and wrapping the `Content` that holds the actual characters. See
-[/docs/idml/stories-text/story-structure](/docs/idml/stories-text/story-structure).
+[story structure](/docs/idml/stories-text/story-structure).
 
 **Color** — A `<Color>` swatch definition in the resource palette, carrying a
 `Model` (`Process` or `Spot`), a color `Space`, and channel values; page items
 reference it by id to fill or stroke. See
-[/docs/idml/color-swatches/colors-and-swatches](/docs/idml/color-swatches/colors-and-swatches).
+[colors & swatches](/docs/idml/color-swatches/colors-and-swatches).
 
 **Column** — A vertical division of a table; columns carry width and, together with
 rows, locate each cell. See
-[/docs/idml/tables/rows-columns-cells](/docs/idml/tables/rows-columns-cells).
+[rows, columns, and cells](/docs/idml/tables/rows-columns-cells).
 
 **compound path** — A single shape made of more than one contour, so an inner loop
 can cut a hole in an outer one (a donut, a letter "O"); in IDML it is one
 `PathGeometry` with several `GeometryPathType` contours. See
-[/docs/idml/geometry-coordinates/compound-paths](/docs/idml/geometry-coordinates/compound-paths).
+[compound paths](/docs/idml/geometry-coordinates/compound-paths).
 
 **Condition** — A document-level definition of a named tag, with a visibility flag, that
 can be applied to runs of text to show or hide them as a group. InDesign writes conditions
-in the design map; a `ConditionSet` lists its members as `VisibilityPair` records. See [/docs/idml/conditional-text/conditions-and-sets](/docs/idml/conditional-text/conditions-and-sets).
+in the design map; a `ConditionSet` lists its members as `VisibilityPair` records. See [conditions and applied conditions](/docs/idml/conditional-text/conditions-and-sets).
 
 **conditional text** — Runs of text marked with one or more `Condition`s so a
 single document can hold several variants and show only the conditions currently
-visible. See [/docs/idml/conditional-text/visibility](/docs/idml/conditional-text/visibility).
+visible. See [visibility resolution](/docs/idml/conditional-text/visibility).
 
 **Content** — The leaf element inside a `CharacterStyleRange` that carries the
 literal characters of a story, including tabs (U+0009) and forced line breaks (U+2028).
 See
-[/docs/idml/stories-text/story-structure](/docs/idml/stories-text/story-structure).
+[story structure](/docs/idml/stories-text/story-structure).
 
 **ContentType** — The page-item attribute that says what a frame holds: `TextType` for a
 text frame, `GraphicType` for a frame holding an image, `Unassigned` for an empty shape.
@@ -115,27 +116,29 @@ See [page item types](/docs/idml/frames-paths/page-item-types).
 
 **continuous media** — The web's model of content: an endlessly reflowing canvas
 with no fixed page boundaries, the opposite of paged media. See
-[/docs/idml/foundations/what-is-paged-media](/docs/idml/foundations/what-is-paged-media).
+[what paged media is](/docs/idml/foundations/what-is-paged-media).
 
 **cross-reference** — A reference in the text to another place in the document (a
 heading, a paragraph) whose displayed text — often a page or chapter number — is
 derived from the target. See
-[/docs/idml/cross-references-hyperlinks/cross-references-and-index](/docs/idml/cross-references-hyperlinks/cross-references-and-index).
+[cross-references & the index](/docs/idml/cross-references-hyperlinks/cross-references-and-index).
 
 ## D
 
 **designmap** — `designmap.xml`, the package's root part: it carries the `Document`
 element, the definitions that belong to the whole document (layers, sections, text
 variables, conditions, hyperlinks) and a reference to every other part. See
-[/docs/idml/package-anatomy/the-design-map](/docs/idml/package-anatomy/the-design-map).
+[the design map](/docs/idml/package-anatomy/the-design-map).
 
-**DOMVersion** — The attribute on the root `Document` naming the scripting-DOM /
-format revision the package was written for (e.g. `20.0`); every part repeats it on its
-root element. See [/docs/idml/round-tripping/version-markers](/docs/idml/round-tripping/version-markers).
+**DOMVersion** — The attribute naming the revision of InDesign's document model a package
+follows (for example `20.0`). It is on the root `Document` of the design map and repeated on
+the root element of every other part. It tracks the application's major and minor version,
+but a point release can keep the previous value. See
+[version markers](/docs/idml/round-tripping/version-markers).
 
 **drop cap** — An enlarged opening character (or characters) of a paragraph that
 hangs down across several lines, set by `DropCapCharacters` and `DropCapLines` on
-the paragraph. See [/docs/idml/typography/drop-caps-and-tabs](/docs/idml/typography/drop-caps-and-tabs).
+the paragraph. See [drop caps and tabs](/docs/idml/typography/drop-caps-and-tabs).
 
 ## E
 
@@ -149,7 +152,7 @@ the width of its band, not a blur radius.
 **FillTint** — A per-use tint percentage on a fill: it lightens the referenced swatch
 toward paper for *that* fill, independent of any named tint. `-1` means "not set", the
 same as leaving the attribute out. See
-[/docs/idml/color-swatches/gradients-and-tints](/docs/idml/color-swatches/gradients-and-tints).
+[gradients & tints](/docs/idml/color-swatches/gradients-and-tints).
 
 **forced line break** — A line break that stays inside the paragraph, written as the
 character U+2028 in `Content` (often `&#x2028;`). Compare `<Br/>`, which ends the
@@ -160,66 +163,88 @@ paragraph. See [the paragraph model](/docs/idml/stories-text/the-paragraph-model
 **GeometricBounds** — A page item's axis-aligned bounding box, given as
 `"y1 x1 y2 x2"` in its own coordinate space; it is the box, not the true outline
 (that is `PathGeometry`). See
-[/docs/idml/geometry-coordinates/geometric-bounds](/docs/idml/geometry-coordinates/geometric-bounds).
+[GeometricBounds](/docs/idml/geometry-coordinates/geometric-bounds).
 
 **GeometryPathType** — One contour (one open or closed loop) inside a
 `PathGeometry`; more than one of them makes a compound path. See
-[/docs/idml/geometry-coordinates/path-geometry](/docs/idml/geometry-coordinates/path-geometry).
+[PathGeometry](/docs/idml/geometry-coordinates/path-geometry).
 
 **Gradient** — A swatch that blends between color stops (linear or radial),
 referenced by page items as a fill or stroke. See
-[/docs/idml/color-swatches/gradients-and-tints](/docs/idml/color-swatches/gradients-and-tints).
+[gradients & tints](/docs/idml/color-swatches/gradients-and-tints).
+
+**GradientFillAngle** — The page-item attribute that turns a linear gradient fill, in degrees,
+counter-clockwise from left-to-right: at `90` InDesign draws the first stop at the bottom. A
+radial gradient is placed by `GradientFillStart` and `GradientFillLength` instead. See
+[apply a gradient fill](/docs/idml/cookbook/apply-a-gradient).
+
+**GraphicBounds** — The box of a placed picture in its own pixel space, written in the
+`<Properties>` of an `Image` as `Left`, `Top`, `Right` and `Bottom`; the image's
+`ItemTransform` maps it into the frame. See
+[place an image in a frame](/docs/idml/cookbook/place-an-image).
 
 **GraphicLine** — A page-item type that is an open path — a drawn line or open
 curve rather than a closed shape. See
-[/docs/idml/frames-paths/page-item-types](/docs/idml/frames-paths/page-item-types).
+[page-item types](/docs/idml/frames-paths/page-item-types).
 
 **Group** — A page item that contains other page items as a single movable,
 transformable unit; the group carries its own `ItemTransform` that composes with
-its children's. Its members sit on the group's layer. See [/docs/idml/frames-paths/groups](/docs/idml/frames-paths/groups).
+its children's. Its members sit on the group's layer. See [groups](/docs/idml/frames-paths/groups).
 
 ## H
 
 **Hyperlink** — A clickable region of the document (a text span or a page item)
 that points at a destination — a URL, a page, or a text anchor — and becomes a link
 in exported PDF. See
-[/docs/idml/cross-references-hyperlinks/hyperlinks-and-bookmarks](/docs/idml/cross-references-hyperlinks/hyperlinks-and-bookmarks).
+[hyperlinks & bookmarks](/docs/idml/cross-references-hyperlinks/hyperlinks-and-bookmarks).
 
 ## I
+
+**`$ID/`** — The prefix of a locale-independent key in attribute values, such as
+`ParagraphStyle/$ID/[No paragraph style]`, the default paragraph style. `$ID/` on its own is
+an empty value, as in the `Name` of an unnamed frame. See
+[malformed packages](/docs/idml/edge-cases).
+
+**ICML** — An InCopy story file (`.icml`): one story's text and styles as a single XML file,
+with no page geometry. It is a companion format, not a package. See
+[the companion formats](/docs/idml/companion-formats/the-companion-formats).
 
 **IDML** — InDesign® Markup Language: Adobe's open, XML-based interchange format for
 InDesign documents, packaged as a ZIP of human-readable XML parts that describe a
 layout's structure and intent rather than its pixels. See
-[/docs/idml/foundations/what-is-idml](/docs/idml/foundations/what-is-idml).
+[what IDML is](/docs/idml/foundations/what-is-idml).
 
 **idPkg reference** — A reference, in the `idPkg` XML namespace, from the design map
 to one of the package's separate part files (a spread, a story, the styles); it is
 how `designmap.xml` names the other parts. See
-[/docs/idml/package-anatomy/how-parts-reference](/docs/idml/package-anatomy/how-parts-reference).
+[how the parts reference each other](/docs/idml/package-anatomy/how-parts-reference).
 
 **INDD** — InDesign's native working file: a compact, proprietary, version-coupled
 binary that only InDesign fully reads — the closed counterpart to the open IDML.
-See [/docs/idml/foundations/what-is-idml](/docs/idml/foundations/what-is-idml).
+See [what IDML is](/docs/idml/foundations/what-is-idml).
 
-**ItemLayer** — The attribute on a page item naming which `Layer` it belongs to;
-the item's visibility and stacking follow that layer. See
-[/docs/idml/layers/the-layer-model](/docs/idml/layers/the-layer-model).
+**INX** — The XML interchange format of InDesign CS3 and earlier, replaced by IDML in CS4.
+See [compatibility](/docs/idml/round-tripping/compatibility).
 
 **InsetSpacing** — The distance between a text frame's edge and its text, a typed
 property of `TextFramePreference`: one value when all four sides agree, else a list in
 top, left, bottom, right order. InDesign ignores an `InsetSpacing` attribute. See
 [text frames](/docs/idml/frames-paths/text-frames).
 
+**ItemLayer** — The attribute on a page item naming which `Layer` it belongs to;
+the item's visibility and stacking follow that layer. See
+[the layer model](/docs/idml/layers/the-layer-model).
+
 **ItemTransform** — A page item's affine transform: a six-number matrix that
 positions, scales, rotates or skews the item relative to its parent's coordinate
 space. InDesign writes one on every spread, page and item, and does not read a missing
-one as identity. See [/docs/idml/geometry-coordinates/item-transform](/docs/idml/geometry-coordinates/item-transform).
+one as identity. See [ItemTransform](/docs/idml/geometry-coordinates/item-transform).
 
 ## J
 
 **Justification** — The paragraph attribute that says how lines align in the column
 (left, center, right) and whether they are justified (word spaces stretched to fill
-the line). See [/docs/idml/typography/justification-and-linebreaking](/docs/idml/typography/justification-and-linebreaking).
+the line). See [justification and line-breaking](/docs/idml/typography/justification-and-linebreaking).
 
 ## K
 
@@ -227,22 +252,26 @@ the line). See [/docs/idml/typography/justification-and-linebreaking](/docs/idml
 opportunities in a paragraph at once to minimise overall raggedness, rather than breaking
 line by line. It is the classic model for a multi-line composer such as InDesign's
 Paragraph Composer. See
-[/docs/idml/typography/justification-and-linebreaking](/docs/idml/typography/justification-and-linebreaking).
+[justification and line-breaking](/docs/idml/typography/justification-and-linebreaking).
 
 ## L
 
 **Layer** — A document-level `Layer` definition: a named, ordered plane that page
 items are assigned to, carrying visibility and print flags that gate everything on
-it. See [/docs/idml/layers/the-layer-model](/docs/idml/layers/the-layer-model).
+it. See [the layer model](/docs/idml/layers/the-layer-model).
 
 **Leading** — The vertical distance from one text baseline to the next; in IDML it
 rides on the character properties and can be a fixed value or `Auto` (a multiple of
-the type size). See [/docs/idml/typography/spacing-and-leading](/docs/idml/typography/spacing-and-leading).
+the type size). See [spacing and leading](/docs/idml/typography/spacing-and-leading).
 
 **Label** — Key-value metadata on a page or page item, written as
 `<Properties><Label><KeyValuePair Key="…" Value="…"/></Label></Properties>`. Scripts and
 plugins use it to attach their own data. See
 [content parts](/docs/idml/package-anatomy/content-parts).
+
+**LinkResourceURI** — The attribute of a `<Link>` that names a placed file. InDesign writes
+an absolute `file:` URI and does not resolve a relative one. See
+[place an image in a frame](/docs/idml/cookbook/place-an-image).
 
 ## M
 
@@ -253,27 +282,27 @@ page, as a six-number matrix; usually the identity. See
 **MasterSpread** — A reusable spread (the page template) whose items are stamped
 onto the document pages that apply it, supplying repeating furniture like running
 headers and page numbers. See
-[/docs/idml/master-spreads-overrides/master-items-and-stamping](/docs/idml/master-spreads-overrides/master-items-and-stamping).
+[master items and stamping](/docs/idml/master-spreads-overrides/master-items-and-stamping).
 
 **mimetype** — The first entry in the IDML ZIP, an uncompressed file whose contents
 identify the archive as an `application/vnd.adobe.indesign-idml-package`. See
-[/docs/idml/package-anatomy/zip-container](/docs/idml/package-anatomy/zip-container).
+[the ZIP container](/docs/idml/package-anatomy/zip-container).
 
 ## N
 
 **NextTextFrame** — The forward link in a text thread: a `TextFrame`'s attribute
 naming the `Self` id of the next frame the story continues into (`"n"` at the tail).
-See [/docs/idml/stories-text/threading-and-overset](/docs/idml/stories-text/threading-and-overset).
+See [threading and overset](/docs/idml/stories-text/threading-and-overset).
 
 ## O
 
 **ObjectStyle** — A named, reusable bundle of page-item formatting (fill, stroke,
 text-frame options, effects) applied to frames and shapes through the style cascade.
-See [/docs/idml/styles/object-styles](/docs/idml/styles/object-styles).
+See [object styles](/docs/idml/styles/object-styles).
 
 **overset** — Text that does not fit in its frame chain: the lines left over past the
 end of the last frame. The text is still in the story part; it is not shown on any page
-until the frames grow or more frames are added. See [/docs/idml/stories-text/threading-and-overset](/docs/idml/stories-text/threading-and-overset).
+until the frames grow or more frames are added. See [threading and overset](/docs/idml/stories-text/threading-and-overset).
 
 **OverrideList** — The `Page` attribute listing the master items the page has
 overridden, so the master's originals are not shown there. See
@@ -281,13 +310,13 @@ overridden, so the master's originals are not shown there. See
 
 **Oval** — A page-item type for an ellipse. It is an ellipse through its path: four
 anchors at the edge mid-points with curve handles. See
-[/docs/idml/frames-paths/page-item-types](/docs/idml/frames-paths/page-item-types).
+[page-item types](/docs/idml/frames-paths/page-item-types).
 
 ## P
 
 **Page** — One side of paper within a spread, with its own size and bounds, placed in
 the spread by its own `ItemTransform`. Items sit on the spread, not inside a page. See
-[/docs/idml/layout-model/spreads-and-pages](/docs/idml/layout-model/spreads-and-pages).
+[spreads and pages](/docs/idml/layout-model/spreads-and-pages).
 
 **PageCount** — The `Spread` attribute giving the number of pages in the spread. InDesign
 needs it, with `BindingLocation`, on every spread. See
@@ -296,12 +325,12 @@ needs it, with `BindingLocation`, on every spread. See
 **page item** — The general term for any drawable object on a spread — a
 `TextFrame`, `Rectangle`, `Oval`, `Polygon`, `GraphicLine`, `Group`, or placed
 image — each carrying its own geometry and transform. See
-[/docs/idml/layout-model/page-items-and-stacking](/docs/idml/layout-model/page-items-and-stacking).
+[page items and stacking](/docs/idml/layout-model/page-items-and-stacking).
 
 **package / UCF** — IDML is a *package*: a ZIP archive following Adobe's Universal
 Container Format conventions (a leading uncompressed `mimetype`, a `META-INF`
 folder), not a single flat file. See
-[/docs/idml/package-anatomy/zip-container](/docs/idml/package-anatomy/zip-container).
+[the ZIP container](/docs/idml/package-anatomy/zip-container).
 
 **pasteboard** — The area of a spread outside its pages. Items can lie there; they belong
 to the spread but print on no page. See
@@ -314,39 +343,43 @@ the host's path; the child is an element inside the host. See
 **paged media** — Content fixed to discrete, bounded pages with precise positions,
 flowing text, and shared styling — the world IDML describes, and the opposite of the
 web's continuous media. See
-[/docs/idml/foundations/what-is-paged-media](/docs/idml/foundations/what-is-paged-media).
+[what paged media is](/docs/idml/foundations/what-is-paged-media).
+
+**ParentStory** — The text-frame attribute naming the `Self` id of the story the frame shows.
+Every frame of a thread names the same story. See
+[text frames](/docs/idml/frames-paths/text-frames).
 
 **ParagraphStyle** — A named, reusable set of paragraph-level formatting (alignment,
 indents, spacing, leading, drop caps) that a paragraph can apply by reference. See
-[/docs/idml/styles/paragraph-styles](/docs/idml/styles/paragraph-styles).
+[paragraph styles](/docs/idml/styles/paragraph-styles).
 
 **ParagraphStyleRange** — A style run inside a story: one or more paragraphs that share
 their paragraph properties (and usually a `ParagraphStyle`), containing the
 `CharacterStyleRange` runs that make up their text. Paragraphs inside it are ended by
 `<Br/>`. See
-[/docs/idml/stories-text/story-structure](/docs/idml/stories-text/story-structure).
+[story structure](/docs/idml/stories-text/story-structure).
 
 **PathGeometry** — The element that records a page item's *actual outline* — anchor
 point by anchor point with Bézier handles — as one or more `GeometryPathType`
 contours, as distinct from its bounding box. See
-[/docs/idml/geometry-coordinates/path-geometry](/docs/idml/geometry-coordinates/path-geometry).
+[PathGeometry](/docs/idml/geometry-coordinates/path-geometry).
 
 **PathPointType** — One point on a contour: an on-curve `Anchor` plus its incoming
 (`LeftDirection`) and outgoing (`RightDirection`) Bézier control handles. See
-[/docs/idml/geometry-coordinates/path-geometry](/docs/idml/geometry-coordinates/path-geometry).
+[PathGeometry](/docs/idml/geometry-coordinates/path-geometry).
 
 **Polygon** — A page-item type that is a closed straight-edged (or freeform) shape.
-See [/docs/idml/frames-paths/page-item-types](/docs/idml/frames-paths/page-item-types).
+See [page-item types](/docs/idml/frames-paths/page-item-types).
 
 **process color** — A color built on press from the four `C`, `M`, `Y`, `K`
 process inks (`Model="Process"`); the channel values *are* the color, converted for the screen
 through the document's CMYK profile. See
-[/docs/idml/color-swatches/spot-and-process](/docs/idml/color-swatches/spot-and-process).
+[spot & process color](/docs/idml/color-swatches/spot-and-process).
 
-**`<?aid?>` processing instruction** — The instruction at the top of the design map
-whose target is `aid`; its pseudo-attributes declare the IDML format style, reader
-version, feature set and exporting application build. See
-[/docs/idml/round-tripping/version-markers](/docs/idml/round-tripping/version-markers).
+**`<?aid?>` processing instruction** — The instruction near the top of the design map
+whose target is `aid`. Its pseudo-attributes are `style`, `type`, `readerVersion`,
+`featureSet` and `product`; only `product`, the InDesign build that wrote the package, varies
+between files. See [version markers](/docs/idml/round-tripping/version-markers).
 
 **Properties** — A child element that holds an element's typed properties, each as a
 child with a `type` (`string`, `unit`, `list`, `object`, `enumeration`…). Several
@@ -358,20 +391,20 @@ properties are read by InDesign only in this form, such as `AppliedFont` and
 
 **Rectangle** — A page-item type that is a closed rectangular shape; the most common
 container for placed images. See
-[/docs/idml/frames-paths/page-item-types](/docs/idml/frames-paths/page-item-types).
+[page-item types](/docs/idml/frames-paths/page-item-types).
 
 **ResultText** — The string a `TextVariableInstance` carries: the value InDesign
 composed for that spot when the file was saved. InDesign recomputes the variable when it
 lays out the page; a reader that cannot compute it can show `ResultText`. See
-[/docs/idml/sections-numbering-variables/text-variables](/docs/idml/sections-numbering-variables/text-variables).
+[text variables](/docs/idml/sections-numbering-variables/text-variables).
 
 **Row** — A horizontal division of a table; rows carry height and, together with
 columns, locate each cell. See
-[/docs/idml/tables/rows-columns-cells](/docs/idml/tables/rows-columns-cells).
+[rows, columns, and cells](/docs/idml/tables/rows-columns-cells).
 
 **run** — One contiguous stretch of text that shares the same character formatting:
 what a `CharacterStyleRange` delimits. See
-[/docs/idml/stories-text/the-paragraph-model](/docs/idml/stories-text/the-paragraph-model).
+[the paragraph model](/docs/idml/stories-text/the-paragraph-model).
 
 ## S
 
@@ -382,41 +415,49 @@ style, prefix and marker. See
 **Self id** — The unique identifier on nearly every IDML element (its `Self`
 attribute); other elements point at it by id, which is how every cross-part reference in
 the package resolves. See
-[/docs/idml/package-anatomy/how-parts-reference](/docs/idml/package-anatomy/how-parts-reference).
+[how the parts reference each other](/docs/idml/package-anatomy/how-parts-reference).
 
 **ShowMasterItems** — The `Spread` attribute that says whether master items appear on
 the spread's pages. InDesign reads it on the spread and ignores it on a `Page`. See
 [master items and stamping](/docs/idml/master-spreads-overrides/master-items-and-stamping).
 
+**snippet** — An InDesign snippet (`.idms`): a selection of page items with the resources
+they need, as a single XML file that is placed into a document. It has no design map. See
+[the companion formats](/docs/idml/companion-formats/the-companion-formats).
+
 **Spread** — A unit of the layout holding one or more facing `Page`s and all the
 page items placed across them, in the spread's own coordinate space; in a facing spread
 the spine is at x = 0. The document is a sequence of spreads. See
-[/docs/idml/layout-model/spreads-and-pages](/docs/idml/layout-model/spreads-and-pages).
+[spreads and pages](/docs/idml/layout-model/spreads-and-pages).
 
 **spot color** — A single named ink (a PANTONE, say) mixed to a specific recipe
 (`Model="Spot"`); on screen and in process output it is shown through its alternate
 colour. See
-[/docs/idml/color-swatches/spot-and-process](/docs/idml/color-swatches/spot-and-process).
+[spot & process color](/docs/idml/color-swatches/spot-and-process).
 
 **Story** — The container that holds a body of text independent of how it is
 displayed: one `Stories/Story_*.xml` part of paragraphs and runs, referenced by the
 frames that pour it onto the page. See
-[/docs/idml/stories-text/story-structure](/docs/idml/stories-text/story-structure).
+[story structure](/docs/idml/stories-text/story-structure).
+
+**StoryList** — The `Document` attribute in the design map listing the `Self` ids of the
+document's stories; each also has an `idPkg:Story` reference to its part. See
+[the design map](/docs/idml/package-anatomy/the-design-map).
 
 **Swatch** — The general term for a named, reusable colour entry in the palette (a
 `Color`, `Tint`, `Gradient` or mixed ink) that page items reference by id. `<Swatch>` is
 also the element for the reserved swatches `None`, `Paper` and `Registration`. See
-[/docs/idml/color-swatches/colors-and-swatches](/docs/idml/color-swatches/colors-and-swatches).
+[colors & swatches](/docs/idml/color-swatches/colors-and-swatches).
 
 ## T
 
 **Table** — A grid of cells embedded in a story's text flow, organised into rows
 and columns and styled through `TableStyle` / `CellStyle`. See
-[/docs/idml/tables/the-table-model](/docs/idml/tables/the-table-model).
+[the table model](/docs/idml/tables/the-table-model).
 
 **TableStyle** — A named, reusable bundle of table-level formatting (borders,
 alternating fills, default cell styles) applied to tables through the style cascade.
-See [/docs/idml/styles/table-and-cell-styles](/docs/idml/styles/table-and-cell-styles).
+See [table and cell styles](/docs/idml/styles/table-and-cell-styles).
 
 **tab character** — A literal U+0009 inside `Content` (often `&#9;`). Where it stops is
 set by the paragraph's `TabList`, a typed property of tab-stop records. A `<Tab/>`
@@ -425,11 +466,11 @@ element is not how InDesign writes a tab. See
 
 **tagged XML** — IDML's optional structured-content layer: a tree of `<XMLElement>`
 tags (held in `BackingStory.xml`, with the tag names in `Tags.xml`) that overlays a
-custom XML structure on the document. See [/docs/idml/tagged-xml/the-structured-content-layer](/docs/idml/tagged-xml/the-structured-content-layer).
+custom XML structure on the document. See [the structured-content layer](/docs/idml/tagged-xml/the-structured-content-layer).
 
 **TextFrame** — A page item that displays text: it does not contain the text but
 references a `Story` through `ParentStory` and contributes a box for that story to
-flow into. See [/docs/idml/frames-paths/text-frames](/docs/idml/frames-paths/text-frames).
+flow into. See [text frames](/docs/idml/frames-paths/text-frames).
 
 **TextFramePreference** — The child of a text frame (or object style) that holds its
 text options: column count and gutter, `InsetSpacing`, vertical justification,
@@ -441,27 +482,27 @@ chapter number, last page number, running header, date, custom text), whose
 `VariableType` names what it computes. A story places it with a `TextVariableInstance`,
 which also stores the last composed value as `ResultText`. Page numbers are markers in
 `Content`, not variables. See
-[/docs/idml/sections-numbering-variables/text-variables](/docs/idml/sections-numbering-variables/text-variables).
+[text variables](/docs/idml/sections-numbering-variables/text-variables).
 
 **threading** — Linking text frames into a chain (via `NextTextFrame` /
 `PreviousTextFrame`) so one story flows continuously from frame to frame across the
-layout. See [/docs/idml/stories-text/threading-and-overset](/docs/idml/stories-text/threading-and-overset).
+layout. See [threading and overset](/docs/idml/stories-text/threading-and-overset).
 
 **Tint** — A named swatch that lightens a base colour toward paper: a `<Tint>` element in
 `Graphic.xml` whose `BaseColor` names the colour and `TintValue` the percentage. A
 `TintValue` on a `<Color>` does not make a tint. For a one-off percentage, see
 `FillTint`. See
-[/docs/idml/color-swatches/gradients-and-tints](/docs/idml/color-swatches/gradients-and-tints).
+[gradients & tints](/docs/idml/color-swatches/gradients-and-tints).
 
 **Tracking** — Uniform extra (or reduced) space added between characters across a
 run, measured in thousandths of an em. See
-[/docs/idml/typography/spacing-and-leading](/docs/idml/typography/spacing-and-leading).
+[spacing and leading](/docs/idml/typography/spacing-and-leading).
 
 ## U
 
 **UCF** — Universal Container Format, the ZIP-packaging convention IDML follows: a
 leading uncompressed `mimetype` entry and a `META-INF` folder so the archive is
-self-identifying. See [/docs/idml/package-anatomy/zip-container](/docs/idml/package-anatomy/zip-container).
+self-identifying. See [the ZIP container](/docs/idml/package-anatomy/zip-container).
 
 ## V
 
@@ -480,7 +521,7 @@ A **Page** is one side of paper — a single leaf with its own size and bounds. 
 **Spread** is the unit of layout that holds one or more facing pages *and* every
 page item placed across them; the document is a sequence of spreads. The
 distinction matters because items sit on the spread, not on a page: an item's
-position is in spread coordinates, and the page it belongs to is the one it lies on. See [/docs/idml/layout-model/spreads-and-pages](/docs/idml/layout-model/spreads-and-pages).
+position is in spread coordinates, and the page it belongs to is the one it lies on. See [spreads and pages](/docs/idml/layout-model/spreads-and-pages).
 
 **What is a story in IDML?**
 A **Story** is the container that holds a body of text independently of how it is
@@ -488,14 +529,14 @@ displayed — one `Stories/Story_*.xml` part made of paragraphs and runs. The te
 lives in the story; a `TextFrame` does not contain it but references it through
 `ParentStory` and supplies a box for it to flow into. One story can thread through
 several frames across the layout. See
-[/docs/idml/stories-text/story-structure](/docs/idml/stories-text/story-structure).
+[story structure](/docs/idml/stories-text/story-structure).
 
 **What does overset mean?**
 **Overset** is text that does not fit in its frame chain — the leftover lines past
 the end of the last frame. The text is still fully present in the story part, so
 nothing is lost from the document, but it appears on no page until the frames grow or
 more frames are threaded. See
-[/docs/idml/stories-text/threading-and-overset](/docs/idml/stories-text/threading-and-overset).
+[threading and overset](/docs/idml/stories-text/threading-and-overset).
 
 **Is `<Br/>` a line break?**
 No. `<Br/>` is the paragraph mark, which ends a paragraph. A line break that stays inside

@@ -29,8 +29,11 @@ as its radius. [Download the sample](/downloads/gradient-fill.idml).
    `Type="Radial"`.
 3. **Add the `<GradientStop>` children.** Each names a colour in `StopColor` and places it
    with `Location`, a percentage from `0` to `100`. The example puts `Color/Sun` at `0` and
-   `Color/Sky` at `100`. `Midpoint` moves the point where two neighbouring stops blend half
-   and half; `50` is halfway.
+   `Color/Sky` at `100`. A stop's `Midpoint` governs the blend *before* that stop: it places
+   the half-and-half point between the previous stop and this one, as a percentage of that
+   segment (`50` is halfway). In real documents a non-default midpoint therefore sits on a
+   later stop, usually the last one at `Location="100"`; the first stop's midpoint has no
+   segment to act on.
 4. **Apply it to a shape.** Set the shape's `FillColor` to the gradient's `Self` id. In the
    example the rectangle carries `FillColor="Gradient/SkySun"`.
 5. **Orient it on the shape,** not on the gradient, so one swatch can fill several shapes in
@@ -57,6 +60,8 @@ as its radius. [Download the sample](/downloads/gradient-fill.idml).
 - **Stops name colours, never values.** You cannot write `0 15 90 0` on a stop; write a
   `<Color>` swatch and name its `Self`. Editing that swatch then updates every gradient that
   uses it.
+- **Put a midpoint on the stop it leads into.** To skew the blend between two stops, set
+  `Midpoint` on the second of them, not the first.
 - **Keep stops in ascending `Location`.** Two stops are the minimum; each extra stop adds a
   band.
 - **Mind the direction of the angle.** It is easy to read `90` as "downwards", as screen
@@ -68,7 +73,8 @@ as its radius. [Download the sample](/downloads/gradient-fill.idml).
 > **In Paged:** linear and radial gradients, midpoints and `GradientFillStart` for radial
 > gradients are read and drawn. Paged currently draws `GradientFillAngle="90"` from top to
 > bottom, the opposite of InDesign; the example above shows the difference against
-> InDesign's own rendering. <SupportBadge feature="color-swatches.gradients" />
+> InDesign's own rendering. It also applies a stop's `Midpoint` to the segment after the
+> stop rather than before it. <SupportBadge feature="color-swatches.gradients" />
 
 For the palette as a whole — colours, process and spot, where swatches live — see
 [Color & swatches](/docs/idml/color-swatches).

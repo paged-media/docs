@@ -62,7 +62,7 @@ lists them.
 |---|---|---|
 | `-1` | `FillTint`, `StrokeTint` and other tint attributes | No tint override: the same as leaving the attribute out. |
 | `n` | `NextTextFrame`, `PreviousTextFrame`, other id-valued attributes | No such object: the end of a thread, an unset reference. |
-| `$ID/…` | `Name`, enumeration values, many string properties | A locale-independent key. `$ID/` on its own is an empty value, and `$ID/[No paragraph style]` names the built-in default style. |
+| [`$ID/…`](/docs/idml/glossary#id) | `Name`, enumeration values, many string properties | A locale-independent key. `$ID/` on its own is an empty value, and `$ID/[No paragraph style]` names the built-in default style. |
 | `Swatch/None` | `FillColor`, `StrokeColor` | No paint at all. |
 
 A reader that rejects these, or reads `-1` as a tint of minus one per cent, misreads

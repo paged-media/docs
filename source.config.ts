@@ -1,5 +1,6 @@
 import { defineDocs, defineConfig } from 'fumadocs-mdx/config';
 import { docsFrontmatter } from './lib/frontmatter';
+import { termId } from './lib/glossary';
 
 // This file may export ONLY collections (a fumadocs-mdx constraint). The schema,
 // enums, and types live in ./lib/frontmatter.
@@ -120,9 +121,33 @@ function rehypeCardList() {
   };
 }
 
+/**
+ * Glossary entries — paragraphs written `**Term** — definition` on a glossary
+ * page — get a stable anchor (`id`, from lib/glossary termId) so usage
+ * elsewhere can link `/docs/idml/glossary#<id>`. Only runs on glossary pages.
+ */
+function rehypeGlossaryAnchors() {
+  return (tree: HastNode, file: { path?: string; history?: string[] }) => {
+    const path = file.path ?? file.history?.[file.history.length - 1] ?? '';
+    if (!/[\\/]glossary[\\/]index\.mdx?$/.test(path)) return;
+    walk(tree, (node) => {
+      if (node.type !== 'element' || node.tagName !== 'p') return;
+      const kids = node.children || [];
+      const first = kids[0];
+      if (!first || first.type !== 'element' || first.tagName !== 'strong') return;
+      const next = kids[1];
+      if (!next || next.type !== 'text' || !/^\s*—\s/.test(next.value ?? '')) return;
+      const id = termId(textOf(first));
+      if (!id) return;
+      node.properties = { ...(node.properties || {}), id };
+      addClass(node, 'paged-term');
+    });
+  };
+}
+
 export default defineConfig({
   mdxOptions: {
-    rehypePlugins: [rehypeInShort, rehypeCardList],
+    rehypePlugins: [rehypeInShort, rehypeCardList, rehypeGlossaryAnchors],
     rehypeCodeOptions: {
       themes: { light: 'github-light', dark: 'github-dark' },
     },

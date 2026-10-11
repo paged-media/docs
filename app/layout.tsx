@@ -11,7 +11,7 @@ import {
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import { WipBanner } from '@/components/wip-banner';
 import { Analytics, GoogleAnalytics } from '@/components/analytics';
-import { site } from '@/lib/site';
+import { site, SITE_ID } from '@/lib/site';
 import { OG_IMAGE } from '@/lib/metadata';
 
 // The brand four-role type system, self-hosted by next/font (no CDN @import):
@@ -85,7 +85,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={fontVars} suppressHydrationWarning>
       <body className="flex min-h-screen flex-col">
-        <WipBanner />
+        {/* The IDML reference is a finished reference, not a build log: no banner there. */}
+        {SITE_ID !== 'idml' && <WipBanner />}
         {/* Light-only (paper): the brand ships no dark palette, so the theme
             toggle is disabled and the page is forced to the light theme. */}
         <RootProvider
