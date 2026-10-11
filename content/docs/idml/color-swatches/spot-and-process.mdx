@@ -1,128 +1,106 @@
 ---
 title: Spot & process color
-description: Why spot inks are previewed through a CMYK alternate × tint, how ICC conversion fits in, and the honest edges of what the renderer reproduces.
+description: Process and spot colours in IDML, how a spot ink is previewed through its alternate, mixed inks, overprint and colour groups.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
+describes: [color-swatches.process-spot-tint, color-swatches.overprint, color-swatches.ink-manager]
+reviewed: 2026-10-11
 ---
 
-**Process colors are built on press from C, M, Y, and K; a spot color is a single named ink the renderer can only *preview*.**
+**A process colour is printed from the cyan, magenta, yellow and black inks; a spot colour is an ink of its own, and a screen can only approximate it.**
 
-**In short:** A `<Color>` carries a `Model` that is either `Process` or `Spot`,
-and the difference is a printing one. A process color is built on press from the
-cyan, magenta, yellow, and black inks; a spot color is a single named ink — a
-PANTONE, say — mixed to a specific recipe. On a screen there is no physical ink, so
-Paged's renderer previews a spot color through its CMYK alternate, scaled by any
-swatch tint and run through ICC conversion. This page explains how that preview
-works, how ICC color management fits in, and exactly where the renderer is honest
-about the limits of what it can reproduce.
+**In short:** `Model="Process"` and `Model="Spot"` describe how a colour is printed, not how
+it looks. A process colour's appearance follows from its numbers and the document's
+[colour profiles](/docs/idml/color-swatches/colour-management). A spot colour is a separate
+ink, so a viewer previews it from the colour description the swatch carries: its alternate,
+or its Lab values. Overprint, mixed inks and colour groups build on the same palette.
 
-A `<Color>` carries a `Model` that is either `Process` or `Spot`. The difference
-is a printing one — process colors are built on press from the C, M, Y, and K
-inks, while a spot color is a single named ink (a PANTONE, say) mixed to a
-specific recipe. On a screen there is no physical ink, so the renderer has to
-*preview* a spot color. How it does that, and where the preview is honest about
-its limits, is what this page is about.
+## Process colour
 
-## Process color is the straightforward case
+A process colour is a recipe of the process inks (or, in RGB, of screen primaries). A CMYK
+process colour's `ColorValue` is the ink coverage itself: `0 100 100 0` is full magenta plus
+full yellow. To show it on screen, a viewer converts the four percentages through the
+document's CMYK profile. Without the profile, the same numbers can only be approximated.
 
-A process color names a space and its channel values, and the renderer converts
-them to what the screen shows. For CMYK that conversion is color-managed: the
-four percentages go through an ICC transform keyed to the document's CMYK
-profile. RGB and Gray convert directly. There is nothing to approximate — the
-channel values *are* the color.
+## Spot colour
 
-This is the path the [color-fill example](/docs/idml/color-swatches/colors-and-swatches#a-color-defined-and-applied)
-takes: a process CMYK red, converted and painted.
+A spot colour is printed with its own ink on its own plate: a PANTONE colour, a metallic, a
+varnish. The file cannot describe the ink physically; it carries two descriptions of how it
+looks:
 
-## Spot color is previewed through its alternate
+- **its own `Space` and `ColorValue`**, which for library spots is a Lab measurement;
+- **its alternate**, `AlternateSpace` and `AlternateColorValue`, the colour to use where the
+  ink is not printed: on screen, in a composite proof, or when the spot is converted to
+  process.
 
-A spot ink's true appearance needs a *spectral* model of the physical ink — which
-this renderer does not ship. What IDML carries instead, and what the renderer
-leans on, is the spot color's **CMYK alternate**: an `AlternateSpace="CMYK"` plus
-an `AlternateColorValue` that says "if you can't lay down the real ink, this is
-the process recipe that comes closest." The renderer always previews a spot color
-through that alternate; it deliberately does not try to interpret the spot's own
-primary `Space` (usually Lab), because doing so without a spectral model would be
-a guess dressed up as accuracy.
+InDesign shows a spot colour on screen through its alternate. Library spots in InDesign's
+files have a Lab alternate equal to their Lab values; spots defined in CMYK have a CMYK
+alternate. A tint of a spot ink scales that preview toward the paper colour while keeping it
+on the spot's plate.
 
-Two things fold into the alternate before it reaches ICC:
+InDesign's Ink Manager can also prefer the spot's Lab values over its alternate ("use
+standard Lab values for spots"); that is an output and display setting, not part of the
+swatch.
 
-1. **Swatch-level tint.** If the spot `<Color>` carries a `TintValue`, each
-   alternate channel is multiplied by `TintValue / 100`. A spot at 50% mixes
-   halfway toward paper white in CMYK — `0 100 0 0` at 50% becomes `0 50 0 0` —
-   which is how a print preview interpolates a tinted ink.
-2. **ICC conversion.** The resulting CMYK then goes through the document's CMYK
-   profile, exactly like a process CMYK color.
+> **In Paged:** a spot colour with a CMYK alternate is previewed through that alternate, run
+> through the document's CMYK profile, with any tint applied first. A spot with no CMYK
+> alternate is shown from its Lab or RGB values. An Ink Manager setting displays Lab-defined
+> spots from their Lab values instead; it changes the preview, not the plate the ink prints
+> on. <SupportBadge feature="color-swatches.process-spot-tint" /> <SupportBadge feature="color-swatches.ink-manager" />
 
-So a spot preview is, end to end: *alternate CMYK → scale by any swatch tint →
-ICC → screen*. A spot color with **no** CMYK alternate has nothing to preview
-through; the renderer cannot resolve it to a visible color and leaves it
-unresolved. <SupportBadge status="parsed-not-rendered" note="Spot color without a CMYK alternate" />
+## Mixed inks
 
-## ICC conversion and its fallback
+A mixed-ink swatch is a combination of a process colour and spot inks, or of several spot
+inks, at given percentages; a mixed-ink group generates a series of them. The format has room
+for them, but none of the 305 surveyed documents contains one.
 
-The CMYK→screen step is color management, handled by the color engine. On a
-native build it uses a real ICC engine (Little CMS) keyed to the document's
-`CMYKProfile`. In the browser — the WebGPU live preview, compiled to wasm — that
-native engine is not available, so the engine substitutes a **naive** CMYK→RGB
-approximation. It is close enough to read a layout by, but it is not
-color-accurate, and saturated or profile-sensitive colors can drift.
-<SupportBadge status="parsed-not-rendered" note="ICC color management on wasm (naive fallback)" />
+> **In Paged:** a colour with `Model="MixedInk"` is recognised and kept, but not resolved to a
+> colour for display. <SupportBadge feature="color-swatches.lab-mixed-ink" />
 
-## The honest edges
+## Overprint
 
-Several parts of IDML's color surface are part of the format and are parsed, but
-do not yet get their full rendered meaning. They are listed here so a document
-that uses them is never silently misread:
+By default an object knocks out what lies beneath it: the inks below are not printed where
+it is. Overprint keeps them, so the inks combine on the paper.
 
-- **Mixed inks and mixed-ink groups.** A `<MixedInk>` (or `MixedInkGroup`)
-  describes a swatch built from several inks at given percentages — genuinely a
-  spectral construct. The parser recognizes the model but collapses it to an
-  unhandled color rather than decomposing the inks; there is no spectral model to
-  render it faithfully. A mixed-ink fill resolves to whatever fallback the
-  surrounding code provides, not the true mix.
-  <SupportBadge status="parsed-not-rendered" note="MixedInk / MixedInkGroup (no spectral decomposition)" />
+<AttrTable element="Rectangle" attrs={['OverprintFill', 'OverprintStroke']} />
 
-- **Overprint.** `OverprintFill` / `OverprintStroke` ask that a fill mix with the
-  ink already behind it instead of knocking it out. The renderer approximates
-  this on RGB by darkening where the marks overlap; true per-separation CMYK
-  overprint is deferred.
-  <SupportBadge status="parsed-not-rendered" note="OverprintFill / OverprintStroke (RGB darken approximation)" />
+`OverprintFill` and `OverprintStroke` appear on page items and in object, paragraph and
+character styles; table cells have one per edge stroke (`TopEdgeStrokeOverprint`, …). The
+document's `OverprintBlack` preference (true in every surveyed file) makes 100 % black
+overprint on output whatever the object says. Overprint matters for print; on screen it only
+shows when a viewer simulates it.
 
-- **Color groups.** A `<ColorGroup>` organizes the palette into named families
-  ("Brand colors") for the editor. The parser keeps the grouping for round-trip,
-  but the renderer does not branch on it — a color renders the same whether or
-  not it belongs to a group.
-  <SupportBadge status="parsed-not-rendered" note="ColorGroup (organizational only)" />
+> **In Paged:** overprint is simulated per ink plate on the CPU rasteriser; elsewhere the
+> preview approximates it in RGB. <SupportBadge feature="color-swatches.overprint" />
 
-None of these change how the common case behaves: a process color or a spot color
-with a CMYK alternate previews correctly. The badges mark exactly where the
-preview stops being faithful, so you always know which side of the line a given
-document sits on.
+## Colour groups
+
+A `<ColorGroup>` is a folder in the Swatches panel ("Brand colours"). In InDesign's files the
+groups are children of `<Document>` in `designmap.xml`. Each lists its members as
+`<ColorGroupSwatch SwatchItemRef="…">` children, and each swatch points back to its entry in
+`SwatchColorGroupReference`. Groups organise the panel; they do not change any colour.
+
+> **In Paged:** colour groups are read and can be edited; rendering ignores them, as it
+> should. <SupportBadge feature="color-swatches.color-groups" />
 
 ## Frequently asked questions
 
-**What is the difference between spot and process color?**
-A process color is built on press from the four C, M, Y, and K inks; a spot color
-is a single named ink mixed to a specific recipe, such as a PANTONE. In IDML this
-shows up as a `<Color>` whose `Model` is `Process` or `Spot`.
+**What is the difference between spot and process colour?**
+A process colour is printed from the process inks; a spot colour is a separate ink on its
+own plate. In IDML the difference is the `Model` attribute on `<Color>`.
 
-**How does the renderer preview a spot color on screen?**
-Through the spot color's CMYK alternate. End to end it is: take the
-`AlternateColorValue`, scale each channel by any swatch `TintValue / 100`, then run
-the result through the document's CMYK ICC profile to reach the screen. The
-renderer deliberately does not interpret the spot's own primary space (usually
-Lab), because doing so without a spectral model would be a guess.
+**How is a spot colour shown on screen?**
+Through its alternate, `AlternateSpace` and `AlternateColorValue`. For library spots
+InDesign writes a Lab alternate equal to the spot's Lab values.
 
-**What happens to a spot color with no CMYK alternate?**
-There is nothing to preview through, so the renderer cannot resolve it to a visible
-color and leaves it unresolved.
+**Does a tint of a spot colour become a process colour?**
+No. It stays the same ink at a lower percentage and prints on the spot's plate.
 
-**Why might color look off in the browser preview?**
-On a native build, ICC conversion uses a real engine (Little CMS) keyed to the
-document's `CMYKProfile`. In the WebGPU live preview, compiled to wasm, that native
-engine is not available, so a naive CMYK→RGB approximation is substituted. It is
-close enough to read a layout by, but it is not color-accurate, and saturated or
-profile-sensitive colors can drift.
+**What do `OverprintFill` and `OverprintStroke` do?**
+They let the fill or stroke print on top of the inks beneath instead of knocking them out.
+The effect appears in print, or on screen when a viewer simulates overprint.
+
+**Do colour groups affect rendering?**
+No. A `<ColorGroup>` only organises the Swatches panel.

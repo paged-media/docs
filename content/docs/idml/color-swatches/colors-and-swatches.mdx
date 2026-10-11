@@ -1,139 +1,139 @@
 ---
 title: Colors & swatches
-description: The <Color> and <Swatch> elements — their attributes, the four color spaces, and the reserved built-ins every document carries.
+description: The IDML Color and Swatch elements, the Model, Space and ColorValue spellings InDesign writes, and the reserved swatches every document carries.
 tier: pro
 diataxis: reference
 status: published
 owner: paged-docs
+describes: [color-swatches.process-spot-tint, color-swatches.lab-mixed-ink, color-swatches.color-overrides]
+reviewed: 2026-10-11
 ---
 
-**`<Color>` holds the actual channel values; `<Swatch>` is the named handle that points at one.**
+**`<Color>` holds the channel values; `<Swatch>` is a named entry with no values of its own. Page items name either by its `Self` id.**
 
-**In short:** `<Color>` and `<Swatch>` are the two leaf entries of the IDML
-palette in `Resources/Graphic.xml`. A `<Color>` carries a color model, a color
-space, and the channel values for that space — CMYK, RGB, Lab, or Gray. A
-`<Swatch>` is a thin named wrapper that usually just references a `<Color>`. Both
-are keyed by their `Self` id, and that id is exactly what a shape or run of text
-names in its `FillColor` or `StrokeColor`. This page is the attribute-level
-reference for both, including the four color spaces and the built-ins every
-document carries.
-
-`<Color>` and `<Swatch>` are the two leaf entries of the palette in
-`Resources/Graphic.xml`. A `<Color>` holds actual channel values; a `<Swatch>`
-is a named handle that usually points at one. Both are keyed by their `Self` id,
-and that id is what a shape or run of text names in its `FillColor` /
-`StrokeColor`.
+**In short:** The palette lives in `Resources/Graphic.xml`. A `<Color>` carries a `Model`
+(process, spot or registration), a `Space` (`CMYK`, `RGB` or `LAB`) and a `ColorValue` with
+the numbers for that space. A spot colour also carries an alternate. A `<Swatch>` is an
+entry such as `Swatch/None`, the "no paint" swatch. Every document carries the same handful
+of reserved colours, marked by `ColorOverride`. Named tints are a third element, `<Tint>`,
+covered on [gradients & tints](/docs/idml/color-swatches/gradients-and-tints).
 
 ## `<Color>`
 
-A `<Color>` names a color model (`Model`), a color space (`Space`), and the
-channel values for that space (`ColorValue`). The parser reads these three plus
-the spot-color fallback attributes and ignores the editor-only bookkeeping
-(`ColorEditable`, `ColorRemovable`, `Visible`, `SwatchCreatorID`).
+<AttrTable element="Color" />
 
-<AttrTable
-  element="Color"
-  rows={[
-    { attr: 'Self', type: 'string id', support: 'supported', note: 'The lookup key, conventionally "Color/<name>". Everything that paints this color references this id.' },
-    { attr: 'Name', type: 'string', support: 'supported', note: 'Human-readable swatch name; informational for the renderer.' },
-    { attr: 'Model', type: 'Process | Spot | MixedInk', support: 'supported', note: 'Process is the default. Spot marks a named ink previewed via its CMYK alternate. MixedInk / MixedInkGroup are recognized but collapse to an unhandled model.' },
-    { attr: 'Space', type: 'CMYK | RGB | LAB | Gray', support: 'supported', note: 'Selects how ColorValue is interpreted. CMYK, RGB and Gray convert to device color; Lab is parsed but only the spot CMYK-alternate path renders it.' },
-    { attr: 'ColorValue', type: 'space-separated numbers', support: 'supported', note: 'The channels for Space: CMYK = four 0–100 percentages; RGB = three 0–255; Lab = L 0–100, a/b −128–127; Gray = one 0–100.' },
-    { attr: 'AlternateSpace', type: 'CMYK | RGB | LAB | …', support: 'supported', note: 'Color space of the fallback a spot swatch carries. The renderer previews spot colors through this when it is CMYK.' },
-    { attr: 'AlternateColorValue', type: 'space-separated numbers', support: 'supported', note: 'The fallback channels in AlternateSpace. For a CMYK alternate, four percentages.' },
-    { attr: 'TintValue', type: 'number 0–100', support: 'supported', note: 'A swatch-level tint baked into a spot color ("PANTONE 286 at 50%"). Multiplied into the CMYK alternate before conversion. −1 (Adobe’s "unset") and out-of-range values are treated as absent.' },
-    { attr: 'AlphaPercentage / Alpha', type: 'number', support: 'supported', note: 'Optional opacity on the swatch. AlphaPercentage is 0–100; a bare Alpha may be 0–100 or a 0–1 unit float. Absent ⇒ opaque.' },
-    { attr: 'ColorOverride', type: 'Normal | Specialpaper | Specialblack | …', support: 'parsed-not-rendered', note: 'Marks the reserved built-ins. The renderer keys the built-ins by name rather than branching on this attribute.' },
-    { attr: 'BaseColor', type: 'string id', support: 'not-yet-parsed', note: 'Used by <Tint> to point at the color it is a percentage of; not read off <Color> itself.' },
-  ]}
-/>
+The attributes that decide the colour are `Model`, `Space`, `ColorValue` and, for a spot
+colour, `AlternateSpace` and `AlternateColorValue`. The rest is bookkeeping for the Swatches
+panel: `Name`, `ColorEditable`, `ColorRemovable`, `Visible`, `SwatchCreatorID` and the colour
+group a swatch belongs to.
 
-### The four color spaces
+### `Model`
 
-`Space` decides what `ColorValue` means and how the color reaches the screen:
+| Value | Meaning |
+|---|---|
+| `Process` | Printed as a mix of the process inks. The model of almost every colour in real files. |
+| `Spot` | A named ink of its own, printed on its own plate. |
+| `Registration` | The reserved `Color/Registration`, which prints on every plate. |
 
-- **CMYK** — four percentages `C M Y K`, each 0–100. The primary print path; the
-  renderer sends these through ICC conversion (or a naive fallback). Pure red is
-  `0 100 100 0`.
-- **RGB** — three components `R G B`, each 0–255. Converted straight to device
-  color.
-- **Lab** — `L a b` with L in 0–100 and a/b in −128–127. Parsed and stored, but
-  the renderer only produces a visible color for Lab when it arrives through a
-  spot color's CMYK alternate. <SupportBadge feature="color-swatches.lab-mixed-ink" note="Lab as a primary space" />
-- **Gray** — one value 0–100. Rendered as an achromatic gray.
+### `Space` and `ColorValue`
+
+`Space` says how to read `ColorValue`, a space-separated list of numbers:
+
+| `Space` | `ColorValue` | Example |
+|---|---|---|
+| `CMYK` | four percentages, C M Y K, each 0 to 100 | `0 100 100 0` |
+| `RGB` | three components, R G B, each 0 to 255 | `255 0 0` |
+| `LAB` | L from 0 to 100, then a and b, which can be negative | `46.27 20 33` |
+
+InDesign spells the Lab space in capitals, `LAB`, and writes L with decimals. Of the 305
+documents surveyed for this reference, every one has CMYK colours, 77 have RGB colours and
+3 have Lab colours.
+
+### Spot colours and their alternate
+
+A spot colour describes an ink that is not made from the process inks. Besides its own
+`Space` and `ColorValue`, it carries an alternate: `AlternateSpace` and
+`AlternateColorValue`, the colour to use where the ink itself is not available. InDesign
+writes `AlternateSpace="NoAlternateColor"` with an empty `AlternateColorValue` on process
+colours. Library spots, PANTONE colours for example, come with a Lab definition and a Lab
+alternate of the same value: `PANTONE 300 C` in a surveyed file has `Model="Spot"`,
+`Space="LAB"`, `ColorValue="35.68627450980392 -10 -62"`, `AlternateSpace="LAB"` and the same
+numbers again in `AlternateColorValue`.
+
+A spot defined in CMYK carries a CMYK alternate. How a viewer shows a spot colour on
+screen is covered on [spot & process color](/docs/idml/color-swatches/spot-and-process).
+
+### `TintValue` on a colour is not a tint
+
+A named tint is written as a `<Tint>` element. A `TintValue` attribute on a `<Color>` is not
+how InDesign stores one: InDesign drops the attribute when it opens the file, and the colour
+appears at full strength. Write tints as
+[`<Tint>`](/docs/idml/color-swatches/gradients-and-tints#named-tints-the-tint-element).
+
+> **In Paged:** CMYK, RGB and Lab colours all render. A spot colour is previewed through its
+> CMYK alternate when it has one, and otherwise from its Lab or RGB values. Mixed inks are
+> recognised but not resolved to a colour. Paged also honours a `TintValue` on a `<Color>`,
+> which InDesign does not. <SupportBadge feature="color-swatches.process-spot-tint" /> <SupportBadge feature="color-swatches.lab-mixed-ink" />
 
 ## `<Swatch>`
 
-A `<Swatch>` is a named entry that the palette can reference indirectly. The
-parser captures its id, its name, and — when present — the `<Color>` it wraps, so
-a `FillColor` that names a swatch resolves through to the underlying color in one
-hop.
+<AttrTable element="Swatch" />
 
-<AttrTable
-  element="Swatch"
-  rows={[
-    { attr: 'Self', type: 'string id', support: 'supported', note: 'The lookup key, e.g. "Swatch/None".' },
-    { attr: 'Name', type: 'string', support: 'supported', note: 'The swatch name shown in the UI.' },
-    { attr: 'Color', type: 'string id', support: 'supported', note: 'Optional reference to the <Color> this swatch wraps; resolve() follows it one level.' },
-  ]}
-/>
+In InDesign's files the `<Swatch>` element is used for `Swatch/None`, the "no paint" swatch.
+A page item with `FillColor="Swatch/None"` has no fill: it is transparent there. The same
+spelling turns off a stroke. A `Color` attribute on a `<Swatch>` that names a `<Color>` makes
+the swatch an alias for that colour; one surveyed document has one.
 
-The single most-referenced swatch is `Swatch/None` — the explicit "no fill" /
-"no stroke" handle. A frame with `FillColor="Swatch/None"` is transparent there;
-it is not an error and not a color.
+## The reserved colours
 
-## The reserved built-ins
+InDesign writes the same reserved entries into every document's `Graphic.xml`. They are
+`<Color>` elements whose `ColorOverride` marks their role:
 
-A document does not have to define everything it uses. InDesign guarantees a
-fixed set of swatches and colors exist whether or not they appear in
-`Graphic.xml`, and the renderer treats them by name:
+| `Self` | `ColorOverride` | Role |
+|---|---|---|
+| `Color/Black` | `Specialblack` | Process black, 100 % K. Not editable. |
+| `Color/Paper` | `Specialpaper` | The colour of the paper. A fill of Paper covers what lies beneath it with the paper colour; it is not "no fill". |
+| `Color/Registration` | `Specialregistration` | Prints on every plate, for crop and registration marks. `Model="Registration"`. |
+| `Color/Cyan`, `Color/Magenta`, `Color/Yellow` | `Hiddenreserved` | The process primaries, hidden from the Swatches panel (`Visible="false"`). |
+| user colours | `Normal` | Everything else. |
 
-- **None** — the transparent "no paint" swatch.
-- **Paper** — the substrate color (white by default); a fill of Paper knocks out
-  to the page color, it is not literally "no fill".
-- **Black** — process black.
-- **Registration** — paints in every separation at once (for crop marks and the
-  like).
+Black and Paper appear in all 305 surveyed documents, the other reserved entries in the 271
+that InDesign wrote; the remaining files come from a generator. A reader should still resolve `Color/Black`,
+`Color/Paper` and `Swatch/None` by name when a file leaves them out.
 
-In addition, the format reserves the three hidden process primaries — Cyan,
-Magenta, and Yellow — which a document may reference but cannot redefine. Because
-these are guaranteed, an example that omits them still resolves correctly.
+> **In Paged:** the reserved swatches are recognised by their ids, so a file that omits them
+> still resolves them. <SupportBadge feature="color-swatches.color-overrides" />
 
 ## A color, defined and applied
 
-The example below adds one `<Color>` to the palette — a process CMYK red,
-`0 100 100 0` — and a rectangle whose `FillColor` names it. The rectangle has no
-text and no font; it is pure fill, so the live view renders it directly.
+The example adds one `<Color>` to the palette, a process CMYK red, `0 100 100 0`, and fills a
+rectangle with it by naming its id in `FillColor`.
 
 <ExampleEmbed example="color-fill">
-  A new CMYK swatch in Graphic.xml, applied to a rectangle by FillColor.
+  A CMYK colour defined in Graphic.xml and applied to a rectangle by FillColor.
 </ExampleEmbed>
 
-Change `ColorValue` in the palette and the rectangle's color follows, because the
-shape only ever names the swatch — the channel values live in one place.
+Change `ColorValue` and the rectangle follows: the rectangle names the colour, and the
+numbers live in one place.
 
 ## Frequently asked questions
 
-**What is the difference between a `<Color>` and a `<Swatch>`?**
-A `<Color>` carries the real channel values — a model, a space, and the numbers
-for that space. A `<Swatch>` is a named handle that usually just references a
-`<Color>`, so a `FillColor` naming a swatch resolves through to the underlying
-color in one hop. The reserved `Swatch/None` is the common exception: it wraps no
-color and means "no fill."
+**What is the difference between `<Color>` and `<Swatch>`?**
+A `<Color>` carries a model, a space and channel values. A `<Swatch>` carries no values; in
+InDesign's files it is the reserved `Swatch/None`, which means no paint.
 
-**Which color spaces does the renderer support for a `<Color>`?**
-`Space` can be CMYK, RGB, Lab, or Gray. CMYK, RGB, and Gray all convert to device
-color; CMYK is the primary print path and goes through ICC conversion. Lab is
-parsed and stored, but the renderer only produces a visible color for it when it
-arrives through a spot color's CMYK alternate.
+**How does IDML spell the Lab colour space?**
+`Space="LAB"`, in capitals, with `ColorValue` holding L, a and b, for example
+`46.27 20 33`.
 
-**What is `Swatch/None`, and is it an error?**
-`Swatch/None` is the reserved "no paint" handle. A frame with
-`FillColor="Swatch/None"` is simply transparent there — it is not an error and not
-a color, just the explicit absence of one.
+**What does `AlternateSpace="NoAlternateColor"` mean?**
+That the colour has no alternate. InDesign writes it on process colours, with an empty
+`AlternateColorValue`. Spot colours carry a real alternate, in Lab or CMYK.
 
-**Does a document have to define every color it references?**
-No. InDesign® guarantees a fixed set of built-ins exist whether or not they appear
-in `Graphic.xml` — None, Paper, Black, and Registration — and the format also
-reserves the hidden process primaries Cyan, Magenta, and Yellow. The renderer keys
-these by name, so an example that omits them still resolves correctly.
+**Can I make a tint by adding `TintValue` to a `<Color>`?**
+No. InDesign ignores that attribute and shows the colour at full strength. A named tint is a
+`<Tint>` element with `BaseColor` and `TintValue`.
+
+**Does a document have to define Black, Paper and None?**
+InDesign always writes them. A reader should resolve them by name anyway, because files
+written by other tools sometimes leave them out.

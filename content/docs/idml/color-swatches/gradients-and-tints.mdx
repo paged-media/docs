@@ -1,143 +1,142 @@
 ---
 title: Gradients & tints
-description: The <Gradient> and <GradientStop> elements, and the two ways a tint reaches a color — swatch-level TintValue and per-use FillTint.
+description: The IDML Gradient, GradientStop and Tint elements, how a shape places a gradient, and the per-use FillTint, including its -1 "no tint" sentinel.
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
+describes: [color-swatches.gradients, color-swatches.process-spot-tint, color-swatches.fill-stroke-apply]
+reviewed: 2026-10-11
 ---
 
-**A gradient blends across two or more stops; a tint is a color used at less than full strength — and neither owns any color of its own.**
+**A gradient is a swatch made of stops that point at colours; a tint is a colour at reduced strength, either as a named `<Tint>` swatch or as a `FillTint` on one object.**
 
-**In short:** In IDML, a `<Gradient>` is a blend defined by its child
-`<GradientStop>` elements, each of which *references* an existing `<Color>` in the
-palette. A tint is the same palette color used at reduced strength, and it reaches
-a painted thing two ways: as a swatch-level `TintValue` baked into a spot color,
-or as a per-use `FillTint` on the element being painted. Both gradients and tints
-build on colors already in the palette rather than introducing new channel values.
-This page is the attribute-level reference for `<Gradient>`, `<GradientStop>`, and
-the two tint paths.
-
-A gradient is a blend across two or more stops; a tint is a color used at less
-than full strength. Both build on the [colors](/docs/idml/color-swatches/colors-and-swatches)
-already in the palette — a gradient *references* existing `<Color>` swatches, and
-a tint *scales* one. Neither introduces new channel values of its own.
+**In short:** A `<Gradient>` in `Resources/Graphic.xml` has a `Type` (`Linear` or `Radial`)
+and two or more `<GradientStop>` children, each naming a colour, a `Location` and a
+`Midpoint`. The shape that uses the gradient decides its direction and extent with
+`GradientFillAngle`, `GradientFillStart` and `GradientFillLength`. A tint reaches a colour two
+ways: a named `<Tint>` swatch with `BaseColor` and `TintValue`, or a `FillTint` percentage on
+the painted object. `FillTint="-1"` means "no tint": use the swatch as it is.
 
 ## `<Gradient>`
 
-A `<Gradient>` lives in `Resources/Graphic.xml` alongside the colors and is keyed
-by its `Self` id, so a shape paints it with `FillColor="Gradient/<name>"`. The
-gradient itself carries only its kind; its colors come entirely from its child
-`<GradientStop>` elements.
+<AttrTable element="Gradient" />
 
-<AttrTable
-  element="Gradient"
-  rows={[
-    { attr: 'Self', type: 'string id', support: 'supported', note: 'The lookup key, e.g. "Gradient/SkySun". A shape’s FillColor names this.' },
-    { attr: 'Name', type: 'string', support: 'supported', note: 'The swatch name; informational.' },
-    { attr: 'Type', type: 'Linear | Radial', support: 'supported', note: 'The blend geometry. Absent or unrecognized defaults to Linear. Both kinds render.' },
-  ]}
-/>
-
-The renderer also reads two placement attributes off the *shape* the gradient is
-applied to — not off the gradient swatch — so the same gradient can sit
-differently on different shapes:
-
-<AttrTable
-  element="GradientFill* (on the shape)"
-  rows={[
-    { attr: 'GradientFillAngle', type: 'number (degrees)', support: 'supported', note: 'Direction of a linear gradient. 0° runs left→right, 90° top→bottom (IDML’s convention).' },
-    { attr: 'GradientFillLength', type: 'number (pt)', support: 'supported', note: 'Page-space length of the gradient line. Absent ⇒ the gradient spans the shape’s box.' },
-  ]}
-/>
+A shape paints a gradient by naming it, `FillColor="Gradient/SkySun"`, exactly as it names a
+colour. The gradient itself holds only its `Type` and its stops. 272 of the 305 surveyed
+documents carry at least one gradient swatch; 5 of them have a radial one.
 
 ## `<GradientStop>`
 
-Each `<GradientStop>` is a child of its `<Gradient>`. It references a color and
-places it along the blend. The parser collects the stops as it reads them and
-commits the whole list when the gradient's closing tag fires, so stop order is
-preserved.
+<AttrTable element="GradientStop" />
 
-<AttrTable
-  element="GradientStop"
-  rows={[
-    { attr: 'StopColor', type: 'string id', support: 'supported', note: 'Reference to a <Color> in the palette by its Self id. The stop has no color of its own.' },
-    { attr: 'Location', type: 'number 0–100', support: 'supported', note: 'Position of the stop along the gradient, as a percentage of its length. The renderer normalizes this to 0–1.' },
-    { attr: 'Midpoint', type: 'number 13–87', support: 'parsed-not-rendered', note: 'Where the halfway blend sits between this stop and the next. Read, but the renderer interpolates linearly between stops.' },
-  ]}
-/>
+- **`StopColor`** names a colour in the palette by `Self` id. A stop has no colour of its
+  own, so editing the colour changes every gradient that uses it.
+- **`Location`** is the stop's position along the gradient, in percent from 0 to 100.
+- **`Midpoint`** is where the blend between the previous stop and this one reaches its
+  halfway colour, in percent of the distance between them. `50` is an even blend. The first
+  stop has nothing before it; InDesign writes `50` there. In the surveyed files every
+  midpoint other than 50 sits on a stop after the first, most often on the last one.
 
-A gradient needs at least two stops; the renderer drops a gradient that resolves
-to fewer than two valid stops and the shape falls back to no gradient paint.
+Stops are listed in order of `Location`.
 
-### How stops blend
+## Placing a gradient on a shape
 
-When the stops are CMYK (process, or spot with a CMYK alternate), the renderer
-interpolates *in CMYK* and converts each interpolated point through the ICC
-transform — matching how a press-oriented preview blends, rather than averaging
-in screen RGB, which would over-saturate the midtones. Stops in other spaces get
-a naive conversion into that path. `Midpoint` is honored: the per-segment blend
-follows the midpoint power curve, so the halfway color lands where the stop's
-`Midpoint` places it rather than always at the geometric middle.
-<SupportBadge status="supported" note="GradientStop Midpoint applied (midpoint-skewed interpolation)" />
+The gradient swatch has no direction or size. The shape that uses it does, so one gradient
+can sit differently on every shape:
 
-## A gradient, defined and applied
+<AttrTable element="Rectangle" attrs={['GradientFillAngle', 'GradientFillStart', 'GradientFillLength', 'GradientFillHiliteAngle', 'GradientFillHiliteLength']} />
 
-The example adds two stop colors and one linear `<Gradient>` to the palette, then
-fills a rectangle with it at a 90° (top-to-bottom) angle. The shape carries no
-text or font, so the gradient renders directly in the live view.
+- **`GradientFillAngle`**, in degrees. At 0 the gradient runs left to right, the first stop on
+  the left. Positive angles turn it **counter-clockwise** on the page: at 90 it runs from
+  bottom to top, with the first stop at the **bottom**.
+- **`GradientFillStart`** and **`GradientFillLength`** give the start point of the gradient,
+  in the shape's own coordinates, and its length in points. For a radial gradient the start
+  is the centre and the length the radius.
+- **`GradientFillHiliteAngle`** and **`GradientFillHiliteLength`** are written alongside;
+  they are 0 in nearly every surveyed file.
+
+Strokes have the same set: `GradientStrokeAngle`, `GradientStrokeStart`,
+`GradientStrokeLength` and the two hilite attributes.
 
 <ExampleEmbed example="gradient-fill">
-  A two-stop linear gradient in Graphic.xml, applied to a rectangle by FillColor.
+  A two-stop linear gradient, Sun (yellow) to Sky (blue), on a rectangle with
+  GradientFillAngle="90". InDesign draws the first stop, Sun, at the bottom.
 </ExampleEmbed>
 
-## Tints: two paths to the same idea
+> **In Paged:** linear and radial gradients render, and a radial gradient is centred at its
+> `GradientFillStart`. Midpoints are honoured, but Paged applies a stop's `Midpoint` to the
+> blend that follows the stop, not to the one before it. Paged also measures
+> `GradientFillAngle` clockwise, so a 90° gradient runs from top to bottom with the first
+> stop at the top: the example above renders upside down compared with InDesign. Both are
+> known engine issues. CMYK stops are blended in CMYK before conversion to the screen.
+> <SupportBadge feature="color-swatches.gradients" />
 
-A *tint* is a color at a reduced strength. It reaches a painted thing two
-distinct ways, and the difference matters:
+## Named tints: the `<Tint>` element
 
-- **Swatch-level tint** — a spot `<Color>` can carry a `TintValue` (0–100) that
-  bakes "this ink at N%" into the swatch itself. The renderer multiplies each
-  CMYK-alternate channel by `TintValue / 100` before conversion, so the swatch
-  *is* the tinted color everywhere it is used. This is covered with the spot
-  mechanics in [spot & process color](/docs/idml/color-swatches/spot-and-process).
-- **Per-use `FillTint`** — the thing being painted (a frame, a run of text) can
-  carry a `FillTint` percentage that scales whatever color it points at, only
-  *there*. The same full-strength swatch can appear at 100% in one place and 40%
-  in another.
+A named tint is a swatch of its own: "Vermilion 40 %" in the Swatches panel. IDML writes it
+as a `<Tint>` element in `Graphic.xml`, beside the colours:
 
-<AttrTable
-  element="FillTint (on the painted element)"
-  rows={[
-    { attr: 'FillTint', type: 'number 0–100', support: 'supported', note: 'Per-use strength of the fill color, independent of the swatch. 100 (or absent) ⇒ full strength.' },
-  ]}
-/>
+- **`BaseColor`** names the colour it is a tint of.
+- **`TintValue`** is the strength in percent.
+- **`Self`** and **`Name`** work as on a `<Color>`; page items name the tint by its `Self`.
+- `Model`, `Space` and `ColorValue` are present too and repeat the base colour's values, not
+  the tinted ones. Take the colour from `BaseColor` and scale it by `TintValue`.
 
-The format also has a standalone `<Tint>` swatch — a named entry whose `BaseColor`
-points at the color it is a percentage of, with its own `TintValue`. The palette
-parser keys colors, swatches, gradients, and color groups; a dedicated `<Tint>`
-swatch is not yet captured as its own kind, so reach for the per-use `FillTint`
-or a spot `TintValue` instead. <SupportBadge feature="color-swatches.process-spot-tint" note="standalone <Tint> swatch" />
+A tint of a spot colour stays a tint of that ink: it prints on the spot colour's plate at the
+given percentage. None of the 305 surveyed documents uses a named tint, so the example below
+is the reference for the spelling.
+
+<ExampleEmbed example="named-tint">
+  Three rectangles: the base colour at full strength; the named tint "Vermilion 40%"; and the
+  base colour with FillTint="40". In InDesign the second and third look the same.
+</ExampleEmbed>
+
+A tint is not transparency. Forty percent of an ink is a lighter colour that still covers
+what lies beneath it; transparency is set separately, with
+[opacity](/docs/idml/effects-transparency/transparency-and-blending).
+
+## Per-use tints: `FillTint` and `StrokeTint`
+
+Any painted object can carry its own tint:
+
+<AttrTable element="Rectangle" attrs={['FillTint', 'StrokeTint']} />
+
+`FillTint="40"` shows the fill colour at 40 % on this object only. The same spellings appear
+on text (`CharacterStyleRange`, character and paragraph styles) and on table cells.
+
+`FillTint="-1"` is the sentinel for "no tint of its own": the swatch is used as it is, the
+same as writing no `FillTint` at all. InDesign writes `-1` often, so a reader must not take
+it as a negative percentage. Values from 0 to 100 are a tint; 100 is full strength.
+
+> **In Paged:** named `<Tint>` swatches are read, including tints of spot colours, which keep
+> their spot ink. `FillTint="-1"` is treated as no tint. On a process colour, a `FillTint`
+> currently previews lighter than the same percentage as a named tint, where InDesign shows
+> both alike; this is a known engine issue.
+> <SupportBadge feature="color-swatches.process-spot-tint" /> <SupportBadge feature="color-swatches.fill-stroke-apply" />
 
 ## Frequently asked questions
 
-**Where do a gradient's colors come from?**
-From its child `<GradientStop>` elements. The `<Gradient>` itself carries only its
-kind (`Type`); each stop references a `<Color>` in the palette by `StopColor` and
-places it along the blend with `Location`. The gradient owns no color of its own.
+**Where do a gradient's colours come from?**
+From its `<GradientStop>` children. Each names a colour in the palette by `StopColor`; the
+gradient has no colour of its own.
 
-**How many stops does a gradient need?**
-At least two. If a gradient resolves to fewer than two valid stops, the renderer
-drops it and the shape falls back to no gradient paint.
+**Which way does a 90° gradient run?**
+From bottom to top. The angle turns counter-clockwise from left-to-right, so at 90° the first
+stop is at the bottom of the shape.
 
-**What is the difference between a swatch-level tint and `FillTint`?**
-A swatch-level `TintValue` bakes "this ink at N%" into a spot `<Color>` itself, so
-the swatch *is* the tinted color everywhere it is used. A per-use `FillTint` scales
-whatever color the painted element points at, only there — so the same full-strength
-swatch can appear at 100% in one place and 40% in another.
+**Which segment does a stop's `Midpoint` belong to?**
+The one between the previous stop and this stop. The first stop has no such segment, and
+InDesign writes `50` on it.
 
-**Why is my `Midpoint` or standalone `<Tint>` swatch not showing?**
-`GradientStop` `Midpoint` is parsed but not yet honored, so the halfway color
-always sits at the geometric middle between two stops. The standalone `<Tint>`
-swatch is not yet captured as its own kind, so reach for a per-use `FillTint` or a
-spot `TintValue` instead.
+**How do I write a named tint?**
+As a `<Tint>` element with `BaseColor` naming the colour and `TintValue` the percentage. A
+`TintValue` attribute on a `<Color>` is ignored by InDesign.
+
+**What does `FillTint="-1"` mean?**
+No tint of its own: use the swatch at the strength it defines. It is equivalent to leaving
+`FillTint` out.
+
+**Is a 50 % tint the same as 50 % opacity?**
+No. A tint is a lighter colour that still covers what is beneath it; opacity lets the
+background show through.

@@ -1,0 +1,101 @@
+---
+title: Colour management
+description: The CMYKProfile, RGBProfile and rendering-intent attributes on the IDML Document element, what the profile names mean, and why rendering needs the profile.
+tier: intermediate
+diataxis: reference
+status: published
+owner: paged-docs
+describes: [color-swatches.icc-cmm]
+reviewed: 2026-10-11
+---
+
+**A document names the colour profiles its numbers are meant for; it does not contain them. The same CMYK values look different under a different profile.**
+
+**In short:** The `<Document>` element in `designmap.xml` carries the document's working
+spaces: `CMYKProfile` and `RGBProfile`, each the name of an ICC profile, plus the rendering
+intents `SolidColorIntent`, `AfterBlendingIntent` and `DefaultImageIntent`, and the
+`CMYKPolicy` and `RGBPolicy` for files that arrive with other profiles. Only the names travel
+with the file. To show CMYK colours accurately, a reader needs the profile itself, found by
+that name.
+
+## The attributes on `<Document>`
+
+<AttrTable element="Document" attrs={['CMYKProfile', 'RGBProfile', 'SolidColorIntent', 'AfterBlendingIntent', 'DefaultImageIntent', 'CMYKPolicy', 'RGBPolicy']} />
+
+## The profile names
+
+`CMYKProfile` and `RGBProfile` hold a profile's description, the name InDesign shows in its
+colour settings. Across the documents surveyed for this reference:
+
+| Attribute | Value | Documents | What it describes |
+|---|---|---|---|
+| `CMYKProfile` | `Coated FOGRA39 (ISO 12647-2:2004)` | most | Offset printing on coated paper, the common European standard |
+| `CMYKProfile` | `U.S. Web Coated (SWOP) v2` | many | Web offset printing on coated paper, a common North American standard |
+| `CMYKProfile` | `Coated FOGRA27 (ISO 12647-2:2004)` | a few | An older coated-paper offset condition |
+| `RGBProfile` | `sRGB IEC61966-2.1` | almost all | The standard screen RGB space |
+| `RGBProfile` | `Adobe RGB (1998)` | a few | A wider RGB space used in photography |
+| either | `$ID/` | a few | No profile named |
+
+The CMYK profile is the one that matters most. A CMYK `ColorValue` is ink coverage, and what
+that coverage looks like depends on the press and paper the profile describes: `65 45 30 10`
+is a different blue-grey on coated and on uncoated stock. RGB colours depend on the RGB
+profile in the same way, although sRGB is so common that a reader assuming it is rarely far
+off. Lab colours need no profile; they describe a colour directly.
+
+## Rendering intents
+
+When a colour has to move from one profile's space into another's, from the CMYK working
+space to the screen for example, a rendering intent decides how colours that do not fit are
+handled. The document carries three:
+
+- **`SolidColorIntent`** for flat colours: swatches, fills, strokes, text;
+- **`DefaultImageIntent`** for placed images (an `<Image>` can override it with its own
+  `ImageRenderingIntent`);
+- **`AfterBlendingIntent`** for colours that result from transparency.
+
+Every surveyed document has `UseColorSettings` for all three, which defers to the colour
+settings of the application that opens the file.
+
+## Profile policies
+
+`CMYKPolicy` and `RGBPolicy` record what InDesign does with content that carries a different
+profile. In the surveyed files `CMYKPolicy` is `CombinationOfPreserveAndSafeCmyk` or
+`ColorPolicyOff`, and `RGBPolicy` is `PreserveEmbeddedProfiles` or `ColorPolicyOff`. They
+govern placing and pasting in InDesign, not how the file's own swatches look.
+
+## Rendering depends on the profile being available
+
+An IDML file contains no ICC profiles. A reader that wants the colours InDesign shows has to
+find the named profile on its own system or be given it, and convert CMYK and RGB through it.
+A reader without the profile can only approximate; a simple formula from CMYK to RGB is
+recognisably off for saturated colours. Two readers that disagree on colour usually disagree
+on the profile, not on the numbers.
+
+> **In Paged:** no profile ships with the engine. `paged-inspect` on the command line looks for
+> the document's named profile among the Adobe colour profiles installed on the machine. In
+> the browser the engine converts colour with qcms (natively with lcms2) and gets full colour
+> management once the host registers the profile's bytes under the document's profile name
+> and applies its colour settings; until then CMYK is converted by a simple formula. Lab
+> colours are converted without a profile. <SupportBadge feature="color-swatches.icc-cmm" />
+
+## Frequently asked questions
+
+**Does an IDML file embed its colour profiles?**
+No. `CMYKProfile` and `RGBProfile` on `<Document>` are names. The profiles themselves have to
+be available to whoever renders the file.
+
+**What does `Coated FOGRA39 (ISO 12647-2:2004)` mean?**
+It is the description of the ICC profile for offset printing on coated paper under
+ISO 12647-2, the most common CMYK working space in the surveyed documents.
+
+**Why do CMYK colours look different in different viewers?**
+Usually because one of them converts through the named profile and the other does not have
+it, or uses another profile.
+
+**What does `UseColorSettings` mean for an intent?**
+That the document has no intent of its own and defers to the opening application's colour
+settings. It is the value in every surveyed file.
+
+**Do Lab colours need a profile?**
+No. Lab describes a colour independently of any device, so it converts to the screen without
+one.

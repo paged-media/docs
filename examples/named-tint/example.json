@@ -1,0 +1,45 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "named-tint",
+  "title": "A named tint swatch next to a local tint",
+  "tier": "intermediate",
+  "chapter": "color-swatches",
+  "concept": "A <Tint> swatch with BaseColor and TintValue is a colour at reduced strength with a name of its own; FillTint applies the same reduction to one object only.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Resources/Graphic.xml",
+    "language": "xml",
+    "label": "Resources/Graphic.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree",
+    "live"
+  ],
+  "annotations": [
+    {
+      "lines": "5",
+      "note": "The base colour: a process CMYK vermilion, 0 85 90 5."
+    },
+    {
+      "lines": "6",
+      "note": "A named tint is its own element, <Tint>, not an attribute on <Color>. BaseColor names the colour it is a tint of and TintValue the strength in percent. The channel values repeat the base's, as InDesign writes them."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 4,
+    "paragraphs": 1,
+    "runs": 1
+  },
+  "pathological": false,
+  "license": "MIT",
+  "elements": [
+    "Tint",
+    "Color"
+  ]
+}
