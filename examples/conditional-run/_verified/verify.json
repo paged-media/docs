@@ -2,7 +2,7 @@
   "status": "verified",
   "indesignVersion": "20.0.1.32",
   "verifiedAt": "2026-10-11",
-  "partsHash": "sha256:0ab6383216f608974b2de02842458b003ba6af67492fd112835bed3718255126",
+  "partsHash": "sha256:9e0c43e4055a5f6253d11a79704cb22527017b08855e52bcdf9034f9a997ba8a",
   "pages": 1,
   "roundTrip": true,
   "fidelity": {
@@ -16,6 +16,7 @@
   ],
   "preset": "[Qualitativ hochwertiger Druck]",
   "stories": 1,
+  "paragraphs": 1,
   "overset": [],
   "perPage": [
     {

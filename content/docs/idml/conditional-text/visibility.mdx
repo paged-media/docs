@@ -1,6 +1,6 @@
 ---
 title: Visibility
-description: When conditional text prints — a run under one hidden condition, a run under several conditions (still being verified against InDesign), sets and indicators.
+description: When conditional text prints — a run under a hidden condition, a run under several conditions (shown while any is visible), sets and indicators.
 tier: pro
 diataxis: explanation
 status: published
@@ -36,29 +36,24 @@ story part; anything that reads the story's text gets them.
 
 ## Several conditions on one run
 
-`AppliedConditions` can list several conditions. When all of them are visible the run
-prints, and when all of them are hidden it does not. The case in between, a run under
-one visible and one hidden condition, has two possible rules:
-
-- the run is hidden when **any** of its conditions is hidden;
-- the run is shown when **any** of its conditions is visible.
-
-Which one InDesign applies is **under verification**. An earlier comparison against
-InDesign's own PDF output suggested that it prints such runs, but that test file used a
-condition spelling InDesign may not have read, so it does not settle the question. The
-example below isolates the case: it has an unconditioned run, a run under the visible
-condition only, a run under the hidden condition only, and the test run under both.
+`AppliedConditions` can list several conditions. InDesign shows the run while **any one
+of its conditions is visible**; only when all of them are hidden is the run left out. In
+the example below, BOTH carries the visible `Print` condition and the hidden `Draft`
+condition, and InDesign prints it.
 
 <ExampleEmbed example="conditional-two-conditions">
   Four runs: ALWAYS, PRINTONLY (visible condition), DRAFTONLY (hidden condition) and BOTH
-  (one visible, one hidden). Whether BOTH prints decides the rule.
+  (one visible, one hidden). InDesign prints ALWAYS, PRINTONLY and BOTH.
 </ExampleEmbed>
 
-Until it is settled, a file that has to print the same everywhere should avoid giving one
-run both a visible and a hidden condition.
+This was measured in InDesign 20.0.1 by toggling the hidden condition in the opened file
+and exporting a PDF: the output read "ALWAYS PRINTONLY BOTH". One more observation from
+the same test: straight after opening this minimal file, InDesign composed it with the
+hidden condition still showing, and applied the visibility only once a condition's
+visibility changed. Its own files may behave differently; the cause is not known.
 
 > **In Paged:** a run is hidden when any condition it names is hidden, so BOTH does not
-> print in the example. This may change once InDesign's behaviour is confirmed. Hidden
+> print in the live view. That differs from InDesign and is a known engine issue. Hidden
 > runs are removed before layout, so a story can report more runs than the page shows.
 > <SupportBadge feature="conditional-text.visibility-filtering" />
 
@@ -84,9 +79,8 @@ No. It is left out before the text is composed, so the visible text closes up ar
 The characters stay in the story part.
 
 **What happens to a run with two conditions when one is hidden?**
-That rule is still being verified against InDesign: either one hidden condition hides
-the run, or one visible condition shows it. The `conditional-two-conditions` example
-isolates the case.
+It prints. InDesign shows a run while any one of its conditions is visible, and leaves it
+out only when all of them are hidden.
 
 **Does a condition set decide what is visible?**
 Not directly. Applying a set changes each condition's `Visible` flag, and the flags are

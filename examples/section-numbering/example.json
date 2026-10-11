@@ -49,5 +49,19 @@
   "elements": [
     "Section",
     "Page"
-  ]
+  ],
+  "verified": {
+    "status": "verified",
+    "indesignVersion": "20.0.1.32",
+    "verifiedAt": "2026-10-11",
+    "partsHash": "sha256:f3abd3e1acc197cd34ab749b15776e1800154b5e4890fd3bf87690e3b2ccfa46",
+    "pages": 2,
+    "roundTrip": true,
+    "fidelity": {
+      "meanDE": 0.032,
+      "p99DE": 0,
+      "ssim": 0.999,
+      "fontsMatched": true
+    }
+  }
 }

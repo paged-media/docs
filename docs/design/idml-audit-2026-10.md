@@ -18,7 +18,7 @@ This file is the work list for the chapter rewrites; each wave closes its rows.
 | 3 | geometry, layout model, frames & paths, masters, layers | rewritten |
 | 4 | styles, typography, tables | rewritten |
 | 5 | colour, images, anchored objects, effects & transparency (new), colour management (new) | in progress |
-| 6 | cross-references & hyperlinks, sections, conditional text, tagged XML, table of contents (new) | in progress |
+| 6 | cross-references & hyperlinks, sections, conditional text, tagged XML, table of contents (new) | rewritten |
 | 7 | companion formats, round-tripping, edge cases, comparisons, cookbook, glossary, home | in progress |
 
 Every example is verified in InDesign 20.0.1 (ADR 806).
@@ -102,9 +102,16 @@ Not documentation work; reported to the engine:
 - `KerningMethod` values arrive as `$ID/None` / `$ID/Optical`; the renderer matches
   only `None` / `Optical`, so text InDesign set to no kerning is drawn kerned.
 - `CenterJustified` and `RightJustified` paragraphs are set ragged, not justified.
-- Conditional text: a run carrying several conditions is dropped if any one is hidden;
-  InDesign's reference output for the test file appears to print those runs. Verify
-  against InDesign before documenting the rule.
+- Conditional text, MEASURED (InDesign 20.0.1, `examples/conditional-two-conditions`): a
+  run carrying several conditions prints while ANY of them is visible. Paged hides it when
+  any is hidden (wrong rule). Observed too: straight after opening that minimal file,
+  InDesign composed it with the hidden condition showing, until a condition's visibility
+  changed.
+- Table of contents: Paged reads `AppliedTOCStyle` only on `TextFrame`; InDesign writes it
+  on `Story` (91 documents), so InDesign's TOCs are never regenerated. TOC styles sit
+  directly under `idPkg:Styles` in InDesign's files, not in a `RootTOCStyleGroup`.
+- Condition sets: the importer ignores each `VisibilityPair`'s `Visibility`.
+- Bookmarks: nothing writes a PDF outline, although the registry lists bookmarks as shipped.
 
 
 ## Group A — detail
