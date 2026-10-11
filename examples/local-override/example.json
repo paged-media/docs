@@ -11,10 +11,20 @@
     "language": "xml",
     "label": "Stories/Story_ustory.xml"
   },
-  "views": ["raw", "annotated", "tree"],
+  "views": [
+    "raw",
+    "annotated",
+    "tree"
+  ],
   "annotations": [
-    { "lines": "5-7", "note": "First run: applies Emphasis with no overrides, so its size comes from the style (PointSize 12)." },
-    { "lines": "8-10", "note": "Second run: applies the same Emphasis style but carries PointSize=\"24\" on the range itself; the run-level value wins, so this text shapes at 24 pt." }
+    {
+      "lines": "5-7",
+      "note": "First run: applies Emphasis with no overrides, so its size comes from the style (PointSize 12)."
+    },
+    {
+      "lines": "8-10",
+      "note": "Second run: applies the same Emphasis style but carries PointSize=\"24\" on the range itself; the run-level value wins, so this text shapes at 24 pt."
+    }
   ],
   "expect": {
     "opens": true,
@@ -26,5 +36,19 @@
     "runs": 2
   },
   "pathological": false,
-  "license": "MIT"
+  "license": "MIT",
+  "verified": {
+    "status": "verified",
+    "indesignVersion": "20.0.1.32",
+    "verifiedAt": "2026-10-11",
+    "partsHash": "sha256:a0774c466f0d018681c4685bbb97125b1c1778561a299b2dbb3e977d437d456b",
+    "pages": 1,
+    "roundTrip": true,
+    "fidelity": {
+      "meanDE": 1.19,
+      "p99DE": 84.138,
+      "ssim": 0.961,
+      "fontsMatched": true
+    }
+  }
 }

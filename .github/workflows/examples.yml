@@ -85,3 +85,8 @@ jobs:
 
       - name: validate every example against the renderer
         run: PAGED_INSPECT="$PWD/core/target/release/paged-inspect" pnpm validate:examples
+
+      - name: InDesign stamps still match their packages
+        # A `verified` block is evidence about exact bytes: edit a part and the
+        # stamp goes stale until verify-indesign.ts runs again (ADR 806).
+        run: pnpm examples:verify

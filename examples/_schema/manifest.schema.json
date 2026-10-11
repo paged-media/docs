@@ -198,6 +198,10 @@
             },
             "ssim": {
               "type": "number"
+            },
+            "fontsMatched": {
+              "type": "boolean",
+              "description": "InDesign set the text in the same face the browser preview has (Open Sans)."
             }
           }
         }

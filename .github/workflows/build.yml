@@ -25,6 +25,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: manifest integrity (cheap, no renderer)
         run: pnpm examples:index
+      - name: InDesign stamps match their packages (cheap, no InDesign)
+        run: pnpm examples:verify
 
       - name: generate cross-repo docs data (registry, catalogs, activity)
         # Pulls the pinned sources (sources.pin) into .generated/ via the gh CLI.

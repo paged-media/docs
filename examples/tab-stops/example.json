@@ -44,5 +44,19 @@
     "runs": 1
   },
   "pathological": false,
-  "license": "MIT"
+  "license": "MIT",
+  "verified": {
+    "status": "verified",
+    "indesignVersion": "20.0.1.32",
+    "verifiedAt": "2026-10-11",
+    "partsHash": "sha256:0e34653c2e2d8d0c4322542ef1e71c0f44011b9afb1da030502b75e11a9fd0c3",
+    "pages": 1,
+    "roundTrip": true,
+    "fidelity": {
+      "meanDE": 0.028,
+      "p99DE": 0,
+      "ssim": 0.998,
+      "fontsMatched": true
+    }
+  }
 }

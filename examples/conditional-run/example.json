@@ -11,11 +11,24 @@
     "language": "xml",
     "label": "Stories/Story_ustory.xml"
   },
-  "views": ["raw", "annotated", "tree"],
+  "views": [
+    "raw",
+    "annotated",
+    "tree"
+  ],
   "annotations": [
-    { "lines": "5-7", "note": "The first run carries no AppliedConditions, so it is always laid out." },
-    { "lines": "8", "note": "The second run names Condition/Draft via AppliedConditions — a space-separated list of Condition references." },
-    { "lines": "8-10", "note": "Condition/Draft is declared Visible=\"false\" in Resources/Styles.xml, so the renderer drops this whole run before layout. The page shows only the first run." }
+    {
+      "lines": "5-7",
+      "note": "The first run carries no AppliedConditions, so it is always laid out."
+    },
+    {
+      "lines": "8",
+      "note": "The second run names Condition/Draft via AppliedConditions — a space-separated list of Condition references."
+    },
+    {
+      "lines": "8-10",
+      "note": "Condition/Draft is declared Visible=\"false\" in Resources/Styles.xml, so the renderer drops this whole run before layout. The page shows only the first run."
+    }
   ],
   "expect": {
     "opens": true,
@@ -27,5 +40,19 @@
     "runs": 1
   },
   "pathological": false,
-  "license": "MIT"
+  "license": "MIT",
+  "verified": {
+    "status": "verified",
+    "indesignVersion": "20.0.1.32",
+    "verifiedAt": "2026-10-11",
+    "partsHash": "sha256:0ab6383216f608974b2de02842458b003ba6af67492fd112835bed3718255126",
+    "pages": 1,
+    "roundTrip": true,
+    "fidelity": {
+      "meanDE": 0.035,
+      "p99DE": 0,
+      "ssim": 0.997,
+      "fontsMatched": true
+    }
+  }
 }

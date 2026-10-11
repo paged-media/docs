@@ -40,3 +40,6 @@ public/demos/
 
 # Generated per site by scripts/write-redirects.mjs
 public/_redirects
+
+# InDesign page images staged from examples/*/_verified by scripts/stage-verified.mjs
+public/examples/

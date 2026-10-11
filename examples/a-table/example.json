@@ -11,14 +11,36 @@
     "language": "xml",
     "label": "Stories/Story_ustory.xml"
   },
-  "views": ["raw", "annotated", "tree"],
+  "views": [
+    "raw",
+    "annotated",
+    "tree"
+  ],
   "annotations": [
-    { "lines": "6", "note": "The Table sits inside a CharacterStyleRange, which is inside a ParagraphStyleRange — it rides on a host paragraph. HeaderRowCount=1 + BodyRowCount=2 means three rows; ColumnCount=2 means two columns." },
-    { "lines": "12-14", "note": "One <Row> per row; Name is the zero-based row index, SingleRowHeight the row's height in points." },
-    { "lines": "15-16", "note": "One <Column> per column; Name is the zero-based column index, SingleColumnWidth the column's width in points." },
-    { "lines": "17", "note": "A <Cell> addresses its grid position with Name=\"col:row\" (zero-indexed). This is cell 0:0 — column 0, the header row. RowSpan/ColumnSpan default to 1." },
-    { "lines": "19", "note": "FillColor paints the cell background; the header cells fill Black. The four TextInsets pad the cell content from its edges." },
-    { "lines": "22-25", "note": "The cell's content is an ordinary ParagraphStyleRange — a paragraph that lives inside the cell, not in the story body." }
+    {
+      "lines": "6",
+      "note": "The Table sits inside a CharacterStyleRange, which is inside a ParagraphStyleRange — it rides on a host paragraph. HeaderRowCount=1 + BodyRowCount=2 means three rows; ColumnCount=2 means two columns."
+    },
+    {
+      "lines": "12-14",
+      "note": "One <Row> per row; Name is the zero-based row index, SingleRowHeight the row's height in points."
+    },
+    {
+      "lines": "15-16",
+      "note": "One <Column> per column; Name is the zero-based column index, SingleColumnWidth the column's width in points."
+    },
+    {
+      "lines": "17",
+      "note": "A <Cell> addresses its grid position with Name=\"col:row\" (zero-indexed). This is cell 0:0 — column 0, the header row. RowSpan/ColumnSpan default to 1."
+    },
+    {
+      "lines": "19",
+      "note": "FillColor paints the cell background; the header cells fill Black. The four TextInsets pad the cell content from its edges."
+    },
+    {
+      "lines": "22-25",
+      "note": "The cell's content is an ordinary ParagraphStyleRange — a paragraph that lives inside the cell, not in the story body."
+    }
   ],
   "expect": {
     "opens": true,
@@ -30,5 +52,19 @@
     "runs": 0
   },
   "pathological": false,
-  "license": "MIT"
+  "license": "MIT",
+  "verified": {
+    "status": "verified",
+    "indesignVersion": "20.0.1.32",
+    "verifiedAt": "2026-10-11",
+    "partsHash": "sha256:2397df4897b11c9b395d409289cbebfd8410662e9c33caa663803688fffebb06",
+    "pages": 1,
+    "roundTrip": true,
+    "fidelity": {
+      "meanDE": 0.541,
+      "p99DE": 0,
+      "ssim": 0.98,
+      "fontsMatched": true
+    }
+  }
 }

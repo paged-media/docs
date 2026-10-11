@@ -11,11 +11,24 @@
     "language": "xml",
     "label": "Spreads/Spread_uspread.xml"
   },
-  "views": ["raw", "annotated", "tree"],
+  "views": [
+    "raw",
+    "annotated",
+    "tree"
+  ],
   "annotations": [
-    { "lines": "5", "note": "Frame A. ParentStory=\"ustory\" makes it host the story; NextTextFrame=\"uframeB\" sends the overflow onward." },
-    { "lines": "11", "note": "Frame A is only 60pt tall, so the story cannot finish here — the rest continues in frame B." },
-    { "lines": "19", "note": "Frame B. Same ParentStory; PreviousTextFrame=\"uframeA\" points back, and NextTextFrame=\"n\" marks the end of the chain." }
+    {
+      "lines": "5",
+      "note": "Frame A. ParentStory=\"ustory\" makes it host the story; NextTextFrame=\"uframeB\" sends the overflow onward."
+    },
+    {
+      "lines": "11",
+      "note": "Frame A is only 60pt tall, so the story cannot finish here — the rest continues in frame B."
+    },
+    {
+      "lines": "19",
+      "note": "Frame B. Same ParentStory; PreviousTextFrame=\"uframeA\" points back, and NextTextFrame=\"n\" marks the end of the chain."
+    }
   ],
   "expect": {
     "opens": true,
@@ -27,5 +40,19 @@
     "runs": 1
   },
   "pathological": false,
-  "license": "MIT"
+  "license": "MIT",
+  "verified": {
+    "status": "verified",
+    "indesignVersion": "20.0.1.32",
+    "verifiedAt": "2026-10-11",
+    "partsHash": "sha256:4e04466c5c5f553c15895838521ed0e5c1c55d609de1c61f1488dc36ac59d6e8",
+    "pages": 1,
+    "roundTrip": true,
+    "fidelity": {
+      "meanDE": 0.145,
+      "p99DE": 1.987,
+      "ssim": 0.994,
+      "fontsMatched": true
+    }
+  }
 }

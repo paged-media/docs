@@ -11,7 +11,8 @@ import { join } from 'node:path';
  * Server-only (reads from disk). The example components are async server
  * components, so this never reaches the client bundle.
  */
-const ROOT = join(process.cwd(), 'examples');
+export const EXAMPLES_DIR = join(process.cwd(), 'examples');
+const ROOT = EXAMPLES_DIR;
 
 export type ExampleView = 'raw' | 'annotated' | 'tree' | 'live';
 /** A tab in the example panel: the manifest views plus the InDesign rendering, shown when verified. */
@@ -32,7 +33,7 @@ export interface ExampleVerification {
   partsHash?: string;
   pages?: number;
   roundTrip?: boolean;
-  fidelity?: { meanDE?: number; p99DE?: number; ssim?: number };
+  fidelity?: { meanDE?: number; p99DE?: number; ssim?: number; fontsMatched?: boolean };
 }
 
 export interface ExampleManifest {

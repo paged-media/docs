@@ -14,7 +14,7 @@ export interface ExampleVerification {
   partsHash?: string;
   pages?: number;
   roundTrip?: boolean;
-  fidelity?: { meanDE?: number; p99DE?: number; ssim?: number };
+  fidelity?: { meanDE?: number; p99DE?: number; ssim?: number; fontsMatched?: boolean };
 }
 
 export interface ExampleManifest {

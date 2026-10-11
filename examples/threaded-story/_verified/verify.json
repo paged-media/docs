@@ -1,0 +1,27 @@
+{
+  "status": "verified",
+  "indesignVersion": "20.0.1.32",
+  "verifiedAt": "2026-10-11",
+  "partsHash": "sha256:4e04466c5c5f553c15895838521ed0e5c1c55d609de1c61f1488dc36ac59d6e8",
+  "pages": 1,
+  "roundTrip": true,
+  "fidelity": {
+    "meanDE": 0.145,
+    "p99DE": 1.987,
+    "ssim": 0.994,
+    "fontsMatched": true
+  },
+  "pdfFonts": [
+    "OpenSans-Regular"
+  ],
+  "preset": "[Qualitativ hochwertiger Druck]",
+  "stories": 1,
+  "overset": [],
+  "perPage": [
+    {
+      "meanDE": 0.145,
+      "p99DE": 1.987,
+      "ssim": 0.994
+    }
+  ]
+}
