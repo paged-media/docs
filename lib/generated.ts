@@ -435,3 +435,65 @@ export interface Activity {
 export function getActivity(): Activity {
   return load('activity.json', { generatedAt: '', repoCount: 0, timeline: [], perRepo: {}, summary: [] });
 }
+
+// ── the IDML element reference (scripts/generate/gen-idml-reference.mjs) ─────
+export interface RefCount {
+  name: string;
+  docCount: number;
+  slug: string | null;
+}
+export interface RefTyped {
+  path: string;
+  type?: { kind: string; unit?: string; members?: string[]; open?: boolean; to?: string };
+  range?: { min?: number; max?: number } | null;
+  default?: unknown;
+  access?: string | null;
+  typeHint?: string;
+}
+export interface RefAttribute {
+  name: string;
+  kind: 'attribute' | 'properties-child';
+  docCount: number;
+  share: number;
+  types: string[];
+  values: Record<string, number> | null;
+  refKinds: string[] | null;
+  propertyTypes: string[] | null;
+  paged: { imported: boolean; exported: boolean } | null;
+  typed: RefTyped | null;
+  note: string | null;
+}
+export interface RefElement {
+  name: string;
+  slug: string;
+  summary: string | null;
+  docCount: number;
+  share: number;
+  parts: { part: string; docCount: number }[];
+  parents: RefCount[];
+  children: RefCount[];
+  attributes: RefAttribute[];
+  paged: { reads: boolean; attributesRead: number; attributesWritten: number } | null;
+  examples: { id: string; title: string }[];
+  pages: { href: string; title: string }[];
+}
+export interface IdmlReference {
+  documents: number;
+  censusDate: string;
+  coverage: { rows: number } | null;
+  typedLinks: number;
+  elements: RefElement[];
+}
+let _idmlReference: IdmlReference | undefined;
+export function getIdmlReference(): IdmlReference {
+  return (_idmlReference ??= load('idml-reference.json', {
+    documents: 0,
+    censusDate: '',
+    coverage: null,
+    typedLinks: 0,
+    elements: [],
+  }));
+}
+export function getRefElement(name: string): RefElement | undefined {
+  return getIdmlReference().elements.find((e) => e.name === name);
+}

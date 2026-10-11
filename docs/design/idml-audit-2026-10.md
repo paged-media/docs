@@ -56,6 +56,14 @@ writer must include for InDesign to open a file (InDesign as the oracle, ADR 120
 
 Not documentation work; reported to the engine:
 
+- Gradient direction: InDesign draws `GradientFillAngle="90"` with the first stop at the
+  bottom (the angle turns counter-clockwise from left-to-right). Paged draws it top-down,
+  and `cookbook/apply-a-gradient` describes Paged's direction. Found by the InDesign
+  verification of `examples/gradient-fill` (ADR 806, worst-page mean ΔE 4.0).
+- Bold from a character style: `examples/local-override` asks for Open Sans Bold, and
+  InDesign's PDF contains only Open Sans Regular. Check what InDesign substitutes before
+  documenting how `FontStyle` resolves.
+
 - `KerningMethod` values arrive as `$ID/None` / `$ID/Optical`; the renderer matches
   only `None` / `Optical`, so text InDesign set to no kerning is drawn kerned.
 - `CenterJustified` and `RightJustified` paragraphs are set ragged, not justified.

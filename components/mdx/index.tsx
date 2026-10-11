@@ -29,6 +29,7 @@ import { ActivityFeed, RepoActivity } from './activity-feed';
 import { Demo } from './demo';
 import { LiveDemo } from './live-demo';
 import { AttrTable } from './attr-table';
+import { ElementReference, ElementIndex } from './element-reference';
 import { Callout, Note } from './callout';
 import { GutenbergAside } from './gutenberg-aside';
 import { RelatedAcrossPillars } from './related-across-pillars';
@@ -79,6 +80,8 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     Demo,
     LiveDemo,
     AttrTable,
+    ElementReference,
+    ElementIndex,
     // Brand Note replaces the Fumadocs Callout (and is also exposed as <Note>).
     Callout,
     Note,
