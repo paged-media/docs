@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import Link from 'fumadocs-core/link';
+import Link from '@/components/site-link';
 import { SupportBadge, type SupportStatus } from './support-badge';
 import { getIdmlElement } from '@/lib/generated';
 

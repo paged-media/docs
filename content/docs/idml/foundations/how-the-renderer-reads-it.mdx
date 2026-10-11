@@ -14,14 +14,14 @@ pixels. Producing a rendered page means running that intent through a pipeline o
 distinct steps — open the container, parse each part, resolve styles and text flow,
 then build and rasterize — with each step owned by a different crate in the engine.
 This page walks the whole path at altitude so the rest of the reference has a shape
-to hang on. The deeper mechanics live in [the renderer](/docs/idml/the-renderer) and
-[parser internals](/docs/idml/parser-internals).
+to hang on. The deeper mechanics live in [the renderer](/docs/paged/engine/the-renderer) and
+[parser internals](/docs/paged/engine/parser-internals).
 
 An IDML package describes a document's structure and intent, not pixels. Turning
 that intent into a rendered page is a pipeline of distinct steps, each owned by a
 different crate in the engine. This page walks the path at altitude so the rest of
 the reference has a shape to hang on. The deeper mechanics live in
-[the renderer](/docs/idml/the-renderer) and [parser internals](/docs/idml/parser-internals).
+[the renderer](/docs/paged/engine/the-renderer) and [parser internals](/docs/paged/engine/parser-internals).
 
 ## Open
 

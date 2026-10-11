@@ -28,7 +28,7 @@ Parse reads the ZIP + XML into a model; scene resolves spreads, frames, and stor
 threading; text lays out with an InDesign-calibrated Knuth–Plass composer;
 compose emits a display list; and the GPU layer rasterizes it. Forward rendering
 is **WebGPU** (Vello); a CPU backend (tiny-skia) remains for headless fidelity
-testing. The [renderer reference](/docs/idml/the-renderer) covers this in depth.
+testing. The [renderer reference](/docs/paged/engine/the-renderer) covers this in depth.
 
 <RenderPipeline />
 
@@ -57,7 +57,7 @@ publishing — built on the **[Plugin SDK](/docs/paged/plugin-sdk)** contract.
 The **[capability registry](/docs/paged/state)** holds one row per capability
 with a per-layer status and a test-evidence overlay. Every repo's tests publish
 against it; this documentation reads from it. That's why the support badges
-throughout the [IDML reference](/docs) are live, not hand-kept.
+throughout the [IDML reference](/docs/idml/overview) are live, not hand-kept.
 
 ## The repositories
 

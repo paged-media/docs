@@ -3,16 +3,19 @@ import { docsFrontmatter } from './lib/frontmatter';
 
 // This file may export ONLY collections (a fumadocs-mdx constraint). The schema,
 // enums, and types live in ./lib/frontmatter.
-export const docs = defineDocs({
-  dir: 'content/docs',
-  docs: {
-    schema: docsFrontmatter,
-    // Expose the processed Markdown of each page so the LLM routes
-    // (app/llms.txt, app/llms-full.txt) can emit pages as plain Markdown via
-    // `page.data.getText('processed')`.
-    postprocess: { includeProcessedMarkdown: true },
-  },
-});
+// One collection per site (lib/site.ts): idml.paged.media is built from
+// content/docs/idml, docs.paged.media from content/docs/paged. lib/source.ts
+// picks the one this build serves.
+const docsOptions = {
+  schema: docsFrontmatter,
+  // Expose the processed Markdown of each page so the LLM routes
+  // (app/llms.txt, app/llms-full.txt) can emit pages as plain Markdown via
+  // `page.data.getText('processed')`.
+  postprocess: { includeProcessedMarkdown: true },
+} as const;
+
+export const idml = defineDocs({ dir: 'content/docs/idml', docs: docsOptions });
+export const paged = defineDocs({ dir: 'content/docs/paged', docs: docsOptions });
 
 /* ===========================================================================
    Editorial rehype transforms — apply brand structures to authored Markdown

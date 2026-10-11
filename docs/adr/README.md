@@ -17,6 +17,7 @@ predate that scheme; this repository holds none of them. Records 800–804 were 
 | [802](802-generated-platform-pages.md) | Platform pages are generated from pinned sources in other repos | Accepted, recorded retroactively 2026-10-02 |
 | [803](803-live-preview-uses-viewer-package.md) | The live preview uses the published viewer package | Accepted, recorded retroactively 2026-10-02 |
 | [804](804-static-export-hosting.md) | A static export on a cross-origin-isolated host | Accepted, recorded retroactively 2026-10-02 |
+| [805](805-two-sites-one-app.md) | Two sites from one app: idml.paged.media and docs.paged.media | Accepted, 2026-10-11 |
 
 These records are about how the documentation site is built. They are not pages of the
 site. Decisions made in other repositories that this repository's code rests on are listed

@@ -83,7 +83,7 @@ version to the renderer's version**: a given state of the docs validates against
 known renderer, the pin moves deliberately by pull request, and a weekly drift job
 re-validates against the engine's `main` to surface breakage early — without
 silently changing what the published docs were tested against. See
-[The renderer](/docs/idml/the-renderer) for what `paged-inspect` is introspecting.
+[The renderer](/docs/paged/engine/the-renderer) for what `paged-inspect` is introspecting.
 
 ## A structural gate, not a visual one
 
@@ -96,7 +96,7 @@ document, builds the display list — and reports the structure it found. It doe
 <SupportBadge status="supported" note="examples gate: parse + build-document via paged-inspect; structural counts only, no rasterisation" />
 
 That makes the examples gate the mirror image of the
-[fidelity gate](/docs/idml/test-corpus/how-we-test). The fidelity gate is pixel-deep but
+[fidelity gate](/docs/paged/engine/test-corpus/how-we-test). The fidelity gate is pixel-deep but
 narrow — it proves a handful of generated fixtures match InDesign, down to the
 colour of individual pixels. The examples gate is broad but shallow — it touches
 every documented construct that has an example and proves the renderer still
@@ -138,6 +138,6 @@ fails the docs build.
 No. The gate is structural: it proves the renderer parses the package and builds its
 internal model with the expected shape. It does not rasterise, so it says nothing
 about pixels — colour, glyph placement, layout fidelity. Visual correctness is the
-job of the [fidelity loop](/docs/idml/test-corpus/how-we-test), which runs over the
+job of the [fidelity loop](/docs/paged/engine/test-corpus/how-we-test), which runs over the
 generated corpus and diffs against InDesign. The two gates are complementary, and
 neither stands in for the other.

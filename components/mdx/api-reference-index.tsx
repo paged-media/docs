@@ -4,6 +4,7 @@
  * never drift. Server component.
  */
 import { getScripting, getSdkCatalog, getRestApi, getPluginCapabilities, getCli } from '@/lib/generated';
+import { resolveHref } from '@/lib/site';
 
 interface Card {
   title: string;
@@ -60,7 +61,7 @@ export function ApiReferenceIndex() {
       {cards.map((c) => (
         <a
           key={c.title}
-          href={c.href}
+          href={resolveHref(c.href)}
           style={{
             display: 'block',
             textDecoration: 'none',

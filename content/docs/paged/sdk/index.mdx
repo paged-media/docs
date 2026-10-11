@@ -19,7 +19,7 @@ scripts; that is the editor's job.
 TypeScript wrapper over the engine's `paged-sdk` WebGPU session. You call
 `createViewer({ canvas })`, `await viewer.load(bytes)`, and then drive
 `zoom`/`scroll`/`goToPage`/`fit` while the engine renders. The same package
-powers the [live preview](/docs/idml/the-renderer) embedded throughout this
+powers the [live preview](/docs/paged/engine/the-renderer) embedded throughout this
 documentation, and the standalone community viewer. Because it is renderer-core
 only — no `paged-mutate`, no `paged-canvas`, no `paged-script` — it is small,
 embeddable, and safe to drop into any page.

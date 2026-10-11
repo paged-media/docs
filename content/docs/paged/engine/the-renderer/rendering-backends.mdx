@@ -11,7 +11,7 @@ owner: paged-docs
 path you actually see, and a CPU backend (tiny-skia) is the deterministic yardstick
 that keeps it honest.**
 
-**In short:** The final stage of the pipeline turns a [display list](/docs/idml/the-renderer/the-display-list)
+**In short:** The final stage of the pipeline turns a [display list](/docs/paged/engine/the-renderer/the-display-list)
 into pixels, and it can do so two ways. Both implement the same `PathRasterizer`
 trait, so they consume an identical display list. The **WebGPU backend, built on
 Vello**, is the forward path — it drives the SDK, the viewer, and this site's live
@@ -106,7 +106,7 @@ It's a build-and-edge decision, not something the display list knows about:
 
 Because both consume the same display list, switching backends never changes *what*
 gets drawn — only *how faithfully* a handful of soft effects come out, and that gap
-is exactly what the [support badges](/docs/idml/the-renderer/the-display-list) above are
+is exactly what the [support badges](/docs/paged/engine/the-renderer/the-display-list) above are
 for.
 
 ## Frequently asked questions

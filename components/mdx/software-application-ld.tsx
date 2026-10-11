@@ -17,7 +17,7 @@ export function SoftwareApplicationLd() {
     description:
       'Paged is an open-source desktop publishing platform built on a structurally valid IDML container, with a plugin SDK and an automation-first architecture — combining the open format of Scribus with the extensibility of the InDesign ecosystem.',
     url: 'https://paged.media',
-    softwareHelp: 'https://docs.paged.media',
+    softwareHelp: 'https://docs.paged.media/',
     license: 'https://spdx.org/licenses/MPL-2.0.html',
     isAccessibleForFree: true,
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },

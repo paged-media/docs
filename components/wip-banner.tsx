@@ -1,7 +1,6 @@
 /**
  * Site-wide work-in-progress banner (briefing §8 / §11 Phase 0 soft-launch).
- * Public from day one, honest about it: pages without a difficulty label are
- * unfinished and `noindex`'d. Editorial treatment — a paper-soft strip with a
+ * Public from day one, honest about it. Editorial treatment — a paper-soft strip with a
  * mono oxblood "Learning in public" mark, never an alarm-yellow alert.
  */
 export function WipBanner() {
@@ -31,7 +30,7 @@ export function WipBanner() {
       >
         Learning in public
       </span>
-      {' — this reference is being written in the open. Unfinished pages are excluded from search engines.'}
+      {' — this documentation is written in the open and updated as the engine moves.'}
     </div>
   );
 }

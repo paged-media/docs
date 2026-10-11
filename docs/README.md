@@ -1,7 +1,7 @@
 # Documentation of this repository
 
-This folder documents the repository itself: how the documentation site docs.paged.media
-is built and why. It is not site content. The pages of the site are in `content/docs/`, and
+This folder documents the repository itself: how the documentation sites idml.paged.media and
+docs.paged.media are built and why. It is not site content. The pages of the site are in `content/docs/`, and
 nothing in this folder is published on the site.
 
 What this folder holds.

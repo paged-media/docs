@@ -1,24 +1,74 @@
-import Link from 'next/link';
+import Link from '@/components/site-link';
 import { Pic } from '@/components/icons';
 
+import { JsonLd } from '@/components/json-ld';
+import { buildSiteJsonLd } from '@/lib/structured-data';
+import type { Metadata } from 'next';
+import { SITE_ID } from '@/lib/site';
+
+// The home page is the site root: canonical `/` (the layout supplies title,
+// description and the social card).
+export const metadata: Metadata = {
+  alternates: { canonical: '/', types: { 'text/plain': '/llms.txt' } },
+};
+
 /**
- * The docs.paged.media landing page — the brand home (home.jsx): a two-column
+ * The landing page of either site — the brand home (home.jsx): a two-column
  * hero with the Gutenberg frontispiece, the reader-tier band (form, not color —
  * tier glyphs + roman numerals, never traffic lights), and the "where to begin"
- * grid. The masthead + WIP banner come from the layout; the colophon footer
- * follows via SiteFooter.
+ * grid. The copy comes from HOME[SITE_ID]; the layout is shared. The masthead +
+ * WIP banner come from the layout; the colophon footer follows via SiteFooter.
  */
 const TIERS: [icon: string, name: string, numeral: string, desc: string][] = [
   ['tierBeginner', 'Beginner', 'I', 'Plain-language explanations. Start here if IDML or paged media is new to you.'],
   ['tierIntermediate', 'Intermediate', 'II', 'Working knowledge — package structure, stories, styles, and how pages compose.'],
-  ['tierPro', 'Pro', 'III', 'Deep reference — geometry, edge cases, renderer behavior, and the format in full.'],
+  ['tierPro', 'Pro', 'III', 'Deep reference — geometry, edge cases, and the format in full.'],
 ];
 
-const START: [icon: string, title: string, desc: string, href: string][] = [
-  ['page', 'Foundations', 'What IDML is, paged media, the document model.', '/docs/idml/foundations'],
-  ['package', 'IDML structure', 'The package, designmap, spreads, and stories.', '/docs/idml/package-anatomy'],
-  ['renderer', 'Rendering', 'How document structure becomes visual pages.', '/docs/idml/the-renderer'],
-];
+interface HomeCopy {
+  eyebrow: string;
+  title: [string, string];
+  lede: string;
+  start: string;
+  browse: string;
+  cards: [icon: string, title: string, desc: string, href: string][];
+}
+
+const HOME: Record<typeof SITE_ID, HomeCopy> = {
+  idml: {
+    eyebrow: 'IDML · the InDesign Markup Language',
+    title: ['The IDML', 'reference'],
+    lede:
+      'An independent, in-depth reference for IDML, the open XML package an InDesign document ' +
+      'becomes when it travels as text: the package, spreads and pages, stories, styles, tables, ' +
+      'colour and graphics. Written from first principles, with every example validated against a ' +
+      'working renderer.',
+    start: '/docs/idml/foundations',
+    browse: '/docs/idml/overview',
+    cards: [
+      ['page', 'Foundations', 'What IDML is, why it is a package, and how to read one by hand.', '/docs/idml/foundations'],
+      ['package', 'Package anatomy', 'The ZIP container, the design map, and the parts it points to.', '/docs/idml/package-anatomy'],
+      ['story', 'Stories & text', 'Where the words live, how they thread, and how styles apply.', '/docs/idml/stories-text'],
+    ],
+  },
+  paged: {
+    eyebrow: 'Paged · open-source paged media',
+    title: ['The Paged', 'documentation'],
+    lede:
+      'Paged is the open-source system that reads, renders and edits IDML: a WebGPU render ' +
+      'engine, a viewer SDK, the paged.* scripting layer, a command line, and a plugin platform. ' +
+      'This is how to build with it.',
+    start: '/docs/paged/overview',
+    browse: '/docs/paged/sdk',
+    cards: [
+      ['renderer', 'Viewer SDK', 'Load a document, render its pages, drive the camera.', '/docs/paged/sdk'],
+      ['xml', 'Scripting', 'Read, change and author documents from JavaScript.', '/docs/paged/scripting'],
+      ['package', 'Plugin SDK', 'Extend the editor with new content types and tools.', '/docs/paged/plugin-sdk'],
+    ],
+  },
+};
+
+const copy = HOME[SITE_ID];
 
 const ctaBase = {
   display: 'inline-flex',
@@ -37,17 +87,18 @@ const ctaBase = {
 export default function HomePage() {
   return (
     <main>
+      <JsonLd data={buildSiteJsonLd()} />
       {/* HERO */}
       <section style={{ maxWidth: 1320, margin: '0 auto', padding: 'var(--space-8) var(--space-6) var(--space-7)' }}>
         <div className="home-hero">
           <div>
             <div className="section-label" style={{ color: 'var(--color-accent)', marginBottom: 'var(--space-4)' }}>
-              Paged · paged media, IDML first
+              {copy.eyebrow}
             </div>
             <h1 className="hero-title" style={{ fontSize: 'clamp(48px, 7vw, 104px)', lineHeight: 0.92, margin: 0 }}>
-              The IDML living
+              {copy.title[0]}
               <br />
-              documentation
+              {copy.title[1]}
             </h1>
             <p
               style={{
@@ -60,19 +111,17 @@ export default function HomePage() {
                 textWrap: 'pretty',
               }}
             >
-              An independent, technically deep reference for the IDML file format and the Paged native
-              renderer — authored from first principles, learning in public as the renderer teaches us.
-              Every example is one our renderer accepts.
+              {copy.lede}
             </p>
             <div style={{ display: 'flex', gap: 14, marginTop: 'var(--space-6)', flexWrap: 'wrap' }}>
               <Link
-                href="/docs/idml/foundations"
+                href={copy.start}
                 style={{ ...ctaBase, background: 'var(--color-accent)', color: 'var(--color-paper-soft)' }}
               >
                 Start here <Pic name="arrowRight" size={16} />
               </Link>
               <Link
-                href="/docs"
+                href={copy.browse}
                 style={{ ...ctaBase, background: 'transparent', color: 'var(--color-ink)', border: '1px solid var(--color-ink)' }}
               >
                 Browse the reference
@@ -168,7 +217,7 @@ export default function HomePage() {
           Where to begin
         </div>
         <div className="start-grid">
-          {START.map(([icon, title, desc, href]) => (
+          {copy.cards.map(([icon, title, desc, href]) => (
             <Link key={title} href={href} className="start-card">
               <Pic name={icon} size={22} color="var(--color-ink-soft)" />
               <h3

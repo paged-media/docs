@@ -6,6 +6,7 @@
  */
 import { useMemo, useState } from 'react';
 import type { HostFn } from '@/lib/generated';
+import { resolveHref } from '@/lib/site';
 
 const mono: React.CSSProperties = { fontFamily: 'var(--font-mono, monospace)', fontSize: 12.5 };
 const TH: React.CSSProperties = {
@@ -107,7 +108,7 @@ export function ScriptingFnsView({
                         <>
                           {' '}
                           <a
-                            href={`/docs/paged/scripting/examples#${fnAnchor(fn.name)}`}
+                            href={resolveHref(`/docs/paged/scripting/examples#${fnAnchor(fn.name)}`)}
                             style={{ whiteSpace: 'nowrap', fontWeight: 640, color: 'var(--color-accent)', textDecoration: 'none' }}
                           >
                             Try it ▸

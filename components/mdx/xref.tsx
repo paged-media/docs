@@ -9,7 +9,7 @@
  * `scripts/check-feature-refs.mjs` validates every `to` resolves to a real page,
  * so a renamed or removed page fails the build instead of rotting into a 404.
  */
-import Link from 'fumadocs-core/link';
+import Link from '@/components/site-link';
 
 export function xrefHref(to: string): string {
   const [pillar, ...rest] = to.split(':');

@@ -52,7 +52,7 @@ IDML package
 RGBA pixels
 ```
 
-Five stages, five crates, one direction of travel. The [pipeline page](/docs/idml/the-renderer/the-pipeline)
+Five stages, five crates, one direction of travel. The [pipeline page](/docs/paged/engine/the-renderer/the-pipeline)
 opens each stage up and shows which crate owns it. The crucial seam is in the middle:
 the layout and compose stages produce a **display list** — a small, versioned
 intermediate representation of "what to paint" — and only the final stage turns that
@@ -66,9 +66,9 @@ asks "what does our engine have to *do* with this?" This chapter answers the
 question head-on. Read it if you want to:
 
 - understand how a faithful page actually gets built, stage by stage;
-- know what the [display list](/docs/idml/the-renderer/the-display-list) is, why an
+- know what the [display list](/docs/paged/engine/the-renderer/the-display-list) is, why an
   intermediate representation exists, and what commands it carries;
-- understand the [rendering backends](/docs/idml/the-renderer/rendering-backends) — why
+- understand the [rendering backends](/docs/paged/engine/the-renderer/rendering-backends) — why
   WebGPU (via Vello) is the forward path while a CPU rasterizer stays around as the
   fidelity yardstick;
 - or simply read the code: it's open, and these pages point you straight at it.

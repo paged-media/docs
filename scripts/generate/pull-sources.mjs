@@ -12,6 +12,10 @@
  *   - LOCAL (default when the sibling working copy exists under ~/paged/<repo>):
  *     copy the file straight from disk. Ideal for local iteration against the
  *     live workspace — what you see is what's on your machine right now.
+ *     Exception: a source whose `ref` is "core.pin" is read at the commit
+ *     core.pin names (`git show <sha>:<path>`), never from the working tree, so
+ *     a stale or dirty local core cannot leak into the build (the catalog read a
+ *     clone 7 protocols behind once, 2026-10-11).
  *   - REMOTE (forced with --remote, or used when no sibling exists): pull from
  *     GitHub at the pinned ref via `gh api` (token-authenticated, so private
  *     repos work). The resolved commit SHA is recorded for provenance.
@@ -69,6 +73,30 @@ function fetchRemote(repo, path, ref) {
   );
 }
 
+/** The commit core.pin names: its first non-comment, non-blank line. */
+function corePinSha() {
+  const line = readFileSync(join(ROOT, 'core.pin'), 'utf8')
+    .split('\n')
+    .map((l) => l.trim())
+    .find((l) => l && !l.startsWith('#'));
+  if (!line || !/^[0-9a-f]{7,40}$/.test(line)) throw new Error('core.pin: no commit sha found');
+  return line;
+}
+
+/** A file at a commit in a local clone, fetching once if the commit is absent. */
+function showLocal(repoDir, sha, path) {
+  try {
+    sh('git', ['-C', repoDir, 'cat-file', '-e', `${sha}^{commit}`]);
+  } catch {
+    sh('git', ['-C', repoDir, 'fetch', '--quiet', 'origin']);
+  }
+  return execFileSync('git', ['-C', repoDir, 'show', `${sha}:${path}`], {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    maxBuffer: MAX_BUFFER,
+  });
+}
+
 /** Local sibling commit SHA for provenance (best-effort). */
 function localSha(repoDir) {
   try {
@@ -101,19 +129,23 @@ console.log(`pull-sources → ${OUT}  (${lock.mode})`);
 for (const [key, src] of Object.entries(PIN.sources)) {
   const repoDir = join(SIBLINGS, src.repo);
   const useLocal = !REMOTE && existsSync(repoDir);
+  const pinned = src.ref === 'core.pin' ? corePinSha() : null;
+  const ref = pinned ?? src.ref;
   const keyDir = join(OUT, key);
   ensureDir(keyDir);
-  const entry = { repo: src.repo, ref: src.ref, mode: useLocal ? 'local' : 'remote', sha: null, files: {} };
+  const entry = { repo: src.repo, ref, mode: useLocal ? 'local' : 'remote', sha: null, files: {} };
 
   for (const [outName, relPath] of Object.entries(src.files)) {
     const dest = join(keyDir, outName);
     try {
-      if (useLocal) {
+      if (useLocal && pinned) {
+        writeFileSync(dest, showLocal(repoDir, pinned, relPath));
+      } else if (useLocal) {
         const from = join(repoDir, relPath);
         if (!existsSync(from)) throw new Error(`missing local file ${from}`);
         copyFileSync(from, dest);
       } else {
-        writeFileSync(dest, fetchRemote(src.repo, relPath, src.ref));
+        writeFileSync(dest, fetchRemote(src.repo, relPath, ref));
       }
       entry.files[outName] = relPath;
       console.log(`  ✓ ${key}/${outName}  ← ${src.repo}/${relPath} (${entry.mode})`);
@@ -121,7 +153,7 @@ for (const [key, src] of Object.entries(PIN.sources)) {
       warn(`${key}/${outName}: ${e.message.split('\n')[0]}`);
     }
   }
-  entry.sha = useLocal ? localSha(repoDir) : resolveSha(src.repo, src.ref);
+  entry.sha = pinned ?? (useLocal ? localSha(repoDir) : resolveSha(src.repo, ref));
   lock.sources[key] = entry;
 }
 

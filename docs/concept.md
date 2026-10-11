@@ -7,8 +7,9 @@ places; where they and the code disagree, this page follows the code and
 
 ## Why it exists
 
-The repository is the source of docs.paged.media: an independent reference for the IDML
-file format and for the Paged renderer. It is written from first principles, from small
+The repository is the source of two sites: idml.paged.media, an independent reference for
+the IDML file format, and docs.paged.media, the documentation of the Paged platform
+([ADR 805](adr/805-two-sites-one-app.md)). It is written from first principles, from small
 files the project builds itself and from what its own renderer learns when it reads them.
 <!-- source: README.md:3-6 -->
 

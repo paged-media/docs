@@ -1,6 +1,8 @@
 import Script from 'next/script';
 
-const DOMAIN = 'docs.paged.media';
+import { site } from '@/lib/site';
+
+const DOMAIN = new URL(site.origin).host;
 
 /**
  * Cookieless, GDPR-friendly analytics (briefing §8). No consent banner. Plausible
@@ -17,7 +19,7 @@ const GA_ID = 'G-LK286EZ3FX';
 
 /**
  * Google Analytics 4 (gtag.js). Production-only so `next dev` doesn't pollute the
- * property with local hits; ships in the static export (GitHub Pages) where
+ * property with local hits; ships in the static export where
  * NODE_ENV is production. NOTE: GA4 sets cookies — unlike the cookieless
  * Plausible above, this carries a consent obligation in the EU.
  */

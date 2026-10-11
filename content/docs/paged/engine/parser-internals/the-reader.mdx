@@ -45,7 +45,7 @@ With the entries in hand, the open path does exactly three things before returni
    contents against Adobe's IDML constant,
    `application/vnd.adobe.indesign-idml-package`. A missing or wrong mimetype stops
    the open here. (The full check, and what it rejects, is the subject of
-   [Validation and recovery](/docs/idml/parser-internals/validation-and-recovery).)
+   [Validation and recovery](/docs/paged/engine/parser-internals/validation-and-recovery).)
 2. **Reads the designmap.** It pulls `designmap.xml` out of the entry map and parses
    it into a `DesignMap` — the manifest that lists which spreads, stories, masters,
    and resource parts the package references. This is the table of contents the rest
@@ -100,7 +100,7 @@ loop:
 This means each part is read in **one forward pass**, with no backtracking and no
 intermediate tree. The parser pulls the handful of attributes it consumes off each
 start tag as it goes (using the shared `attr` helper, covered in
-[Validation and recovery](/docs/idml/parser-internals/validation-and-recovery)) and
+[Validation and recovery](/docs/paged/engine/parser-internals/validation-and-recovery)) and
 assembles the typed struct as the events flow by. When the `Eof` event arrives, the
 struct is complete. There is no second walk to resolve or normalise anything inside
 the part.
@@ -155,7 +155,7 @@ The reader's whole personality is in that shape: open the archive once, keep the
 parts as cheap slices, check just enough to know it is IDML, and defer the real
 parsing until a typed document is actually being assembled. The cost model that falls
 out of these choices — and the trade-offs they imply — is the subject of
-[Performance and memory](/docs/idml/parser-internals/performance-and-memory).
+[Performance and memory](/docs/paged/engine/parser-internals/performance-and-memory).
 
 ## Frequently asked questions
 

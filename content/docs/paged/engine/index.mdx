@@ -1,0 +1,19 @@
+---
+title: The engine
+description: How Paged's open Rust engine reads an IDML package and renders it — the renderer pipeline, the parser internals, and the corpus that tests both.
+tier: pro
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+**The engine is the open Rust code that reads an IDML package and turns it into
+pages.** These chapters describe Paged's implementation. The format itself is
+described in the [IDML Reference](/docs/idml/overview).
+
+- **[The renderer](/docs/paged/engine/the-renderer)** — the pipeline from parsed
+  package to display list to pixels, and the rendering backends.
+- **[Parser internals](/docs/paged/engine/parser-internals)** — how the reader
+  walks the package, recovers from damaged input, and stays within memory.
+- **[Test corpus](/docs/paged/engine/test-corpus)** — how the engine is tested,
+  and how every example in the IDML Reference is validated against it.

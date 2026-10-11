@@ -18,7 +18,7 @@
  * Form, not color: the label text carries the meaning (survives greyscale); the
  * color only reinforces it, using the brand app-status palette.
  */
-import Link from 'fumadocs-core/link';
+import Link from '@/components/site-link';
 import { getSupportFeature, type BadgeTone } from '@/lib/generated';
 
 export type SupportStatus = 'supported' | 'parsed-not-rendered' | 'not-yet-parsed';

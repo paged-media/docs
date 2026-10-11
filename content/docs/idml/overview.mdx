@@ -1,27 +1,26 @@
 ---
-title: IDML Reference
-description: An independent, living reference for the IDML file format and the Paged renderer that reads it.
+title: About this reference
+description: What the IDML Reference covers, how it is organized by reader tier, and how its examples are validated against a working renderer.
 tier: beginner
 diataxis: explanation
 status: published
 owner: paged-docs
 ---
 
-**This is an independent, living reference for the IDML file format and the Paged renderer that reads it.**
+**This is an independent, living reference for IDML, the InDesign Markup Language.**
 
 **In short:** IDML is the format an InDesign document takes when it travels as
-text — an open, inspectable package instead of a sealed binary — and Paged is the
-open-source renderer we build to turn that package back into real, bounded pages.
-This reference explains the format for humans, from first principles: from small
-files we author ourselves, and from what the renderer actually learns as it reads
-them. It is not the normative specification — it points to the authoritative spec
-where a normative answer is needed — and it runs roughly beginner to pro so you can
-enter wherever your question lives.
+text — an open, inspectable package instead of a sealed binary. This reference
+explains the format for humans, from first principles: from small files we author
+ourselves, and from what a working renderer does with them. It is not the
+normative specification — it points to the authoritative spec where a normative
+answer is needed — and it runs roughly beginner to pro so you can enter wherever
+your question lives.
 
-This is the **format** half of the documentation. The other half — the engine,
-the editor, the SDK, the scripting layer, and the plugins that act on IDML — is
-the [Paged platform reference](/docs/paged/). The two cross-link: most format
-concepts here point to the Paged surface that reads or writes them, and back.
+The reference implementation behind every example is
+[Paged](/docs/paged/overview), an open-source engine that reads, renders and
+writes IDML. Where it helps, a page notes how Paged handles a construct; the
+format itself is described independently of any one tool.
 
 ## How this is organized
 

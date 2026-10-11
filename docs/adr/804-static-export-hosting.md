@@ -88,3 +88,12 @@ it deploys to GitHub Pages. `public/CNAME` and `public/.nojekyll` date from comm
   — the source pull that keeps the build in Actions; the wasm served from `/preview/`
 - [ADR 212](https://github.com/paged-media/editor/blob/main/docs/adr/212-one-automation-surface.md)
   (editor) — the playground and the script bridge that the iframes embed
+
+## Amendment — 2026-10-11
+
+The one export became two (ADR 805): the same build runs with `SITE=idml` and
+`SITE=paged`, deploying to the Cloudflare Pages projects `paged-idml` (idml.paged.media) and
+`paged-docs` (docs.paged.media). `public/_redirects` is now generated per site by
+`scripts/write-redirects.mjs`, and `public/CNAME`, the leftover from the first host, is
+deleted. The GitHub Pages wording in `next.config.mjs`, `app/api/search/route.ts` and
+`components/analytics.tsx` is corrected.

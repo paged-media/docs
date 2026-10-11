@@ -109,7 +109,7 @@ first thing our parser reads. See
 
 **display list** — The renderer's intermediate output: an ordered list of fills,
 strokes, images, and glyph runs produced from the laid-out document, which the
-rasteriser then paints into pixels. See [/docs/the-renderer](/docs/idml/the-renderer).
+rasteriser then paints into pixels. See [/docs/the-renderer](/docs/paged/engine/the-renderer).
 
 **DOMVersion** — The attribute on the root `Document` naming the scripting-DOM /
 format revision the package targets (e.g. `20.0`); our parser reads it but does not
@@ -297,7 +297,7 @@ container for placed images. See
 **renderer-core** — The slim, embeddable rendering layer of the Paged engine
 (`core/crates/paged-renderer` and friends) that this reference documents — the part
 that turns a parsed IDML document into a display list and then into pixels. See
-[/docs/the-renderer](/docs/idml/the-renderer).
+[/docs/the-renderer](/docs/paged/engine/the-renderer).
 
 **ResultText** — The frozen, export-time string a `TextVariableInstance` carries:
 the value InDesign computed the last time it composed the document. The renderer
@@ -331,7 +331,7 @@ alternate rather than its primary space. See
 
 **SSIM** — Structural Similarity, the structure-aware image-difference metric the
 fidelity gate uses (alongside ΔE2000) to compare the renderer's output against
-InDesign's reference PDF page by page. See [/docs/test-corpus](/docs/idml/test-corpus).
+InDesign's reference PDF page by page. See [/docs/test-corpus](/docs/paged/engine/test-corpus).
 
 **Story** — The container that holds a body of text independent of how it is
 displayed: one `Stories/Story_*.xml` part of paragraphs and runs, referenced by the
@@ -390,21 +390,21 @@ self-identifying. See [/docs/idml/package-anatomy/zip-container](/docs/idml/pack
 
 **Vello** — The GPU-accelerated 2D vector renderer behind Paged's WebGPU backend; it
 rasterises the display list on the GPU. The legacy CPU path uses tiny-skia instead.
-See [/docs/the-renderer](/docs/idml/the-renderer).
+See [/docs/the-renderer](/docs/paged/engine/the-renderer).
 
 ## W
 
 **WebGPU** — The cross-platform GPU API the renderer's primary backend targets
 (through Vello), the same backend that powers the in-browser live preview. The older
 CPU rasteriser (tiny-skia) remains as a headless, GPU-free fallback. See
-[/docs/the-renderer](/docs/idml/the-renderer).
+[/docs/the-renderer](/docs/paged/engine/the-renderer).
 
 ## Δ
 
 **ΔE2000** — The perceptual color-difference metric (CIEDE2000) the fidelity gate
 uses to measure, per pixel and per page, how far the renderer's output drifts from
 InDesign's reference export; together with SSIM it is the pass/fail number behind a
-fidelity claim. See [/docs/test-corpus](/docs/idml/test-corpus).
+fidelity claim. See [/docs/test-corpus](/docs/paged/engine/test-corpus).
 
 ## Frequently asked questions
 

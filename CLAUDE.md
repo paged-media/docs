@@ -1,8 +1,14 @@
 # CLAUDE.md — paged-media/docs
 
-Orientation for Claude sessions in **paged-media/docs** — the PUBLIC, living IDML
-reference deployed at **docs.paged.media**. Built from the plan in
-`thoughts/docs/paged/docs.md`.
+Orientation for Claude sessions in **paged-media/docs** — PUBLIC. One app, built as
+two sites (ADR 805, `docs/adr/805-two-sites-one-app.md`):
+
+- `SITE=idml` → **idml.paged.media**, the IDML format reference (`content/docs/idml`)
+- `SITE=paged` (default) → **docs.paged.media**, the Paged docs (`content/docs/paged`)
+
+Write links site-neutral (`/docs/idml/<path>`, `/docs/paged/<path>`); `lib/site.ts`
+`resolveHref` maps them per build. The original plan is archived at
+`thoughts/docs/archive/docs/docs.md`; the current record is `docs/` here.
 
 ## What this is
 
@@ -21,7 +27,7 @@ workspace and NOT a monorepo subtree. It documents the **IDML format** *and* the
    reason, never "that's the spec's order." Element/attribute names are facts and
    may be used freely. **The spec PDF must NEVER be committed here** (it is
    copyrighted vendor material; `.gitignore` guards `*.pdf`). Every content PR
-   ticks the clean-room checkbox. See `content/docs/meta/clean-room-protocol.mdx`.
+   ticks the clean-room checkbox. See `content/docs/idml/meta/clean-room-protocol.mdx`.
 
 2. **Examples are imported, never inlined.** Every snippet lives in `examples/` as
    hand-authored, human-readable unzipped IDML XML parts and is pulled into MDX via
@@ -37,16 +43,15 @@ workspace and NOT a monorepo subtree. It documents the **IDML format** *and* the
 
 Every page declares ONE tier (🟢 beginner / 🟡 intermediate / 🔴 pro) and ONE
 Diátaxis mode (tutorial / how-to / reference / explanation) in frontmatter
-(schema: `source.config.ts`). `noindex` is DERIVED from `status` — only
-`status: published` pages are indexed (sitemap + robots meta). Stubs are public
-but `noindex`'d behind the WIP banner.
+(schema: `lib/frontmatter.ts`). Every page is indexed regardless of `status`
+(`lib/metadata.ts`), so a page is not merged until it can face a search result.
 
 ## Quick commands
 
 ```bash
 pnpm install            # runs `fumadocs-mdx` postinstall (generates .source/)
-pnpm dev
-pnpm build              # also fails on broken example imports / MDX
+pnpm dev               # docs.paged.media;  pnpm dev:idml  for idml.paged.media
+pnpm build             # also fails on broken example imports / MDX; build:idml / build:paged
 pnpm typecheck
 pnpm examples:index     # cheap manifest integrity check (no renderer)
 pnpm validate:examples  # full gate; needs paged-inspect (see examples/README.md)
@@ -63,13 +68,13 @@ renders the assembled package via the PUBLISHED `@paged-media/idml-viewer`
 `scripts/prepare-preview-wasm.mjs` (run by `pnpm build`/`prepare:preview`), loaded
 lazily client-side with a no-WebGPU fallback. No core checkout for the preview.
 
-## Phase-0 scope / out of scope
+## SEO contract (idml.paged.media especially)
 
-In: static example views (raw/annotated/tree), difficulty label, ExampleEmbed,
-~5 cornerstone pages, style guide v1, clean-room v1, the IA, CI, analytics
-baseline, and the WebGPU `<LivePreview>` (now shipped via the published
-`@paged-media/idml-viewer`). OUT: the hosted search upgrade, and the bulk of the
-~200-page content.
+One URL per page: root-relative, trailing slash, canonical = that URL on the site's own
+origin. Every moved URL gets a one-hop 301 in `scripts/write-redirects.mjs` — never a
+redirect to the home page, never a chain. Titles are `<Page> · <Site name>`; descriptions
+stay at 170 characters or fewer (`pnpm check:seo`). Per-page JSON-LD comes from frontmatter
+and the FAQ section, never hand-written.
 
 ## Licensing
 

@@ -1,7 +1,12 @@
-# Paged — the IDML living documentation
+# Paged — the IDML reference and the Paged docs
 
-The source of [**docs.paged.media**](https://docs.paged.media): an independent,
-living reference for the **IDML** file format and the **Paged** native renderer.
+The source of two sites, built from one app ([ADR 805](./docs/adr/805-two-sites-one-app.md)):
+
+- [**idml.paged.media**](https://idml.paged.media/): an independent, living reference for
+  the **IDML** file format (`content/docs/idml`, `pnpm dev:idml`).
+- [**docs.paged.media**](https://docs.paged.media/): the documentation of **Paged**, the
+  open-source engine, SDK, scripting layer and plugins (`content/docs/paged`, `pnpm dev`).
+
 Authored from first principles — from small files we build ourselves and from what
 the renderer learns reading them.
 
@@ -53,9 +58,9 @@ pnpm typecheck
   accepting an example, the build breaks. See [`examples/README.md`](./examples/README.md).
 - **Clean-room.** No copying the spec — in wording or arrangement. Every content
   change confirms it; CI runs a masked-prose similarity backstop. See
-  [`content/docs/meta/clean-room-protocol.mdx`](./content/docs/meta/clean-room-protocol.mdx).
-- **Public, but `noindex` until done.** Stubs ship behind a work-in-progress
-  banner and are excluded from search; only `status: published` pages are indexed.
+  [`content/docs/idml/meta/clean-room-protocol.mdx`](./content/docs/idml/meta/clean-room-protocol.mdx).
+- **Public and indexed.** Every page is in the sitemap, drafts included; each site has
+  its own canonical URLs, sitemap and redirects.
 
 ## Licensing
 

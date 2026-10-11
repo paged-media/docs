@@ -8,7 +8,7 @@
  *   <ActivityFeed limit={20} />
  *   <RepoActivity repo="core" />
  */
-import Link from 'fumadocs-core/link';
+import Link from '@/components/site-link';
 import { getActivity, type Commit } from '@/lib/generated';
 
 const mono: React.CSSProperties = { fontFamily: 'var(--font-mono, monospace)', fontSize: 11 };

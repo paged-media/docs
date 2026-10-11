@@ -1,9 +1,7 @@
 {
-  "root": true,
   "title": "IDML Reference",
-  "icon": "book",
   "pages": [
-    "index",
+    "overview",
     "---Getting started---",
     "foundations",
     "package-anatomy",
@@ -32,10 +30,6 @@
     "round-tripping",
     "edge-cases",
     "comparisons",
-    "---The engine---",
-    "the-renderer",
-    "parser-internals",
-    "test-corpus",
     "---Apply it---",
     "cookbook",
     "glossary",

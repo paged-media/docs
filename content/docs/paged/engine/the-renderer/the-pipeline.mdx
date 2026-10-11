@@ -86,8 +86,8 @@ times.
 The display list is the renderer's pivot point. It is a small, self-contained,
 versioned intermediate representation of *what to paint*, deliberately decoupled from
 *how* it gets painted. That decoupling is what the next stage — and the whole
-[rendering-backends](/docs/idml/the-renderer/rendering-backends) story — depends on. It's
-important enough to have [its own reference page](/docs/idml/the-renderer/the-display-list).
+[rendering-backends](/docs/paged/engine/the-renderer/rendering-backends) story — depends on. It's
+important enough to have [its own reference page](/docs/paged/engine/the-renderer/the-display-list).
 
 ## Stage 5 — Rasterize: paint the pixels
 
@@ -100,7 +100,7 @@ There are two rasterizer implementations behind one `PathRasterizer` trait. The
 the viewer, and this site's live preview. A **CPU rasterizer (tiny-skia)** is kept as
 the always-available, deterministic backend used by headless CI and the fidelity
 gate. Which one runs is a backend choice made at the edge; the display list feeding
-them is identical. The [rendering-backends page](/docs/idml/the-renderer/rendering-backends)
+them is identical. The [rendering-backends page](/docs/paged/engine/the-renderer/rendering-backends)
 covers the trade-offs.
 
 ## The crate map
@@ -182,4 +182,4 @@ callers should use `build_document`.
 Off to the side, after rasterization. `paged-fidelity` is not part of producing a
 page — it's how we *check* a page, diffing a render against an InDesign-exported
 reference PDF using ΔE2000 colour difference and SSIM. It's the reason the CPU
-backend stays around; see [rendering backends](/docs/idml/the-renderer/rendering-backends).
+backend stays around; see [rendering backends](/docs/paged/engine/the-renderer/rendering-backends).

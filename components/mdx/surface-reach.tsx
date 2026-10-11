@@ -8,6 +8,7 @@
  * nothing here is written by hand, including the reasons. Server component.
  */
 import { getSurfaces, type SurfaceCounts } from '@/lib/generated';
+import { resolveHref } from '@/lib/site';
 
 /** Numerator for "reachable at all" — named plus the general door. */
 function reach(c: SurfaceCounts): number {
@@ -50,7 +51,7 @@ export function SurfaceReach() {
               <tr key={s.key} style={{ borderBottom: '1px solid var(--color-rule)', verticalAlign: 'top' }}>
                 <td style={{ padding: '10px 10px 10px 0' }}>
                   {s.href ? (
-                    <a href={s.href} style={{ color: 'inherit' }}>
+                    <a href={resolveHref(s.href)} style={{ color: 'inherit' }}>
                       {s.title}
                     </a>
                   ) : (

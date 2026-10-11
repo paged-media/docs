@@ -1,6 +1,10 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import { GithubInfoSafe } from '@/components/github-info-safe';
 import { Wordmark } from '@/components/wordmark';
+import { SITES, SITE_ID } from '@/lib/site';
+
+// The sibling site, linked from every page's masthead.
+const sibling = SITES[SITE_ID === 'idml' ? 'paged' : 'idml'];
 
 export const baseOptions: BaseLayoutProps = {
   nav: {
@@ -10,6 +14,11 @@ export const baseOptions: BaseLayoutProps = {
   // light/dark toggle is removed entirely.
   themeSwitch: { enabled: false },
   links: [
+    {
+      text: SITE_ID === 'idml' ? 'Paged docs' : 'IDML Reference',
+      url: `${sibling.origin}/`,
+      external: true,
+    },
     {
       type: 'custom',
       // Stars/forks for the public renderer engine. Fetched at build time

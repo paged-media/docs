@@ -4,12 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "packageManager": "pnpm@9.0.0",
-  "description": "docs.paged.media — the independent IDML living reference (Fumadocs).",
+  "description": "idml.paged.media (the IDML reference) and docs.paged.media (the Paged docs), one Fumadocs app built twice (SITE=idml|paged).",
   "scripts": {
-    "dev": "pnpm generate:docs && next dev",
+    "dev": "pnpm generate:docs && node scripts/write-redirects.mjs && next dev",
     "prepare:preview": "node scripts/prepare-preview-wasm.mjs",
     "generate:docs": "node scripts/generate/pull-sources.mjs && node scripts/generate/gen-matrix.mjs && node scripts/generate/gen-scripting.mjs && node scripts/generate/gen-cli.mjs && node scripts/generate/gen-surfaces.mjs && node scripts/generate/gen-plugin-sdk.mjs && node scripts/generate/gen-api.mjs && node scripts/generate/gen-activity.mjs && node scripts/generate/gen-sdk.mjs && node scripts/generate/gen-idml-schema.mjs && node scripts/generate/gen-crosslinks.mjs",
-    "build": "pnpm generate:docs && pnpm prepare:preview && next build",
+    "build": "pnpm generate:docs && node scripts/write-redirects.mjs && pnpm prepare:preview && next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "postinstall": "fumadocs-mdx",
@@ -21,7 +21,10 @@
     "check:feature-refs": "node scripts/check-feature-refs.mjs",
     "check:freshness": "node scripts/check-freshness.mjs",
     "check:seo": "node scripts/check-seo.mjs",
-    "update:comparison": "node scripts/update-comparison.mjs"
+    "update:comparison": "node scripts/update-comparison.mjs",
+    "dev:idml": "SITE=idml pnpm dev",
+    "build:idml": "SITE=idml pnpm build",
+    "build:paged": "SITE=paged pnpm build"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

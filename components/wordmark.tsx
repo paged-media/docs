@@ -1,6 +1,8 @@
 // The Paged masthead lockup: the `paged.` wordmark (Cormorant Garamond, the
-// period is part of the mark) + a mono "IDML Reference" tagline. Sentence/lower
+// period is part of the mark) + a mono tagline naming the site (lib/site.ts). Sentence/lower
 // case per the brand; the period is oxblood as the one accent touch.
+import { site } from '@/lib/site';
+
 export function Wordmark() {
   return (
     <span className="inline-flex items-baseline gap-3">
@@ -20,7 +22,7 @@ export function Wordmark() {
           whiteSpace: 'nowrap',
         }}
       >
-        IDML&nbsp;Reference
+        {site.name}
       </span>
     </span>
   );

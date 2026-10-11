@@ -5,6 +5,7 @@
  * runnable showcase. A search box filters across name, type, and summary.
  */
 import { useMemo, useState } from 'react';
+import { resolveHref } from '@/lib/site';
 
 export interface PathRow {
   path: string;
@@ -64,7 +65,7 @@ export function PathReferenceView({ groups, count }: { groups: PathGroup[]; coun
           <h3 style={{ fontFamily: 'var(--font-serif, var(--font-sans))', fontSize: 15, margin: '0 0 4px' }}>
             {g.title}{' '}
             <a
-              href={`/docs/paged/scripting/showcases#theme-${g.id}`}
+              href={resolveHref(`/docs/paged/scripting/showcases#theme-${g.id}`)}
               style={{ fontFamily: 'var(--font-sans)', fontSize: 12, fontWeight: 640, color: 'var(--color-accent)', textDecoration: 'none' }}
             >
               demo ▸

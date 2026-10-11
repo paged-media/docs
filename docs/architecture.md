@@ -1,7 +1,8 @@
 # Architecture
 
-How the documentation site docs.paged.media is built. It describes what the code does at
-commit `2094ba4`. The reason behind each choice is in an ADR under [`adr/`](adr/README.md),
+How the documentation sites are built. It describes what the code did at commit `2094ba4`;
+since 2026-10-11 the one site is two — idml.paged.media and docs.paged.media, built from
+this app with `SITE=idml|paged` — as recorded in [ADR 805](adr/805-two-sites-one-app.md). The reason behind each choice is in an ADR under [`adr/`](adr/README.md),
 linked where it applies. This folder documents the repository; the site's own pages are in
 `content/docs/`.
 

@@ -21,3 +21,15 @@
 # The live-preview wasm must keep its correct MIME for streaming compile.
 /preview/*
   Cross-Origin-Resource-Policy: same-origin
+
+# The *.pages.dev hosts serve the same pages as the custom domains; keep them
+# (and per-deploy preview URLs) out of search indexes so only idml.paged.media
+# and docs.paged.media rank. Canonical tags already point at the custom domain.
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
+https://:version.:project.pages.dev/*
+  X-Robots-Tag: noindex
+
+# Generated, hashed assets never change under the same name.
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable

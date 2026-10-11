@@ -14,7 +14,7 @@
  * Auto-injected by app/docs/[[...slug]]/page.tsx on chapter index pages, so most
  * pages get it for free; can also be placed by hand anywhere in MDX.
  */
-import Link from 'fumadocs-core/link';
+import Link from '@/components/site-link';
 import { Pic } from '@/components/icons';
 import { getChapterCrosslink, getCrosslinks } from '@/lib/generated';
 

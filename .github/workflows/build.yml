@@ -8,6 +8,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # One app, two sites (ADR 805): every gate runs against both builds.
+    strategy:
+      fail-fast: false
+      matrix:
+        site: [idml, paged]
+    env:
+      SITE: ${{ matrix.site }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -25,7 +32,7 @@ jobs:
         # (state, plugin-sdk, editor-server, …); the default GITHUB_TOKEN can only
         # read this repo + public ones. On a PR/fork without the PAT this degrades
         # to public sources only and the ref/freshness checks skip — the
-        # token-equipped main build (and pages.yml) does the real gating.
+        # token-equipped main build does the real gating.
         run: pnpm generate:docs
         env:
           GH_TOKEN: ${{ secrets.DOCS_SOURCES_TOKEN || secrets.GITHUB_TOKEN }}

@@ -11,6 +11,8 @@ import {
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import { WipBanner } from '@/components/wip-banner';
 import { Analytics, GoogleAnalytics } from '@/components/analytics';
+import { site } from '@/lib/site';
+import { OG_IMAGE } from '@/lib/metadata';
 
 // The brand four-role type system, self-hosted by next/font (no CDN @import):
 // Newsreader (display serif) · Source Serif 4 (reading serif) · IBM Plex Sans
@@ -58,16 +60,25 @@ const fontVars = [
 
 export const metadata: Metadata = {
   title: {
-    template: '%s · Paged IDML Reference',
-    default: 'Paged · The IDML Living Documentation',
+    template: `%s · ${site.name}`,
+    default: site.homeTitle,
   },
-  description:
-    'An independent, living reference for the IDML file format and the Paged ' +
-    'native renderer. Authored from first principles.',
-  metadataBase: new URL('https://docs.paged.media'),
+  description: site.description,
+  metadataBase: new URL(site.origin),
+  applicationName: site.name,
   // The brand registration mark (a printer's crop/registration target) as the
   // favicon — the project's printer's-mark identity.
   icons: { icon: '/brand/registration-mark.svg' },
+  openGraph: {
+    type: 'website',
+    siteName: site.name,
+    locale: 'en_US',
+    images: [OG_IMAGE],
+  },
+  twitter: { card: 'summary_large_image', images: [OG_IMAGE.url] },
+  alternates: {
+    types: { 'text/plain': '/llms.txt' },
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

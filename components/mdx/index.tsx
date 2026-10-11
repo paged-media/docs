@@ -1,4 +1,6 @@
 import defaultComponents from 'fumadocs-ui/mdx';
+import type { ComponentProps } from 'react';
+import { resolveHref } from '@/lib/site';
 import type { MDXComponents } from 'mdx/types';
 import { DynamicCodeBlock } from 'fumadocs-ui/components/dynamic-codeblock';
 import { RawView } from './raw-view';
@@ -44,8 +46,12 @@ import { InteractiveFigure, ScriptingExecutionModel, RenderPipeline } from '@/co
  * code blocks keep using build-time Shiki via rehype).
  */
 export function getMDXComponents(extra?: MDXComponents): MDXComponents {
+  const A = defaultComponents.a;
   return {
     ...defaultComponents,
+    // Markdown links are written site-neutral (`/docs/idml/…`); resolve them
+    // for this build (lib/site.ts).
+    a: ({ href, ...props }: ComponentProps<'a'>) => <A href={href ? resolveHref(href) : href} {...props} />,
     RawView,
     AnnotatedView,
     TreeView,

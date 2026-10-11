@@ -30,7 +30,7 @@ hop buys three things:
 - **One scene, many backends.** The list is the seam between *what to paint* and
   *how*. The WebGPU/Vello backend and the CPU (tiny-skia) backend consume the exact
   same list, so the live preview and the CI fidelity render agree by construction.
-  See [rendering backends](/docs/idml/the-renderer/rendering-backends).
+  See [rendering backends](/docs/paged/engine/the-renderer/rendering-backends).
 - **Cheap re-painting.** A built page caches its display list. The interactive
   canvas can re-rasterize a page at a new zoom, or snapshot it at low resolution for
   a page navigator, without re-running parse, model, layout, and compose.
@@ -168,5 +168,5 @@ same result.
 Almost. The WebGPU/Vello backend covers the common set — fills, strokes, images,
 clips, blend groups — and approximates the soft effects. A couple of commands
 (`BevelEmboss`, and true per-channel CMYK overprint) are only fully realized on the
-CPU backend today. The [rendering-backends page](/docs/idml/the-renderer/rendering-backends)
+CPU backend today. The [rendering-backends page](/docs/paged/engine/the-renderer/rendering-backends)
 has the honest matrix.

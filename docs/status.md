@@ -1,15 +1,18 @@
 # Status
 
-What the documentation site ships and what it does not, read from the code at commit
-`2094ba4` (`@paged-media/idml-viewer` 0.64.0, `core.pin` at the engine tag `v0.64.0`). How
-the parts fit is in [`architecture.md`](architecture.md).
+What the documentation sites ship and what they do not. Last updated 2026-10-11
+(`@paged-media/idml-viewer` 0.71.1, `core.pin` at the engine tag `v0.71.1`), when the IDML
+reference moved to its own site ([ADR 805](adr/805-two-sites-one-app.md)). How the parts fit
+is in [`architecture.md`](architecture.md).
 
 ## Shipped
 
-- **The site.** 171 pages, built as a static export: the IDML reference (111 pages), the
-  platform part (59 pages) and the root index. 145 pages are `published`, 25 `draft`, one
-  `stub`. Search, `sitemap.xml`, `robots.txt`, `llms.txt` and `llms-full.txt` are static
-  files. Old URLs redirect to the two-part tree.
+- **Two sites from one app.** `SITE=idml` builds idml.paged.media from
+  `content/docs/idml` (99 pages: 97 `published`, one `draft`, one `stub`). `SITE=paged`
+  builds docs.paged.media from `content/docs/paged` (72 pages, including the engine chapters
+  moved from the IDML reference: 48 `published`, 24 `draft`). Each site has its own search
+  index, `sitemap.xml`, `robots.txt`, `llms.txt`, `llms-full.txt`, social card and
+  canonical URLs. Every older URL reaches its new home in one 301.
 - **Examples.** 24 hand-written IDML packages, shown by 36 `<ExampleEmbed>` uses as raw,
   annotated and tree views. CI assembles each package and validates it with the engine's
   `paged-inspect` at the pinned commit.
@@ -34,9 +37,11 @@ the parts fit is in [`architecture.md`](architecture.md).
   115 of the 116 `<AttrTable>` uses carry hand-written rows.
 - **The freshness check covers three pages.** Only pages that declare `describes:` are
   checked, and three do.
-- **The sources are not pinned.** Every `ref` in `sources.pin` is `main`, and the commit a
-  build used is recorded only in a file that is not committed. A source that cannot be
-  pulled is a warning, and the components that need it get empty data.
+- **Only the engine sources are pinned.** The three `core` sources read the commit in
+  `core.pin` (`ref: "core.pin"`), never a local working tree. The others still follow
+  `main`, and the commit a build used is recorded only in a file that is not committed. A
+  source that cannot be pulled is a warning, and the components that need it get empty
+  data.
 - **The registry data follows a branch.** The capability matrix, support badges and
   conformance table read files from the `state` repository at `main` (`sources.pin:5-13`,
   `:36-43`).
@@ -52,12 +57,7 @@ the parts fit is in [`architecture.md`](architecture.md).
   playground deployment.
 - **Two pins are matched by hand:** the viewer version in `package.json` and `core.pin`.
   A workflow warns when `core.pin` is behind the engine's latest tag; nothing bumps it.
-- **Indexing does not follow `status`.** Every page is indexed. The banner on every page
-  still says unfinished pages are excluded from search engines, and `README.md:47-48` and
-  `CLAUDE.md:40-42` say the same.
-- **Stale references to the first host.** Comments in several files, two workflows, the
-  dispatch template and one site page (`content/docs/paged/repos/docs.mdx`, status `draft`)
-  still name GitHub Pages or `pages.yml` ([ADR 804](adr/804-static-export-hosting.md)).
+- **Indexing does not follow `status`.** Every page is indexed, drafts included.
 - **`ownership.yaml` is not read by anything here**, and its paths lack the `idml/` level.
   Every section and every page has the same owner, `paged-docs`.
 - **`pnpm check:seo`** exists as a script; no workflow runs it.

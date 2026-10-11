@@ -85,17 +85,17 @@ for the times when the implementation is the answer to your question:
 The chapter is four pages, ordered the way you would meet the parser if you traced a
 single file through it:
 
-1. **[The reader](/docs/idml/parser-internals/the-reader)** — the container open path:
+1. **[The reader](/docs/paged/engine/parser-internals/the-reader)** — the container open path:
    how the ZIP is opened once, kept as zero-copy byte slices, and how individual
    stories and spreads are parsed only when something asks for them.
-2. **[Validation and recovery](/docs/idml/parser-internals/validation-and-recovery)** —
+2. **[Validation and recovery](/docs/paged/engine/parser-internals/validation-and-recovery)** —
    the two hard checks every file must pass, the full error model, and the forgiving
    way the parser handles everything that *isn't* fatal.
-3. **[Performance and memory](/docs/idml/parser-internals/performance-and-memory)** — the
+3. **[Performance and memory](/docs/paged/engine/parser-internals/performance-and-memory)** — the
    trade-offs behind single-pass, zero-copy, parse-on-demand, and
    resolve-at-render-time.
 
-It pairs naturally with two neighbouring chapters: [The renderer](/docs/idml/the-renderer)
+It pairs naturally with two neighbouring chapters: [The renderer](/docs/paged/engine/the-renderer)
 picks up where the parser leaves off, and [Edge cases](/docs/idml/edge-cases) catalogues
 the malformed and unusual documents whose handling the recovery model defines.
 
@@ -112,7 +112,7 @@ No. The parser (`paged-parse`) only reads — it turns IDML bytes into a typed A
 stops there. The renderer is the pipeline above it that lays out text, resolves color
 and style, and rasterises pages. They are separate crates with a clean boundary: the
 parser knows nothing about pixels, and the renderer never touches XML. See
-[The renderer](/docs/idml/the-renderer) for the other side of that line.
+[The renderer](/docs/paged/engine/the-renderer) for the other side of that line.
 
 **Do I need to read this chapter to work with IDML?**
 Usually not. The rest of this reference documents the IDML format itself, which is

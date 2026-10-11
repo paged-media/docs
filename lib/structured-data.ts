@@ -3,14 +3,17 @@
  * the page's own Markdown, never hand-authored. Three schema.org types:
  *
  *   TechArticle    — the page itself (headline, description, dateModified).
- *   BreadcrumbList — Home › Pillar › Section › Page, from the route.
+ *   BreadcrumbList — Site › Chapter › Page, from the route.
  *   FAQPage        — parsed from the page's "Frequently asked questions" section.
  *
  * Every page in this reference ends with FAQs (the page contract), so the
  * FAQPage block is high-leverage for both rich results and GEO citations. When
  * a page has no FAQ section, that block is simply omitted.
  */
-const BASE = 'https://docs.paged.media';
+import { site, SITE_ID } from '@/lib/site';
+import type { Tier } from '@/lib/frontmatter';
+
+const BASE = site.origin;
 
 export interface FaqPair {
   q: string;
@@ -61,12 +64,13 @@ export interface BreadcrumbCrumb {
 export function buildJsonLd(opts: {
   title: string;
   description?: string;
-  url: string; // page.url, e.g. /docs/idml/stories-text
+  url: string; // canonical path, e.g. /stories-text/
   dateModified?: string;
+  tier?: Tier;
   crumbs: BreadcrumbCrumb[];
   faq: FaqPair[];
 }): object {
-  const { title, description, url, dateModified, crumbs, faq } = opts;
+  const { title, description, url, dateModified, tier, crumbs, faq } = opts;
   const graph: object[] = [];
 
   graph.push({
@@ -77,9 +81,15 @@ export function buildJsonLd(opts: {
     ...(dateModified ? { dateModified } : {}),
     inLanguage: 'en',
     url: `${BASE}${url}`,
-    isPartOf: { '@type': 'WebSite', name: 'Paged Documentation', url: BASE },
-    author: { '@type': 'Organization', name: 'Paged' },
-    publisher: { '@type': 'Organization', name: 'Paged' },
+    mainEntityOfPage: `${BASE}${url}`,
+    // schema.org knows two levels; intermediate pages claim neither.
+    ...(tier === 'beginner' ? { proficiencyLevel: 'Beginner' } : tier === 'pro' ? { proficiencyLevel: 'Expert' } : {}),
+    ...(SITE_ID === 'idml'
+      ? { about: { '@type': 'Thing', name: 'IDML (InDesign Markup Language)' } }
+      : {}),
+    isPartOf: { '@id': `${BASE}/#website` },
+    author: { '@id': `${BASE}/#organization` },
+    publisher: { '@id': `${BASE}/#organization` },
   });
 
   if (crumbs.length) {
@@ -106,4 +116,33 @@ export function buildJsonLd(opts: {
   }
 
   return { '@context': 'https://schema.org', '@graph': graph };
+}
+
+/**
+ * The site-level graph for the home page: the WebSite and the Organization
+ * every article points at by @id.
+ */
+export function buildSiteJsonLd(): object {
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        '@id': `${BASE}/#website`,
+        url: `${BASE}/`,
+        name: site.name,
+        description: site.description,
+        inLanguage: 'en',
+        publisher: { '@id': `${BASE}/#organization` },
+      },
+      {
+        '@type': 'Organization',
+        '@id': `${BASE}/#organization`,
+        name: 'Paged',
+        url: 'https://paged.media',
+        logo: `${BASE}/brand/registration-mark.svg`,
+        sameAs: ['https://github.com/paged-media'],
+      },
+    ],
+  };
 }

@@ -1,0 +1,10 @@
+{
+  "title": "The engine",
+  "icon": "renderer",
+  "pages": [
+    "index",
+    "the-renderer",
+    "parser-internals",
+    "test-corpus"
+  ]
+}
