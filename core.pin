@@ -10,7 +10,15 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.71.3 (tag commit a7d6684). Catalog only: each typed property
+# Currently: v0.71.5 (tag commit 921a99a). Placed images: an image-free frame
+# no longer blanks every placed image after it on the GPU canvas; a frame that
+# names FillProportionally covers itself at one uniform scale instead of
+# stretching, in the render, `paged place --fit` and the IDML export alike; a
+# colour written as a swatch address is stored as the swatch id. Includes
+# v0.71.4 (e609b5a). No wire change. All four packages answer at 0.71.5 on the
+# registry (`latest`).
+#
+# v0.71.3 (tag commit a7d6684). Catalog only: each typed property
 # schema names the IDML element and attribute it stands for (355 of 403 rows),
 # which the IDML element reference (idml.paged.media/reference/) reads to show
 # an attribute's type, values and paged.set path. No wire change. All four
@@ -124,4 +132,4 @@
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-a7d66847cfea2b54224d0f578743fb8afa95fa3b
+921a99a544504d75c794eb8f2a67da9cfbd83e7b
