@@ -1,0 +1,102 @@
+---
+title: Table of contents
+description: How IDML stores a table of contents — TOCStyle and TOCStyleEntry in Styles.xml, and the generated story that names its TOC style in AppliedTOCStyle.
+tier: intermediate
+diataxis: reference
+status: published
+owner: paged-docs
+describes:
+  - cross-references-hyperlinks.toc
+reviewed: 2026-10-11
+---
+
+**A table of contents is an ordinary story that InDesign generated; a `TOCStyle` records the recipe it was generated from.**
+
+**In short:** The recipe is a `TOCStyle` in `Resources/Styles.xml`: a title, the
+paragraph style for the title, and one `TOCStyleEntry` per paragraph style to collect.
+Each entry names the style to collect (`IncludeStyle`), the style to format the entry
+with (`FormatStyle`), an outline `Level`, and how to place the page number. The result
+is a normal story of styled paragraphs with the page numbers typed out, and the story
+names the recipe in its `AppliedTOCStyle` attribute. Nothing in the file updates the
+list when pages move; regenerating it is the application's job.
+
+## The recipe: `TOCStyle`
+
+A `TOCStyle` is a direct child of the `idPkg:Styles` root, with no group element around
+it. InDesign writes a default one into every document: 271 documents in the census carry
+one, almost all of them without entries. A document that has a real table of contents
+adds a style with entries.
+
+- `Title` is the heading text, and `TitleStyle` the paragraph style it is set in.
+- `IncludeHidden` decides whether paragraphs on hidden layers count;
+  `IncludeBookDocuments` extends the collection to the other documents of a book.
+- `RunIn` sets all entries of a level in one paragraph instead of one per line.
+- `CreateBookmarks` turns the entries into PDF bookmarks on export, and `MakeAnchor`
+  places a text anchor at each source paragraph.
+- `RemoveForcedLineBreak` strips forced line breaks from the collected text, and
+  `NumberedParagraphs` decides whether a list number is kept.
+
+<AttrTable element="TOCStyle" />
+
+## The entries: `TOCStyleEntry`
+
+Each `TOCStyleEntry` child of a `TOCStyle` collects the paragraphs in one paragraph
+style:
+
+- `IncludeStyle` is the paragraph style to collect, for example a "Heading 1".
+- `FormatStyle` is the paragraph style the entry is set in. InDesign writes it as an
+  attribute or as a typed `Properties` child.
+- `Level` is the outline depth, 1 for the top level.
+- `PageNumber` and `PageNumberPosition` say whether the entry carries a page number and
+  where; `Separator` is the text between the entry and the number, and
+  `SeparatorStyle` and `PageNumberStyle` are the character styles for the two.
+- `SortAlphabet` sorts the entries of a level alphabetically instead of in page order.
+
+Entries are rare in real files: only three documents in the census have any.
+
+<AttrTable element="TOCStyleEntry" />
+
+## The result: a generated story
+
+Generating a table of contents walks the document's pages, picks every paragraph whose
+style is an entry's `IncludeStyle`, and writes one paragraph per match, set in the
+entry's `FormatStyle`, followed by the separator and the page number. The title comes
+first, in `TitleStyle`. The output is placed in a text frame like any other story.
+
+In the file, that story is ordinary text: `ParagraphStyleRange`s and
+`CharacterStyleRange`s with the entries and page numbers as `Content`. What marks it as
+a table of contents is the `Story` element's `AppliedTOCStyle` attribute, which names
+the `TOCStyle` it came from. Every other story says `AppliedTOCStyle="n"`. In the census,
+91 documents write the attribute and one of them points it at a TOC style.
+
+Because the page numbers are typed out, a table of contents goes stale when text moves
+to other pages, until it is regenerated.
+
+> **In Paged:** a text frame whose `AppliedTOCStyle` names a TOC style has its story
+> replaced by a fresh list: entries in story order, each with the label of the page its
+> story starts on (section numbering included), set in the entry's `FormatStyle`. The
+> title paragraph and `RunIn` are not applied yet. Paged does not yet read the attribute
+> on `Story`, where InDesign writes it, so a table of contents made in InDesign shows its
+> saved text. <SupportBadge feature="cross-references-hyperlinks.toc" />
+
+## Frequently asked questions
+
+**Where is a table of contents defined in IDML?**
+The recipe is a `TOCStyle` with `TOCStyleEntry` children in `Resources/Styles.xml`. The
+table itself is an ordinary story elsewhere in the package.
+
+**How do I find the table-of-contents story in a package?**
+Look for a `Story` whose `AppliedTOCStyle` names a `TOCStyle`. Other stories carry
+`AppliedTOCStyle="n"`.
+
+**Are the page numbers in a table of contents live?**
+No. They are saved as text when the table is generated and are only correct until the
+pages change.
+
+**What does `IncludeStyle` mean?**
+It names the paragraph style whose paragraphs the entry collects. `FormatStyle` names
+the style the collected entry is then set in.
+
+**Why does every document have a `TOCStyle`?**
+InDesign writes a default TOC style into every document, whether or not it contains a
+table of contents.

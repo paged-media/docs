@@ -1,171 +1,119 @@
 ---
 title: Hyperlinks & bookmarks
-description: The Hyperlink element and its source/destination pair — URL, page, and anchor destinations — plus Bookmark navigation anchors, and what the parser keeps from each.
+description: The Hyperlink element, its text source and its URL, page or text destination, and Bookmark — spelled the way InDesign 20.0.1 reads them.
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
+describes:
+  - cross-references-hyperlinks.hyperlinks
+  - cross-references-hyperlinks.bookmarks
+reviewed: 2026-10-11
 ---
 
-**A hyperlink is a source/destination pair joined by id, and a bookmark is a source-less navigation anchor — both kept by the parser, neither drawn on the page yet.**
+**A hyperlink joins a source in the story to a destination by id; a bookmark is a destination with a name and no source.**
 
-**In short:** In IDML a hyperlink is two elements, not one: a **source** — the
-stretch of text or the frame a reader interacts with — and a **destination** — the
-URL, page, or text anchor it jumps to. The `Hyperlink` element in the design map
-joins them by id, so a single destination can be reached from many sources. A
-**bookmark** is the source-less cousin: a named anchor that appears in a PDF's
-navigation outline with no clickable region in the body. Paged's parser keeps the
-fields it needs to follow each link or bookmark, while the renderer does not yet
-draw link regions, make them interactive, or emit a navigation structure.
-
-A hyperlink is a pair: a **source** — the stretch of text or the frame the
-reader interacts with — and a **destination** — the place it jumps to. IDML
-splits the two into separate elements and joins them by id, so the same
-destination can be reached from many sources. The `Hyperlink` element in the
-design map is the join: it names a `Source` and points at a `Destination`. The
-source's anchor lives back in the story; the destination is its own element,
-also in the design map.
-
-The package below carries one complete hyperlink — a `HyperlinkURLDestination`,
-a `HyperlinkTextSource`, and the `Hyperlink` that ties them together — plus the
-in-story anchor that the source records. The renderer reports one page, one
-story, one run: the three `Content` chunks (the text before the link, the linked
-words, and the text after) collapse into a single run, and the hyperlink
-metadata rides alongside without changing the count.
+**In short:** The linked words are wrapped in a `HyperlinkTextSource` inside the story.
+The place they jump to is a destination: a `HyperlinkURLDestination` or a
+`HyperlinkPageDestination` in the design map, or an inline `HyperlinkTextDestination`
+marker in a story. A `Hyperlink` in the design map joins the two: `Source` is an
+attribute, and the destination is a typed `<Properties><Destination type="object">`
+child that names it as `Type/Self`. InDesign binds these elements only when they come
+after the last `idPkg:Story` reference.
 
 <ExampleEmbed example="with-hyperlink">
-  One Hyperlink joining a text source to a URL destination — parsed into the
-  model and emitted as a PDF link annotation over the source span.
+  One hyperlink: a text source in the story, a URL destination and the Hyperlink that
+  joins them, placed after the story reference.
 </ExampleEmbed>
 
-<SupportBadge status="supported" note="hyperlink source spans emit PDF link annotations (URL + go-to-page); an on-page visual underline/highlight is an editor affordance, not a render output" />
+## `Hyperlink`: the join
 
-## `Hyperlink`
+`Hyperlink` is a direct child of `Document`. It carries the source as an attribute and
+the destination as a typed property:
 
-The join element, listed flat in the design map. The parser keeps the four
-fields it needs to follow the link — the id, the human name, the source ref, and
-the destination — and reads the appearance attributes past. Note that the
-destination is read from `DestinationUniqueKey` when present (the integer key a
-destination element exposes) and otherwise from `Destination`.
+- `Source` names the source's `Self` (for text, a `HyperlinkTextSource` id).
+- `<Properties><Destination type="object">HyperlinkURLDestination/urldest</Destination>`
+  names the destination as its element type, a slash, and its `Self`.
+- `Visible`, `Highlight`, `Width`, `BorderStyle` and the typed `BorderColor` property
+  describe the link rectangle in exported PDF.
 
-<AttrTable
-  element="Hyperlink"
-  rows={[
-    { attr: 'Self', type: 'string id', support: 'supported', note: 'The hyperlink id.' },
-    { attr: 'Name', type: 'string', support: 'supported', note: 'Human-readable name shown in the Hyperlinks panel.' },
-    { attr: 'Source', type: 'string ref (HyperlinkTextSource/… or a page-item source)', support: 'parsed-not-rendered', note: 'The source the link starts from. Kept on the model; not resolved to a drawn region.' },
-    { attr: 'DestinationUniqueKey', type: 'int', support: 'parsed-not-rendered', note: 'Preferred destination key. Read into the destination field when present.' },
-    { attr: 'Destination', type: 'string ref', support: 'parsed-not-rendered', note: 'Fallback destination ref when DestinationUniqueKey is absent.' },
-    { attr: 'Visible', type: 'boolean', support: 'not-yet-parsed', note: 'Whether the link is visible in exported PDF. Read past.' },
-    { attr: 'Hidden', type: 'boolean', support: 'not-yet-parsed', note: 'Whether the link is hidden in output. Read past.' },
-    { attr: 'Highlight', type: 'None | Invert | Outline | Inset', support: 'not-yet-parsed', note: 'PDF click highlight style. Read past.' },
-    { attr: 'Width', type: 'Thin | Medium | Thick', support: 'not-yet-parsed', note: 'Border stroke width. Read past.' },
-    { attr: 'BorderStyle', type: 'Solid | Dashed', support: 'not-yet-parsed', note: 'Border style of the link box. Read past.' },
-  ]}
-/>
+These rules were measured in InDesign 20.0.1:
 
-## The source side
+- **A `Destination` attribute is ignored.** The link opens unbound.
+- **`Destination` attribute plus `DestinationUniqueKey` makes the file unopenable.**
+- **`DestinationUniqueKey` on its own is optional.** It neither helps nor hurts binding.
 
-A `Hyperlink`'s `Source` names one of two anchor kinds. Both are recorded at
-document level; the text kind also leaves a wrapper inside the story.
+<AttrTable element="Hyperlink" />
 
-- A **`HyperlinkTextSource`** wraps a stretch of text inside a
-  `CharacterStyleRange`. In the example, it surrounds the words "paged media
-  docs" between two plain `Content` chunks. The parser now records the enclosing
-  source span's id on each run it covers, so the linked region is known and the
-  renderer can place a PDF link annotation over exactly those glyphs.
-  <SupportBadge status="supported" note="in-story hyperlink/cross-reference source spans are recorded on the runs they cover and emitted as link annotations" />
-- A **`HyperlinkPageItemSource`** makes a whole page item (a frame) the source
-  via its `SourcePageItem` attribute, with no in-text wrapper.
+## The source: `HyperlinkTextSource`
 
-## The destination side
+A text source wraps the characters that are clickable. InDesign writes it inside the
+`CharacterStyleRange`, around the `Content` it covers, so a link in the middle of a
+sentence splits the range's content into three parts: the text before, the source, and
+the text after. Some generated files wrap whole `CharacterStyleRange`s in the source
+instead.
 
-A hyperlink jumps to exactly one of three destination elements, each listed in
-the design map. They share `Self`, `Name`, and a `DestinationUniqueKey` integer
-key; what differs is the kind of place they name.
+<AttrTable element="HyperlinkTextSource" />
 
-<AttrTable
-  element="HyperlinkURLDestination"
-  rows={[
-    { attr: 'Self', type: 'string id', support: 'supported', note: 'The destination id.' },
-    { attr: 'Name', type: 'string (unique in document)', support: 'parsed-not-rendered', note: 'Destination name; must be unique within the document.' },
-    { attr: 'DestinationURL', type: 'string (URL)', support: 'parsed-not-rendered', note: 'The web address the link opens.' },
-    { attr: 'DestinationUniqueKey', type: 'int', support: 'parsed-not-rendered', note: 'The key a Hyperlink names to reach this destination.' },
-    { attr: 'Hidden', type: 'boolean', support: 'not-yet-parsed', note: 'Whether the link is hidden in PDF. Read past.' },
-  ]}
-/>
+A page item can be a source too (`HyperlinkPageItemSource`), but none of the 305
+documents in the census uses one.
 
-<AttrTable
-  element="HyperlinkPageDestination"
-  rows={[
-    { attr: 'Self', type: 'string id', support: 'supported', note: 'The destination id.' },
-    { attr: 'Name', type: 'string (unique in document)', support: 'parsed-not-rendered', note: 'Destination name.' },
-    { attr: 'DestinationPage', type: 'string ref (a page)', support: 'parsed-not-rendered', note: 'The target page in this document.' },
-    { attr: 'ViewSetting', type: 'Fixed | FitView | FitWindow | FitWidth | FitHeight | FitVisible | InheritZoom', support: 'not-yet-parsed', note: 'How the viewer frames the page on arrival. Read past.' },
-    { attr: 'ViewPercentage', type: 'double (5–4000)', support: 'not-yet-parsed', note: 'Zoom level when ViewSetting is Fixed. Read past.' },
-  ]}
-/>
+## Destinations
 
-A third kind, `HyperlinkExternalPageDestination`, names a page in *another*
-document via a `DocumentPath` and a `DestinationPageIndex` (1–9999); it shares
-the page destination's view-setting vocabulary.
+A hyperlink lands on one of three kinds of destination.
+
+**`HyperlinkURLDestination`** opens a web address, `DestinationURL`. It is a direct
+child of `Document`.
+
+<AttrTable element="HyperlinkURLDestination" />
+
+**`HyperlinkPageDestination`** jumps to a page in the same document: `DestinationPage`
+names the page's `Self`, and `ViewSetting` / `ViewPercentage` say how the viewer frames
+it on arrival. It is also a direct child of `Document`.
+
+<AttrTable element="HyperlinkPageDestination" limit={6} />
+
+**`HyperlinkTextDestination`** marks a spot in the text. InDesign writes it as an empty
+element at that spot inside the story, with `Self`, `Name` and `Hidden`; it is not a
+design-map element. A `HyperlinkTextDestination` in the design map, with a
+`DestinationText` attribute, appears in some generated files; InDesign does not bind it.
+Text destinations are what cross-references and bookmarks usually point at.
 
 ## `Bookmark`
 
-A bookmark is the source-less cousin: a named anchor that appears in a PDF's
-navigation outline and jumps to a destination, with no clickable region in the
-body text. The parser keeps its id, name, and destination ref.
+A bookmark is an entry in a PDF's navigation pane. It has a `Name` and a `Destination`
+attribute naming a text or page destination, and no source in the text. Bookmarks nest:
+a `Bookmark` inside another is its child in the outline. Like hyperlinks, bookmarks bind
+only after the last story reference.
 
-<AttrTable
-  element="Bookmark"
-  rows={[
-    { attr: 'Self', type: 'string id', support: 'supported', note: 'The bookmark id.' },
-    { attr: 'Name', type: 'string', support: 'supported', note: 'The label shown in the PDF navigation pane.' },
-    { attr: 'Destination', type: 'string ref (a HyperlinkTextDestination or HyperlinkPageDestination)', support: 'parsed-not-rendered', note: 'The anchor the bookmark jumps to. Kept on the model; not turned into a navigation entry.' },
-  ]}
-/>
+<AttrTable element="Bookmark" />
 
-## What reaches the page, and what does not
-
-The whole chain — source anchor, join element, destination — is read into the
-document model and the navigation half of it now reaches a PDF export:
-
-- Hyperlink and cross-reference source spans emit **PDF link annotations**
-  (URL and go-to-page); the in-story source wrapper is recorded on the runs it
-  covers. <SupportBadge status="supported" note="link annotations emitted over source spans" />
-- Bookmarks emit **PDF navigation destinations** (the outline entries).
-  <SupportBadge status="supported" note="bookmarks become PDF go-to destinations" />
-- What is still *not* drawn is the on-page **visual decoration** — the link box,
-  highlight, and border attributes are read past, because an underline or tint
-  on the live page is an editor affordance rather than a faithful-render output.
-  <SupportBadge status="parsed-not-rendered" note="link box / highlight / border appearance read past; no on-page decoration" />
+> **In Paged:** a hyperlink's destination is found from the typed property, the older
+> attribute, or `DestinationUniqueKey` resolved through the destinations' keys. Text
+> sources become PDF link annotations, to a URL or to a page; the border and highlight
+> are not drawn. Page-item sources are not read. Bookmarks are kept and saved back.
+> Scripts can add a hyperlink to a URL or a page, but not edit or remove one, and saving
+> writes InDesign's spelling, rewriting a file in the older engine spelling.
+> <SupportBadge feature="cross-references-hyperlinks.hyperlinks" />
 
 ## Frequently asked questions
 
-**How does IDML store a hyperlink?**
-As a pair of elements joined by id. The `Hyperlink` element in the design map
-names a `Source` and points at a `Destination`; the source's anchor lives back in
-the story, while the destination is its own element (a URL, page, or external-page
-destination) also listed in the design map. Splitting source from destination lets
-the same destination be reached from many sources.
+**How does a `Hyperlink` name its destination?**
+With a typed property: `<Properties><Destination type="object">Type/Self</Destination></Properties>`,
+for example `HyperlinkURLDestination/urldest`. A `Destination` attribute is ignored.
+
+**Where does a text destination go?**
+Into the story, as an empty `HyperlinkTextDestination` element at the anchored
+position. InDesign does not bind a text destination written in the design map.
+
+**Is `DestinationUniqueKey` required?**
+No. On its own it changes nothing; next to a `Destination` attribute on the same
+`Hyperlink`, it makes the file impossible to open.
+
+**Where do the hyperlink elements go in the design map?**
+After the last `idPkg:Story` reference. InDesign ignores destinations, hyperlinks and
+bookmarks that come before the stories.
 
 **What is the difference between a hyperlink and a bookmark?**
-A **hyperlink** has a source — a span of text or a whole frame the reader
-interacts with — that jumps to a destination. A **bookmark** has no visible
-source: it is a named anchor that shows up in a PDF's navigation outline and jumps
-to a destination, with no clickable region in the body text. The parser keeps a
-bookmark's id, name, and destination ref.
-
-**What hyperlink destinations does the parser read?**
-A hyperlink jumps to one of three destination elements: a `HyperlinkURLDestination`
-(a web address), a `HyperlinkPageDestination` (a page in this document), or a
-`HyperlinkExternalPageDestination` (a page in another document via a `DocumentPath`
-and `DestinationPageIndex`). The parser reads each destination's id, name, key, and
-target; the appearance and view-setting attributes are read past.
-
-**Does Paged make hyperlinks clickable?**
-No. The whole chain — source anchor, join element, and destination — is read into
-the document model, but the renderer does not draw the link region, make it
-interactive, surface the in-story `HyperlinkTextSource` wrapper onto the run, or
-emit bookmarks into a navigation structure. These features are **parsed, not
-rendered** for this phase.
+A hyperlink has a source in the text that a reader clicks. A bookmark has none: it is a
+named entry in the PDF's navigation pane that jumps to a destination.

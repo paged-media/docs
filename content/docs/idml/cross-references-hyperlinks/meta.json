@@ -4,6 +4,7 @@
   "pages": [
     "index",
     "hyperlinks-and-bookmarks",
-    "cross-references-and-index"
+    "cross-references-and-index",
+    "table-of-contents"
   ]
 }

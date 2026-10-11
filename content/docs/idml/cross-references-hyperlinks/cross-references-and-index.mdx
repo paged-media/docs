@@ -1,145 +1,115 @@
 ---
 title: Cross-references & the index
-description: The CrossReferenceSource element and its applied format, plus Topic definitions and the in-story index markers — both parsed into the model, neither resolved or generated yet.
+description: CrossReferenceSource in the story, CrossReferenceFormat and its building blocks, the Hyperlink that joins them, and the Topic and PageReference index markers.
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
+describes:
+  - cross-references-hyperlinks.cross-references
+  - cross-references-hyperlinks.index
+reviewed: 2026-10-11
 ---
 
-**Cross-references and the index are the references that must be *filled in* by a whole-document pass — the parser captures their inputs, but the resolution that turns them into rendered text is deferred.**
+**A cross-reference is a hyperlink whose words are generated from its target; an index is built from markers left in the text.**
 
-**In short:** Unlike hyperlinks, a cross-reference and an index do not leave the
-displayed text alone — each is meant to be completed by a pass over the entire
-document. A `CrossReferenceSource` borrows its display phrase from the target it
-points at ("see *Chapter 3*", "page 12") via an applied format; an index is
-assembled from `Topic` definitions and zero-width markers scattered through the
-body copy. Paged's parser records all of these inputs — formats, destinations,
-topics, and markers — onto the document model, but the resolution and generation
-that would produce the rendered phrase or the index story are not yet built. This
-page covers what the parser keeps from each and why nothing prints yet.
+**In short:** A cross-reference has three parts. In the story, a `CrossReferenceSource`
+wraps the generated words ("“Results” on page 12") and names a `CrossReferenceFormat`
+in `AppliedFormat`. In the design map, the format lists the `BuildingBlock`s that make up
+those words, and a `Hyperlink` joins the source to its destination, usually a text
+destination in another story. An index entry is an empty `PageReference` marker in the
+text that names a `Topic`. In both cases the file stores the generated text as ordinary
+text; the structure records how to rebuild it.
 
-Hyperlinks and bookmarks point somewhere and leave the displayed text alone. The
-two constructs on this page are different: each one is meant to be *filled in* by
-a pass over the whole document. A cross-reference borrows its display text from
-the thing it points at ("see *Chapter 3*", "page 12"); an index is assembled
-from markers scattered through the body copy. Both therefore depend on a
-resolution step — and that step is the part the engine has not built yet. The
-parser records the inputs; the resolution that turns them into rendered text is
-deferred.
+## The source: `CrossReferenceSource`
 
-## `CrossReferenceSource`
+A `CrossReferenceSource` sits in a `ParagraphStyleRange` and wraps the
+`CharacterStyleRange`s that hold the generated words. The `Content` inside is the text
+InDesign last generated, so a reader that only extracts text gets the phrase as printed.
 
-A cross-reference source is a marker that says "show, here, a phrase derived from
-that target." Its `AppliedFormat` names a `CrossReferenceFormat` — a template
-that decides the words ("See", "See also", a page number, the heading text) —
-and its `Destination` names the anchor the phrase is built from. The parser keeps
-the id, name, format ref, and destination.
+`AppliedFormat` names the `CrossReferenceFormat` that builds the phrase. InDesign drops
+a cross-reference source that names no format.
 
-<AttrTable
-  element="CrossReferenceSource"
-  rows={[
-    { attr: 'Self', type: 'string id', support: 'supported', note: 'The cross-reference source id.' },
-    { attr: 'Name', type: 'string', support: 'supported', note: 'Human-readable name.' },
-    { attr: 'AppliedFormat', type: 'string ref (CrossReferenceFormat/…)', support: 'parsed-not-rendered', note: 'The format template that decides the displayed phrase. Kept on the model; not applied.' },
-    { attr: 'Destination', type: 'string ref (a text anchor / destination)', support: 'parsed-not-rendered', note: 'The target the phrase is derived from. Kept on the model; not resolved.' },
-  ]}
-/>
+<AttrTable element="CrossReferenceSource" />
 
-The closely related index *cross-reference* — IDML's `CrossReference` element,
-which records a "see / see also" entry *within* an index rather than inline body
-text — carries a `CrossReferenceType` drawn from a fixed vocabulary
-(`CustomCrossReference`, `CustomCrossReferenceAfter`, `CustomCrossReferenceBefore`,
-`See`, `SeeAlso`, `SeeAlsoHerein`, `SeeHerein`, `SeeOrAlsoBracket`), an optional
-`CustomTypeString` for the custom variants, and a `ReferencedTopic`. The parser
-folds these into the same cross-reference record.
+## The format: `CrossReferenceFormat` and `BuildingBlock`
 
-<SupportBadge status="supported" note="a cross-reference resolves to its destination's current page and re-resolves when the destination moves, so its page number stays correct after a reflow" />
+A `CrossReferenceFormat` is a direct child of `Document` in the design map; InDesign
+writes the formats after the sections, before the story references. It is a recipe: an
+ordered list of `BuildingBlock` children, each contributing one piece of the phrase.
+`BlockType` says which piece:
 
-## `Topic` and the index entries
+| `BlockType` | Contributes |
+|---|---|
+| `CustomStringBuildingBlock` | fixed text, held in `CustomText` |
+| `FullParagraphBuildingBlock` | the whole text of the destination paragraph |
+| `ParagraphTextBuildingBlock` | the destination paragraph's text without its number |
+| `ParagraphNumberBuildingBlock` | the destination paragraph's list number |
+| `PageNumberBuildingBlock` | the number of the page the destination is on |
+| `BookmarkNameBuildingBlock` | the name of the destination |
 
-An index has two halves that meet only at resolution time.
+These are the six values seen in the census. InDesign writes its default formats into
+every document it exports: all 271 InDesign-exported documents in the census carry
+`CrossReferenceFormat` elements whether or not they use a cross-reference. The format
+named "Full Paragraph & Page Number", for example, is four blocks: a custom opening
+quote, the full paragraph, a custom closing quote followed by " on page ", and the page
+number.
 
-The **topics** are the headings the finished index will list. Each `Topic`
-element in the design map declares one term: its id, its display `Name`, and an
-optional `SortOrder` that overrides where it falls alphabetically (so "École"
-can sort under E, or "1984" under N for "nineteen…"). The parser flattens IDML's
-nested-topic tree to one record per `Self`.
+<AttrTable element="BuildingBlock" />
 
-<AttrTable
-  element="Topic"
-  rows={[
-    { attr: 'Self', type: 'string id', support: 'supported', note: 'The topic id — what an in-story marker names via AppliedTopic.' },
-    { attr: 'Name', type: 'string', support: 'supported', note: 'The term as it should print in the index.' },
-    { attr: 'SortOrder', type: 'string', support: 'parsed-not-rendered', note: 'Optional sort key overriding alphabetical order. Kept; not yet applied.' },
-  ]}
-/>
+## The join: a `Hyperlink`
 
-The **markers** are the other half: zero-width points scattered through the body
-text that each say "this spot contributes to a topic." They are serialised inside
-the story runs as `PageReference`, `IndexEntry`, or `Index` elements — the parser
-treats all three names the same — and it attaches each one to the paragraph it
-sits in. A marker that carries an inline `TopicName` uses that term directly; a
-marker that instead carries `AppliedTopic="Topic/<id>"` is meant to be looked up
-against the `Topic` table above. Either way the marker inserts no character into
-the run, so the body text flows past it untouched.
+The connection between the source and the place it refers to is an ordinary
+[`Hyperlink`](/docs/idml/cross-references-hyperlinks/hyperlinks-and-bookmarks):
+`Source="CrossReferenceSource/…"`, with the destination named in a typed
+`<Properties><Destination type="object">` child. The destination is usually a
+`HyperlinkTextDestination` marker inside the target paragraph's story, so the
+cross-reference follows the paragraph wherever it moves. Like other hyperlinks, it goes
+after the last `idPkg:Story` reference.
 
-<AttrTable
-  element="PageReference / IndexEntry / Index (in-story marker)"
-  rows={[
-    { attr: 'TopicName', type: 'string', support: 'parsed-not-rendered', note: 'The indexed term given inline on the marker. Captured onto the host paragraph.' },
-    { attr: 'AppliedTopic', type: 'string ref (Topic/<id>)', support: 'parsed-not-rendered', note: 'Reference to a Topic; the term comes from the topic table when this is used instead of TopicName.' },
-    { attr: 'SortOrder', type: 'string', support: 'parsed-not-rendered', note: 'Optional per-marker sort override. Captured; not yet applied.' },
-  ]}
-/>
+## The index: `Topic` and `PageReference`
 
-A marker with neither `TopicName` nor `AppliedTopic` has nothing to index and is
-dropped.
+An index has two halves. A **topic** is a term the finished index lists: a `Topic`
+record with a `Name` and an optional `SortOrder` that files it under a different
+spelling (so "1984" can sort as "nineteen eighty-four"). A **page reference** is an
+empty `PageReference` element inside a `CharacterStyleRange`, at the point in the text
+that should contribute its page number. It names its term with `AppliedTopic`
+(a `Topic` id) or with an inline `TopicName`.
 
-## How they resolve
+<AttrTable element="PageReference" />
 
-Both constructs run a whole-document pass that turns the captured markers into
-output:
+The census has only one document with index markers, and the `Topic` and
+`PageReference` shapes above come from generated files. How InDesign itself nests topics
+in the design map has not been checked against an InDesign export yet.
 
-- A cross-reference resolves its `Destination` to that destination's current
-  page and produces the page number, re-resolving on every render so the value
-  survives a reflow. The full `AppliedFormat` template prose (heading-text and
-  "See also" building blocks beyond the page number) is the remaining nuance.
-  <SupportBadge status="supported" note="destination → current page resolved and re-resolved; page-number building block produced" />
-- An index collects every `<PageReference>` / `<IndexEntry>` marker, groups them
-  case-insensitively by topic, deduplicates and sorts each topic's page list,
-  and emits a generated index story (topic + tab + page list).
-  <SupportBadge status="supported" note="markers grouped by topic, page lists deduplicated + sorted, generated index paragraphs emitted" />
+A generated index is then an ordinary story: one paragraph per topic, with its page
+numbers, saved as text.
+
+> **In Paged:** a cross-reference source becomes a PDF link to the page its destination
+> lands on after layout, so the link follows a reflow; the words are the saved text, and
+> the format's building blocks are not re-applied. A source saved without a format gets
+> one, InDesign's "Full Paragraph & Page Number". Index markers are read, and Paged can
+> build an index from them: topics grouped without regard to case, sorted by `SortOrder`
+> or name, with each topic's page labels de-duplicated.
+> <SupportBadge feature="cross-references-hyperlinks.cross-references" />
 
 ## Frequently asked questions
 
 **What is the difference between a cross-reference and a hyperlink?**
-A hyperlink jumps to a destination and leaves its displayed text alone. A
-**cross-reference** instead derives the very words it shows from its target: its
-`AppliedFormat` names a `CrossReferenceFormat` template that decides the phrase
-("See", "See also", a page number, the heading text), and its `Destination` names
-the anchor the phrase is built from. The arrow and the words it shows are bound
-together.
+A cross-reference is a hyperlink whose words are generated from the target, using a
+`CrossReferenceFormat`. A plain hyperlink's words are whatever the author typed.
 
-**How does IDML represent an index?**
-In two halves that meet only at resolution time. The **topics** are `Topic`
-elements in the design map — each declares a term's id, display `Name`, and an
-optional `SortOrder`. The **markers** are zero-width points scattered through the
-story runs (serialised as `PageReference`, `IndexEntry`, or `Index` elements) that
-each say "this spot contributes to a topic," either via an inline `TopicName` or an
-`AppliedTopic` reference into the topic table.
+**Where is the text of a cross-reference stored?**
+Inside the `CrossReferenceSource` in the story, as ordinary `Content`. It is the phrase
+InDesign last generated and goes stale if the destination moves to another page.
 
-**Does a cross-reference or index marker insert text into the run?**
-No. A cross-reference source and an index marker both add reference metadata
-without inserting any character, so the body text flows past them untouched. A
-cross-reference's phrase would only appear after its format is applied to a
-resolved destination; an index marker contributes to a generated index story
-rather than to inline text.
+**What is a `BuildingBlock`?**
+One piece of a cross-reference format: fixed text, the destination paragraph's text or
+number, or its page number. A format is an ordered list of them.
 
-**Why doesn't Paged print cross-references or an index?**
-Both need a whole-document pass the engine does not yet run. A cross-reference's
-display text would come from applying its `AppliedFormat` to a resolved
-`Destination`, and an index would come from collecting every marker, grouping by
-topic, alphabetising (honouring `SortOrder`), and emitting a generated story. The
-parser captures all the inputs, but these resolution and generation passes are
-**parsed, not rendered**, deferred to SDK Phase 5.
+**Why does every InDesign file contain `CrossReferenceFormat` elements?**
+InDesign writes its built-in formats into every document, used or not.
+
+**How is an index entry marked in the text?**
+With an empty `PageReference` element at the spot in the story, naming a `Topic` through
+`AppliedTopic` or giving the term inline as `TopicName`.
