@@ -1,13 +1,15 @@
 ---
 title: IDML vs. other formats
-description: Honest, side-by-side comparisons of IDML with InDesign's native INDD binary, fixed-form PDF, reflowing HTML and CSS, and structure-only XML — what each format keeps and what it gives up.
+description: IDML set beside InDesign's INDD, PDF, HTML and CSS, structure-only XML, office formats and its own companion files — what each keeps and gives up.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
+describes: [package-anatomy.core-import, package-anatomy.paged-container]
+reviewed: 2026-10-11
 ---
 
-**IDML is the open, editable, fully-composed middle ground between a locked binary, a frozen PDF, a reflowing web page, and structure-only XML.**
+**IDML is an open, editable description of a fully specified page layout, between a closed binary, a fixed PDF, a reflowing web page and structure-only XML.**
 
 **In short:** Four neighbors define IDML by contrast. **INDD** is InDesign's native
 binary — the same document, but fast and exact for one application instead of open
@@ -15,10 +17,11 @@ and portable. **PDF** is final-form: it freezes the layout into fixed marks you 
 view and print everywhere but not easily re-edit. **HTML and CSS** describe
 *continuous, reflowing* content for screens of any size, not fixed pages. And
 **structure-only XML** — office formats, DocBook, and the like — captures what
-content *means* but leaves the finished visual layout out. IDML keeps all three at
-once: open and readable like XML, fully composed like a PDF, and still editable like
-the native file. This page compares each pairing fairly — every one of these formats
-is excellent at its own job.
+content *means* but leaves the finished visual layout out. IDML combines what these
+keep apart: it is open and readable like XML, it fixes every frame, style and setting of
+the layout like the native file, and it stays editable. What it does not store is the
+composed text — line breaks and glyph positions — which whoever opens the file computes
+again. Each of these formats is good at its own job.
 
 The point of these comparisons isn't to declare IDML the winner. It's to locate it.
 Every format here makes a deliberate trade, and IDML's identity is the particular
@@ -36,7 +39,7 @@ live state of a document with no translation cost.
 IDML is the *same document*, but written out in the open. Where INDD is a packed
 binary tied to specific application versions and not publicly documented, IDML is the
 documented interchange form: the same pages, stories, styles, and resources expressed
-as human-readable XML inside a ZIP, against a published specification. (Our
+as human-readable XML inside a ZIP. (Our
 [What IDML is](/docs/idml/foundations/what-is-idml) page covers this lineage in depth.)
 
 The trade is straightforward and fair. INDD is faster, more compact, and the
@@ -58,7 +61,9 @@ portable *photograph* of the finished page.
 IDML describes the page from the other end. It doesn't say "place this glyph here";
 it says "this story uses this paragraph style and flows through this frame." It
 captures the *intent and structure* that a layout was composed from, and leaves the
-final placement of every glyph to a renderer. The two formats sit at opposite ends of
+final placement of every glyph to a renderer. Two renderers given the same IDML and
+the same fonts can break a paragraph differently; given the same PDF, they draw the same
+marks. The two formats sit at opposite ends of
 the same pipeline: IDML is the editable *recipe*, PDF is the cooked *result*.
 
 This is why you can't treat one as a drop-in for the other. From IDML a renderer can
@@ -108,9 +113,9 @@ its own styling decided elsewhere.
 
 IDML shares their openness — it is XML, readable and transformable — but it makes the
 opposite commitment about layout. It doesn't stop at "this is a heading"; it carries
-the *fully composed page*: where frames sit in real coordinates, how stories thread
+the *fully specified page*: where frames sit in real coordinates, how stories thread
 through them, which master spread a page derives from, the precise styling and
-geometry. The structure is there *and* the visual layout is there. A DocBook file
+geometry. Only the composition of the text into lines is left to the reader. The structure is there *and* the visual layout is there. A DocBook file
 tells you what the document is; an IDML file tells you what the document is *and
 exactly how it was laid out on the page*.
 
@@ -121,6 +126,33 @@ what you want when the layout itself is the content you're trying to preserve, m
 or render faithfully. (Note the difference from IDML's *own* optional structure layer:
 IDML can also carry tagged-XML semantics alongside its layout — that's a complement to
 the visual model, not a replacement for it.)
+
+## IDML vs. office formats — flowing documents vs. placed frames
+
+Word-processing and presentation formats such as DOCX and PPTX are also ZIP packages of
+XML parts, so they look like close relatives. The difference is the model. A DOCX
+document is one flow of text that the application paginates as it goes: there are no
+pages in the file, only content and section settings. A PPTX file has fixed slides with
+shapes on them, which is closer to IDML, but no text threaded from frame to frame and
+no print-production settings such as bleed or spot inks. IDML describes pages
+with frames placed on them in coordinates, and text threaded through those frames.
+
+> **In Paged:** DOCX and PPTX files are imported by plugins and turned into a native
+> document, which can then be written out as IDML.
+
+## IDML vs. its companion files and `.paged`
+
+InDesign snippets (`.idms`) and InCopy files (`.icml`, `.icma`) use IDML's element
+vocabulary in a single XML file with no package and no design map; they carry a slice of
+a document, not a document. See
+[companion formats](/docs/idml/companion-formats).
+
+A `.paged` file goes the other way: it is a complete IDML package with extra parts
+under `paged/`, so any IDML reader can open it as IDML and ignore the additions.
+
+> **In Paged:** `.paged` is Paged's own document file. Its extra parts hold Paged's
+> document model and plugin content; see
+> [the .paged container](/docs/idml/package-anatomy/the-paged-container).
 
 ## Frequently asked questions
 
@@ -149,9 +181,10 @@ mode layered on top of reflow.
 
 **How is IDML different from DocBook or office XML?**
 DocBook, DITA, and office XML capture a document's structure and meaning — headings,
-paragraphs, tables, roles — but deliberately leave the finished visual presentation
-to be decided downstream. IDML captures the structure *and* the fully composed page:
-real coordinates, threaded stories, master spreads, precise styling. Structure-only
+paragraphs, tables, roles — but leave the finished visual presentation to be decided
+downstream; a DOCX file does not even store its pages. IDML captures the structure *and*
+the fully specified page: real coordinates, threaded stories, master spreads, precise
+styling. Structure-only
 XML is ideal when one source must feed many different outputs; IDML is ideal when the
 layout itself is what you need to preserve.
 
@@ -159,6 +192,12 @@ layout itself is what you need to preserve.
 It depends on what you need to do next. Choose a native binary to keep working in one
 application, PDF to deliver a finished and unchangeable page, HTML and CSS for content
 that must adapt to any screen, and structure-only XML when presentation is a separate
-concern. Choose IDML when you need an open, editable description of a fully composed
+concern. Choose IDML when you need an open, editable description of a fully specified
 paged layout — see [Where IDML fits](/docs/idml/comparisons/where-idml-fits) for the
 decision in practical terms.
+
+**Does IDML store the finished layout of the text?**
+It stores everything the layout is made from: frames, their positions, the text, its
+styles and every composition setting. It does not store the result of composing the
+text — where lines break, where glyphs sit, what is overset. A reader computes that
+again, which is why a renderer other than InDesign can break a line differently.
