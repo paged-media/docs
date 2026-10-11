@@ -1,0 +1,119 @@
+---
+title: Lists, keep options and span columns
+description: Bullets and numbering (list type, NumberingExpression, BulletChar, AppliedNumberingList), keep options, StartParagraph, and span and split columns.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+describes: [styles.bullets-numbering]
+reviewed: 2026-10-11
+---
+
+**Three paragraph-level features that change where text goes: generated list markers, rules that keep lines and paragraphs together across frame breaks, and paragraphs that span or split the columns of a frame.**
+
+**In short:** A paragraph becomes a list item through `BulletsAndNumberingListType`
+(`BulletList` or `NumberedList`); the bullet or number is generated, never stored in `Content`.
+Numbers follow `NumberingExpression` and the format in a typed `<NumberingFormat>` child, and a
+`<NumberingList>` can carry one sequence across stories. Keep options (`KeepWithNext`,
+`KeepLinesTogether` and its companions) and `StartParagraph` decide where a paragraph may break
+between frames and columns. `SpanColumnType` lets a paragraph span several columns of a frame,
+such as a headline over a two-column article, or split its column into narrower ones.
+
+## Bullets and numbering
+
+<ExampleEmbed example="numbered-list">
+  Three list items numbered 1, 2 and 3. The numbers come from the list attributes on the range;
+  the Content holds only the item text.
+</ExampleEmbed>
+
+The list attributes sit on a paragraph style or a `<ParagraphStyleRange>`. Most are attributes;
+InDesign writes a few as typed `<Properties>` children and ignores them as attributes.
+
+| Name | Spelled as | Meaning |
+| --- | --- | --- |
+| `BulletsAndNumberingListType` | attribute | `NoList`, `BulletList` or `NumberedList` |
+| `NumberingExpression` | attribute | the number's text, in which `^#` stands for the number and `^t` for a tab. Default `^#.^t` |
+| `NumberingStartAt` | attribute | the first number of the list |
+| `NumberingContinue` | attribute | `false` restarts the count at this paragraph |
+| `NumberingLevel` | attribute | the level in a multi-level list |
+| `BulletsTextAfter` | attribute | the text after a bullet, by default a tab (`^t`) |
+| `<NumberingFormat>` | `string` child | the number style: `1, 2, 3, 4...`, `I, II, III, IV...`, `a, b, c, d...` and so on |
+| `<BulletChar>` | child with attributes | the bullet: `BulletCharacterType` and `BulletCharacterValue` (the Unicode code point, in decimal) |
+| `<AppliedNumberingList>` | `object` child | the `NumberingList` the paragraph belongs to |
+| `<BulletsCharacterStyle>`, `<NumberingCharacterStyle>` | `object` children | the character style for the bullet or number |
+
+A bullet is written, for example, as `<BulletChar BulletCharacterType="UnicodeOnly"
+BulletCharacterValue="8226"/>` inside `<Properties>`: U+2022, the bullet character.
+
+Numbering counts consecutive numbered paragraphs within a story. A named `<NumberingList>`, a
+child of `<Document>` in `designmap.xml`, can carry the count across stories
+(`ContinueNumbersAcrossStories`) and across the documents of a book
+(`ContinueNumbersAcrossDocuments`). Paragraphs join it through `<AppliedNumberingList>`.
+
+> **In Paged:** bullets and numbers are generated from the paragraph's list attributes with the
+> numbering formats InDesign offers, and the text after the marker lands on the hanging indent.
+> `<NumberingFormat>`, `<AppliedNumberingList>` and the marker character styles are read as the
+> typed children InDesign writes. `<NumberingList>` definitions are read only from
+> `Resources/Styles.xml`, not from `designmap.xml` where InDesign writes them, so numbering
+> continues across stories only for lists defined there. Multi-level numbering
+> (`NumberingLevel`) is not read yet. <SupportBadge feature="styles.bullets-numbering" />
+
+## Keep options
+
+Keep options say which lines must share a frame or column, so that a break falls elsewhere.
+
+| Attribute | Type | Meaning |
+| --- | --- | --- |
+| `KeepWithNext` | integer | the number of lines of the next paragraph that must be in the same frame or column as this paragraph's last line; `0` is off. Typical for headings. |
+| `KeepLinesTogether` | boolean | switches the within-paragraph rules below on |
+| `KeepAllLinesTogether` | boolean | with `KeepLinesTogether`, the whole paragraph moves rather than breaks |
+| `KeepFirstLines` | integer | with `KeepLinesTogether`, at least this many lines before a break |
+| `KeepLastLines` | integer | with `KeepLinesTogether`, at least this many lines after a break |
+| `StartParagraph` | enumeration | where the paragraph starts: `Anywhere`, `NextColumn`, `NextFrame`, `NextPage`, `NextOddPage`, `NextEvenPage` |
+
+InDesign applies these by moving lines. With `KeepWithNext`, a paragraph's last line moves to join
+the next paragraph, not necessarily the whole paragraph. With `KeepFirstLines`, a paragraph that
+would leave too few lines before the break moves entirely; with `KeepLastLines`, lines are pulled
+over until enough follow the break.
+
+> **In Paged:** all six are honoured, following the line-moving behaviour measured against
+> InDesign. A break is only forced where a next frame or column exists.
+
+## Span and split columns
+
+In a multi-column frame, a paragraph can leave the column grid:
+
+| Name | Spelled as | Meaning |
+| --- | --- | --- |
+| `SpanColumnType` | attribute | `SingleColumn` (normal), `SpanColumns` or `SplitColumns` |
+| `<SpanSplitColumnCount>` | `short` child, or `enumeration` `All` | how many columns a span covers, or how many sub-columns a split makes |
+| `SpanColumnMinSpaceBefore`, `SpanColumnMinSpaceAfter` | attributes, points | minimum space above and below a span or split |
+| `SplitColumnInsideGutter`, `SplitColumnOutsideGutter` | attributes, points | the gutters between sub-columns, and at their outer edges |
+
+A spanning paragraph runs across the given number of columns. The text before it, from the top of
+its band, is balanced over those columns by line count, and the text after it continues below it.
+A split paragraph divides its own column into narrower sub-columns, balanced by line count; a run
+of consecutive split paragraphs with the same settings forms one block.
+
+> **In Paged:** spanning and splitting are laid out, including the balancing above a span and the
+> block rules between consecutive split paragraphs, as measured against InDesign.
+
+## Frequently asked questions
+
+**Are list numbers stored in the IDML text?**
+No. The number or bullet is generated from the paragraph's list attributes when the text is laid
+out. `Content` holds only the item text.
+
+**How is a bullet character written?**
+As `<BulletChar>` inside the paragraph's or style's `<Properties>`, with `BulletCharacterType` and
+`BulletCharacterValue`, the code point in decimal (8226 for •).
+
+**What is the difference between `KeepWithNext` and `KeepLinesTogether`?**
+`KeepWithNext` ties a paragraph to the one after it, which keeps a heading with its text.
+`KeepLinesTogether` controls breaks inside a paragraph, together with `KeepAllLinesTogether`,
+`KeepFirstLines` and `KeepLastLines`.
+
+**How do I make a headline span two columns?**
+Set `SpanColumnType="SpanColumns"` on the headline's paragraph and give the count as
+`<Properties><SpanSplitColumnCount type="short">2</SpanSplitColumnCount></Properties>`, or
+`type="enumeration"` with `All` for every column.

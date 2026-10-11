@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<idPkg:Story xmlns:idPkg="http://ns.adobe.com/AdobeInDesign/idml/1.0/packaging" DOMVersion="20.0">
+  <Story Self="ustory">
+    <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]" BulletsAndNumberingListType="NumberedList" NumberingExpression="^#.^t" NumberingStartAt="1" LeftIndent="18" FirstLineIndent="-18">
+      <Properties>
+        <NumberingFormat type="string">1, 2, 3, 4...</NumberingFormat>
+      </Properties>
+      <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+        <Content>Unzip the package.</Content>
+        <Br/>
+        <Content>Open designmap.xml and follow its references.</Content>
+        <Br/>
+        <Content>Read each story in the order the spreads place it.</Content>
+      </CharacterStyleRange>
+    </ParagraphStyleRange>
+  </Story>
+</idPkg:Story>

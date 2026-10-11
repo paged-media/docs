@@ -1,0 +1,105 @@
+---
+title: Composer and OpenType features
+description: The Composer attribute (Adobe Paragraph or Single-line Composer), Ligatures, Capitalization and the OTF… attributes that switch OpenType features on a run.
+tier: pro
+diataxis: reference
+status: published
+owner: paged-docs
+describes: [typography.knuth-plass, typography.ligatures-opentype, typography.capitalization]
+reviewed: 2026-10-11
+---
+
+**The composer decides where a paragraph's lines break; the OpenType attributes decide which glyphs a run's characters become.**
+
+**In short:** `Composer` is a paragraph attribute that names the line-breaking engine:
+`HL Composer` is the Adobe Paragraph Composer, which weighs all the breaks of a paragraph
+together, and `HL Single` is the Adobe Single-line Composer, which sets one line at a time.
+On the character side, `Ligatures` switches standard ligatures, `Capitalization` chooses
+capitals or small capitals, and a family of `OTF…` attributes switches individual OpenType
+features: fractions, ordinals, swashes, discretionary ligatures, slashed zero, titling
+alternates, contextual alternates, figure styles and stylistic sets.
+
+## `Composer`
+
+`Composer` is set on a paragraph style or a `<ParagraphStyleRange>`. InDesign writes one of four
+values:
+
+| Value | Composer | How it breaks lines |
+| --- | --- | --- |
+| `HL Composer` | Adobe Paragraph Composer | Considers every possible break in the paragraph and picks the set that gives the most even spacing overall. A change late in a paragraph can move earlier breaks. |
+| `HL Single` | Adobe Single-line Composer | Fills one line at a time and never revisits a line once set, the way most word processors break text. |
+| `HL Composer Optyca` | Adobe World-Ready Paragraph Composer | Breaks like the Paragraph Composer, and adds shaping for scripts such as Arabic, Hebrew and the Indic scripts. |
+| `HL Single Optyca` | Adobe World-Ready Single-line Composer | Breaks like the Single-line Composer, with the same script support. |
+
+The Paragraph Composer is InDesign's default. In the corpus of InDesign-authored documents,
+`HL Composer` is by far the most common value and `HL Composer Optyca` appears in a handful;
+the census records `Composer` on paragraph styles in 271 documents. A value outside these four
+comes from a third-party composer.
+
+> **In Paged:** the Paragraph Composer is a total-fit (Knuth–Plass) line breaker with penalties
+> calibrated against InDesign; the Single-line Composer sets one line at a time. The World-Ready
+> values compose like their Latin counterparts, and an unknown value composes like the Paragraph
+> Composer. The value is kept on save. <SupportBadge feature="typography.knuth-plass" />
+
+## `Ligatures` and `Capitalization`
+
+`Ligatures` (`true` by default) switches the font's standard ligatures, such as "fi" and "fl".
+Discretionary ligatures are a separate switch, `OTFDiscretionaryLigature`.
+
+`Capitalization` takes `Normal`, `AllCaps`, `SmallCaps` or `CapToSmallCap`. `AllCaps` displays
+the text in capitals; the stored characters keep their case. `SmallCaps` displays lowercase
+letters as small capitals using the font's OpenType small capitals; `CapToSmallCap` turns the
+capitals into small capitals as well. When a font has no small capitals, InDesign scales
+ordinary capitals instead.
+
+## OpenType feature attributes
+
+Each attribute below is a character attribute, set on a run or a character or paragraph style.
+The OpenType feature it switches is given for reference.
+
+| Attribute | Type | Feature | Effect |
+| --- | --- | --- | --- |
+| `OTFContextualAlternate` | boolean, default `true` | `calt` | Alternate glyphs chosen by context, as the font designer intended. |
+| `OTFDiscretionaryLigature` | boolean | `dlig` | Decorative ligatures such as "ct" and "st". |
+| `OTFFraction` | boolean | `frac` | Builds fractions such as 1/2 from digits and a slash. |
+| `OTFOrdinal` | boolean | `ordn` | Superior letters for ordinals such as 1st and 2nd. |
+| `OTFSwash` | boolean | `swsh` | Swash forms of letters. |
+| `OTFTitling` | boolean | `titl` | Capitals designed for large sizes. |
+| `OTFSlashedZero` | boolean | `zero` | A zero with a slash, to tell it from the letter O. |
+| `OTFFigureStyle` | enumeration | `lnum` / `onum` with `tnum` / `pnum` | Lining or oldstyle digits, tabular or proportional widths. |
+| `OTFStylisticSets` | integer | `ss01`–`ss20` | A bit field: bit 0 switches on stylistic set 1, bit 1 set 2, and so on. |
+
+`OTFFigureStyle` takes `Default` (the font's own digits) or one of the four combinations of
+tabular or proportional with lining or oldstyle, such as `TabularOldstyle` and
+`ProportionalLining`, the values found in the corpus besides `Default`. A feature the font does
+not contain has no effect.
+
+InDesign writes further `OTF…` attributes for features with narrower use, such as
+`OTFHistorical`, `OTFJustificationAlternate`, `OTFLocale`, `OTFMark`, `OTFStylisticAlternate` and
+the CJK `OTFHVKana` and `OTFProportionalMetrics`.
+
+<AttrTable element="CharacterStyleRange" attrs={['Ligatures', 'Capitalization', 'OTFContextualAlternate', 'OTFFigureStyle', 'OTFFraction', 'OTFOrdinal']} />
+
+> **In Paged:** `Ligatures`, the small-capital values of `Capitalization` and the nine features in
+> the table above are passed to the shaper, from runs and character styles. They are not yet read
+> from paragraph styles. A font without small capitals shows the letters unchanged rather than
+> scaled capitals. The narrower `OTF…` attributes are not read.
+> <SupportBadge feature="typography.ligatures-opentype" /> <SupportBadge feature="typography.capitalization" />
+
+## Frequently asked questions
+
+**What values does the `Composer` attribute take?**
+`HL Composer` (Adobe Paragraph Composer), `HL Single` (Adobe Single-line Composer) and their
+World-Ready variants `HL Composer Optyca` and `HL Single Optyca`.
+
+**What is the difference between the Paragraph Composer and the Single-line Composer?**
+The Paragraph Composer chooses all the line breaks of a paragraph together for the most even
+spacing; the Single-line Composer fills one line at a time and does not revisit earlier lines.
+
+**How do I switch on oldstyle figures in IDML?**
+Set `OTFFigureStyle` on the run or style, for example to `ProportionalOldstyle` or
+`TabularOldstyle`. The font must contain oldstyle figures.
+
+**How are stylistic sets written?**
+As one integer, `OTFStylisticSets`, used as a bit field: 1 switches on set 1, 2 set 2, 3 sets 1
+and 2, and so on.

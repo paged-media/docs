@@ -5,7 +5,9 @@
     "index",
     "fonts-and-faces",
     "spacing-and-leading",
+    "composer-and-opentype",
     "justification-and-linebreaking",
-    "drop-caps-and-tabs"
+    "drop-caps-and-tabs",
+    "lists-keep-span"
   ]
 }

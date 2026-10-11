@@ -1,0 +1,48 @@
+{
+  "$schema": "../_schema/manifest.schema.json",
+  "id": "numbered-list",
+  "title": "A numbered list",
+  "tier": "intermediate",
+  "chapter": "typography",
+  "concept": "Three paragraphs numbered 1–3 by list attributes on their paragraph range: the numbers are generated, not stored in Content.",
+  "packageDir": "package",
+  "editable": {
+    "part": "Stories/Story_ustory.xml",
+    "language": "xml",
+    "label": "Stories/Story_ustory.xml"
+  },
+  "views": [
+    "raw",
+    "annotated",
+    "tree",
+    "live"
+  ],
+  "annotations": [
+    {
+      "lines": "4",
+      "note": "BulletsAndNumberingListType=NumberedList turns numbering on. NumberingExpression ^#.^t writes the number (^#), a full stop and a tab (^t). LeftIndent 18 with FirstLineIndent -18 hangs the number in the indent, so the tab lands on the text edge."
+    },
+    {
+      "lines": "5-7",
+      "note": "NumberingFormat is a typed Properties child, the only spelling InDesign reads: \"1, 2, 3, 4...\" is arabic numerals."
+    },
+    {
+      "lines": "9-13",
+      "note": "The Content holds only the item text. Each <Br/> ends a list item; the numbers 1, 2 and 3 are generated at layout time."
+    }
+  ],
+  "expect": {
+    "opens": true,
+    "builds": true,
+    "pages": 1,
+    "stories": 1,
+    "frames": 1,
+    "paragraphs": 3,
+    "runs": 3
+  },
+  "pathological": false,
+  "license": "MIT",
+  "elements": [
+    "ParagraphStyleRange"
+  ]
+}

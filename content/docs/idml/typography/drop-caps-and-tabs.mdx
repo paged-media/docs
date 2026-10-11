@@ -1,126 +1,102 @@
 ---
 title: Drop caps and tabs
-description: DropCapCharacters / DropCapLines / DropCapDetail on a paragraph, and the TabList of TabStop records a Tab snaps to — with alignment, leaders, and the default tab grid.
+description: DropCapCharacters and DropCapLines, the tab character U+0009 in Content, and the TabList records — Alignment, AlignmentCharacter, Leader, Position.
 tier: pro
 diataxis: reference
 status: published
 owner: paged-docs
+describes: [typography.drop-caps, typography.tab-stops]
+reviewed: 2026-10-11
 ---
 
-**Two paragraph-level constructs move individual glyphs without touching the run model: a drop cap enlarges and hangs the opening characters, and a tab snaps the text after it to a stop in the paragraph's `TabList`.**
+**A drop cap enlarges a paragraph's first characters down several lines; a tab moves the text after it to the next tab stop in the paragraph's `TabList`.**
 
-**In short:** Both drop caps and tabs are configured on the `ParagraphStyleRange`.
-A drop cap uses `DropCapCharacters` (how many leading characters) and `DropCapLines`
-(how many lines tall) to lift the opening characters into an enlarged initial that
-the rest of the paragraph flows around. A tab needs a `Tab` marker in the run; at
-layout time the engine snaps the text after it to the next `TabStop` in the
-paragraph's `TabList`, honouring the stop's `Position`, `Alignment`, optional
-`AlignmentCharacter`, and optional `Leader`. When a tab passes every explicit stop,
-the engine falls back to a default 36 pt tab grid.
-
-Two paragraph-level constructs change where individual glyphs land without
-touching the run model: a **drop cap** enlarges the opening characters and hangs
-them down several lines, and a **tab** snaps the text after it to a position set
-by the paragraph's tab stops. Both are configured on the `ParagraphStyleRange`;
-the tab also needs a `Tab` marker in the run to take effect.
+**In short:** A drop cap is two paragraph attributes: `DropCapCharacters` (how many characters)
+and `DropCapLines` (how many lines tall). The text stays in `Content` unchanged. A tab is the
+character U+0009 inside `<Content>`, usually written `&#9;`; there is no tab element. Where it
+moves the text is set by the paragraph's tab stops: a `<TabList>` of typed `<ListItem>` records
+inside the paragraph's `<Properties>`, each with an `Alignment`, an `AlignmentCharacter`, a
+`Leader` and a `Position`. Past the last stop, tabs fall on a default grid.
 
 ## Drop caps
 
-A drop cap is described by two counts and a detail value on the
-`ParagraphStyleRange`. `DropCapCharacters` is how many leading characters become
-the drop cap; `DropCapLines` is how many lines tall it is. The renderer lifts that
-many characters into an enlarged initial sized to span that many lines, and flows
-the rest of the paragraph around it.
+<AttrTable element="ParagraphStyle" attrs={['DropCapCharacters', 'DropCapLines']} />
 
-<AttrTable
-  element="ParagraphStyleRange"
-  rows={[
-    { attr: 'DropCapCharacters', type: 'short (0–150)', support: 'supported', note: 'How many leading characters form the drop cap. 0 ⇒ no drop cap.' },
-    { attr: 'DropCapLines', type: 'short (0–25)', support: 'supported', note: 'How many lines tall the drop cap is.' },
-    { attr: 'DropCapDetail', type: 'int', support: 'supported', note: 'InDesign’s drop-cap sizing/side-bearing detail; read alongside the two counts.' },
-  ]}
-/>
+`DropCapCharacters` is the number of characters at the start of the paragraph that drop, and
+`DropCapLines` the number of lines they span; `0` for either means no drop cap. The drop cap is
+scaled so its top aligns with the cap height of the first line and its baseline with the baseline
+of the last line it spans, and the lines beside it are indented around it. The characters remain
+part of the text: a drop cap is not a separate run or frame.
 
-The example below is one paragraph that turns its first character into a
-three-line drop cap. `DropCapCharacters="1"` and `DropCapLines="3"` are the two
-counts; `DropCapDetail="0"` carries the side-bearing detail. The package parses to
-one paragraph and one run — the drop cap is a property of the paragraph, not a
-separate run.
+InDesign can also give the drop cap a character style of its own, chosen with the drop cap
+settings, so that the large letter takes a different font or colour. No document in the census
+uses one.
 
 <ExampleEmbed example="drop-cap">
-  A paragraph whose first character is lifted into a three-line drop cap.
+  One paragraph whose first character drops three lines.
 </ExampleEmbed>
 
-## Tabs and tab stops
+> **In Paged:** drop caps are set from `DropCapCharacters` and `DropCapLines`. `DropCapDetail`,
+> which InDesign-authored files in the census do not carry, is read and kept as an integer. A
+> drop cap's own character style is not parsed: the drop cap takes the formatting of the
+> characters it is made of. <SupportBadge feature="typography.drop-caps" />
 
-A `Tab` in a run is a single tab character (it sits alongside `Content` and `Br`
-as a leaf of the story tree). On its own it does nothing visible until the line is
-laid out; then the engine snaps the text after each tab to the next **tab stop**.
+## The tab character
 
-The stops live in a `TabList` inside the paragraph's `Properties`, each one a
-`TabStop` record. A `TabStop` carries a `Position` (in points from the column's
-left edge), an `Alignment`, an optional `AlignmentCharacter` for decimal-style
-stops, and an optional `Leader` string tiled across the gap the tab opens up:
+A tab is U+0009 inside `<Content>`. XML allows a literal tab character, but writers usually
+escape it as `&#9;` so that it survives editors and formatters. There is no tab element: the
+character itself moves the text after it to the next tab stop.
 
-<AttrTable
-  element="TabStop (inside ParagraphStyleRange › Properties › TabList)"
-  rows={[
-    { attr: 'Position', type: 'double (pt from column left edge)', support: 'supported', note: 'Required — the stop’s location. A TabStop with no Position is dropped.' },
-    { attr: 'Alignment', type: 'LeftAlign | RightAlign | CenterAlign | CharacterAlign', support: 'supported', note: 'How the segment after the tab snaps: starts at / ends at / is centred on / aligns its character on the stop.' },
-    { attr: 'AlignmentCharacter', type: 'string (default ".")', support: 'supported', note: 'For CharacterAlign stops: the character in the segment that lands on the stop. Ignored otherwise.' },
-    { attr: 'Leader', type: 'string (e.g. ".", ". ")', support: 'supported', note: 'Tiled across the widened gap (TOC dot leaders). Empty / absent ⇒ no leader. Whole copies only; a leader wider than the gap emits none.' },
-  ]}
-/>
+## Tab stops
 
-When a tab's pen position has already passed every explicit stop — or the
-paragraph defines no stops at all — the engine falls back to a **default tab
-grid** (every 36 pt). The alignment behaviours map directly:
+A paragraph's tab stops are a typed list in its `<Properties>` block, on a
+`<ParagraphStyleRange>` or a paragraph style. Each stop is a `<ListItem type="record">` with four
+typed children:
 
-- **`LeftAlign`** — the segment after the tab *starts* at the stop.
-- **`RightAlign`** — the segment *ends* at the stop.
-- **`CenterAlign`** — the segment is *centred* on the stop.
-- **`CharacterAlign`** — the segment's first occurrence of the alignment character
-  (the decimal point, typically) lands at the stop; a segment without that
-  character falls through to left alignment.
+| Child | Type | Meaning |
+| --- | --- | --- |
+| `<Alignment>` | `enumeration` | `LeftAlign`, `CenterAlign`, `RightAlign` or `CharacterAlign` |
+| `<AlignmentCharacter>` | `string` | for `CharacterAlign`, the character that lines up on the stop, usually `.` |
+| `<Leader>` | `string` | characters repeated across the gap the tab opens, such as `.` or `. `; empty for none |
+| `<Position>` | `unit` | the stop's position in points from the left edge of the text column |
 
-If a stop's alignment can't be honoured without glyphs colliding — for example a
-`RightAlign` segment wider than the gap to the stop — the engine falls through to
-left alignment for that one tab so text never overlaps.
+The alignments place the text after the tab:
 
-The example below is a single line — `Chapter`, a tab, `Typography`, a tab,
-`261` — with a two-stop `TabList`: a `LeftAlign` stop at 144 pt and a `RightAlign`
-stop at 432 pt with a dot `Leader`. It reads like a table-of-contents row. Note
-that the three `Content` chunks split by the two `Tab` markers collapse into a
-single run, so the package reports one paragraph and one run.
+- `LeftAlign` — the text starts at the stop.
+- `RightAlign` — the text ends at the stop.
+- `CenterAlign` — the text is centred on the stop.
+- `CharacterAlign` — the first occurrence of the alignment character lands on the stop, which
+  lines up a column of decimal numbers.
+
+When the text is already past the last stop, or the paragraph has none, each further tab moves to
+the next position on a default grid of every 36 pt (half an inch). In a paragraph with a hanging
+indent (a positive `LeftIndent` and a negative `FirstLineIndent`), the left indent acts as a stop,
+so a tab after a list number lands on the text edge.
 
 <ExampleEmbed example="tab-stops">
-  A table-of-contents-style line: a left tab, then a right tab with dot leaders.
+  A table-of-contents line: a left stop at 144 pt, then a right stop at 432 pt with a dot leader.
+  Each `&#9;` in the Content moves the text after it to the next stop.
 </ExampleEmbed>
+
+> **In Paged:** tab stops are honoured with all four alignments, leaders and the hanging-indent
+> stop; leaders are drawn as whole copies of the leader string. A `RightAlign` or `CenterAlign`
+> segment that would collide with the text before it falls back to left alignment for that tab.
+> <SupportBadge feature="typography.tab-stops" />
 
 ## Frequently asked questions
 
-**How do you make a drop cap in IDML, and what controls its size?**
-A drop cap is set on the `ParagraphStyleRange` with two counts: `DropCapCharacters`
-is how many leading characters become the drop cap, and `DropCapLines` is how many
-lines tall it is. `DropCapDetail` carries InDesign's sizing and side-bearing detail,
-read alongside the two counts. A `DropCapCharacters` of 0 means no drop cap.
+**How is a tab written in IDML?**
+As the character U+0009 inside `<Content>`, normally escaped as `&#9;`. There is no separate tab
+element.
 
-**Is a drop cap a separate text run?**
-No. The drop cap is a property of the paragraph, not a separate run. In the
-example, a paragraph that turns its first character into a three-line drop cap
-parses to one paragraph and one run; the renderer enlarges and hangs the leading
-characters at layout time.
+**How are tab stops written?**
+As `<Properties><TabList type="list">` on the paragraph or its style, with one
+`<ListItem type="record">` per stop holding typed `<Alignment>`, `<AlignmentCharacter>`,
+`<Leader>` and `<Position>` children.
 
-**What does a `Tab` snap to when the paragraph has no tab stops?**
-When a tab's pen position has passed every explicit `TabStop` — or the paragraph
-defines none — the engine falls back to a **default tab grid** at every 36 pt. Each
-explicit stop's `Alignment` maps directly: `LeftAlign` starts the segment at the
-stop, `RightAlign` ends it there, `CenterAlign` centres it, and `CharacterAlign`
-lands the alignment character (a decimal point by default) on the stop.
+**Where do tabs go when there are no tab stops?**
+To a default grid every 36 pt, measured from the left edge of the column.
 
-**What is a tab leader, and how is it rendered?**
-A `Leader` is a string tiled across the gap a tab opens up — the dot leaders in a
-table of contents, for instance. The engine emits whole copies only: a leader wider
-than the gap emits none, and an empty or absent `Leader` produces no leader. If an
-alignment can't be honoured without glyphs colliding, that one tab falls through to
-left alignment so text never overlaps.
+**How do I make a drop cap in IDML?**
+Set `DropCapCharacters` and `DropCapLines` on the paragraph or its style, for example `1` and `3`
+for a single letter three lines tall. The text itself does not change.

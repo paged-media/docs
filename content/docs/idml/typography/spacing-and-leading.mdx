@@ -1,132 +1,97 @@
 ---
 title: Spacing and leading
-description: Tracking in 1/1000 em, Leading in points (Auto = point size × 1.2), baseline shift, and where kerning comes from — the per-run space adjustments the engine applies after shaping.
+description: Tracking and kerning (KerningMethod as $ID/Metrics, $ID/Optical or $ID/None, KerningValue), Leading and auto leading, baseline shift, scaling and skew.
 tier: pro
 diataxis: reference
 status: published
 owner: paged-docs
+describes: [typography.tracking-kerning, typography.leading, typography.scale-skew]
+reviewed: 2026-10-11
 ---
 
-**Once a run is shaped, the engine layers on the space adjustments it requests — `Tracking` between glyphs, `Leading` between baselines, and `BaselineShift` on the glyphs themselves — while kerning comes from the font, not from an IDML attribute.**
+**Spacing inside a line comes from tracking and kerning; spacing between lines comes from leading.**
 
-**In short:** After a run's face is resolved and its glyphs are shaped, the engine
-applies the per-run spacing the `CharacterStyleRange` asks for. `Tracking` adds
-uniform letter spacing measured in 1/1000 em; `Leading` sets the baseline-to-baseline
-step in points, defaulting to Auto (the largest point size on the line × 1.2) when
-absent; and `BaselineShift` nudges glyphs off the baseline without changing the line
-step. Kerning is not an IDML amount — it comes from the font during shaping, with a
-`KerningMethod` switch choosing which kerning to apply and a `Ligatures` switch for
-standard ligatures.
+**In short:** `Tracking` adds the same space after every character of a run, in thousandths of
+an em. Kerning adjusts the space between particular pairs of characters: `KerningMethod` chooses
+how it is computed (InDesign writes `$ID/Metrics`, `$ID/Optical` or `$ID/None`), and
+`KerningValue` adds manual kerning. `Leading` is the distance from one baseline to the next, in
+points or `Auto`, which is the point size times the paragraph's `AutoLeading` percentage.
+`BaselineShift` moves glyphs up or down, and `HorizontalScale`, `VerticalScale` and `Skew`
+distort them.
 
-Once a run's face is resolved and its glyphs are shaped, the engine layers on the
-per-run space adjustments the `CharacterStyleRange` requests: horizontal spacing
-between glyphs (`Tracking`), the vertical step between baselines (`Leading`), and
-a vertical nudge of the glyphs themselves (`BaselineShift`). Kerning is in this
-picture too, but it arrives differently — it comes from the font, not from an
-IDML attribute.
+## Tracking
 
-## Tracking — uniform letter spacing
+`Tracking` is in thousandths of an em, so its effect scales with the type size: at 12 pt, a
+`Tracking` of `100` adds 1.2 pt after each character, and a negative value tightens the run. It is
+a character attribute, set on a range or a style.
 
-`Tracking` adds the same amount of space to every glyph's advance in the run. Its
-unit is **1/1000 em** — InDesign's convention — so the space added per glyph
-scales with the type size. The engine converts it to points as
-`tracking ÷ 1000 × point_size` and adds that to each glyph's horizontal advance.
-At 12 pt, a `Tracking` of `100` adds `100 ÷ 1000 × 12 = 1.2` pt to every advance;
-a negative value tightens the run.
+## Kerning
 
-Tracking is a **post-shape** adjustment: it changes advances *after* shaping, so
-it does not disturb the shaping decisions themselves — kerning pairs and ligatures
-are already chosen by the time tracking is applied. The composer measures runs
-*with* tracking included, so column fit and line-breaking see the tracked widths.
+Kerning is the space between two specific characters, such as the tighter fit of "To" or "AV".
+`KerningMethod` chooses where automatic kerning comes from, and InDesign writes its values in the
+reserved `$ID/` namespace:
 
-## Leading — the baseline step
+| Value | Meaning |
+| --- | --- |
+| `$ID/Metrics` | Use the kerning pairs built into the font. InDesign's default. |
+| `$ID/Optical` | Compute the spacing from the shapes of adjacent glyphs, ignoring the font's pairs. Useful for fonts with few or no kerning pairs, and between characters of different fonts. |
+| `$ID/None` | No automatic kerning. |
 
-`Leading` is the vertical distance from one line's baseline to the next, in
-points. It is carried as a typed child of the run's `Properties` element (like
-`AppliedFont`), and the parser reads it from there.
+The census of real documents shows the prefixed spelling throughout: `$ID/Metrics` on paragraph
+styles in 271 documents and `$ID/Optical` in 8, and `$ID/Optical` on runs. No bare `Metrics`
+or `Optical` appears among the recorded values.
 
-When `Leading` is **absent**, the line uses **Auto leading**, which the engine
-computes as **point size × 1.2**. When a line mixes runs of different sizes, the
-auto value is driven by the **largest** point size on the line, so the tallest
-run sets the line's vertical rhythm. (InDesign exposes the 1.2 factor as a
-document-level `AutoLeading` percentage — 120% by default; the engine uses the
-120% default and does not yet read a per-document override of it.)
+`KerningValue` is manual kerning: an amount in thousandths of an em added to the automatic
+kerning at that position, set on the range it applies to.
 
-## Baseline shift
+> **In Paged:** kerning is applied by the shaper from the font's pairs. The `$ID/`-prefixed
+> values are not recognised yet: every one of them, `$ID/None` included, falls back to metric
+> kerning. The bare value `None` does turn kerning off, and optical kerning is not implemented
+> (it is set like metric kerning). `KerningValue` is not read yet. These are known engine
+> issues. <SupportBadge feature="typography.tracking-kerning" />
 
-`BaselineShift` moves the run's glyphs off the baseline without changing the line
-step: positive lifts them up, negative drops them down, measured in points. The
-engine applies it per glyph at emit time, so it stacks cleanly on top of shaping
-and tracking. It is the mechanism behind manually raised footnote markers, small
-adjustments to inline symbols, and the like.
+## Leading
 
-<AttrTable
-  element="CharacterStyleRange"
-  rows={[
-    { attr: 'Tracking', type: 'double (1/1000 em)', support: 'supported', note: 'Uniform space added to every glyph advance. Applied after shaping; the composer measures with it included.' },
-    { attr: 'Leading', type: 'double (pt) — Properties child', support: 'supported', note: 'Baseline-to-baseline step. Absent ⇒ Auto = largest point size on the line × 1.2.' },
-    { attr: 'BaselineShift', type: 'double (pt)', support: 'supported', note: 'Per-glyph vertical offset; + lifts, − drops. Does not change the line step.' },
-  ]}
-/>
+Leading is the distance from one line's baseline to the next. InDesign treats it as a character
+attribute: each line takes the largest leading among the runs on it. On a range or a style it is a
+typed `<Properties>` child:
 
-## Kerning comes from the font
+- `<Leading type="unit">14</Leading>` — 14 pt;
+- `<Leading type="enumeration">Auto</Leading>` — auto leading.
 
-There is no IDML attribute that carries a kerning *amount* between glyph pairs.
-Kerning is a property of the font, applied during shaping: the engine lets the
-shaper apply the face's OpenType `kern` data by default. What IDML *does* expose
-is a `KerningMethod` that selects *which* kerning to use, plus a `Ligatures`
-switch:
+Auto leading is the point size times the paragraph's `AutoLeading` percentage, 120 by default. A
+line with mixed sizes gets the auto leading of its largest size. `AutoLeading` is a paragraph
+attribute, so different paragraphs can use different percentages.
 
-- **`KerningMethod="Metrics"`** (the default) uses the font's built-in pair
-  kerning.
-- **`KerningMethod="Optical"`** asks InDesign to compute kerning from glyph
-  outlines instead. The engine does not have an optical-kerning pass yet, so it
-  **falls back to Metrics** — the two are tracked as distinct so an optical pass
-  can land later without disturbing anything else.
-- **`KerningMethod="None"`** disables kerning for the run entirely.
-- **`Ligatures="false"`** turns off standard ligatures (`liga` / `clig`); they are
-  on by default.
+> **In Paged:** leading in points is applied, from either the typed child or an attribute. Auto
+> leading uses 120 % of the size; a paragraph's own `AutoLeading` percentage is not read yet.
+> <SupportBadge feature="typography.leading" />
 
-<AttrTable
-  element="CharacterStyleRange"
-  rows={[
-    { attr: 'KerningMethod', type: 'Metrics | Optical | None', support: 'parsed-not-rendered', note: 'Metrics and None are honoured. Optical is parsed but falls back to Metrics until an optical-kerning pass lands.' },
-    { attr: 'Ligatures', type: 'boolean', support: 'supported', note: 'Standard ligatures (liga/clig). Default true; "false" disables them.' },
-  ]}
-/>
+## Baseline shift, scaling and skew
 
-<SupportBadge status="parsed-not-rendered" note='KerningMethod="Optical" — parsed and distinguished from Metrics, but no optical-kerning pass exists yet; it renders as Metrics. core/crates/paged-text/src/shape.rs' />
+<AttrTable element="CharacterStyleRange" attrs={['Tracking', 'BaselineShift', 'HorizontalScale', 'VerticalScale', 'Skew', 'KerningMethod', 'KerningValue']} />
 
-A note on what is *not* here: IDML carries a long tail of OpenType and CJK spacing
-controls — discretionary ligatures, contextual alternates beyond the defaults,
-fractions, and the mojikumi/aki spacing tables for Japanese — that this engine
-does not expose as switches. Standard ligatures and metric kerning are the two
-font-driven features it applies; the rest of the OpenType feature surface is not
-in scope for the current shaper.
+`BaselineShift` moves the glyphs off the baseline by that many points, up for positive values,
+without changing the leading. `HorizontalScale` and `VerticalScale` stretch the glyphs as a
+percentage (100 is unchanged). `Skew` slants them by that many degrees, a false italic.
+
+> **In Paged:** baseline shift, both scales and skew are applied.
+> <SupportBadge feature="typography.baseline-shift" /> <SupportBadge feature="typography.scale-skew" /> <SupportBadge feature="typography.vertical-scale" />
 
 ## Frequently asked questions
 
-**What unit is `Tracking` measured in, and how does it scale?**
-`Tracking` is in **1/1000 em**, InDesign's convention, so the space added scales
-with the type size. The engine converts it to points as `tracking ÷ 1000 ×
-point_size` and adds that to each glyph's advance — at 12 pt, a `Tracking` of `100`
-adds `0.1 × 12 = 1.2` pt per glyph; a negative value tightens the run.
+**How does InDesign write `KerningMethod` values?**
+With the `$ID/` prefix: `$ID/Metrics`, `$ID/Optical` and `$ID/None`. A reader should accept that
+spelling; a writer should produce it.
 
-**What is Auto leading, and how does the engine compute it?**
-When `Leading` is absent, the line uses Auto leading, which the engine computes as
-**point size × 1.2** (InDesign's 120% default). When a line mixes sizes, the auto
-value is driven by the *largest* point size on the line. The engine uses the 120%
-default and does not yet read a per-document `AutoLeading` override.
+**What is the difference between metric and optical kerning?**
+Metric kerning uses the kerning pairs the font designer built into the font. Optical kerning
+ignores them and computes the spacing from the shapes of neighbouring glyphs. None turns automatic
+kerning off.
 
-**Where does kerning come from if there is no IDML kerning attribute?**
-Kerning is a property of the font, applied during shaping. The engine lets the
-shaper apply the face's OpenType `kern` data by default. IDML's `KerningMethod`
-selects *which* kerning to use: `Metrics` (the default) uses the font's pair
-kerning, `None` disables it, and `Optical` is parsed but currently falls back to
-Metrics because no optical-kerning pass exists yet.
+**What unit is `Tracking` in?**
+Thousandths of an em, so it scales with the type size: 100 at 12 pt is 1.2 pt per character.
 
-**Does the engine apply OpenType features like discretionary ligatures or fractions?**
-No. Standard ligatures (`liga`/`clig`, on by default and toggled by `Ligatures`)
-and metric kerning are the two font-driven features it applies. The longer tail —
-discretionary ligatures, contextual alternates beyond the defaults, fractions, and
-the Japanese mojikumi/aki spacing tables — is not in scope for the current shaper.
+**How is auto leading computed?**
+The point size times the paragraph's `AutoLeading` percentage, 120 by default. On a line with
+mixed sizes, the largest size decides.

@@ -1,129 +1,116 @@
 ---
 title: Justification and line-breaking
-description: The Justification values, how the composer breaks a paragraph into lines, and where its line-breaking and hyphenation diverge from InDesign.
+description: The Justification values and their last lines, word and letter spacing, glyph scaling, the forced line break, and the hyphenation attributes.
 tier: pro
-diataxis: explanation
+diataxis: reference
 status: published
 owner: paged-docs
+describes: [typography.knuth-plass, typography.justification-spacing, typography.hyphenation]
+reviewed: 2026-10-11
 ---
 
-**A paragraph's `Justification` sets how its lines align in the column; the composer then breaks the whole paragraph with a Knuth–Plass total-fit pass, while penalty-weight and hyphenation calibration against InDesign is still ongoing.**
+**`Justification` sets how a paragraph's lines sit in the column; the spacing and hyphenation attributes set how much the composer may stretch, squeeze and split words to get there.**
 
-**In short:** `Justification` chooses a paragraph's alignment — left, centre, right,
-or one of the justified modes that stretch inter-word space to fill the line. The
-composer feeds that choice into the harder question of *where* to break each line,
-building a Knuth–Plass item stream and running a total-fit pass that minimises
-badness across the entire paragraph at once, the way InDesign's Paragraph Composer
-does. The shape of the algorithm matches InDesign, but the exact penalty weights —
-and the TeX-pattern hyphenation that stands in for InDesign's licensed dictionaries
-— are still being calibrated, so line breaks are close but not yet guaranteed
-identical on every paragraph.
-
-A paragraph's `Justification` says how its lines align in the column, and that
-choice feeds into a harder question the composer answers next: *where* to break
-each line so the chosen alignment looks good. This page covers both — the
-alignment values first, then how the line-breaker and hyphenator actually behave,
-including where they knowingly differ from InDesign.
+**In short:** `Justification` takes three ragged values (`LeftAlign`, `CenterAlign`,
+`RightAlign`), four justified values that differ in how the last line is set
+(`LeftJustified`, `CenterJustified`, `RightJustified`, `FullyJustified`) and two
+binding-relative values. In justified text, the composer stretches word spaces within the
+paragraph's `MinimumWordSpacing`…`MaximumWordSpacing` range and, if allowed, letter spacing and
+glyph scaling too. Hyphenation adds break points inside words, governed by a family of
+`Hyphenate…` attributes. The [composer](/docs/idml/typography/composer-and-opentype) chooses the
+breaks within these limits.
 
 ## The `Justification` values
 
-`Justification` rides on the `ParagraphStyleRange` (and on `ParagraphStyle`). It
-distinguishes alignment-only modes from justified modes — the latter stretch the
-space between words to fill the line:
+`Justification` is a paragraph attribute, on a `<ParagraphStyleRange>` or a paragraph style.
 
-<AttrTable
-  element="ParagraphStyleRange"
-  rows={[
-    { attr: 'Justification = LeftAlign', type: 'enum', support: 'supported', note: 'Flush left, ragged right. The IDML default.' },
-    { attr: 'Justification = CenterAlign', type: 'enum', support: 'supported', note: 'Centred, ragged both sides.' },
-    { attr: 'Justification = RightAlign', type: 'enum', support: 'supported', note: 'Flush right, ragged left.' },
-    { attr: 'Justification = LeftJustified', type: 'enum', support: 'supported', note: 'Justified, last line flush left.' },
-    { attr: 'Justification = CenterJustified', type: 'enum', support: 'supported', note: 'Composed as Center (the centred-last-line variant maps to Center alignment).' },
-    { attr: 'Justification = RightJustified', type: 'enum', support: 'supported', note: 'Composed as Right (maps to Right alignment).' },
-    { attr: 'Justification = FullyJustified', type: 'enum', support: 'supported', note: 'Every line, including the last, stretched. Currently composed the same as LeftJustified.' },
-    { attr: 'Justification = ToBindingSide', type: 'enum', support: 'parsed-not-rendered', note: 'Binding-aware; falls back to LeftAlign until binding side is plumbed through.' },
-    { attr: 'Justification = AwayFromBindingSide', type: 'enum', support: 'parsed-not-rendered', note: 'Binding-aware; falls back to RightAlign.' },
-  ]}
-/>
+| Value | Lines | Last line |
+| --- | --- | --- |
+| `LeftAlign` | flush left, ragged right | same |
+| `CenterAlign` | centred | same |
+| `RightAlign` | flush right, ragged left | same |
+| `LeftJustified` | justified to both edges | flush left |
+| `CenterJustified` | justified to both edges | centred |
+| `RightJustified` | justified to both edges | flush right |
+| `FullyJustified` | justified to both edges | justified too, however short |
+| `ToBindingSide` | flush toward the spine | same |
+| `AwayFromBindingSide` | flush away from the spine | same |
 
-The value is parsed into a typed enum at read time, so an unrecognised string is
-not silently misaligned — it simply resolves to the left-aligned default. Two
-points of honesty in the table above: `FullyJustified` is composed the same as
-`LeftJustified` today (the distinction round-trips losslessly but does not yet
-change the last line), and the two binding-aware values fall back to plain
-left/right because binding side is a document-level setting the layout does not
-yet read. <SupportBadge status="parsed-not-rendered" note="ToBindingSide / AwayFromBindingSide fall back to Left / Right; binding side not yet plumbed through. core/crates/paged-parse/src/story.rs" />
+`ToBindingSide` and `AwayFromBindingSide` follow the page: on a right-hand page the binding side
+is the left, on a left-hand page the right. A paragraph's last line is the line before its
+`<Br/>`, or the story's last line.
 
-## How the composer breaks lines
+A line that holds a single word has no space to stretch. `SingleWordJustification` says how
+such a line is set in justified text: `FullyJustified` (letter-spaced to fill the measure, the
+value in almost every document of the census), `LeftAlign`, `CenterAlign` or `RightAlign`.
 
-The composer does **not** break greedily line by line. It builds a Knuth–Plass
-item stream for the whole paragraph — boxes (glyph runs), glue (inter-word space
-with a desired width and a stretch/shrink band), and penalties (break
-opportunities) — and runs a total-fit pass that minimises the badness across the
-*entire* paragraph at once, the way InDesign's Paragraph Composer does. That is
-why moving one word can re-flow lines above it: the algorithm is weighing all the
-breaks together, not committing to each line in isolation.
+> **In Paged:** the three ragged values and `LeftJustified` are set as described.
+> `CenterJustified` and `RightJustified` are set ragged, centred and flush right, instead of
+> justified; `FullyJustified` is set like `LeftJustified`, with a ragged last line; the
+> binding-relative values are set left and right. These are known engine issues.
 
-The space band is shaped by the paragraph's spacing preferences: the desired
-word spacing scales the natural space width, and stretch/shrink ratios set how
-far that space may grow or compress before a break is preferred elsewhere. When
-the breaker can't find a feasible set of breaks at the configured tolerance — for
-example a single token wider than the column — it relaxes the tolerance and tries
-again rather than failing the paragraph.
+## The forced line break
 
-### Calibration is ongoing
+A forced line break is the character U+2028 inside `<Content>`, typed in InDesign with
+Shift+Return. It ends the line but not the paragraph: no first-line indent, space before or list
+number follows it. In justified text the line before a forced break is justified to the full
+measure, because it is not the paragraph's last line. See
+[the paragraph model](/docs/idml/stories-text/the-paragraph-model).
 
-The shape of the algorithm matches InDesign; the exact *weights* — tolerance,
-looseness, and the glue stretch/shrink ratios — are still being calibrated against
-InDesign's output on a reference corpus. So line breaks are close to InDesign's
-but not yet guaranteed identical on every paragraph; expect occasional divergence
-in where a specific line ends until the penalty weights are locked in. <SupportBadge status="supported" note="Knuth–Plass total-fit is implemented and used; penalty-weight calibration against InDesign's Paragraph Composer is in progress. core/crates/paged-text/src/compose.rs" />
+> **In Paged:** U+2028 breaks the line inside the paragraph, and in justified text the line
+> before it is justified.
 
-## Hyphenation is a heuristic
+## Word spacing, letter spacing and glyph scaling
 
-When hyphenation is enabled, the composer can break inside a word at a hyphenation
-point, paying a penalty so it only does so when it improves the paragraph fit. The
-hyphenation points themselves come from **TeX (Liang) patterns**, by language — a
-compact, embedded pattern set that needs no external dictionary and works the same
-on native and WASM builds.
+Three triples on the paragraph set how far justified text may stretch or squeeze:
 
-InDesign uses Proximity's licensed hyphenation dictionaries, which we do not ship.
-The TeX patterns are the same family of algorithm and agree the vast majority of
-the time, but on some words they place a break one syllable differently. The
-result is a small, known divergence in *where* a word hyphenates — not in whether
-the paragraph is correct. <SupportBadge feature="typography.hyphenation" note="Hyphenation via TeX patterns (hypher); Proximity dictionary not licensed — minor break-position divergence vs InDesign. core/crates/paged-text/src/hyphenate.rs" />
+<AttrTable element="ParagraphStyle" attrs={['MinimumWordSpacing', 'DesiredWordSpacing', 'MaximumWordSpacing', 'MinimumLetterSpacing', 'DesiredLetterSpacing', 'MaximumLetterSpacing', 'MinimumGlyphScaling', 'DesiredGlyphScaling', 'MaximumGlyphScaling', 'SingleWordJustification']} />
 
-A related gap sits on the CJK side. The composer enforces a small built-in set of
-hard *kinsoku* (line-break-forbidden) rules — roughly the characters that may not
-start or end a line — but it does not consult IDML's named `KinsokuSet` tables or
-the full JIS X 4051 line-composition rules. The paragraph's `KinsokuType` toggles
-the built-in enforcement on; the finer per-set flavour is not yet wired. <SupportBadge status="parsed-not-rendered" note="KinsokuSet / MojikumiTable references parsed onto the paragraph; only a built-in hard-kinsoku heuristic is enforced, not the named tables. core/crates/paged-parse/src/story.rs" />
+Word spacing is a percentage of the font's normal space (InDesign's defaults: 80, 100, 133).
+Letter spacing is a percentage added between characters (defaults 0, 0, 0). Glyph scaling is a
+horizontal scale of the glyphs (defaults 100, 100, 100). The desired values also apply to ragged
+text.
+
+> **In Paged:** all three ranges feed the composer. <SupportBadge feature="typography.justification-spacing" />
+
+## Hyphenation
+
+<AttrTable element="ParagraphStyle" attrs={['Hyphenation', 'HyphenateWordsLongerThan', 'HyphenateAfterFirst', 'HyphenateBeforeLast', 'HyphenateLadderLimit', 'HyphenationZone', 'HyphenateCapitalizedWords', 'HyphenateLastWord', 'HyphenateAcrossColumns', 'HyphenWeight']} />
+
+`Hyphenation` switches it on (it is on in InDesign's defaults). A word must have at least
+`HyphenateWordsLongerThan` letters, and a break leaves at least `HyphenateAfterFirst` letters
+before it and `HyphenateBeforeLast` after it. `HyphenateLadderLimit` caps how many consecutive
+lines may end in a hyphen. `HyphenationZone` is a distance from the right edge within which ragged
+text may end without hyphenating. `HyphenWeight` balances better spacing against fewer hyphens.
+`AppliedLanguage` on the run picks the hyphenation dictionary.
+
+> **In Paged:** hyphenation uses TeX hyphenation patterns per language, not the dictionaries
+> InDesign uses, so a word can occasionally break one syllable differently. The attributes above
+> are read; the hyphenation zone applies to ragged text only, as in InDesign.
+> <SupportBadge feature="typography.hyphenation" /> <SupportBadge feature="typography.hyphenation-zone" />
+
+## Kinsoku
+
+Japanese and Chinese text forbids some characters at the start or end of a line, such as closing
+brackets and small kana at the start. `KinsokuSet` names the rule table and `KinsokuType` how a
+line is adjusted to obey it.
+
+> **In Paged:** a built-in set of hard kinsoku rules is enforced when the paragraph sets
+> `KinsokuType`; named tables are not honoured yet. <SupportBadge feature="typography.kinsoku" />
 
 ## Frequently asked questions
 
-**Does the composer break lines greedily, one line at a time?**
-No. It builds a Knuth–Plass item stream for the whole paragraph — boxes, glue, and
-penalties — and runs a total-fit pass that minimises badness across the entire
-paragraph at once, the way InDesign's Paragraph Composer does. That is why moving
-one word can re-flow lines above it.
+**What is the difference between `LeftJustified` and `FullyJustified`?**
+Both justify every line to both edges. `LeftJustified` sets the last line flush left;
+`FullyJustified` stretches the last line to the full measure too, however short it is.
 
-**Will Paged's line breaks match InDesign's exactly?**
-Not yet on every paragraph. The shape of the algorithm matches InDesign, but the
-exact weights — tolerance, looseness, and the glue stretch/shrink ratios — are
-still being calibrated against InDesign's output on a reference corpus. Expect
-breaks that are close but occasionally diverge until the penalty weights are locked
-in.
+**What do `CenterJustified` and `RightJustified` mean?**
+Justified text whose last line is centred, or flush right, instead of flush left.
 
-**Why might a word hyphenate at a slightly different point than in InDesign?**
-Paged hyphenates using embedded TeX (Liang) patterns by language, while InDesign
-uses Proximity's licensed dictionaries, which we do not ship. The two are the same
-family of algorithm and agree most of the time, but on some words they place a
-break one syllable differently — a small, known divergence in *where* a word breaks,
-not in whether the paragraph is correct.
+**How is a forced line break written, and how is the line before it set?**
+As U+2028 inside `<Content>`. It ends the line without ending the paragraph, so in justified text
+the line before it is justified like any other line that is not the last.
 
-**Are all the `Justification` values rendered as InDesign composes them?**
-Most are. Left, centre, and right alignment and `LeftJustified` are honoured;
-`CenterJustified` and `RightJustified` map to centre and right alignment.
-`FullyJustified` round-trips losslessly but is currently composed the same as
-`LeftJustified`, and the binding-aware `ToBindingSide` / `AwayFromBindingSide`
-values fall back to plain left/right until binding side is plumbed through.
+**What does `SingleWordJustification` do?**
+It sets how a line holding a single word is placed in justified text: spread to fill the line, or
+aligned left, centre or right.
