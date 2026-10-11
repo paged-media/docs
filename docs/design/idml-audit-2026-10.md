@@ -9,6 +9,20 @@ Verdicts: **current** (publishable as is), **fix** (targeted corrections),
 **rewrite** (the page teaches a wrong model or is mostly stale), **merge**, **delete**.
 This file is the work list for the chapter rewrites; each wave closes its rows.
 
+## Progress
+
+| Wave | Chapters | State |
+|---|---|---|
+| 1 | stories & text, text variables | rewritten, live (docs `5928d7f`) |
+| 2 | overview, foundations, package anatomy, glossary fixes, meta | rewritten |
+| 3 | geometry, layout model, frames & paths, masters, layers | rewritten |
+| 4 | styles, typography, tables | rewritten |
+| 5 | colour, images, anchored objects, effects & transparency (new), colour management (new) | in progress |
+| 6 | cross-references & hyperlinks, sections, conditional text, tagged XML, table of contents (new) | in progress |
+| 7 | companion formats, round-tripping, edge cases, comparisons, cookbook, glossary, home | in progress |
+
+Every example is verified in InDesign 20.0.1 (ADR 806).
+
 ## Totals
 
 | Group | Pages | Current | Fix | Rewrite | Merge / finish / delete |
@@ -60,6 +74,27 @@ Not documentation work; reported to the engine:
   bottom (the angle turns counter-clockwise from left-to-right). Paged draws it top-down,
   and `cookbook/apply-a-gradient` describes Paged's direction. Found by the InDesign
   verification of `examples/gradient-fill` (ADR 806, worst-page mean ΔE 4.0).
+- Placement the importer does not read (found from the census during wave 2):
+  `ColorGroup` (InDesign writes it in the design map with `ColorGroupSwatch` children),
+  `NumberingList` (design map), `DocumentPreference` / `FootnoteOption` / `GridPreference`
+  (`Preferences.xml`), stroke styles such as `DashedStrokeStyle` (`Graphic.xml`); the
+  importer looks for each in another part. `Ink`, `MixedInk` and `StrokeStyle` are not read.
+  Vertical writing is read from `Story@StoryDirection`; InDesign writes `StoryPreference`
+  `StoryOrientation`.
+- Nested styles: InDesign writes `<Properties><AllNestedStyles>`; the importer reads only a
+  `<NestedStyle>` element InDesign does not write.
+- Paragraph styles: `Ligatures`, `KerningMethod` and the `OTF…` attributes are not read on
+  `ParagraphStyle` (InDesign writes them there).
+- `<BasedOn type="string">$ID/[No paragraph style]</BasedOn>` (InDesign's form for the
+  built-in roots) is stored without its `ParagraphStyle/` prefix, so the chain stops a step
+  early.
+- A table sharing a `CharacterStyleRange` with the text around it is drawn after the
+  following paragraph.
+- Cell `FirstBaselineOffset` is parsed but not applied.
+- `paged-inspect` counts a forced line break (U+2028) as a paragraph; InDesign counts 3
+  paragraphs in `examples/paragraph-marks`, the inspector 4. The rendering agrees with
+  InDesign.
+- `examples/object-style` differs from InDesign's rendering by a mean ΔE of 2.1.
 - Bold from a character style: `examples/local-override` asks for Open Sans Bold, and
   InDesign's PDF contains only Open Sans Regular. Check what InDesign substitutes before
   documenting how `FontStyle` resolves.
