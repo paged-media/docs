@@ -1,170 +1,105 @@
 ---
 title: Formats & clipping
-description: Which image formats the renderer can decode once the asset resolver returns bytes, how the frame path crops the picture, and where the current gaps are.
+description: Which file formats IDML graphic frames place, how the frame outline and a clipping path crop a picture, and what a reader can draw without the linked file.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
+describes: [images-graphics.placed-images, images-graphics.image-clipping, images-graphics.clipping-paths]
+reviewed: 2026-10-11
 ---
 
-**Once the parser hands off a picture's reference, an asset resolver finds the bytes and the renderer decodes and clips them — none of it is the parser's job.**
+**An IDML file names its pictures but rarely contains them; what a reader can draw depends on finding the files and decoding their formats. The frame outline, and optionally a clipping path, decides what part shows.**
 
-**In short:** After [placed images](/docs/idml/images-graphics/placed-images) showed
-how a frame points at a picture, this page covers what happens downstream. The
-render pipeline asks an *asset resolver* to turn the captured URI into bytes, then
-the renderer decodes those bytes — PNG, JPEG, WebP, and SVG are handled, while
-EPS, PostScript, and PDF are recognised but not yet rasterised — and clips the
-result to the frame's outline. A missing link is never an error: the frame still
-has its geometry, and the renderer can stamp a missing-image placeholder. This
-page explains the resolver, which formats decode, how the frame path crops the
-picture, and where the current gaps are.
+**In short:** Pictures are usually linked: the package holds a URI, and the file lives
+elsewhere. Some are embedded as base64 inside the document. Real documents place JPEG most
+of all, then Photoshop files, PDF pages and PNG; EPS appears rarely. The frame's outline crops
+every picture. A `<ClippingPathSettings>` can add a second clip: a path drawn by hand, which
+the file carries, or a path or alpha channel stored inside the image, which it does not.
 
-[Placed images](/docs/idml/images-graphics/placed-images) showed how a frame points at
-a picture. This page is about what happens *after* the parser hands that pointer
-off — how the picture is found and decoded, and how the frame crops it. None of
-this is the parser's work: it is the asset resolver and the renderer downstream of
-it.
+## Finding the bytes
 
-## The asset resolver
+[Placed images](/docs/idml/images-graphics/placed-images) covers how a frame names its file.
+For a reader the consequences are:
 
-When the parser captures a `LinkResourceURI` (or inline image bytes), it does not
-load anything. The render pipeline asks an **asset resolver** to turn that URI
-into bytes — a small interface with one method for images: given the URI string,
-return the file's bytes, or nothing. A host wires up whatever resolver suits it: a
-filesystem resolver that looks under a `Links/` folder, an in-memory one
-pre-loaded with the assets, one that substitutes a placeholder, and so on. The
-same parsed document renders differently depending only on which resolver is
-supplied.
+- **Linked pictures are outside the package.** The IDML holds only the `LinkResourceURI`. A
+  reader needs the file itself, usually from a `Links` folder next to the document, matched by
+  name. Without it, the frame still has its full geometry; only the picture is missing.
+- **Embedded pictures are inside.** Their bytes are base64 in the graphic's `<Contents>`, so
+  they travel with the file. The link still names the original location.
+- **A missing picture is not an error.** InDesign opens the document, marks the link as
+  missing and keeps the frame, its geometry and its crop.
 
-Two things follow from this design:
+## Formats
 
-- **A missing link is not an error.** If the resolver returns nothing for a URI,
-  the frame still parsed and still has its geometry; only the picture is absent.
-  The renderer can stamp a missing-image placeholder in that frame (a grey fill
-  with a diagonal cross) instead of leaving it blank, precisely because the parser
-  recorded that the frame *did* nest an image element. <SupportBadge status="supported" note="missing-image placeholder for an image frame whose link is unresolvable" />
-- **Decoding is deferred too.** Even when the resolver returns bytes, turning
-  those bytes into pixels happens at render time, not parse time. Until a resolver
-  hands over the bytes, a placed image is *parsed but not rendered* — the slot is
-  known, the picture is not yet drawn. <SupportBadge status="parsed-not-rendered" note="placed image without its asset: parsed structurally, drawn only once a resolver supplies and the renderer decodes the bytes" />
+By `LinkResourceFormat`, the links in the surveyed documents are mostly JPEG, then Photoshop
+files, PDF pages and PNG, with a few WebP. EPS is placed in 3 documents. The format is a property of the file, not of the IDML: the same `<Image>` element
+holds a JPEG, a TIFF or a Photoshop file alike. Only PDF pages and EPS files get their own
+elements, `<PDF>` and `<EPS>`, because they are page descriptions rather than pixels.
 
-## Formats the renderer can decode
+> **In Paged:** PNG, JPEG (including CMYK JPEG with an embedded profile), WebP, TIFF, GIF and
+> BMP decode, and SVG is rasterised; very large JPEGs are scaled down while decoding.
+> Photoshop files need the paged.image plugin. Linked PDF and EPS files are recognised but
+> not rasterised; an embedded `<PDF>` or `<EPS>` shows the frame's own fill with a marker and
+> a diagnostic. A frame whose link the host cannot resolve gets the grey missing-image
+> placeholder. <SupportBadge feature="images-graphics.placed-images" /> <SupportBadge feature="images-graphics.cmyk-jpeg-icc" /> <SupportBadge feature="images-graphics.eps-decode" /> <SupportBadge feature="images-graphics.missing-image-placeholder" />
 
-Once the resolver returns bytes, the renderer decodes them to RGBA pixels. The
-common web and print raster formats — PNG, JPEG, WebP — are handled, with very
-large JPEGs scaled down during decode so a single huge photo cannot exhaust
-memory. SVG is rasterised through a vector renderer. EPS / PostScript and PDF
-streams are a different story: those are page-description formats, not bitmaps, and
-decoding them needs machinery the renderer does not yet ship.
+## The frame outline crops the picture
 
-<AttrTable
-  element="placed-image formats (handled by the renderer after the resolver returns bytes)"
-  rows={[
-    { attr: 'PNG', type: 'raster', support: 'supported', note: 'Decoded to RGBA.' },
-    { attr: 'JPEG', type: 'raster', support: 'supported', note: 'Decoded to RGBA; oversized JPEGs are downscaled during decode to bound memory.' },
-    { attr: 'WebP', type: 'raster', support: 'supported', note: 'Decoded to RGBA.' },
-    { attr: 'SVG', type: 'vector', support: 'supported', note: 'Rasterised; the longest edge is capped to match the raster decode budget.' },
-    { attr: 'EPS / PostScript', type: 'page-description', support: 'not-yet-parsed', note: 'A decode of these bytes returns nothing — rasterising PostScript needs a Ghostscript-class sidecar that is not yet wired up.' },
-    { attr: 'PDF (linked)', type: 'page-description', support: 'not-yet-parsed', note: 'No PDF page rasteriser yet; a linked PDF whose bytes cannot be decoded is treated like any other undecodable payload.' },
-  ]}
-/>
+The picture is placed by its own `ItemTransform` and then clipped to the frame's outline.
+Pixels outside the outline are not drawn. That is how a frame shows a slice of a wide photo or
+a square crop of a tall one, and how an `Oval` or a drawn `Polygon` gives a picture its
+silhouette: the clip is the frame's path, whatever its shape, rounded corners included.
 
-The IDML format reaches these formats through distinct element names — `<Image>`
-for bitmaps, `<EPSImage>` for EPS, `<PDF>` for placed PDFs, `<ImportedPage>` for
-placed InDesign pages. The parser recognises **all four uniformly**: each one
-marks its host frame as an image frame and (where present) captures the link. What
-the elements share at the parser level is exactly what matters here — they all
-produce a graphic frame with a deferred reference. Whether the *bytes* behind that
-reference can be decoded is the renderer's concern, and that is where EPS, PDF, and
-imported pages currently fall short. <SupportBadge feature="images-graphics.eps-decode" note="EPSImage / PDF / ImportedPage: recognised uniformly by the parser; the vector/page-description payload is not yet rasterised" />
+> **In Paged:** pictures are clipped to the frame's path, for rectangles, ovals and polygons.
+> <SupportBadge feature="images-graphics.image-clipping" />
 
-There is one deliberate special case. A placed `<PDF>` that carries its content
-inline (rather than a link) is flagged so the renderer falls back to the frame's
-own fill colour, rather than stamping the grey missing-image cross over what is
-genuinely unrenderable-but-present content.
+## Clipping paths
 
-### When a resolved image still cannot be drawn
+A graphic element can carry `<ClippingPathSettings>`, a second clip inside the frame's:
 
-It is worth separating two failure modes, because the renderer treats them
-differently:
+<AttrTable element="ClippingPathSettings" />
 
-- **Link missing** — the resolver returned nothing. For a frame that nests an
-  image element, the renderer draws the missing-image placeholder.
-- **Decode failed** — the resolver returned bytes, but the decoder could not make
-  pixels of them (an EPS stream, a corrupt file, an unsupported codec). Here the
-  renderer does *not* stamp a "missing" badge over content that InDesign itself
-  would have rasterised; it falls through to the frame's intrinsic fill instead.
-  <SupportBadge status="parsed-not-rendered" note="resolved-but-undecodable payload: frame parses, falls back to fill rather than a missing-image badge" />
+`ClippingType` says where the path comes from:
 
-## The frame path clips the picture
+| Value | Path from | In the IDML? |
+|---|---|---|
+| `None` | no clipping path | — |
+| `UserModifiedPath` | a path the user drew or edited | yes, as a `<PathGeometry>` child |
+| `PhotoshopPath` | a path saved in the image file, named by `AppliedPathName` | no |
+| `AlphaChannel` | an alpha channel in the image file, named by `AppliedPathName` | no |
+| `DetectEdges` | edges InDesign finds in the image, tuned by `Threshold` and `Tolerance` | no |
 
-A picture is bigger than, or offset within, its frame more often than not — that is
-how cropping works in a layout. The frame's outline is the crop: the renderer
-places the image using the composition of the frame transform and the image's own
-[`ItemTransform`](/docs/idml/geometry-coordinates/item-transform), then **clips the
-result to the frame's path**. Pixels outside the outline are not drawn. That is
-what lets a frame show a thin slice of a wide photo, or a square crop of a tall
-one.
+`InvertPath` swaps inside and outside. `IncludeInsideEdges`, `RestrictToFrame`, `InsetFrame`
+and `UseHighResolutionImage` refine how InDesign builds the path. In the surveyed files
+`ClippingType` is `None` almost everywhere; one document has a `UserModifiedPath`.
 
-For a `Rectangle`, the clip is the rectangle's box — and because IDML rectangles
-are axis-aligned in their own inner space, that box equals the path exactly; any
-rotation rides on the frame transform that the image shares. For non-rectangular
-hosts — an `Oval`, or a `Polygon` with a hand-drawn outline — the clip is that
-shape's path, so the picture takes the frame's silhouette.
+Only a `UserModifiedPath` can be reproduced from the XML alone. The other three need the
+image's own data, and InDesign's own edge detection for `DetectEdges`.
 
-<AttrTable
-  element="clipping a placed image"
-  rows={[
-    { attr: 'Rectangle frame', type: 'box clip', support: 'supported', note: 'Image clipped to the rectangle’s axis-aligned path; rotation is carried by the shared frame transform.' },
-    { attr: 'Oval / Polygon frame', type: 'path clip', support: 'supported', note: 'Image clipped to the frame’s outline, so it takes the frame’s silhouette.' },
-    { attr: 'no inner ItemTransform', type: 'stretch-to-bounds', support: 'supported', note: 'When the <Image> carries no transform, the image is fit to the frame’s bounds and no separate clip is needed (it already covers the box).' },
-  ]}
-/>
-
-A note on precision: beyond the frame outline, IDML can attach a separate
-clipping path to the placed image via `<ClippingPathSettings>`. When that path is
-a hand-edited `UserModifiedPath`, InDesign serialises its resolved geometry as a
-nested `<PathGeometry>`, and the renderer now applies it as an extra clip on top
-of the frame crop — so the picture takes the detached silhouette, not just the
-frame. The other clipping types (`PhotoshopPath`, `AlphaChannel`, `DetectEdges`)
-need the linked image's own bytes, which are not extracted yet; those emit a
-diagnostic and fall back to the frame outline. <SupportBadge feature="images-graphics.image-clipping" note="UserModifiedPath clip applied from the inline PathGeometry; PhotoshopPath / AlphaChannel / DetectEdges fall back to the frame outline with a diagnostic" />
-
-## Where this leaves you
-
-For the common case — a linked or embedded raster picture in a rectangular or
-shaped frame, with the file available to the resolver — placed images render
-faithfully: found, decoded, transformed, and clipped to the frame (and to a
-`UserModifiedPath` detached clip when one is present). The open edges are the
-vector and page-description formats (EPS, PDF, imported pages), which parse
-uniformly but are not yet rasterised, and the metadata-derived clipping types
-(`PhotoshopPath`, `AlphaChannel`, `DetectEdges`), which need the image's own bytes
-and fall back to the frame outline. In every one of those cases the *parse* is
-complete and correct; what is deferred is purely the drawing.
+> **In Paged:** a `UserModifiedPath` is applied as an extra clip on top of the frame's, and
+> `InvertPath` is honoured. The other types fall back to the frame's outline with an
+> informational diagnostic. <SupportBadge feature="images-graphics.clipping-paths" />
 
 ## Frequently asked questions
 
-**What image formats can the renderer decode?**
-Once the resolver returns bytes, the renderer decodes the common raster formats —
-PNG, JPEG, and WebP — to RGBA pixels, and rasterises SVG through a vector renderer.
-Oversized JPEGs are downscaled during decode so a single huge photo cannot exhaust
-memory, and SVG's longest edge is capped to the same budget.
+**Does an IDML file contain its images?**
+Usually not. Linked images are named by URI and live outside the package; embedded ones are
+stored as base64 in the graphic's `<Contents>`.
 
-**Why don't EPS and PDF images render?**
-EPS, PostScript, and PDF are page-description formats rather than bitmaps, so
-turning them into pixels needs machinery the renderer does not yet ship — a
-Ghostscript-class sidecar for PostScript, and a PDF page rasteriser. The parser
-still recognises `<EPSImage>`, `<PDF>`, and `<ImportedPage>` uniformly and marks
-their frames as image frames; only the rasterisation is missing.
+**Which image formats do IDML documents use?**
+Whatever InDesign can place. In the surveyed files that is mostly JPEG, then Photoshop, PDF and
+PNG. PDF pages and EPS files have their own elements, `<PDF>` and `<EPS>`; everything else is an
+`<Image>`.
 
-**How does a frame crop a placed image?**
-The frame's outline is the crop: the renderer composes the frame transform with
-the image's own `ItemTransform`, then clips the result to the frame's path, so
-pixels outside the outline are not drawn. For a `Rectangle` the clip is the
-axis-aligned box; for an `Oval` or `Polygon` it is the frame's silhouette.
+**How is a placed picture cropped?**
+By the frame's outline. The picture's transform places it; anything outside the frame's path
+is not drawn.
 
-**Is a missing image file treated as an error?**
-No. If the resolver returns nothing for a URI, the frame still parsed and still
-has its geometry — only the picture is absent. Because the parser recorded that
-the frame nests an image element, the renderer can stamp a missing-image
-placeholder (a grey fill with a diagonal cross) rather than leaving it blank.
+**Can a reader apply a Photoshop clipping path from the IDML alone?**
+No. A `PhotoshopPath` or `AlphaChannel` clip refers to data inside the image file. Only a
+`UserModifiedPath` is written into the IDML, as `<PathGeometry>`.
+
+**What should a reader draw when a linked file is missing?**
+The frame, with its geometry, fill and stroke, and some sign that the picture is missing.
+InDesign keeps the frame and reports the link as missing.

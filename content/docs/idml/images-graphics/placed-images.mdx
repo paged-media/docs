@@ -1,144 +1,136 @@
 ---
 title: Placed images
-description: A graphic frame nests an Image element that points at a file via Link/LinkResourceURI and carries its own ItemTransform; linked and embedded pictures parse alike.
+description: How an IDML graphic frame holds an Image, PDF or EPS element with its own ItemTransform, GraphicBounds and a Link that names the file or marks it embedded.
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
+describes: [images-graphics.placed-images, geometry-coordinates.image-content-transform, images-graphics.frame-fitting]
+reviewed: 2026-10-11
 ---
 
-**A placed image is a frame with an `<Image>` element nested inside it.**
+**A placed image is a frame with a graphic element inside it: `<Image>` for pixels, `<PDF>` for a PDF page, `<EPS>` for PostScript. The graphic carries its own transform and a `<Link>` to its file.**
 
-**In short:** In IDML, a picture is a frame — most often a `Rectangle`, but also
-an `Oval` or `Polygon` — that contains an `<Image>` child. Nothing on the frame's
-own start tag marks it as "a graphic frame"; the nested image element is the whole
-signal. That `<Image>` carries two things our parser captures: a reference to the
-picture data, pointed at through a `<Link>` and `LinkResourceURI` (or inline
-bytes), and its own `ItemTransform` that maps the picture into the frame. This
-reference page covers the shape of a graphic frame, how the link is read, and why
-a linked picture and an embedded one look identical to the parser.
-
-A placed image is a frame with an `<Image>` element inside it. The frame is an
-ordinary [page item](/docs/idml/geometry-coordinates/item-transform) — most often a
-`Rectangle`, but `Oval` and `Polygon` work the same way — and the `<Image>` child
-is what turns that frame into a picture container. Nothing on the frame's own
-start tag marks it as "a graphic frame"; the presence of the nested image element
-is the whole signal.
+**In short:** The frame is an ordinary `Rectangle`, `Oval` or `Polygon` whose outline crops
+the picture. Inside it, the graphic element has an `ItemTransform` that places the picture in
+the frame, a `GraphicBounds` box in the picture's own units, and a `<Link>` whose
+`LinkResourceURI` names the file. An embedded picture keeps its bytes in the graphic's
+`<Properties><Contents>`, and its link says `StoredState="Embedded"`. The frame's
+`<FrameFittingOption>` records how the picture was fitted and cropped.
 
 ## The shape of a graphic frame
 
-```
-<Rectangle Self="urect" ItemTransform="…">
-  <Properties>
-    <PathGeometry>…</PathGeometry>     ← the frame outline, in inner coords
-  </Properties>
-  <Image Self="uimage" ItemTransform="…">
-    <Link LinkResourceURI="file:Links/photo.jpg"/>
-  </Image>
-</Rectangle>
-```
-
-Two transforms are in play, and keeping them straight is the key to reading any
-placed image:
-
-- The **frame's** `ItemTransform` carries the frame's inner space onto the page —
-  exactly as it does for a frame with no picture.
-- The **image's** `ItemTransform` (on the `<Image>` element) maps the picture's
-  natural pixel space *into the frame's inner space*. The renderer composes the
-  two — frame transform after image transform — so the pixels land inside the
-  outline the path describes.
-
-The parser treats a placed image's pixel grid as 1 pixel ≈ 1 pt at 72 ppi; the
-image transform is what scales that grid to the size you actually see.
-
-## Pointing at the file: `<Link>` and `LinkResourceURI`
-
-The reference to the image data is a `LinkResourceURI` string. It can sit directly
-on the `<Image>` element, or on a `<Link>` child of it — both are read, and when
-both are present the outer `<Image>`'s wins (first-write-wins). Our parser also
-accepts an `href` attribute as an alias for the URI. Whatever the spelling, the
-parser captures the string and does nothing else with it: resolving that URI to
-real bytes is the [asset resolver's](/docs/idml/images-graphics/formats-and-clipping)
-job at render time.
-
-<AttrTable
-  element="Image (nested in a frame)"
-  rows={[
-    { attr: 'Self', type: 'string id', support: 'parsed-not-rendered', note: 'The image element id; informational for the parser.' },
-    { attr: 'ItemTransform', type: 'a b c d tx ty', support: 'supported', note: 'Maps the image’s natural pixel space into the frame’s inner space. When absent, the renderer falls back to stretching the image to the frame bounds.' },
-    { attr: 'LinkResourceURI', type: 'URI string', support: 'supported', note: 'The link to the external file. Read on the <Image> or its <Link> child; href is accepted as an alias. Captured as a string; resolution is deferred.' },
-  ]}
-/>
-
-The same fields appear whether the host is a `Rectangle`, an `Oval`, or a
-`Polygon` — the parser surfaces `image_link` and the image transform on all three.
-
-## Links and embeds look the same to the parser
-
-InDesign can either *link* a picture (the IDML carries a URI to a file on disk) or
-*embed* it (the IDML carries the image bytes inline, base64-encoded inside a
-`<Contents>` element). These are very different on disk, but they converge at the
-parser: an embedded image's decoded bytes and a linked image's URI are two
-properties on the same frame, and both routes end at the same render-time image
-slot. A real-world template can mix the two freely; the parser does not care which
-one a given frame used.
-
-There is one more flag worth knowing. The parser records *that* a frame nests an
-image element at all — separately from whether the link resolved. That lets the
-renderer tell a plain colour swatch (no image element, just a fill) apart from a
-graphic frame whose link happens to be unresolvable (an image element, but no
-usable bytes), so it can draw a missing-image placeholder in the second case
-instead of falling back to the frame's fill.
-
-<AttrTable
-  element="how the parser categorises a frame"
-  rows={[
-    { attr: 'image link / URI', type: 'string | none', support: 'supported', note: 'Set from <Image>/<Link> LinkResourceURI (or href). None ⇒ no linked file.' },
-    { attr: 'inline image bytes', type: 'bytes | none', support: 'supported', note: 'Decoded from <Image><Properties><Contents> base64 CDATA. Takes precedence over a URI when both are present.' },
-    { attr: 'nests an image element', type: 'flag', support: 'supported', note: 'True for any <Image>/<EPSImage>/<PDF>/<ImportedPage> child. Distinguishes a colour swatch (false) from a graphic frame whose link is missing (true).' },
-  ]}
-/>
-
-## A worked graphic frame
-
-The example below is a single `Rectangle` placed on the page, nesting an
-`<Image>` that links an external `photo.jpg` and carries a half-scale
-`ItemTransform`. The package ships no image bytes — by design. It parses cleanly:
-the frame is read in full, and the missing picture is simply a slot the resolver
-would fill. Open the tree view and you can see the `<Image>` and its `<Link>` hung
-under the rectangle.
-
 <ExampleEmbed example="placed-image">
-  A rectangle turned into a graphic frame by a nested Image that links an external file.
+  A rectangle holding an Image at half scale. The Image's GraphicBounds is the picture's
+  600 x 400 pixel box; its Link names the file, which this package does not include.
 </ExampleEmbed>
 
-Because no bytes are embedded and no file is supplied, there is nothing for a
-renderer to draw inside the frame — so this example is intentionally structural,
-not a live render. What it shows is the *shape* of a placed image: the frame, the
-nested `<Image>`, the link, and the image's own transform. How the picture would
-actually be found, decoded, and cropped is the subject of
+Nothing on the frame's own element says "graphic frame": the child graphic does. A frame with
+no graphic child is an empty frame, or a coloured shape.
+
+In the surveyed documents, `<Image>` sits in rectangles, ovals and polygons; `<PDF>` and `<EPS>`
+in rectangles.
+
+## Two transforms
+
+- The **frame's** `ItemTransform` places the frame in its spread or group, as for any page item.
+- The **graphic's** `ItemTransform` places the picture inside the frame: it maps the picture's
+  own space into the frame's inner space. A scale of `0.5` shows the picture at half size; a
+  translation moves it within the frame.
+
+The picture lands where the two composed put it, and only the part inside the frame's outline
+shows. Cropping is therefore not a property of the picture: it is the frame's outline cutting
+off what the graphic's transform puts outside it.
+
+## `<Image>`
+
+<AttrTable element="Image" />
+
+- **`ItemTransform`** places the picture in the frame (above).
+- **`GraphicBounds`**, a typed `<Properties>` child with `Left`, `Top`, `Right` and `Bottom`,
+  is the picture's own box: for a raster image, `0 0` to its width and height in pixels, one
+  pixel to one unit. The transform maps that box into the frame. InDesign reads it that way:
+  a `GraphicBounds` set to the frame's box under a scaling transform puts a tiny picture in
+  the wrong place.
+- **`Space`** (`$ID/RGB`, `$ID/CMYK`, …), **`ActualPpi`** and **`EffectivePpi`** describe the
+  picture as placed: its colour space, its own resolution and its resolution at the placed
+  size, written as `(x y)` pairs. They are informational.
+- **`ImageRenderingIntent`** and a `<Profile>` property record the colour handling of the
+  picture; see [colour management](/docs/idml/color-swatches/colour-management).
+
+`<Image>` can also carry `ClippingPathSettings`, `TextWrapPreference` and a
+`TransparencySetting` of its own. Clipping paths are covered on
 [formats & clipping](/docs/idml/images-graphics/formats-and-clipping).
+
+## `<PDF>` and `<EPS>`
+
+A placed PDF page is a `<PDF>` element, a placed EPS file an `<EPS>` element; there is no
+`<EPSImage>`. Both sit in the frame where an `<Image>` would, with the same `ItemTransform`,
+`GraphicBounds` and `<Link>`. `<PDF>` adds a `<PDFAttribute>` child with the `PageNumber`
+placed, the `PDFCrop` box and `TransparentBackground`, and a `<GraphicLayerOption>` for the
+PDF's layers. Placed InDesign pages use `<ImportedPage>`; none of the surveyed documents has
+one.
+
+<AttrTable element="PDFAttribute" />
+
+## `<Link>`
+
+<AttrTable element="Link" />
+
+- **`LinkResourceURI`** names the file. InDesign writes an absolute `file:` URI with a single
+  slash and percent-encoded spaces: `file:/Users/name/Links/photo.psd` on a Mac,
+  `file:C:/Projects/Links/Logo%20grey.pdf` on Windows. A relative URI resolves to nothing in
+  InDesign: the frame keeps its geometry and shows a missing link.
+- **`StoredState`** is `Normal` for a linked file and `Embedded` when the picture's bytes are
+  inside the document. The surveyed files hold both in roughly equal numbers.
+- **`LinkResourceFormat`** names the file type, in InDesign's own words: `$ID/JPEG`,
+  `$ID/Photoshop`, `$ID/Portable Network Graphics (PNG)`,
+  `$ID/Adobe Portable Document Format (PDF)`, `$ID/WEBP ` (with a trailing space).
+- The rest (`LinkResourceSize`, `LinkImportTime`, `LinkClassID`, `CanEmbed`, …) is link
+  management for InDesign's Links panel.
+
+## Embedded pictures
+
+An embedded picture keeps its bytes in the graphic element as a typed `<Properties>` child,
+`<Contents>`, holding the file base64-encoded. The `<Link>` stays, naming where the file
+originally came from, with `StoredState="Embedded"`. A reader should prefer the embedded bytes
+when they are present. For an `<EPS>`, the contents are PostScript, not pixels.
+
+## Frame fitting
+
+<AttrTable element="FrameFittingOption" />
+
+`<FrameFittingOption>` on the frame records the fitting the user chose and the crop amounts:
+`LeftCrop`, `TopCrop`, `RightCrop` and `BottomCrop` in points, negative where the picture
+extends past the frame; `FittingOnEmptyFrame` for a picture placed into the frame later
+(`FillProportionally`, `Proportionally`, `FitContentToFrame` or `None`);
+`FittingAlignment`, the reference point; and `AutoFit`, which re-fits the picture when the
+frame is resized. Where the picture sits now is given by the graphic's `ItemTransform`; the
+fitting option is how that position came about.
+
+> **In Paged:** the graphic's transform, its link and its embedded `<Contents>` are read; the
+> embedded bytes win over the link. Linked files are found at render time by the host. A
+> frame whose graphic has no transform is filled by the picture, less the
+> `FrameFittingOption` crops. The `ActualPpi`, `EffectivePpi` and `Space` metadata are read
+> for display in the editor. <SupportBadge feature="images-graphics.placed-images" /> <SupportBadge feature="images-graphics.frame-fitting" />
 
 ## Frequently asked questions
 
-**How is an image linked to a file in IDML?**
-The reference is a `LinkResourceURI` string, which can sit directly on the
-`<Image>` element or on a `<Link>` child of it — both are read, and when both are
-present the outer `<Image>`'s value wins (first-write-wins). Our parser also
-accepts an `href` attribute as an alias; whatever the spelling, it captures the
-string and defers resolving it to real bytes until render time.
+**How does an IDML frame point at its image file?**
+Through the `LinkResourceURI` of the `<Link>` inside the graphic element. InDesign writes an
+absolute `file:` URI.
 
-**What is the difference between a linked and an embedded image?**
-A *linked* image stores a URI pointing at a file on disk, while an *embedded*
-image stores the picture's bytes inline as base64 inside a `<Contents>` element.
-They differ on disk, but converge at the parser: both become properties on the
-same frame and end at the same render-time image slot, and a single template can
-mix the two freely. When both a URI and inline bytes are present, the inline bytes
-take precedence.
+**What is `GraphicBounds` on an `<Image>`?**
+The picture's own box: for a raster image, zero to its pixel width and height. The image's
+`ItemTransform` maps that box into the frame.
 
-**How does the renderer tell a missing graphic frame from a plain colour swatch?**
-The parser records *that* a frame nests an image element separately from whether
-its link resolved. That lets the renderer distinguish a plain colour swatch (no
-image element, just a fill) from a graphic frame whose link is unresolvable (an
-image element, but no usable bytes) — so it can draw a missing-image placeholder
-in the second case instead of falling back to the frame's fill.
+**How can I tell an embedded image from a linked one?**
+The `<Link>` says `StoredState="Embedded"`, and the graphic element carries the bytes as
+base64 in `<Properties><Contents>`.
+
+**Is it `<EPS>` or `<EPSImage>`?**
+`<EPS>`. There is no `<EPSImage>` element.
+
+**Why does InDesign show a missing link for my generated file?**
+Usually because the URI is relative. InDesign resolves only absolute `file:` URIs; write the
+full path, or embed the picture.
