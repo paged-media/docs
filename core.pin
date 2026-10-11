@@ -10,7 +10,13 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.71.2 (tag commit 7cad959). A patch on v0.71.1: a caret is an
+# Currently: v0.71.3 (tag commit a7d6684). Catalog only: each typed property
+# schema names the IDML element and attribute it stands for (355 of 403 rows),
+# which the IDML element reference (idml.paged.media/reference/) reads to show
+# an attribute's type, values and paged.set path. No wire change. All four
+# packages answer at 0.71.3 on the registry (`latest`).
+#
+# v0.71.2 (tag commit 7cad959). A patch on v0.71.1: a caret is an
 # address (`storyRange:<story>@n..n` names the paragraph it stands in, for
 # reads and writes), which the object-model panels need whenever nothing is
 # selected. No wire or catalog change. All four packages answer at 0.71.2 on
@@ -118,4 +124,4 @@
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-7cad959959cdf646fbc2af8cfe68456586cb12af
+a7d66847cfea2b54224d0f578743fb8afa95fa3b
