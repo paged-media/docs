@@ -1,60 +1,103 @@
 ---
 title: Style guide
-description: The five non-negotiables every page honors, and the visual identity.
+description: The rules every page of the IDML reference follows — voice, page shape, examples, tables, badges, frontmatter and links — and the visual identity.
 tier: beginner
 diataxis: explanation
 status: published
 owner: paged-docs
+describes:
+  - foundations.designmap.structure
+reviewed: 2026-10-11
 ---
 
 **This style guide is the short list of rules every page in the reference is held to.**
 
-**In short:** It captures the house voice and page shape so that a hundred pages
-written by different hands still read as one reference. The rules are deliberately
-few — short sentences, one concept per page, examples before explanation, no
-marketing voice, an honest difficulty label, and a fixed page shape — so a reviewer
-can hold any page to them at a glance. This page lists those rules and the visual
-identity.
+**In short:** The rules keep a hundred pages written by different hands reading as one
+reference, and they let a reviewer check any page at a glance. They cover the voice
+(describe the format; Paged behaviour goes in a marked aside), the page shape (a bold
+definition, an "In short" summary, a body in one Diátaxis mode, an FAQ), how examples,
+attribute tables and support badges are produced, and the frontmatter that keeps a page
+honest over time.
 
-The full style guide lives in the repo; these rules are its spine, and a
-reviewer can hold any page to them.
+## Voice
 
-1. **Short sentences.** If a sentence has two ideas, it is two sentences.
-2. **One concept per page.** If a page wants to be two things, it is two pages.
-3. **Examples before explanation.** Show the thing, then explain it.
-4. **No marketing voice.** This is a technical reference, not a pitch. No calls to
-   action inside chapter content.
-5. **Declare the tier and Diátaxis mode, and honor them.** Every page is exactly
-   one reader tier (🟢/🟡/🔴) and one mode (tutorial / how-to / reference /
-   explanation), set in frontmatter and shown as the difficulty label. The label is
-   derived from the frontmatter, so the two can never disagree.
-6. **Open with a summary, close with FAQs.** Every page opens with a one-line
-   bold definition followed by an **"In short:"** summary of two to five sentences,
-   and ends with a **"Frequently asked questions"** section of at least three
-   question-and-answer pairs. The summary orients the reader (and the search engine)
-   in seconds; the FAQs answer what they will ask next, in their own words.
+1. **Describe the format.** A page states what IDML contains and what InDesign does with
+   it, in a neutral voice. "Our parser…" and "the renderer…" do not belong in the body.
+2. **Paged goes in an aside.** What Paged does with a construct is written as a short
+   blockquote starting with **In Paged:**, usually ending in a support badge.
+3. **Every rule has a source.** A behavioural claim comes from a file opened in InDesign
+   or from the engine's measured code, never from the specification and never from
+   memory. If a claim cannot be confirmed, cut it or say what is unknown. See the
+   [clean-room protocol](/docs/idml/meta/clean-room-protocol).
+4. **Short sentences.** If a sentence has two ideas, it is two sentences.
+5. **One concept per page.** If a page wants to be two things, it is two pages.
+6. **No marketing voice.** This is a technical reference, not a pitch.
+
+## Page shape
+
+- Open with a one-line **bold definition**, then an **"In short:"** summary of two to five
+  sentences.
+- Write the body in the page's one Diátaxis mode: tutorial, how-to, reference or
+  explanation.
+- End with **"Frequently asked questions"**: at least three questions, each a bold
+  `**Question?**` line followed by an answer paragraph. They feed the page's FAQ
+  structured data, so each answer must stand on its own.
+
+## Examples, tables and badges
+
+- **Examples are imported, never inlined.** A snippet is a package in `examples/`,
+  embedded with `<ExampleEmbed example="…">`. There are no inline XML code blocks. Parts
+  are spelled the way InDesign writes them: the font as a typed `AppliedFont` property,
+  `<Br/>` as the paragraph mark, tabs as `&#9;`.
+- **Attribute tables are generated.** `<AttrTable element="…" />` renders from the
+  element reference and links to the element's page. A hand-written table is only for a
+  vocabulary that is not one element's attributes, such as a list of enum values.
+- **Badges come from the registry.** `<SupportBadge feature="layout-model.spreads-pages" />` reads
+  Paged's status live from the feature registry. Do not type a status by hand.
+- **Body, table, badge and FAQ agree.** A page whose body says "supported" while its FAQ
+  says "not yet" is wrong in one place. When a fact changes, change it everywhere on the
+  page.
+
+## Frontmatter
+
+Every page declares, in frontmatter:
+
+- `tier`: one of 🟢 beginner, 🟡 intermediate, 🔴 pro; the difficulty label is derived
+  from it;
+- `diataxis`: one of tutorial, how-to, reference, explanation;
+- `status`: stub, draft or published;
+- `description`: at most 160 characters, used in search results;
+- `describes`: one to three registry feature ids the page depends on;
+- `reviewed`: the date its prose was last checked against those features. When a
+  feature's evidence is newer, the build flags the page as stale.
+
+## Links
+
+Write links site-neutral: `/docs/idml/<chapter>/<page>` for this reference and
+`/docs/paged/<…>` for the Paged documentation. The build maps each to the right site. A
+page that moves keeps its old URL alive with a single permanent redirect.
 
 ## Visual identity
 
-A neutral, restrained technical reference — not a product surface. Reserved
-palette, monospace for XML, generous whitespace. Diagrams earn their place; every
-major concept gets one.
+A neutral, restrained technical reference, not a product surface. Reserved palette,
+monospace for XML, generous whitespace. Diagrams earn their place.
 
 ## Frequently asked questions
 
 **What is the required shape of a page?**
-Every page opens with a one-line bold definition, then an **"In short:"** summary of
-two to five sentences, and ends with a **"Frequently asked questions"** section of at
-least three Q&A pairs. In between, the body follows the page's declared Diátaxis mode
-— tutorial, how-to, reference, or explanation.
+A one-line bold definition, an "In short" summary of two to five sentences, a body in one
+Diátaxis mode, and a "Frequently asked questions" section of at least three
+question-and-answer pairs.
 
-**Why does every page need a summary and FAQs?**
-The summary lets a reader (and a search engine) understand the page in seconds before
-committing to the whole thing, and the FAQs answer the questions a reader most
-naturally asks next. Together they make each page useful on its own, even when someone
-arrives mid-reference from a search result.
+**Where does Paged-specific behaviour go?**
+In a short aside that starts with **In Paged:**, usually with a support badge. The rest of
+the page describes the format for any reader.
 
-**How are the tier and difficulty label kept honest?**
-The difficulty label is derived directly from the page's frontmatter `tier`, so it can
-never silently disagree with what the page claims to be. A reviewer sets one tier and
-one Diátaxis mode per page and the rest follows automatically.
+**Why are examples and attribute tables generated rather than typed?**
+So they cannot drift. Examples are real packages checked by the engine on every build and
+by InDesign, and attribute tables come from the element reference built from real
+documents.
+
+**How does a page stay current?**
+Its `describes` list names the features it depends on and `reviewed` records when it was
+last checked. When a feature changes after that date, the build flags the page.

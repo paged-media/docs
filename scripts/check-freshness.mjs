@@ -54,11 +54,18 @@ function frontmatter(src) {
   return m ? m[1] : '';
 }
 function field(fm, name) {
-  const m = fm.match(new RegExp(`^${name}:\\s*(.+)$`, 'm'));
+  const m = fm.match(new RegExp(`^${name}:[ \\t]*(.+)$`, 'm'));
   return m ? m[1].trim().replace(/^["']|["']$/g, '') : null;
 }
-/** `describes: [a, b]` (inline array) or `describes: a` (single). */
+/** `describes: [a, b]` (inline array), `describes: a` (single), or a YAML block list. */
 function listField(fm, name) {
+  const block = fm.match(new RegExp(`^${name}:[ \\t]*\\n((?:[ \\t]+-[ \\t]*.+\\n?)+)`, 'm'));
+  if (block) {
+    return block[1]
+      .split('\n')
+      .map((l) => l.replace(/^[ \t]+-[ \t]*/, '').trim().replace(/^["']|["']$/g, ''))
+      .filter(Boolean);
+  }
   const raw = field(fm, name);
   if (!raw) return [];
   const inner = raw.replace(/^\[/, '').replace(/\]$/, '');
