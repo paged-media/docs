@@ -8,11 +8,14 @@ import { listExamples, exampleDir, readManifest } from './common';
  *   - id matches the directory name and the slug pattern
  *   - the editable part actually exists on disk
  *   - tier / views are in range
+ *   - elements and the verification block are well formed
  * `pnpm examples:index --check` exits non-zero on any problem.
  */
 const ID_RE = /^[a-z0-9-]+$/;
 const TIERS = new Set(['beginner', 'intermediate', 'pro']);
 const VIEWS = new Set(['raw', 'annotated', 'tree', 'live']);
+const ELEMENT_RE = /^[A-Za-z][A-Za-z0-9:]*$/;
+const HASH_RE = /^sha256:[0-9a-f]{64}$/;
 
 function main() {
   const ids = listExamples();
@@ -27,6 +30,17 @@ function main() {
     if (!m.views?.length) problems.push(`${where}: views must be non-empty`);
     for (const v of m.views ?? []) {
       if (!VIEWS.has(v)) problems.push(`${where}: invalid view "${v}"`);
+    }
+    for (const el of m.elements ?? []) {
+      if (!ELEMENT_RE.test(el)) problems.push(`${where}: invalid element name "${el}"`);
+    }
+    const v = m.verified;
+    if (v) {
+      if (v.status !== 'verified' && v.status !== 'not-applicable') problems.push(`${where}: verified.status "${v.status}"`);
+      if (v.status === 'not-applicable' && !v.reason) problems.push(`${where}: a not-applicable example needs verified.reason`);
+      if (v.status === 'verified' && !(v.partsHash && HASH_RE.test(v.partsHash) && v.indesignVersion && v.verifiedAt)) {
+        problems.push(`${where}: a verified example needs partsHash, indesignVersion and verifiedAt`);
+      }
     }
     const part = join(exampleDir(id), m.packageDir, m.editable.part);
     if (!existsSync(part)) problems.push(`${where}: editable part not found: ${m.packageDir}/${m.editable.part}`);

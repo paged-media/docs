@@ -49,12 +49,56 @@ function loadGlue(): Promise<SdkGlue> {
   return glue;
 }
 
+/** A face to register on a session: family as the document names it. */
+export interface SessionFont {
+  family: string;
+  style?: string;
+  bytes: Uint8Array;
+}
+
+// The fallback face. Every docs example sets its text in Open Sans (OFL,
+// public/fonts/OFL-opensans.txt), and the engine embeds no font of its own, so
+// without this a session draws no text at all. Fetched once, on first use.
+const FALLBACK_URL = '/fonts/OpenSans.ttf';
+let fallback: Promise<Uint8Array | null> | undefined;
+
+function loadFallback(): Promise<Uint8Array | null> {
+  if (!fallback) {
+    fallback = fetch(FALLBACK_URL)
+      .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`${FALLBACK_URL}: ${r.status}`))))
+      .then((b) => new Uint8Array(b))
+      .catch(() => {
+        fallback = undefined; // retry on the next session
+        return null;
+      });
+  }
+  return fallback;
+}
+
 /**
  * Create a fresh `ViewerSession` (its own WebGPU device) over the shared,
  * once-initialized wasm. Suitable to hand straight to `createViewer({ session })`
  * from `@paged-media/idml-viewer`. Rejects without a WebGPU adapter.
+ *
+ * Open Sans is registered under its own family name, then `fonts` (for example
+ * faces embedded in a dropped package), and Open Sans is also passed to every
+ * `load` as the last-resort face: `Viewer.load` never passes one itself, so a
+ * document naming fonts the session doesn't have still renders its text.
  */
-export async function createPreviewSession(): Promise<ViewerSessionLike> {
-  const mod = await loadGlue();
-  return mod.ViewerSession['new']();
+export async function createPreviewSession(fonts: SessionFont[] = []): Promise<ViewerSessionLike> {
+  const [mod, open] = await Promise.all([loadGlue(), loadFallback()]);
+  const session = await mod.ViewerSession['new']();
+  if (open) session.register_font('Open Sans', undefined, open);
+  for (const f of fonts) {
+    try {
+      session.register_font(f.family, f.style, f.bytes);
+    } catch {
+      /* an unreadable face is skipped; the fallback still covers its text */
+    }
+  }
+  if (open) {
+    const load = session.load.bind(session);
+    session.load = (idml, font) => load(idml, font ?? open);
+  }
+  return session;
 }

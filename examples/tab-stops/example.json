@@ -4,7 +4,7 @@
   "title": "A paragraph with tab stops",
   "tier": "pro",
   "chapter": "typography",
-  "concept": "A paragraph's TabList of TabStop records defines the positions a Tab marker in the run snaps to; alignment and leader come off each stop.",
+  "concept": "Tab stops are records in the paragraph's TabList; the tab itself is a literal tab character (U+0009) in the text, which moves the text after it to the next stop.",
   "packageDir": "package",
   "editable": {
     "part": "Stories/Story_ustory.xml",
@@ -19,19 +19,19 @@
   "annotations": [
     {
       "lines": "6",
-      "note": "The TabList lives in the paragraph's Properties. Each ListItem wraps one TabStop."
+      "note": "The TabList lives in the paragraph's Properties. Each ListItem is one stop, written as typed child elements."
     },
     {
-      "lines": "8",
-      "note": "A LeftAlign stop at Position=\"144\" (pt from the column's left edge): text after the first Tab starts here."
+      "lines": "8-11",
+      "note": "A LeftAlign stop at Position 144 (points from the column's left edge): text after the first tab starts here."
     },
     {
-      "lines": "11",
-      "note": "A RightAlign stop at Position=\"432\" with Leader=\".\": the page number ends at the stop, and dot leaders tile across the gap."
+      "lines": "14-17",
+      "note": "A RightAlign stop at Position 432 with Leader \".\": the page number ends at the stop, and dot leaders fill the gap."
     },
     {
-      "lines": "17",
-      "note": "Each Tab marker in the run snaps the following text to the next stop past the current pen position."
+      "lines": "22",
+      "note": "&#9; is a literal tab character (U+0009) inside Content. There is no separate tab element: the character itself moves the text to the next stop."
     }
   ],
   "expect": {

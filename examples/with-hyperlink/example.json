@@ -4,7 +4,7 @@
   "title": "A document with a hyperlink",
   "tier": "intermediate",
   "chapter": "cross-references-hyperlinks",
-  "concept": "A Hyperlink ties a text source to a URL destination; the parser records all three, but link regions are not drawn.",
+  "concept": "A Hyperlink joins a text source in the story to a URL destination in the design map; the destination is named by a typed Properties child, and the block follows the last story.",
   "packageDir": "package",
   "editable": {
     "part": "designmap.xml",
@@ -18,16 +18,16 @@
   ],
   "annotations": [
     {
+      "lines": "13",
+      "note": "HyperlinkURLDestination: the target. DestinationURL holds the web address. The whole navigation block comes after the last idPkg:Story include, or InDesign does not bind it."
+    },
+    {
       "lines": "14",
-      "note": "HyperlinkURLDestination — the target. DestinationURL holds the web address; DestinationUniqueKey is the int key a Hyperlink points at."
+      "note": "Hyperlink: Source names the HyperlinkTextSource that wraps the linked words inside the story."
     },
     {
-      "lines": "15",
-      "note": "HyperlinkTextSource — the document-level record of the in-story anchor. Its Self id is what the Hyperlink's Source names."
-    },
-    {
-      "lines": "16",
-      "note": "Hyperlink — ties Source (the text anchor) to Destination (the URL). The parser keeps Self, Name, Source, and Destination; the appearance attributes are read past."
+      "lines": "17",
+      "note": "The destination is a typed Properties child that names the object as Type/Self. A Destination attribute is ignored by InDesign, and combined with DestinationUniqueKey it makes the file unopenable."
     }
   ],
   "expect": {

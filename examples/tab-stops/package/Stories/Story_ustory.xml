@@ -5,19 +5,21 @@
       <Properties>
         <TabList type="list">
           <ListItem type="record">
-            <TabStop Self="utab1" Position="144" Alignment="LeftAlign" AlignmentCharacter="." Leader=""/>
+            <Alignment type="enumeration">LeftAlign</Alignment>
+            <AlignmentCharacter type="string">.</AlignmentCharacter>
+            <Leader type="string"></Leader>
+            <Position type="unit">144</Position>
           </ListItem>
           <ListItem type="record">
-            <TabStop Self="utab2" Position="432" Alignment="RightAlign" AlignmentCharacter="." Leader="."/>
+            <Alignment type="enumeration">RightAlign</Alignment>
+            <AlignmentCharacter type="string">.</AlignmentCharacter>
+            <Leader type="string">.</Leader>
+            <Position type="unit">432</Position>
           </ListItem>
         </TabList>
       </Properties>
       <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
-        <Content>Chapter</Content>
-        <Tab/>
-        <Content>Typography</Content>
-        <Tab/>
-        <Content>261</Content>
+        <Content>Chapter&#9;Typography&#9;261</Content>
       </CharacterStyleRange>
     </ParagraphStyleRange>
   </Story>

@@ -14,11 +14,25 @@ import { join } from 'node:path';
 const ROOT = join(process.cwd(), 'examples');
 
 export type ExampleView = 'raw' | 'annotated' | 'tree' | 'live';
+/** A tab in the example panel: the manifest views plus the InDesign rendering, shown when verified. */
+export type ExampleTab = ExampleView | 'indesign';
 
 export interface ExampleAnnotation {
   /** A line number or "start-end" range within the editable part. */
   lines: string;
   note: string;
+}
+
+/** What verify-indesign.sh recorded; see examples/_schema/manifest.schema.json. */
+export interface ExampleVerification {
+  status: 'verified' | 'not-applicable';
+  reason?: string;
+  indesignVersion?: string;
+  verifiedAt?: string;
+  partsHash?: string;
+  pages?: number;
+  roundTrip?: boolean;
+  fidelity?: { meanDE?: number; p99DE?: number; ssim?: number };
 }
 
 export interface ExampleManifest {
@@ -35,6 +49,10 @@ export interface ExampleManifest {
   expect?: { opens?: boolean; builds?: boolean; pages?: number; stories?: number };
   pathological?: boolean;
   license?: string;
+  /** IDML element names this example shows (element reference backlinks). */
+  elements?: string[];
+  /** InDesign verification (scripts/examples/verify-indesign.sh). */
+  verified?: ExampleVerification;
 }
 
 export interface ExampleData {

@@ -4,10 +4,7 @@
     <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]">
       <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
         <Content>The first paragraph stands on its own.</Content>
-      </CharacterStyleRange>
-    </ParagraphStyleRange>
-    <ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/[No paragraph style]" SpaceBefore="6">
-      <CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">
+        <Br/>
         <Content>The second paragraph follows it.</Content>
       </CharacterStyleRange>
     </ParagraphStyleRange>

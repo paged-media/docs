@@ -5,6 +5,18 @@ export const EXAMPLES_ROOT = join(process.cwd(), 'examples');
 
 export type ExampleView = 'raw' | 'annotated' | 'tree' | 'live';
 
+/** What verify-indesign.sh recorded; see examples/_schema/manifest.schema.json. */
+export interface ExampleVerification {
+  status: 'verified' | 'not-applicable';
+  reason?: string;
+  indesignVersion?: string;
+  verifiedAt?: string;
+  partsHash?: string;
+  pages?: number;
+  roundTrip?: boolean;
+  fidelity?: { meanDE?: number; p99DE?: number; ssim?: number };
+}
+
 export interface ExampleManifest {
   id: string;
   title: string;
@@ -26,6 +38,10 @@ export interface ExampleManifest {
   };
   pathological?: boolean;
   license?: string;
+  /** IDML element names this example shows (element reference backlinks). */
+  elements?: string[];
+  /** InDesign verification (scripts/examples/verify-indesign.sh). */
+  verified?: ExampleVerification;
 }
 
 /** Every example directory (skips `_schema`, `_fonts`, `.generated`, …). */

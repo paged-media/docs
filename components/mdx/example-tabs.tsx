@@ -1,14 +1,15 @@
 'use client';
 
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import type { ExampleView } from '@/lib/examples';
+import type { ExampleTab } from '@/lib/examples';
 import { Pic } from '@/components/icons';
 
-const LABELS: Record<ExampleView, string> = {
+const LABELS: Record<ExampleTab, string> = {
   raw: 'Raw',
   annotated: 'Annotated',
   tree: 'Tree',
   live: 'Live',
+  indesign: 'InDesign',
 };
 
 /**
@@ -31,11 +32,11 @@ export function ExampleTabs({
   caption?: ReactNode;
   path?: string;
   code: string;
-  tabs: ExampleView[];
-  panels: Partial<Record<ExampleView, ReactNode>>;
+  tabs: ExampleTab[];
+  panels: Partial<Record<ExampleTab, ReactNode>>;
   feature?: boolean;
 }) {
-  const [active, setActive] = useState<ExampleView>(tabs[0]);
+  const [active, setActive] = useState<ExampleTab>(tabs[0]);
   const [copied, setCopied] = useState(false);
 
   const copy = () => {

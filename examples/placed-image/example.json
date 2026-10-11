@@ -19,7 +19,7 @@
   "annotations": [
     {
       "lines": "5",
-      "note": "The host is an ordinary Rectangle — the same element a colour swatch uses. What turns it into a graphic frame is the <Image> child below, not any attribute on the rectangle itself."
+      "note": "The host is an ordinary Rectangle \u2014 the same element a colour swatch uses. What turns it into a graphic frame is the <Image> child below, not any attribute on the rectangle itself."
     },
     {
       "lines": "18",
@@ -40,5 +40,9 @@
     "runs": 1
   },
   "pathological": false,
-  "license": "MIT"
+  "license": "MIT",
+  "verified": {
+    "status": "not-applicable",
+    "reason": "The linked image is deliberately not part of the package, so InDesign opens it with a missing link."
+  }
 }

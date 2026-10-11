@@ -4,18 +4,31 @@
   "title": "Two paragraphs in one story",
   "tier": "beginner",
   "chapter": "stories-text",
-  "concept": "Each paragraph is its own ParagraphStyleRange; the count of those blocks is the paragraph count.",
+  "concept": "A ParagraphStyleRange is a style run, not a paragraph: the <Br/> character ends a paragraph, so two paragraphs can share one range.",
   "packageDir": "package",
   "editable": {
     "part": "Stories/Story_ustory.xml",
     "language": "xml",
     "label": "Stories/Story_ustory.xml"
   },
-  "views": ["raw", "annotated", "tree"],
+  "views": [
+    "raw",
+    "annotated",
+    "tree"
+  ],
   "annotations": [
-    { "lines": "4", "note": "The first paragraph: one ParagraphStyleRange wrapping one CharacterStyleRange and its Content." },
-    { "lines": "9", "note": "The second paragraph: a sibling ParagraphStyleRange. A new paragraph means a new range, not a break inside the first." },
-    { "lines": "9", "note": "SpaceBefore=\"6\" is a local override on this range — space added above the paragraph, in points." }
+    {
+      "lines": "4",
+      "note": "One ParagraphStyleRange: a run of text sharing the same paragraph attributes. It holds both paragraphs."
+    },
+    {
+      "lines": "7",
+      "note": "<Br/> is the paragraph mark. Every paragraph except the story's last ends with one; this is where the first paragraph ends."
+    },
+    {
+      "lines": "8",
+      "note": "The second paragraph is the story's last, so it carries no mark. A paragraph with different attributes would start a new ParagraphStyleRange, and the one before it would still end with <Br/>."
+    }
   ],
   "expect": {
     "opens": true,

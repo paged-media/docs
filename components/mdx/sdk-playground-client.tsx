@@ -9,8 +9,9 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPreviewSession } from './sdk-loader';
+import { base64ToBytes, statusFromError, type PreviewStatus } from './viewer-common';
 
-type Status = 'loading' | 'ready' | 'no-webgpu' | 'unavailable' | 'error';
+type Status = PreviewStatus;
 type LayoutMode = 'single' | 'continuous';
 
 interface ViewerLike {
@@ -28,12 +29,6 @@ interface ViewerLike {
   readonly pageCount: number;
 }
 
-function base64ToBytes(b64: string): Uint8Array {
-  const bin = atob(b64);
-  const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-  return out;
-}
 
 const btn: React.CSSProperties = {
   fontFamily: 'var(--font-sans)',
@@ -114,14 +109,9 @@ export function SdkPlaygroundClient({ idmlBase64, height = 460 }: { idmlBase64?:
         setStatus('ready');
       } catch (e: unknown) {
         if (cancelled) return;
-        const code = (e as { code?: string } | null)?.code;
-        const msg = e instanceof Error ? e.message : String(e);
-        if (code === 'GPU_UNAVAILABLE' || /gpu|webgpu|adapter/i.test(msg)) setStatus('no-webgpu');
-        else if (/Failed to fetch|Cannot find module|importing|404|MIME/i.test(msg)) setStatus('unavailable');
-        else {
-          setStatus('error');
-          setDetail(msg);
-        }
+        const { status, detail } = statusFromError(e);
+        setStatus(status);
+        if (status === 'error') setDetail(detail);
       }
     })();
     return () => {

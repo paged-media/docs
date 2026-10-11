@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { createPreviewSession } from './sdk-loader';
+import { base64ToBytes, statusFromError, type PreviewStatus } from './viewer-common';
 
 /**
  * The WebGPU live preview (briefing §6.2.1).
@@ -25,14 +26,8 @@ import { createPreviewSession } from './sdk-loader';
  * devices. The component is client-only (dynamic import, no SSR) — the static
  * export emits the canvas shell and the viewer hydrates on the client.
  */
-type Status = 'loading' | 'ready' | 'no-webgpu' | 'unavailable' | 'error';
+type Status = PreviewStatus;
 
-function base64ToBytes(b64: string): Uint8Array {
-  const bin = atob(b64);
-  const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-  return out;
-}
 
 export function LivePreview({ example, idmlBase64 }: { example: string; part: string; idmlBase64?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -58,7 +53,7 @@ export function LivePreview({ example, idmlBase64 }: { example: string; part: st
       try {
         // Lazy: pulls @paged-media/idml-viewer's createViewer into a separate
         // chunk, and createPreviewSession imports the wasm glue from /public —
-        // so neither the viewer JS nor the 7 MB wasm is in the page bundle.
+        // so neither the viewer JS nor the ~9 MB wasm is in the page bundle.
         const { createViewer } = await import('@paged-media/idml-viewer');
         if (cancelled) return;
 
@@ -83,16 +78,9 @@ export function LivePreview({ example, idmlBase64 }: { example: string; part: st
         setStatus('ready');
       } catch (e: unknown) {
         if (cancelled) return;
-        // ViewerError carries a structured code; fall back to message sniffing
-        // for the wasm import/init failures that surface before a ViewerError.
-        const code = (e as { code?: string } | null)?.code;
-        const msg = e instanceof Error ? e.message : String(e);
-        if (code === 'GPU_UNAVAILABLE' || /gpu|webgpu|adapter/i.test(msg)) setStatus('no-webgpu');
-        else if (/Failed to fetch|Cannot find module|importing|404|MIME/i.test(msg)) setStatus('unavailable');
-        else {
-          setStatus('error');
-          setDetail(msg);
-        }
+        const { status, detail } = statusFromError(e);
+        setStatus(status);
+        if (status === 'error') setDetail(detail);
       }
     })();
 

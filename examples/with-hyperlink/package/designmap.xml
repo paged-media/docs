@@ -11,6 +11,10 @@
   <idPkg:Story src="Stories/Story_ustory.xml"/>
   <idPkg:BackingStory src="XML/BackingStory.xml"/>
   <HyperlinkURLDestination Self="urldest" Name="https://docs.paged.media" DestinationURL="https://docs.paged.media" DestinationUniqueKey="1" Hidden="false"/>
-  <HyperlinkTextSource Self="htsource" Name="docs-link-source" AppliedCharacterStyle="CharacterStyle/$ID/[No character style]" Hidden="false"/>
-  <Hyperlink Self="link1" Name="docs link" Source="htsource" Visible="true" Highlight="None" Width="Thin" BorderStyle="Solid" Hidden="false" DestinationUniqueKey="1" Destination="urldest"/>
+  <Hyperlink Self="link1" Name="docs link" Source="htsource" Visible="false" Highlight="None" Width="Thin" BorderStyle="Solid" Hidden="false" DestinationUniqueKey="1">
+    <Properties>
+      <BorderColor type="enumeration">Black</BorderColor>
+      <Destination type="object">HyperlinkURLDestination/urldest</Destination>
+    </Properties>
+  </Hyperlink>
 </Document>
