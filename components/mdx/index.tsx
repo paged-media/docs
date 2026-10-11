@@ -17,6 +17,7 @@ import { ScriptingCatalog } from './scripting-catalog';
 import { CliReference } from './cli-reference';
 import { SdkCatalog } from './sdk-catalog';
 import { SdkPlayground } from './sdk-playground';
+import { IdmlInspector } from './idml-inspector';
 import { ScriptingPlayground } from './scripting-playground';
 import { FunctionPlayground } from './function-playground';
 import { PathShowcase } from './path-showcase';
@@ -67,6 +68,7 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     CliReference,
     SdkCatalog,
     SdkPlayground,
+    IdmlInspector,
     ScriptingPlayground,
     FunctionPlayground,
     PathShowcase,

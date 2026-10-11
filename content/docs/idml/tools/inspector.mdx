@@ -1,0 +1,51 @@
+---
+title: IDML inspector
+description: Open an .idml file in your browser to see its parts, fonts, links and element names, and render its pages live. Nothing is uploaded.
+tier: intermediate
+diataxis: how-to
+status: published
+owner: paged-docs
+full: true
+---
+
+**Drop an IDML package here to see what is inside it. Your file never leaves your browser.**
+
+<IdmlInspector />
+
+## How to read what you see
+
+1. **Summary.** The format version comes from the design map. The counts cover spreads, pages,
+   master spreads, stories, layers, styles and swatches. Fonts lists every family that
+   `Resources/Fonts.xml` declares, how often the styles and stories apply it, and whether the
+   package ships the face. Links lists the placed files the document points to and the state it
+   last saw them in.
+2. **Render.** Paged's WebGPU viewer draws the pages. Use the toolbar to fit, zoom and move
+   between pages, or drag and scroll on the canvas.
+3. **Package.** Every entry in the archive, with its unpacked size. Choose one to read it:
+   - **Raw** shows the part's source.
+   - **Tree** shows its element structure. Open an element to see its children.
+   - **Annotated** links every element name to its page in the
+     [element reference](/docs/idml/reference). Those pages show where the element appears and
+     which attributes real documents use.
+
+New to the format? [Read one by hand](/docs/idml/foundations/read-one-by-hand) walks a
+package part by part, and [package anatomy](/docs/idml/package-anatomy) explains how the parts
+fit together.
+
+## What stays on your machine
+
+The inspector reads the file with your browser's file API and unpacks it in memory. The file
+and its contents are never sent anywhere. Once you open a file, the inspector fetches only the
+renderer's code and its fallback font, both from this site. Close the tab and the file is gone.
+
+## Limits
+
+- **Fonts.** The renderer can only draw the faces it has. Faces packed under `Document fonts/`
+  are registered. Any other text is set in Open Sans as a stand-in, so line breaks can differ
+  from InDesign's. The renderer does not yet report which fonts it substituted.
+- **Linked images.** A linked file lives outside the package, so it cannot render here. The
+  summary lists each link and its state.
+- **Large files.** The renderer parses the document on the page's main thread, so the page
+  pauses briefly while a large document loads. The inspector opens packages up to 300 MB.
+- **No WebGPU.** Browsers without WebGPU still show the summary, the package and every part,
+  but not the render.
