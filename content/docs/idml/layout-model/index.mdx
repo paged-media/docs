@@ -1,72 +1,62 @@
 ---
 title: Layout model
-description: IDML's layout model is the nest of containers that places content — a document of spreads, each holding pages, each filled by page items, with master spreads supplying repeating layout.
+description: IDML's layout model — a document of spreads, each holding pages and the page items placed in spread coordinates, with master spreads supplying repeating layout.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
+describes: [layout-model.spreads-pages, master-spreads-overrides.master-stamping]
+reviewed: 2026-10-11
 ---
 
-**IDML's layout model is the nest of containers that decides where content lands on the page.**
+**IDML's layout model is the set of containers that decides where content lands: spreads, the pages in them, and the page items placed on them.**
 
-**In short:** A story holds text, but the text has to land *somewhere*, and the
-layout model is the set of containers that decide where. An IDML document is a
-sequence of **spreads**; each spread holds one or more **pages**; each page is
-filled by **page items** — the frames, rectangles, ovals, lines, and polygons
-that carry the visible content. Layered on top, a **master spread** supplies
-items that repeat across many pages, and a body page can selectively
-**override** any master item it wants to replace. This chapter walks that nesting
-from the outside in, explaining what the renderer needs from each layer to
-predict what appears on a given page.
+**In short:** An IDML document is a sequence of **spreads**, one part per spread. A spread
+holds its **pages** and its **page items** side by side: frames, shapes and groups are
+children of the `<Spread>`, positioned in the spread's coordinate space, and each page is
+a rectangle placed in that same space. Which page an item is on follows from geometry.
+**Master spreads** hold items that repeat on every page that applies them, and a page can
+**override** single master items. This chapter walks that nesting from the outside in.
 
-This chapter follows that nesting from the outside in: the spread, then its
-pages, then the items inside them, then the master layer that feeds them.
+## The containers
 
-## Why a reader ends up here
+- **Document.** `designmap.xml` lists the spreads and master spreads in order, along with
+  the document-wide layers, sections and preferences.
+- **Spread.** One `Spreads/Spread_*.xml` part per spread. The spread's space has its origin
+  on the spine.
+- **Page.** A `<Page>` inside the spread: a rectangle (`GeometricBounds`) placed by its own
+  `ItemTransform`, with a master, margins, columns and guides.
+- **Page item.** Every visible thing: `TextFrame`, `Rectangle`, `Oval`, `GraphicLine`,
+  `Polygon`, `Group`. Items are siblings of the pages; their order in the spread is their
+  stacking order.
+- **Master spread.** The same structure, in `MasterSpreads/MasterSpread_*.xml`, referenced
+  from pages by `AppliedMaster`.
 
-Open any real-world `Spreads/Spread_*.xml` and you are looking at this model.
-The geometry of every frame is expressed relative to a page, the page relative
-to its spread, and the spread relative to the document's pasteboard. Master
-pages add a second source of items that get *stamped* onto body pages at render
-time. To predict what appears on a given page — and in what order — you need all
-four pieces.
+## Pages in this chapter
 
-The order below is reader progression, not the source spec's arrangement: we
-start with the container you meet first and work toward the resolution rule you
-meet last.
+- [Spreads and pages](/docs/idml/layout-model/spreads-and-pages): the `Spread` and `Page`
+  elements, what InDesign requires on them, margins and guides.
+- [Page items and stacking](/docs/idml/layout-model/page-items-and-stacking): what a spread
+  contains and how document order and layers set the paint order.
+- [Master spreads](/docs/idml/layout-model/master-spreads): the concept in one screen; the
+  details are in [Master spreads & overrides](/docs/idml/master-spreads-overrides).
 
-- **[Spreads and pages](/docs/idml/layout-model/spreads-and-pages)** — the `Spread`
-  and `Page` elements and the attributes that position them.
-- **[Page items and stacking](/docs/idml/layout-model/page-items-and-stacking)** —
-  what lives inside a spread, and how document order becomes z-order.
-- **[Master spreads](/docs/idml/layout-model/master-spreads)** — the repeating-layout
-  layer and how a page points at it.
-- **[Override resolution](/docs/idml/layout-model/override-resolution)** — how a body
-  page replaces individual master items.
-
-The frame *types* themselves — `TextFrame`, `Rectangle`, `Oval`, `GraphicLine`,
-`Polygon` — have their own geometry and paint attributes covered under
-[Frames & paths](/docs/idml/frames-paths). The point coordinates those frames use are
-explained under [Geometry & coordinates](/docs/idml/geometry-coordinates). This
-chapter is about the containers and the stacking, not the shapes.
+The shapes themselves are covered under [Frames & paths](/docs/idml/frames-paths), and the
+coordinate arithmetic under [Geometry & coordinates](/docs/idml/geometry-coordinates).
 
 ## Frequently asked questions
 
 **What is the layout model in IDML?**
-The layout model is the nesting of containers that positions content: a document
-is a sequence of spreads, each spread holds one or more pages, and each page is
-filled by page items. Master spreads sit on top of this, supplying repeating
-items that body pages can selectively override.
+The nesting of containers that positions content: a document of spreads, each spread
+holding pages and page items, with master spreads supplying repeated items to the pages
+that apply them.
 
-**What is the difference between a spread, a page, and a page item?**
-A **spread** is the outer container — the pasteboard that holds the pages of one
-opening. A **page** is a bounded rectangle within a spread that maps its own
-coordinates into spread space. A **page item** is a visible shape — a text frame,
-rectangle, oval, line, or polygon — that sits on a spread and carries the actual
-content.
+**Are page items children of pages?**
+No. Page items are children of the `<Spread>`, next to the `<Page>` elements, and they are
+positioned in spread coordinates. The page an item belongs to is the one its geometry falls
+on.
 
 **How does a master spread relate to a body page?**
-A master spread holds repeating layout — headers, footers, page-number
-placeholders — and a body page links to it through its `AppliedMaster` attribute.
-At render time the master's items are stamped onto each page that names it, and a
-page can use its `OverrideList` to replace individual master items with its own.
+A body page names a master in `AppliedMaster`. The master page at the same position in the
+master spread supplies its items to the body page, behind the page's own items, unless the
+page has overridden them.

@@ -1,98 +1,83 @@
 ---
 title: Page items and stacking
-description: What an IDML spread contains, and how the document order of its page items becomes back-to-front z-order at render time.
+description: What an IDML spread contains, and how layer order and document order together set the back-to-front paint order of its page items.
 tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
+describes: [layers.z-ordering, frames-paths.nested-content, frames-paths.groups]
+reviewed: 2026-10-11
 ---
 
-**Page items are the visible shapes inside a spread, and the order they appear in the XML is their back-to-front stacking order.**
+**Page items are the children of a spread after its pages; layers set the order between layers, and document order sets it within a layer.**
 
-**In short:** Inside a `<Spread>`, after its pages, come the **page items** — the
-visible shapes. The parser recognises five shape types as top-level page items
-(`TextFrame`, `Rectangle`, `Oval`, `GraphicLine`, `Polygon`), plus the `<Group>`
-that bundles several of them. The order they appear in the XML is not incidental:
-the first item is painted first and sits at the back, the last is painted last and
-sits at the front. That single rule — document order is z-order — is what lets a
-coloured rectangle act as a backdrop for a text frame declared after it.
+**In short:** After its `<Page>` elements, a `<Spread>` lists its page items: `TextFrame`,
+`Rectangle`, `Oval`, `GraphicLine`, `Polygon` and `Group` (and rarer kinds such as
+`EPSText`). Items can nest: a group holds members, and a frame can hold content pasted into
+it. There is no z-index attribute. Within one layer, the item written first is painted
+first and sits at the back. Across layers, the layer order in the design map wins: it lists
+layers from bottom to top.
 
-## The page-item types
+## What a spread contains
 
-A spread's items are sorted into one vector per shape type as the parser walks
-the XML:
+- **Shapes and frames** as direct children of the `<Spread>`. See
+  [page-item types](/docs/idml/frames-paths/page-item-types).
+- **Groups**: a `<Group>` holds its members as child elements, in their own back-to-front
+  order. See [groups](/docs/idml/frames-paths/groups).
+- **Pasted-in content**: a `Rectangle`, `Oval` or `Polygon` can hold another page item as a
+  child element (InDesign's *Paste Into*, and every placed image). The child's
+  `ItemTransform` is relative to the host, and the host's path clips it.
+- **Anchored objects** are not here: they live in the story, inside the text they are
+  anchored to. See [anchored objects](/docs/idml/anchored-inline-objects/anchored-objects).
 
-- `<TextFrame>` — a frame bound to a story by `ParentStory`; carries the text.
-- `<Rectangle>` — an axis-aligned vector frame, or the host for a placed image.
-- `<Oval>` — the ellipse inscribed in its bounds.
-- `<GraphicLine>` — a straight line between its bounds' corners.
-- `<Polygon>` — an arbitrary path, charts and rosettes included.
+## Document order within a layer
 
-Each of these is a distinct element with its own geometry and paint attributes;
-those are documented under [Frames & paths](/docs/idml/frames-paths). What matters
-*here* is that they are siblings inside the spread, and that a `<Group>` may wrap
-any combination of them (including nested sub-groups) to apply one opacity, blend
-mode, or drop shadow to the whole cluster at once.
+Items on the same layer paint in the order they are written: the first one is at the back,
+the last one at the front. A group's members paint at the group's position in that order,
+in their own order, as one unit. A pasted-in child paints with its host, inside the host's
+outline.
 
-## Document order is z-order
+## Layer order across layers
 
-The parser keeps a single flat list of the spread's *top-level* items in the
-exact order it met them in the XML. The first item is painted first and therefore
-sits at the **back**; the last item is painted last and sits at the **front**.
-This back-to-front rule is what lets a coloured rectangle act as a backdrop for a
-text frame declared after it.
+Every page item can name a layer with `ItemLayer`. The `<Layer>` elements in
+`designmap.xml` are listed **from bottom to top**: everything on the first-listed layer
+paints before everything on the second, whatever the order in the spread.
 
-Group members are not duplicated into that top-level list — a group surfaces in
-it as a single entry, and the renderer brackets the group's members as a unit so
-the cluster keeps its internal order while compositing against the page as one
-layer.
+<ExampleEmbed example="layer-order">
+  The red rectangle is written first but sits on the second-listed layer, so it paints
+  above the blue rectangle on the first-listed layer.
+</ExampleEmbed>
 
-### Where layers bend the rule
+Two rules about groups and layers:
 
-Document order is the *within-layer* order. When items carry an `ItemLayer`
-reference, the layer stacking takes precedence: everything on a back layer paints
-before everything on a front layer, regardless of the per-shape XML order. Today
-the renderer treats layers as a flat back-to-front sequence — layer *groups*
-(nested layer folders) are flattened rather than honored as a hierarchy.
-<SupportBadge status="parsed-not-rendered" note="Layer groups are flattened, not nested" />
+- A group's members are on the **group's** layer. InDesign keeps a group on one layer and
+  ignores an `ItemLayer` on a member that disagrees.
+- A `<Group>` with no `ItemLayer` lands on the document's first layer (the bottom one) and
+  takes its members with it. A writer should always give a group the layer its members
+  should be on.
+
 Layers in full are covered under [Layers](/docs/idml/layers).
 
-### Frames nested inside a group are handled; deeply nested *text* frames are counted
-
-The grouping machinery records each group's members and composes their
-transforms, so grouped shapes render in place. One narrow case is still reported
-rather than rendered: a `<TextFrame>` discovered inside a `<Group>` in certain
-nestings is counted as a skipped frame so callers can detect the loss instead of
-silently dropping text.
-<SupportBadge status="parsed-not-rendered" note="Nested-in-group text frames may be reported as skipped" />
-
-## A worked example
-
-The spread below holds two pages, each carrying its own text frame, and shares a
-master that contributes a header rule to each page. Read the spread part: the two
-`<Page>` elements come first, then the page items in document order.
-
-<ExampleEmbed example="two-page-spread">
-  A two-page spread. Each page applies the same master by its Self id, and each
-  carries one text frame; document order within the spread sets the stacking.
-</ExampleEmbed>
+> **In Paged:** items paint in layer order, then document order, with groups and pasted-in
+> content composed in place and clipped by their host. A group pasted into a frame is
+> still drawn unclipped. <SupportBadge feature="layers.z-ordering" />
+> <SupportBadge feature="frames-paths.nested-content" />
 
 ## Frequently asked questions
 
-**What are page items in IDML?**
-Page items are the visible shapes inside a spread. The parser recognises five
-top-level types — `TextFrame`, `Rectangle`, `Oval`, `GraphicLine`, and `Polygon`
-— plus the `<Group>` element that bundles several of them so one opacity, blend
-mode, or drop shadow applies to the whole cluster.
-
 **How is the stacking order of page items determined?**
-By document order. The parser keeps a single flat list of the spread's top-level
-items in the exact order it met them in the XML; the first is painted first and
-sits at the back, the last is painted last and sits at the front. There is no
-separate z-index attribute — position in the XML is the stacking order.
+By layer first, then by document order. Layers paint from the first `<Layer>` in the design
+map (bottom) to the last (top); within a layer, the item written first is at the back.
 
-**Do layers change the stacking order?**
-Yes. When items carry an `ItemLayer` reference, layer stacking takes precedence:
-everything on a back layer paints before everything on a front layer, regardless
-of per-shape XML order. Layer *groups* (nested layer folders) are currently
-flattened rather than honored as a hierarchy.
+**Is there a z-index attribute?**
+No. Position in the XML, together with the layer, is the stacking order. To bring an item
+forward, move its element later in the spread or onto a higher layer.
+
+**Which layer are a group's members on?**
+The group's. InDesign keeps members on their group's layer; a group without `ItemLayer`
+goes to the document's first layer.
+
+**What is pasted-in content?**
+A page item written as a child of a `Rectangle`, `Oval` or `Polygon`. Its transform is
+relative to the host frame and the host's outline clips it. A placed image is the most
+common case.

@@ -1,109 +1,103 @@
 ---
 title: Spreads and pages
-description: The IDML Spread and Page elements — the attributes that position a spread on the pasteboard and a page within its spread, and how the parser reads each one.
+description: The IDML Spread and Page elements — how pages are placed in spread coordinates, the attributes InDesign needs to open a spread, and margins and guides.
 tier: intermediate
 diataxis: reference
 status: published
 owner: paged-docs
+describes: [layout-model.spreads-pages, layout-model.spread-item-transform, master-spreads-overrides.show-master-items]
+reviewed: 2026-10-11
 ---
 
-**A `Spread` is the outer coordinate frame of a layout, and each `Page` maps its own inner coordinates into that spread.**
+**A `Spread` is the coordinate space of one opening; each `Page` is a rectangle placed in that space by its own `ItemTransform`.**
 
-**In short:** In IDML, a `Spreads/Spread_*.xml` part wraps a single `<Spread>`
-element, and that spread contains one or more `<Page>` elements followed by the
-page items that sit on them. The spread is the outer coordinate frame onto the
-document's pasteboard; each page carries its own rectangle and an
-`ItemTransform` that places it within the spread. This is how the two pages of a
-facing-pages opening end up side by side. This page is the attribute reference
-for both elements as the parser actually reads them.
+**In short:** A `Spreads/Spread_*.xml` part holds one `<Spread>`. Its children are its
+`<Page>` elements followed by its page items. The spread's space has x = 0 on the spine.
+Each page has its own `GeometricBounds` and an `ItemTransform` that places it in the
+spread, which is how the two pages of a facing spread end up side by side. InDesign always
+writes `PageCount`, `BindingLocation` and `ItemTransform` on a spread, and it needs them:
+without the first two it can open a one-page spread as a facing pair with an empty page.
 
 ## The `Spread` element
 
-The parser opens the spread and reads two things off the opening tag — its
-`Self` id and its `ItemTransform` — and otherwise treats the spread as a
-container it walks for pages and page items. The remaining spread-level
-attributes (binding, page count, flattener settings) are part of the format but
-are not consulted while building the document.
+<AttrTable element="Spread" />
 
-<AttrTable
-  element="Spread"
-  rows={[
-    { attr: 'Self', type: 'string id', support: 'supported', note: 'The spread id, e.g. "uspread". Used to identify the spread.' },
-    { attr: 'ItemTransform', type: 'list of doubles [a b c d tx ty]', support: 'parsed-not-rendered', note: 'Maps the spread\'s inner coords onto the document pasteboard. Read and stored; per-page rendering does not need it, so a non-identity value is not yet applied.' },
-    { attr: 'PageCount', type: 'int', support: 'not-yet-parsed', note: 'How many pages the spread declares. The parser counts the Page elements it actually finds instead.' },
-    { attr: 'BindingLocation', type: 'int', support: 'not-yet-parsed', note: 'Which edge the spread binds on. Not read.' },
-    { attr: 'AllowPageShuffle', type: 'boolean', support: 'not-yet-parsed', note: 'Whether pages may move between spreads on repagination. Not read.' },
-    { attr: 'ShowMasterItems', type: 'boolean', support: 'parsed-not-rendered', note: 'Whether master items display on this spread\'s pages. The current pass stamps master items per page regardless; see Master spreads.' },
-    { attr: 'FlattenerOverride', type: 'enum', support: 'not-yet-parsed', note: 'Transparency-flattener preset for the spread. Not read.' },
-  ]}
-/>
+- **`PageCount`** is the number of `<Page>` children. **`BindingLocation`** is the index of
+  the spine among them: `0` for a single page (the spine is at its left edge), `1` for a
+  facing pair. InDesign writes both on every spread and reads them: given a one-page spread
+  without them, it opened the spread as a facing pair and added an empty page.
+- **`ItemTransform`** places the spread on the pasteboard. InDesign uses its translation to
+  stack spreads one below the other; it does not move items relative to their pages. A
+  rotation in it turns the whole spread.
+- **`ShowMasterItems`** decides whether the pages of this spread show their master's items.
+  It is a spread attribute: InDesign writes it on `<Spread>` and `<MasterSpread>` and
+  ignores it on `<Page>`. See [master items and stamping](/docs/idml/master-spreads-overrides/master-items-and-stamping).
+- **`AllowPageShuffle`** and **`FlattenerOverride`** are editing and output settings that do
+  not change what the spread looks like.
 
-`ItemTransform` is stored on the spread and now applied. Translation cancels
-against each page's own transform into spread space, and the spread's rotation
-and scale (the linear part — InDesign limits it to rotation in 90° steps) are
-applied about the page origin, so a rotated spread rotates its rendered frames.
-<SupportBadge feature="layout-model.spread-item-transform" note="Spread / MasterSpread ItemTransform: translation cancels per-page; rotation/scale applied about the page origin" />
+> **In Paged:** a spread's rotation and scale are applied when rendering; its translation
+> cancels against the pages. `PageCount` and `BindingLocation` are not read on import (the
+> pages are counted) and are always written on export.
+> <SupportBadge feature="layout-model.spread-item-transform" />
 
 ## The `Page` element
 
-A `<Page>` is where the model gets specific. The parser requires a parseable
-`GeometricBounds` — a page with no bounds is skipped entirely — and from that one
-attribute it derives the page rectangle. The rest of the attributes position the
-page, link it to a master, and record any master-item overrides.
+<AttrTable element="Page" />
 
-<AttrTable
-  element="Page"
-  rows={[
-    { attr: 'Self', type: 'string id', support: 'supported', note: 'The page id, e.g. "upage".' },
-    { attr: 'GeometricBounds', type: 'four numbers "y1 x1 y2 x2" (pt)', support: 'supported', note: 'The page rectangle in the page\'s own inner coords. REQUIRED by the parser — a Page without it is dropped. Order is top left bottom right.' },
-    { attr: 'ItemTransform', type: 'list of doubles [a b c d tx ty]', support: 'supported', note: 'Maps the page\'s inner coords into the spread. Absent ⇒ identity, so the page sits at the spread origin. This is how the two pages of a spread end up side by side.' },
-    { attr: 'AppliedMaster', type: 'string id (master Self)', support: 'supported', note: 'The Self id of the master spread applied to this page. Resolved to a MasterSpread when master items are stamped.' },
-    { attr: 'MasterPageTransform', type: 'list of doubles [a b c d tx ty]', support: 'parsed-not-rendered', note: 'Positions the master overlay on this specific page. The translation part is applied when stamping master items; the full matrix is parsed but only the offset is currently used.' },
-    { attr: 'OverrideList', type: 'space-separated ids', support: 'supported', note: 'Self ids of master items this page has overridden. The named master items are not stamped onto the page. See Override resolution.' },
-    { attr: 'Name', type: 'string', support: 'supported', note: 'The user-visible page label as InDesign rendered it ("1", "iii", "A-3", …). Substituted for auto-page-number markers; falls back to the 1-based body-page index when absent.' },
-  ]}
-/>
+- **`GeometricBounds`** is the page rectangle in the page's own space, `top left bottom
+  right`. It is the page's size.
+- **`ItemTransform`** maps those bounds into the spread. InDesign's own files place the left
+  page of an A4 spread at `1 0 0 1 -595.276 -420.945` and the right page at
+  `1 0 0 1 0 -420.945`: the spine at x = 0, the pages centred vertically on y = 0. Always
+  write it; InDesign does not read a missing one as the identity.
+- **`AppliedMaster`** is the `Self` of the master spread applied to the page, or `n` for
+  none. **`MasterPageTransform`** maps the master page onto this page; usually the identity.
+- **`OverrideList`** names master items the page has overridden; see
+  [override resolution](/docs/idml/master-spreads-overrides/override-resolution).
+- **`Name`** is the page label as InDesign displays it: `1`, `iii`, `A-3`. It reflects the
+  section numbering; see [sections, numbering & variables](/docs/idml/sections-numbering-variables).
 
-### Why `GeometricBounds` and `ItemTransform` are a pair
+<ExampleEmbed example="two-page-spread">
+  Two pages in one spread. The left page's ItemTransform moves it left of the spine; the
+  right page starts at the spine. Both apply the same master.
+</ExampleEmbed>
 
-`GeometricBounds` describes the page rectangle in the page's *own* coordinate
-system, and `ItemTransform` carries that rectangle into the spread. For a
-single-page-per-spread layout the transform is identity, so the bounds *are* the
-spread-space bounds — which is why simple fixtures behave even if they omit the
-transform. The moment a spread holds two pages, the left page's `ItemTransform`
-translates it to the left of the binding while the right page sits at the spread
-origin. The full coordinate story — units, axis direction, and how a frame's
-points compose with these transforms — lives under
-[Geometry & coordinates](/docs/idml/geometry-coordinates).
+This example keeps the page tops at y = 0. The
+[spread-coordinates](/docs/idml/geometry-coordinates/units-and-origin) example writes the
+same spread with InDesign's vertical centring; both open identically, because a page's
+position is its bounds mapped through its transform.
 
-### `Name` and page numbering
+## What a page contains
 
-`Name` is the label InDesign already resolved for the page, including any
-section-driven style (Roman numerals, prefixed labels, and so on). The renderer
-substitutes it directly for auto-page-number markers. When a page omits `Name`,
-the renderer computes the label from the document's `<Section>` numbering rules
-(falling back to a 1-based body-page index only when no section applies), so
-section-driven numbering is honored even for `Name`-less pages.
-<SupportBadge status="supported" note="Section numbering rules applied; Page.Name authoritative when present" />
-Section numbering proper is covered under
-[Sections, numbering & variables](/docs/idml/sections-numbering-variables).
+A `<Page>` has no page items. It can hold:
+
+- **`MarginPreference`**: the margins and the column grid (`ColumnCount`, `ColumnGutter`)
+  that guide layout on this page. They do not clip anything.
+- **`Guide`**: ruler guides placed on this page. `Guide` elements also appear directly
+  under the `<Spread>`.
+- **`Properties`** with a `Label`: key/value metadata attached to the page by scripts and
+  plugins.
+
+<AttrTable element="MarginPreference" />
+
+> **In Paged:** margins and ruler guides are read and written back.
+> <SupportBadge feature="layout-model.guides" />
 
 ## Frequently asked questions
 
-**What is the difference between a spread and a page in IDML?**
-A `<Spread>` is the outer container — the coordinate frame that sits on the
-document's pasteboard and holds the pages of one opening. A `<Page>` is a bounded
-rectangle within that spread, described by its own `GeometricBounds` and carried
-into spread space by its `ItemTransform`. One spread can hold several pages.
+**What is the difference between a spread and a page?**
+A `<Spread>` is a coordinate space holding the pages and items of one opening. A `<Page>`
+is a rectangle placed in that space by its `ItemTransform`. Page items are children of the
+spread, not of the page.
 
-**Why does a `Page` need both `GeometricBounds` and `ItemTransform`?**
-`GeometricBounds` gives the page rectangle in the page's own coordinate system,
-while `ItemTransform` places that rectangle within the spread. For a single page
-per spread the transform is identity, so the bounds are also the spread-space
-bounds; once a spread holds two pages, each page's transform is what sets them
-side by side.
+**Why does a page need both GeometricBounds and ItemTransform?**
+The bounds give the page's size in its own space; the transform puts it in the spread. On
+a facing spread the transforms set the pages side by side, with the left page at negative x.
 
-**What happens if a `Page` has no `GeometricBounds`?**
-The parser requires a parseable `GeometricBounds` to derive the page rectangle, so
-a `<Page>` without one is skipped entirely. Every other page attribute is
-optional, but bounds are not.
+**Which attributes must a writer put on a Spread?**
+At least `Self`, `PageCount`, `BindingLocation` and `ItemTransform`, as InDesign does.
+Without `PageCount` and `BindingLocation`, InDesign may treat a single page as one half of
+a facing pair and add an empty page.
+
+**Where does ShowMasterItems go?**
+On the `<Spread>`. InDesign ignores it on a `<Page>`.

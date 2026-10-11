@@ -36,6 +36,7 @@ const ENGINE = ['the-renderer', 'parser-internals', 'test-corpus'];
 const MOVED_IDML_PAGES = {
   'stories-text/why-ranges-not-spans': 'stories-text/the-paragraph-model',
   'stories-text/text-variables': 'sections-numbering-variables/text-variables',
+  'layout-model/override-resolution': 'master-spreads-overrides/override-resolution',
 };
 
 // IDML pages that described Paged rather than the format, now on

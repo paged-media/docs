@@ -20,19 +20,19 @@
   "annotations": [
     {
       "lines": "3",
-      "note": "PageCount=2: this spread holds two pages side by side. ShowMasterItems=true lets the master's items stamp onto each page."
+      "note": "PageCount=2 and BindingLocation=1: two pages, with the spine after the first. InDesign needs both to open the spread as written."
     },
     {
       "lines": "4",
-      "note": "The left page. Its ItemTransform shifts the page's inner origin to x=-595.276 so it sits to the left of the binding."
+      "note": "The left page. Page items use spread coordinates with the spine at x = 0, so this page's ItemTransform moves it to x = -595.276 … 0. Its frame below sits at negative x."
     },
     {
       "lines": "4-5",
-      "note": "Both pages carry AppliedMaster=\"umaster\" — the bare Self id of the MasterSpread, not its src path."
+      "note": "Both pages carry AppliedMaster=\"umaster\": the master's Self id, not its part path."
     },
     {
       "lines": "5",
-      "note": "The right page sits at the spread origin (identity translation)."
+      "note": "The right page starts at the spine. This file keeps the page tops at y = 0; InDesign's own exports shift both pages up by half the page height, which the spread-coordinates example shows."
     }
   ],
   "expect": {
@@ -59,5 +59,10 @@
       "ssim": 0.999,
       "fontsMatched": true
     }
-  }
+  },
+  "elements": [
+    "Spread",
+    "Page",
+    "MasterSpread"
+  ]
 }

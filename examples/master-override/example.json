@@ -3,7 +3,7 @@
   "id": "master-override",
   "title": "Overriding a master item on a body page",
   "tier": "pro",
-  "chapter": "layout-model",
+  "chapter": "master-spreads-overrides",
   "concept": "A body page's OverrideList names a master item so the placeholder is suppressed in favour of the page's own copy.",
   "packageDir": "package",
   "editable": {
@@ -20,15 +20,15 @@
   "annotations": [
     {
       "lines": "4",
-      "note": "OverrideList=\"umasterHeader\" lists the master item this page has overridden. The renderer skips stamping that master item."
+      "note": "OverrideList=\"umasterHeader\" names the master item this page has taken over. It is not shown from the master on this page."
     },
     {
       "lines": "5",
-      "note": "The page's own replacement rectangle stands in for the suppressed master header — here at 40% tint."
+      "note": "The page's own copy of the header, here at a 40% tint. It is an ordinary page item of the body spread."
     },
     {
       "lines": "5-19",
-      "note": "Top-level page items appear as direct children of the spread in document order; that order is the back-to-front z-order."
+      "note": "Page items are children of the spread in document order; that order is the back-to-front stacking order."
     }
   ],
   "expect": {
@@ -55,5 +55,10 @@
       "ssim": 0.998,
       "fontsMatched": true
     }
-  }
+  },
+  "elements": [
+    "Page",
+    "MasterSpread",
+    "Rectangle"
+  ]
 }
