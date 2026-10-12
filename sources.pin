@@ -59,7 +59,7 @@
     "idml-coverage": {
       "$comment": "Which IDML (element, attribute) pairs Paged's importer reads and its exporter writes, extracted from the plugin-publish source by tools/idml-coverage (gated by idml_coverage_json_is_current). Feeds the element reference (ADR 805 / gen-idml-reference). Pinned to a commit, bumped deliberately.",
       "repo": "plugin-publish",
-      "ref": "74c6ccc",
+      "ref": "c6dc762",
       "files": {
         "idml-coverage.json": "docs/reference/idml-coverage.json"
       }
