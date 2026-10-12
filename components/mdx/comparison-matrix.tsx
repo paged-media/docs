@@ -4,7 +4,7 @@
  * re-serialise tables; never ship it as an image or CSS-grid fake-table). Data
  * comes from lib/comparison-data.ts.
  */
-import { DOMAINS, SCALE, SNAPSHOT, TOOLS, VERDICTS, pagedEvidence, resolveNote, type ToolKey } from '@/lib/comparison-data';
+import { DOMAINS, SCALE, TOOLS, VERDICTS, pagedEvidence, resolveNote, type ToolKey } from '@/lib/comparison-data';
 import { getMatrix } from '@/lib/generated';
 
 const TOOL_ORDER: ToolKey[] = ['paged', 'indesign', 'quark', 'affinity', 'scribus', 'designcraft'];
@@ -40,7 +40,7 @@ export function ComparisonMatrix({ only, differentiatorsOnly }: { only?: ToolKey
       <div style={{ overflowX: 'auto' }}>
         <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: cols.length > 3 ? 720 : 460 }}>
           <caption style={{ captionSide: 'top', textAlign: 'left', fontFamily: 'var(--font-sans)', fontSize: 11.5, color: 'var(--color-muted)', marginBottom: 6 }}>
-            {differentiatorsOnly ? 'Differentiators' : 'Capability matrix'} · ordinal 0–3 · snapshot {SNAPSHOT}. Rows tagged <strong>baseline</strong> (every serious tool clears it) or <strong>differentiator</strong> (where the field separates).
+            {differentiatorsOnly ? 'Differentiators' : 'Capability matrix'} · ordinal 0–3 · Paged&rsquo;s “x/y verified” from the capability record of {getMatrix().headline.record_generated_at?.slice(0, 10) ?? '—'}. Rows tagged <strong>baseline</strong> (every serious tool clears it) or <strong>differentiator</strong> (where the field separates).
           </caption>
           <thead>
             <tr>
