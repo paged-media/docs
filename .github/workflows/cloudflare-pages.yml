@@ -57,6 +57,9 @@ jobs:
           SITE: ${{ matrix.site }}
           GH_TOKEN: ${{ secrets.DOCS_SOURCES_TOKEN || secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # A source that cannot be pulled fails the deploy rather than publishing
+          # old or empty capability data.
+          DOCS_SOURCES_STRICT: ${{ secrets.DOCS_SOURCES_TOKEN != '' }}
 
       - name: deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
@@ -68,3 +71,11 @@ jobs:
           # and attach its custom domain in the Cloudflare dashboard.
           # --branch=main marks this a PRODUCTION deploy (served at the custom domain).
           command: pages deploy out --project-name=${{ matrix.project }} --branch=main
+
+      - name: rebuild paged.media from the new capability record
+        # paged.media reads /capabilities.json and /facts.json at build time.
+        if: matrix.site == 'paged'
+        env:
+          SITE_DEPLOY_HOOK: ${{ secrets.SITE_DEPLOY_HOOK }}
+        run: |
+          if [ -n "$SITE_DEPLOY_HOOK" ]; then curl -fsS -X POST "$SITE_DEPLOY_HOOK" > /dev/null; else echo "SITE_DEPLOY_HOOK not set; paged.media rebuilds on its own schedule"; fi

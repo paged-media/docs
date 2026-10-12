@@ -1,0 +1,160 @@
+{
+  "$comment": "Every number and licence the docs state about the platform, defined by where it comes from. scripts/generate/gen-facts.mjs evaluates them into .generated/facts.json and public/facts.json; pages render them with <Fact id=\"…\" />, and check:facts fails a page that types one of these numbers by hand. `from` is a file under .generated/sources (pulled by sources.pin) or under this repo (`repo:`). Extractors: pointer (a JSON value), length (a JSON array's length), regex (first capture), regexCount (matching lines), files (files with an extension, recursively), rows (YAML rows `- id:` in a file or folder, optionally only those whose `status:` matches), dirs (sub-folders of a repo folder, optionally only those containing `with`), cliLeaves (leaf commands of cli.json), dependsOn (which of the named packages a package.json depends on), license (an SPDX expression, written for people).",
+  "facts": {
+    "engine.version": {
+      "label": "engine release",
+      "from": "repo:core.pin",
+      "regex": "Currently: (v[0-9.]+)"
+    },
+    "engine.protocol": {
+      "label": "wire protocol",
+      "from": "cli-surface/cli.json",
+      "pointer": "/protocol"
+    },
+    "script.operations": {
+      "label": "scriptable operations",
+      "from": "core-catalog/catalog.json",
+      "length": "/operations"
+    },
+    "script.settablePaths": {
+      "label": "settable property paths",
+      "from": "core-catalog/catalog.json",
+      "length": "/settablePaths"
+    },
+    "script.hostFunctions": {
+      "label": "host functions",
+      "from": "core-catalog/catalog.json",
+      "length": "/hostFunctions"
+    },
+    "script.propertySchemas": {
+      "label": "property schemas",
+      "from": "core-catalog/catalog.json",
+      "length": "/propertySchemas"
+    },
+    "cli.commands": {
+      "label": "CLI commands",
+      "from": "cli-surface/cli.json",
+      "cliLeaves": "/commands"
+    },
+    "client.members": {
+      "label": "client API members",
+      "from": "editor-catalog/api-catalog.json",
+      "pointer": "/counts/clientMembers"
+    },
+    "client.wireKinds": {
+      "label": "wire kinds the client reaches",
+      "from": "editor-catalog/api-catalog.json",
+      "pointer": "/counts/wireKinds"
+    },
+    "sheet.functions": {
+      "label": "spreadsheet functions",
+      "from": "plugin-sheets/functions",
+      "rows": {
+        "status": "implemented"
+      }
+    },
+    "image.kernels": {
+      "label": "image kernels",
+      "from": "plugin-image/kernels.yaml",
+      "rows": {
+        "status": "implemented"
+      }
+    },
+    "data.functions": {
+      "label": "data expression functions",
+      "from": "plugin-data/functions",
+      "rows": {}
+    },
+    "examples.count": {
+      "label": "verified IDML examples",
+      "from": "repo:examples",
+      "dirs": {
+        "exclude": [
+          "_schema"
+        ]
+      }
+    },
+    "features.total": {
+      "label": "tracked capabilities",
+      "from": "cockpit/public.json",
+      "pointer": "/totals/features"
+    },
+    "features.stable": {
+      "label": "shipped capabilities",
+      "from": "cockpit/public.json",
+      "pointer": "/totals/by_status/stable"
+    },
+    "features.healthy": {
+      "label": "capabilities with passing tests",
+      "from": "cockpit/public.json",
+      "pointer": "/totals/by_health/healthy"
+    },
+    "record.generatedAt": {
+      "label": "capability record date",
+      "from": "cockpit/public.json",
+      "pointer": "/generated_at"
+    },
+    "license.engine": {
+      "label": "engine licence",
+      "from": "core-meta/Cargo.toml",
+      "regex": "^license = \"([^\"]+)\"",
+      "license": true
+    },
+    "license.editor": {
+      "label": "editor licence",
+      "from": "editor-catalog/package.json",
+      "pointer": "/license",
+      "license": true
+    },
+    "license.plugins": {
+      "label": "content-plugin licence",
+      "from": "plugin-sheets/package.json",
+      "pointer": "/license",
+      "license": true
+    },
+    "license.docs": {
+      "label": "documentation licence",
+      "value": "CC BY 4.0"
+    },
+    "editor.plugins": {
+      "label": "plugin bundles the editor loads",
+      "from": "editor-catalog/canvas-package.json",
+      "dependsOn": {
+        "pointer": "/dependencies",
+        "names": [
+          "@paged-media/draw",
+          "@paged-media/web",
+          "@paged-media/image",
+          "@paged-media/sheet",
+          "@paged-media/data",
+          "@paged-media/doc",
+          "@paged-media/slide",
+          "@paged-media/pdf",
+          "@paged-media/publish"
+        ]
+      }
+    },
+    "scripting.examples": {
+      "label": "runnable scripting examples",
+      "from": "repo:data/scripting/examples.ts",
+      "regexCount": "^\\s+id: '"
+    },
+    "examples.indesignVerified": {
+      "label": "IDML examples checked in InDesign",
+      "from": "repo:examples",
+      "dirs": {
+        "exclude": [
+          "_schema"
+        ],
+        "with": "_verified"
+      }
+    },
+    "idml.pages": {
+      "label": "pages of IDML reference",
+      "from": "repo:content/docs/idml",
+      "files": {
+        "ext": ".mdx"
+      }
+    }
+  }
+}

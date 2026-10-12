@@ -1,0 +1,38 @@
+---
+title: cockpit — the capability registry
+description: The capability registry and its evidence join — what works across every paged repository, according to their tests, and the data behind this site's capability pages.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+reviewed: "2026-10-12"
+---
+
+**In short:** `cockpit` is the system's source of truth for status. One row per
+capability, structured by the same chapter taxonomy as this site, with a claim per
+implementation layer and a health computed from the newest CI test runs of every
+repository. It powers the [capability state](/docs/paged/state) pages and the
+support badges across the [IDML reference](/docs/idml/overview). It replaced the
+earlier `state` registry on 2026-09-11.
+
+## What it does
+
+- A **registry** of <Fact id="features.total" /> capability rows
+  (`docs/features/<chapter>/<id>.md`), each with a lifecycle and per-layer claims.
+- An **evidence join**: every repository's CI uploads its test results; tests name
+  the capabilities they prove (`@feat:` tags, or a test map for suites that cannot
+  carry one).
+- An **export** (`cockpit export`) that writes the joined record as one JSON
+  document, nightly and whenever a repository's main test run finishes.
+
+## How this site uses it
+
+The docs pull the export at build time and project it into the
+[matrix](/docs/paged/state/matrix) and every `<SupportBadge>`; the same record is
+published as [capabilities.json](/capabilities.json). See
+[how it works](/docs/paged/state/how-it-works) and
+[how it's tested](/docs/paged/testing).
+
+## Recent activity
+
+<RepoActivity repo="cockpit" />

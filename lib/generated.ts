@@ -21,7 +21,7 @@ function load<T>(name: string, fallback: T): T {
 
 // ── shapes (mirror scripts/generate/gen-matrix.mjs output) ───────────────────
 export type Impl = 'shipped' | 'partial' | 'planned' | 'deferred' | 'na';
-export type Evidence = 'green' | 'red' | 'flaky' | 'none';
+export type Evidence = 'green' | 'red' | 'flaky' | 'stale' | 'none';
 export type BadgeTone = 'valid' | 'valid-muted' | 'warn' | 'muted';
 
 export interface BadgeInfo {
@@ -41,6 +41,8 @@ export interface SupportFeature {
   chapter: string;
   status: string | null;
   achievedLevel: string | null;
+  /** Cockpit's health for the feature (state, headline, evidence date, test counts). */
+  health?: { state: string; headline: string; evidence_at: string | null; tests: { linked: number; passed: number; failed: number; skipped: number } } | null;
   updatedAt: string | null;
   badge: BadgeInfo;
   parser: StageCell;
@@ -81,9 +83,11 @@ export interface Headline {
   green_pct?: number;
   failing?: number;
   shipped_untested?: number;
-  coverage_gaps?: number;
-  drift?: number;
-  open_bugs?: number;
+  stale?: number;
+  experimental?: number;
+  planned?: number;
+  /** When cockpit exported the capability record this headline is computed from. */
+  record_generated_at?: string | null;
 }
 export interface Matrix {
   generatedAt: string;
@@ -496,4 +500,20 @@ export function getIdmlReference(): IdmlReference {
 }
 export function getRefElement(name: string): RefElement | undefined {
   return getIdmlReference().elements.find((e) => e.name === name);
+}
+
+// ── facts (gen-facts.mjs) ─────────────────────────────────────────────────────
+export interface Fact {
+  value: string | number;
+  display: string;
+  label: string;
+  from: string | null;
+}
+export interface Facts {
+  generatedAt: string | null;
+  count: number;
+  facts: Record<string, Fact>;
+}
+export function getFacts(): Facts {
+  return load<Facts>('facts.json', { generatedAt: null, count: 0, facts: {} });
 }

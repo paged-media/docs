@@ -5,6 +5,7 @@ tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
+describes: [round-tripping, scripting, plugin-platform]
 reviewed: "2026-10-12"
 ---
 
@@ -18,8 +19,7 @@ driven by agents over MCP. Paged is also open source and IDML-native, but it is
 one document platform: text, pictures, vectors, spreadsheets, data and web
 content are plugins that live in frames of the same document, with one undo and
 one scripting surface. Both are young. DesignCraft describes itself as
-pre-alpha; Paged's layout and print depth are still emerging. *(Snapshot:
-2026-10-12.)*
+pre-alpha; Paged's layout and print depth are still emerging. <CompareSnapshot only={["designcraft"]} />
 
 <SoftwareApplicationLd />
 
@@ -81,8 +81,9 @@ built with. See [automated publishing](/docs/paged/use-cases/automated-publishin
 ## Licensing
 
 DesignCraft and the other ArtCraft apps are MIT OR Apache-2.0. Paged's engine is
-MPL-2.0, and its editor AGPL-3.0, each OR a commercial licence (PMEL) for teams
-that need different terms.
+<Fact id="license.engine" />, and its editor and content plugins are
+<Fact id="license.editor" />; PMEL is the commercial licence for teams that need
+different terms.
 
 ## Frequently asked questions
 

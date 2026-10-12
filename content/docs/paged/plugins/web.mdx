@@ -5,6 +5,8 @@ tier: intermediate
 diataxis: explanation
 status: draft
 owner: paged-docs
+describes: [plugin-web]
+reviewed: "2026-10-12"
 ---
 
 **In short:** `paged.web` lets HTML/CSS be a content type inside a paged document.
@@ -20,6 +22,10 @@ to the sandboxed preview when the wasm isn't available).
 - On-canvas vector rendering via the `web-render` crate (Blitz/WASM →
   scene layer), with font bytes supplied through the capability-gated asset store.
 - Persists the source into the `.paged` container.
+- In development: editing a web frame's text in place, flowing web content
+  across threaded frames with break rules, web fonts on the canvas, bound data in
+  templates, layout parity checked against Chrome, and web frames as typed
+  objects (the object model).
 
 ## How it's built
 

@@ -1,4 +1,1 @@
-{
-  "title": "Plugins",
-  "pages": ["index", "draw", "web", "image", "sheets", "data", "template"]
-}
+{"title": "Plugins", "pages": ["index", "draw", "web", "image", "sheets", "data", "doc", "slide", "publish", "template"]}

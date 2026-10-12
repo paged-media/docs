@@ -5,6 +5,7 @@ tier: beginner
 diataxis: explanation
 status: published
 owner: paged-docs
+describes: [round-tripping, scripting, plugin-platform]
 reviewed: "2026-10-12"
 ---
 
@@ -16,7 +17,7 @@ scriptable, web-delivered). **DesignCraft**, part of the ArtCraft suite, is a
 newer, pre-alpha MIT/Apache-licensed take on the InDesign workflow. If you also count "free but proprietary," **Affinity**
 is free of charge yet closed. For an open *format* that round-trips with the
 InDesign ecosystem plus scripting and plugins, Paged is the distinctive option;
-for proven print output today, Scribus leads. *(Snapshot: 2026-06-23; DesignCraft added 2026-10-12.)*
+for proven print output today, Scribus leads. <CompareSnapshot />
 
 <SoftwareApplicationLd />
 
@@ -25,7 +26,7 @@ for proven print output today, Scribus leads. *(Snapshot: 2026-06-23; DesignCraf
 - **[Scribus](/docs/paged/compare/paged-vs-scribus)** — the long-standing
   open-source (GPL) DTP application. Mature layout and excellent CMYK/spot color
   and print production. Desktop-only; partial IDML import; no plugin platform.
-- **[Paged](/docs/paged/)** — open source (MPL-2.0 OR PMEL), built on a valid
+- **[Paged](/docs/paged/)** — open source (engine <Fact id="license.engine" />, editor and plugins <Fact id="license.editor" />), built on a valid
   IDML container, with a [scripting layer](/docs/paged/scripting) and a [plugin
   SDK](/docs/paged/plugin-sdk). Web/WebGPU and headless delivery. Layout and print
   depth are emerging.

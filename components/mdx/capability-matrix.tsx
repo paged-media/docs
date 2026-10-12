@@ -32,6 +32,10 @@ const STAGE_TITLE: Record<string, string> = {
   'plugin.image': 'Image',
   'plugin.data': 'Data',
   'plugin.sheet': 'Sheet',
+  'plugin.publish': 'Publish',
+  'plugin.pdf': 'PDF',
+  'plugin.doc': 'Doc',
+  'plugin.slide': 'Slide',
 };
 
 /** A cell glyph: meaning in the symbol (survives greyscale), color reinforces. */
@@ -39,6 +43,7 @@ function cellGlyph(impl: Impl, evidence: Evidence): { glyph: string; color: stri
   if (impl === 'shipped') {
     if (evidence === 'green') return { glyph: '●', color: 'var(--valid)', title: 'shipped · verified' };
     if (evidence === 'red') return { glyph: '✗', color: 'var(--warn)', title: 'shipped · failing test' };
+    if (evidence === 'stale') return { glyph: '○', color: 'color-mix(in srgb, var(--valid) 75%, var(--color-muted))', title: 'shipped · tests passed before the latest change' };
     return { glyph: '◍', color: 'color-mix(in srgb, var(--valid) 60%, var(--color-muted))', title: 'shipped · untested' };
   }
   if (impl === 'partial') return { glyph: '◐', color: 'var(--warn)', title: 'partial' };
@@ -131,6 +136,7 @@ export function CapabilityMatrix({ chapter, group }: { chapter?: string; group?:
     <div>
       <p className="not-prose" style={{ fontSize: 11.5, color: 'var(--color-muted)', margin: '0 0 .5rem' }}>
         <span style={{ color: 'var(--valid)' }}>●</span> shipped &amp; verified ·{' '}
+        <span style={{ color: 'color-mix(in srgb, var(--valid) 75%, var(--color-muted))' }}>○</span> shipped, re-test pending ·{' '}
         <span style={{ color: 'color-mix(in srgb, var(--valid) 60%, var(--color-muted))' }}>◍</span> shipped, untested ·{' '}
         <span style={{ color: 'var(--warn)' }}>◐</span> partial · <span style={{ color: 'var(--warn)' }}>✗</span> failing ·{' '}
         <span style={{ color: 'var(--color-muted)' }}>·</span> planned

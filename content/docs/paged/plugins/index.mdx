@@ -1,33 +1,40 @@
 ---
 title: Plugins
-description: The five first-party content plugins that extend paged beyond native IDML — vector drawing, web content, raster images, spreadsheets, and database publishing — all built on the Plugin SDK.
+description: The first-party content plugins that extend paged beyond native IDML — vectors, web content, raster images, spreadsheets, data, Word, presentations, IDML and PDF — all built on the Plugin SDK.
 tier: beginner
 diataxis: explanation
 status: draft
 owner: paged-docs
+describes: [plugin-platform]
+reviewed: "2026-10-12"
 ---
 
-**In short:** plugins add new *kinds of content* to a paged document. The five
+**In short:** plugins add new *kinds of content* to a paged document. The
 first-party plugins are built on the same [Plugin SDK](/docs/paged/plugin-sdk)
-contract any third party uses — they're the worked examples. Each renders into the
-document through the engine's scene-layer surfaces and persists into the `.paged`
-container.
+contract any third party uses, so they are its worked examples. Each renders into
+the document through the engine's scene-layer surfaces and persists into the
+`.paged` container. The engine is <Fact id="license.engine" />; the plugins are
+<Fact id="license.plugins" />.
 
 - **[paged.draw](/docs/paged/plugins/draw)** — vector drawing (pen, paths,
-  pathfinder, SVG I/O).
-- **[paged.web](/docs/paged/plugins/web)** — HTML/CSS as a content type.
-- **[paged.image](/docs/paged/plugins/image)** — raster processing + PSD
+  pathfinder, SVG in and out).
+- **[paged.web](/docs/paged/plugins/web)** — HTML and CSS as a content type.
+- **[paged.image](/docs/paged/plugins/image)** — raster processing and PSD
   round-trip (Rust/WASM, GPU kernels).
 - **[paged.sheet](/docs/paged/plugins/sheets)** — a spreadsheet engine with
   print-grade layout (Rust/WASM, XLSX round-trip).
-- **[paged.data](/docs/paged/plugins/data)** — database publishing + automation
+- **[paged.data](/docs/paged/plugins/data)** — database publishing and automation
   (Rust/WASM, DuckDB).
+- **[paged.doc](/docs/paged/plugins/doc)** — Word documents in and out.
+- **[paged.slide](/docs/paged/plugins/slide)** — PowerPoint decks as native pages.
+- **[paged.publish](/docs/paged/plugins/publish)** — IDML import and export, and
+  PDF as an editable document.
 
 Plus **[plugin-template](/docs/paged/plugins/template)** — the fork-and-go
 starter.
 
 ## Plugin capability state
 
-The live status of each plugin's capabilities, from the registry:
+The live status of each plugin's capabilities, from the capability record:
 
 <CapabilityMatrix group="plugin" />

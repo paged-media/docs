@@ -5,6 +5,8 @@ tier: intermediate
 diataxis: explanation
 status: draft
 owner: paged-docs
+describes: [data]
+reviewed: "2026-10-12"
 ---
 
 **In short:** `paged.data` turns data into pages — a binding-expression DSL, a
@@ -15,14 +17,18 @@ publishes governed datasets that other plugins (e.g.
 
 ## What it does
 
-- A publishing-grammar binding DSL (a registry-driven function library) and a
-  binding/sync engine (Linked / Pinned / Overridden / Stale states).
+- A publishing-grammar binding DSL (<Fact id="data.functions" /> registry-driven
+  functions) and a binding/sync engine (Linked / Pinned / Overridden / Stale states).
 - Record flow / pagination: nested grouping, multi-level per-group footers,
   parent-path on spill.
 - Print automation: per-record / per-group / one-catalog batch plans, plus a CLI
   and a sandboxed Boa scripting path.
 - A data-provider contract: register as a provider and publish a record set
   without knowing its consumers; governed extracts with column metadata.
+- In development: InDesign Data Merge (planning, merging and export as a Data
+  Merge template), a SQL query panel over DuckDB, local JSON, Parquet and XLSX
+  sources, row diffs and sync review, and binding any object property to data
+  (the universal binding round).
 
 ## How it's built
 

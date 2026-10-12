@@ -38,7 +38,10 @@ const OUT = join(ROOT, '.generated', 'sources');
 const PIN = JSON.parse(readFileSync(join(ROOT, 'sources.pin'), 'utf8'));
 
 const REMOTE = process.argv.includes('--remote');
-const STRICT = process.argv.includes('--strict');
+// --strict (or DOCS_SOURCES_STRICT=true, set by CI when the source token is
+// present) fails the build when a data source cannot be pulled. The activity
+// feed is decoration and never fails it.
+const STRICT = process.argv.includes('--strict') || process.env.DOCS_SOURCES_STRICT === 'true';
 const ORG = PIN.org;
 
 const warnings = [];
@@ -129,7 +132,9 @@ console.log(`pull-sources → ${OUT}  (${lock.mode})`);
 for (const [key, src] of Object.entries(PIN.sources)) {
   // Plugin repos live one level down (~/paged/plugins/<repo>).
   const repoDir = [join(SIBLINGS, src.repo), join(SIBLINGS, 'plugins', src.repo)].find((d) => existsSync(d)) ?? join(SIBLINGS, src.repo);
-  const useLocal = !REMOTE && existsSync(repoDir);
+  // `remote: true` marks a file CI produces (cockpit's export): the sibling
+  // working copy may be on any branch and need not have it, so always fetch.
+  const useLocal = !REMOTE && !src.remote && existsSync(repoDir);
   // A source pinned to a commit (core.pin, or a sha in `ref`) is read at that
   // commit, never from the working tree.
   const pinned = src.ref === 'core.pin' ? corePinSha() : /^[0-9a-f]{7,40}$/.test(src.ref) ? src.ref : null;
@@ -156,6 +161,30 @@ for (const [key, src] of Object.entries(PIN.sources)) {
       warn(`${key}/${outName}: ${e.message.split('\n')[0]}`);
     }
   }
+  // `dirs` copies every file of a folder (a plugin's registry/functions/*.yaml),
+  // so a generator can count rows spread across files.
+  for (const [outName, relDir] of Object.entries(src.dirs ?? {})) {
+    const destDir = join(keyDir, outName);
+    ensureDir(destDir);
+    try {
+      let names;
+      if (useLocal && !pinned) {
+        const from = join(repoDir, relDir);
+        if (!existsSync(from)) throw new Error(`missing local folder ${from}`);
+        names = readdirSync(from).filter((n) => !n.startsWith('.'));
+        for (const n of names) copyFileSync(join(from, n), join(destDir, n));
+      } else {
+        const listing = JSON.parse(sh('gh', ['api', `repos/${ORG}/${src.repo}/contents/${relDir}?ref=${ref}`]));
+        names = listing.filter((x) => x.type === 'file').map((x) => x.name);
+        for (const n of names) writeFileSync(join(destDir, n), fetchRemote(src.repo, `${relDir}/${n}`, ref));
+      }
+      if (names.length === 0) throw new Error(`empty folder ${relDir}`);
+      entry.files[`${outName}/`] = relDir;
+      console.log(`  ✓ ${key}/${outName}/ (${names.length} files)  ← ${src.repo}/${relDir} (${entry.mode})`);
+    } catch (e) {
+      warn(`${key}/${outName}/: ${e.message.split('\n')[0]}`);
+    }
+  }
   entry.sha = pinned ?? (useLocal ? localSha(repoDir) : resolveSha(src.repo, ref));
   lock.sources[key] = entry;
 }
@@ -175,7 +204,7 @@ for (const repo of act.repos) {
     console.log(`  ✓ activity/${repo} (${activity[repo].length} commits)`);
     lock.activity[repo] = activity[repo].length;
   } catch (e) {
-    warn(`activity/${repo}: ${e.message.split('\n')[0]}`);
+    console.warn(`  ! activity/${repo}: ${e.message.split('\n')[0]}`);
     activity[repo] = [];
     lock.activity[repo] = 0;
   }

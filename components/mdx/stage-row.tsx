@@ -12,6 +12,8 @@ function dot(cell: StageCell): { glyph: string; color: string; title: string } {
       ? { glyph: '●', color: 'var(--valid)', title: 'shipped · verified' }
       : cell.evidence === 'red'
         ? { glyph: '✗', color: 'var(--warn)', title: 'shipped · failing' }
+        : cell.evidence === 'stale'
+          ? { glyph: '○', color: 'color-mix(in srgb, var(--valid) 75%, var(--color-muted))', title: 'shipped · tests passed before the latest change' }
         : { glyph: '◍', color: 'color-mix(in srgb, var(--valid) 60%, var(--color-muted))', title: 'shipped · untested' };
   if (cell.impl === 'partial') return { glyph: '◐', color: 'var(--warn)', title: 'partial' };
   if (cell.impl === 'planned') return { glyph: '·', color: 'var(--color-muted)', title: 'planned' };

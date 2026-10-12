@@ -1,0 +1,42 @@
+---
+title: paged.publish — IDML and PDF
+description: The format plugins — IDML import and export that round-trips InDesign packages byte for byte where nothing changed, and PDF opened as an editable native document.
+tier: intermediate
+diataxis: explanation
+status: draft
+owner: paged-docs
+describes: [plugin-publish, plugin-pdf]
+reviewed: "2026-10-12"
+---
+
+**In short:** `paged.publish` is how foreign formats enter and leave paged. Its
+IDML importer and exporter carry InDesign packages in and out, and an unchanged
+package comes back identical to the byte. Its PDF plugin turns a PDF into a native
+document: pages, vectors with their colours mapped to swatches, images, and (in
+development) text rebuilt into editable paragraphs.
+
+## What it does
+
+- IDML import through the engine's native-document door, and IDML export, as
+  typed commands scripts can call.
+- A corpus sweep that checks every package in the test corpus survives a round
+  trip unchanged.
+- PDF reading with PDFium: vectors and colours become native shapes and
+  swatches, and images decode whatever their filter chain.
+- In development: opening a PDF in the editor end to end, and rebuilding its
+  positioned glyphs into paragraphs of styled runs for editing.
+
+## How it's built
+
+The `idml-import` and `idml-export` crates and the `pdf-import` crate, plus two TS
+bundles (`@paged-media/publish`, `@paged-media/pdf`).
+
+## Capability state
+
+<CapabilityMatrix chapter="plugin-publish" />
+
+<CapabilityMatrix chapter="plugin-pdf" />
+
+## Recent activity
+
+<RepoActivity repo="plugin-publish" />

@@ -1,0 +1,4 @@
+{
+  "$comment": "Lines check:facts may pass: a number that is not a platform fact (a fixture count, a grid size). Each entry names the file and a distinctive piece of the line.",
+  "allow": []
+}

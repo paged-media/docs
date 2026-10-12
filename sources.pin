@@ -2,13 +2,22 @@
   "$comment": "Pinned cross-repo sources for the docs generation pipeline (scripts/generate/pull-sources.mjs). The docs are generated FROM these machine-readable sources so they never go stale by hand. `ref` is the git ref to pull from (default `main` = always-fresh); set an explicit commit SHA to freeze a source for a reproducible build. pull-sources records the RESOLVED sha of each source in .generated/sources.lock.json for provenance. Local runs prefer the sibling working copy under ~/paged/<repo> when present (pass --remote to force GitHub). Bump policy: this file + the nightly re-pull + on-push dispatch are the freshness controls. Same spirit as core.pin.",
   "org": "paged-media",
   "sources": {
-    "state": {
-      "repo": "state",
+    "cockpit": {
+      "$comment": "The capability record (cockpit.export.v1): every feature with its lifecycle, claims per component and the health its CI test evidence gives it. Produced by cockpit's export workflow (nightly and on each repo's main test run) and committed to exports/public.json; `remote` because only CI writes it. Replaces the retired state registry (2026-10-12).",
+      "repo": "cockpit",
       "ref": "main",
+      "remote": true,
       "files": {
-        "state.json": "data/state.json",
-        "meta.json": "data/meta.json",
-        "conformance.json": "data/conformance.public.json"
+        "public.json": "exports/public.json"
+      }
+    },
+    "capability-matrix": {
+      "$comment": "The capability x surface matrix: every wire op and wire kind against the seven programmable surfaces, each cell derived from the gate that owns that surface (core's cli_surface.rs and script_surface.rs, the editor's probed capability table, the client's generated catalog). Produced by cockpit's export workflow from current mains; was state's frozen protocol-63 copy until 2026-10-12.",
+      "repo": "cockpit",
+      "ref": "main",
+      "remote": true,
+      "files": {
+        "capability-matrix.json": "exports/capability-matrix.json"
       }
     },
     "core-catalog": {
@@ -33,14 +42,6 @@
         "cli.json": "crates/paged-cli/cli.json"
       }
     },
-    "capability-matrix": {
-      "$comment": "The capability x surface matrix (state scripts/capability-matrix.mjs): 117 wire ops + 61 wire kinds against seven surfaces, each cell derived from the gate that owns that surface. Added 2026-09-10: the API index named five programmable surfaces in prose and could not say what any of them REACHES, which is the question a reader arrives with. state is private, so this rides the same DOCS_SOURCES_TOKEN path as state.json.",
-      "repo": "state",
-      "ref": "main",
-      "files": {
-        "capability-matrix.json": "data/capability-matrix.json"
-      }
-    },
     "plugin-sdk": {
       "repo": "plugin-sdk",
       "ref": "main",
@@ -62,6 +63,52 @@
       "files": {
         "idml-coverage.json": "docs/reference/idml-coverage.json"
       }
+    },
+    "editor-catalog": {
+      "$comment": "The editor's programmable client surface (@paged-media/client): its members and the wire kinds they reach. One column of the surface table.",
+      "repo": "editor",
+      "ref": "main",
+      "files": {
+        "api-catalog.json": "packages/client/api-catalog.json",
+        "package.json": "package.json",
+        "canvas-package.json": "apps/canvas/package.json"
+      }
+    },
+    "plugin-sheets": {
+      "repo": "plugin-sheets",
+      "ref": "main",
+      "files": {
+        "package.json": "package.json"
+      },
+      "dirs": {
+        "functions": "registry/functions"
+      }
+    },
+    "plugin-image": {
+      "repo": "plugin-image",
+      "ref": "main",
+      "files": {
+        "package.json": "package.json",
+        "kernels.yaml": "registry/kernels.yaml"
+      }
+    },
+    "plugin-data": {
+      "repo": "plugin-data",
+      "ref": "main",
+      "files": {
+        "package.json": "package.json"
+      },
+      "dirs": {
+        "functions": "registry/functions"
+      }
+    },
+    "core-meta": {
+      "$comment": "The engine workspace's Cargo metadata at core.pin (its licence).",
+      "repo": "core",
+      "ref": "core.pin",
+      "files": {
+        "Cargo.toml": "Cargo.toml"
+      }
     }
   },
   "activity": {
@@ -72,7 +119,7 @@
       "editor",
       "editor-server",
       "docs",
-      "state",
+      "cockpit",
       "plugin-sdk",
       "plugin-draw",
       "plugin-web",
@@ -84,7 +131,10 @@
       "website",
       "brand",
       "thoughts",
-      "corpus"
+      "corpus",
+      "plugin-doc",
+      "plugin-slide",
+      "plugin-publish"
     ]
   }
 }

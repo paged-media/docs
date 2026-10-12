@@ -15,6 +15,9 @@ jobs:
         site: [idml, paged]
     env:
       SITE: ${{ matrix.site }}
+      # With the source token, a source that cannot be pulled fails the build
+      # (pull-sources strict mode); without it (forks) public sources only.
+      DOCS_SOURCES_STRICT: ${{ secrets.DOCS_SOURCES_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -38,6 +41,15 @@ jobs:
         run: pnpm generate:docs
         env:
           GH_TOKEN: ${{ secrets.DOCS_SOURCES_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: capability record is recent (cockpit export ≤ 7 days)
+        if: env.DOCS_SOURCES_STRICT == 'true'
+        run: pnpm check:record-age
+      - name: no hand-typed platform numbers (use <Fact>)
+        run: pnpm check:facts
+      - name: comparison scores rest on verified capabilities; competitor research is recent
+        if: env.DOCS_SOURCES_STRICT == 'true'
+        run: pnpm check:comparison
 
       - name: feature-ref integrity (every feature=/chapter= resolves in the registry)
         run: pnpm check:feature-refs
