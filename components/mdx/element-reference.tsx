@@ -118,9 +118,20 @@ function pagedCell(a: RefAttribute): ReactNode {
   if (!a.paged) return <span style={muted}>—</span>;
   const { imported, exported } = a.paged;
   if (!imported && !exported) return <span className="paged-io-mark is-none">not read</span>;
+  // Read, but from a part documents never keep it in: in InDesign's files the
+  // read finds nothing.
+  const wrongPart = a.paged.misplaced ? (
+    <span
+      className="paged-io-mark is-none"
+      title={`Paged reads it from ${(a.paged.readParts ?? []).join(', ')}; documents keep it in ${(a.parts ?? []).map((p) => p.part).join(', ')}`}
+    >
+      wrong part
+    </span>
+  ) : null;
   return (
     <span style={{ display: 'inline-flex', gap: 4 }}>
       {imported ? <span className="paged-io-mark" title="Paged's importer reads it">read</span> : null}
+      {wrongPart}
       {exported ? <span className="paged-io-mark" title="Paged's exporter writes it">write</span> : null}
     </span>
   );

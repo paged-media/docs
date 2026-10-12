@@ -463,7 +463,18 @@ export interface RefAttribute {
   values: Record<string, number> | null;
   refKinds: string[] | null;
   propertyTypes: string[] | null;
-  paged: { imported: boolean; exported: boolean } | null;
+  /** Census /2: the package parts documents keep it in (null from a /1 census). */
+  parts?: { part: string; docCount: number }[] | null;
+  /** Census /2: documents whose value departs from the corpus's most common one. */
+  nonModalDocs?: number | null;
+  paged: {
+    imported: boolean;
+    exported: boolean;
+    /** The parts Paged's importer reads it from (null from an older coverage file). */
+    readParts?: string[] | null;
+    /** Read, but from none of the parts documents keep it in. */
+    misplaced?: boolean;
+  } | null;
   typed: RefTyped | null;
   note: string | null;
   /** The section of our own prose that discusses the attribute on this element, if any. */
@@ -487,12 +498,13 @@ export interface RefElement {
   parents: RefCount[];
   children: RefCount[];
   attributes: RefAttribute[];
-  paged: { reads: boolean; attributesRead: number; attributesWritten: number } | null;
+  paged: { reads: boolean; attributesRead: number; attributesWritten: number; attributesMisplaced?: number } | null;
   examples: { id: string; title: string }[];
   pages: { href: string; title: string }[];
 }
 export interface IdmlReference {
   documents: number;
+  censusSchema?: string;
   censusDate: string;
   coverage: { rows: number } | null;
   typedLinks: number;
