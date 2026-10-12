@@ -1,5 +1,5 @@
 import type { HighlighterCore } from 'shiki/core';
-import { pagedEditorial } from './shiki-theme';
+import { pagedEditorial, pagedEditorialDark } from './shiki-theme';
 
 /**
  * Shiki for the browser, kept small: `shiki/core` with the XML grammar only and
@@ -22,7 +22,7 @@ function getHighlighter(): Promise<HighlighterCore> {
       import('shiki/langs/xml.mjs'),
     ]);
     return createHighlighterCore({
-      themes: [pagedEditorial],
+      themes: [pagedEditorial, pagedEditorialDark],
       langs: [xml.default],
       engine: createJavaScriptRegexEngine(),
     });
@@ -37,5 +37,11 @@ function getHighlighter(): Promise<HighlighterCore> {
 export async function highlightXml(code: string): Promise<string | null> {
   if (code.length > HIGHLIGHT_LIMIT) return null;
   const h = await getHighlighter();
-  return h.codeToHtml(code, { lang: 'xml', themes: { light: 'paged-editorial' }, defaultColor: false });
+  return h.codeToHtml(code, {
+    lang: 'xml',
+    themes: { light: 'paged-editorial', dark: 'paged-editorial-dark' },
+    defaultColor: false,
+    // Each line carries its number for the numbered views' gutter (global.css).
+    transformers: [{ line: (node, line) => void (node.properties['data-line'] = line) }],
+  });
 }

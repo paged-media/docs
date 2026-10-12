@@ -11,6 +11,7 @@
  */
 import * as monaco from 'monaco-editor';
 import { Editor, loader } from '@monaco-editor/react';
+import { useIsDark } from '@/lib/use-dark';
 
 // Use the bundled monaco instance (no CDN). Runs at import time, client-only.
 loader.config({ monaco });
@@ -26,11 +27,12 @@ if (typeof window !== 'undefined') {
 }
 
 export function MonacoCodeInput({ value, onChange, height }: { value: string; onChange: (v: string) => void; height: number }) {
+  const dark = useIsDark();
   return (
     <Editor
       height={height}
       defaultLanguage="javascript"
-      theme="vs"
+      theme={dark ? 'vs-dark' : 'vs'}
       value={value}
       onChange={(v) => onChange(v ?? '')}
       loading={<div style={{ padding: 12, fontFamily: 'var(--font-mono, monospace)', fontSize: 12.5, color: 'var(--color-muted)' }}>Loading editor…</div>}

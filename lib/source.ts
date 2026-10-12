@@ -1,7 +1,9 @@
-import { createElement } from 'react';
+import { createElement, Fragment, type ReactNode } from 'react';
 import { idml, paged } from '@/.source/server';
 import { loader } from 'fumadocs-core/source';
+import type { Folder, Item, Node } from 'fumadocs-core/page-tree';
 import { Pic } from '@/components/icons';
+import { getIdmlReference } from '@/lib/generated';
 import { SITE_ID } from '@/lib/site';
 
 /**
@@ -13,6 +15,12 @@ import { SITE_ID } from '@/lib/site';
  * `icon` resolves a section's `meta.json` `icon` string to one of the crafted
  * publishing glyphs (components/icons.tsx) so the sidebar reads as the brand
  * SideNav — a publishing mark beside each section.
+ *
+ * The page-tree transformers shape the sidebar without touching a URL:
+ *  - a section's own index page is listed as "Overview" under the section
+ *    (every meta.json lists `index`, which otherwise repeats the section name);
+ *  - a page that is not `published` carries a Draft mark;
+ *  - the element reference's ~200 pages fold into one group per package part.
  */
 export const source = loader({
   baseUrl: '/',
@@ -21,4 +29,84 @@ export const source = loader({
     return createElement(Pic, { name: icon, size: 16 });
   },
   source: (SITE_ID === 'idml' ? idml : paged).toFumadocsSource(),
+  pageTree: {
+    transformers: [
+      {
+        // Nodes are changed in place, never copied: the builder keeps
+        // symbol-keyed bookkeeping on the nodes it made and strips it from
+        // those nodes only, so a copy would carry it into the client tree.
+        file(node, filePath) {
+          if (!filePath) return node;
+          const file = this.storage.read(filePath);
+          const status = file?.format === 'page' ? (file.data as { status?: string }).status : undefined;
+          if (status && status !== 'published') node.name = withDraftMark(node.name);
+          return node;
+        },
+        folder(node, folderPath) {
+          for (const child of node.children) {
+            if (child.type === 'page' && isIndexOf(child, folderPath)) child.name = overviewName(child.name);
+          }
+          if (SITE_ID === 'idml' && folderPath === 'reference') node.children = groupElements(node.children);
+          return node;
+        },
+      },
+    ],
+  },
 });
+
+/** The section's own index page: `<folder>/index.mdx`. */
+function isIndexOf(item: Item, folderPath: string): boolean {
+  return item.$ref === `${folderPath}/index.mdx` || item.$ref === `${folderPath}/index.md`;
+}
+
+/** Keep a Draft mark the file transformer added; replace only the text. */
+function overviewName(name: ReactNode): ReactNode {
+  return isDraftMarked(name) ? withDraftMark('Overview') : 'Overview';
+}
+
+const DRAFT_KEY = 'paged-draft-mark';
+
+function isDraftMarked(name: ReactNode): boolean {
+  return typeof name === 'object' && name !== null && 'key' in name && name.key === DRAFT_KEY;
+}
+
+function withDraftMark(name: ReactNode): ReactNode {
+  return createElement(
+    Fragment,
+    { key: DRAFT_KEY },
+    name,
+    createElement('span', { className: 'paged-draft-mark', title: 'Draft: still being written' }, 'Draft'),
+  );
+}
+
+/**
+ * The element reference folder: the index first, then one collapsible group
+ * per package part (the part an element most often lives in), largest first —
+ * the same grouping as the index page's tables.
+ */
+function groupElements(children: Node[]): Node[] {
+  const partOf = new Map(getIdmlReference().elements.map((el) => [el.slug, el.parts[0]?.part ?? 'Other']));
+  const head: Node[] = [];
+  const groups = new Map<string, Item[]>();
+  for (const child of children) {
+    const slug = child.type === 'page' ? child.url.replace(/\/$/, '').split('/').pop() ?? '' : '';
+    const part = partOf.get(slug);
+    if (child.type !== 'page' || !part) {
+      head.push(child);
+      continue;
+    }
+    if (!groups.has(part)) groups.set(part, []);
+    groups.get(part)!.push(child);
+  }
+  const folders: Folder[] = [...groups]
+    .sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]))
+    .map(([part, items]) => ({
+      $id: `reference-part:${part}`,
+      type: 'folder',
+      name: part,
+      defaultOpen: false,
+      collapsible: true,
+      children: items,
+    }));
+  return [...head, ...folders];
+}

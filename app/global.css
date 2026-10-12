@@ -12,10 +12,11 @@
    The Paged design system (app/brand.css) is the source of truth. Here we
    repoint Fumadocs' own `--color-fd-*` theme variables at the brand tokens so
    all of Fumadocs' chrome (sidebar, nav, TOC, search, prose, cards) renders in
-   paper / ink / oxblood. Light-only — no `.dark` overrides (the brand ships no
-   dark palette; "never a dark developer dashboard").
+   paper / ink / oxblood — in either theme, since the dark theme below swaps
+   the brand tokens themselves and everything follows.
    ========================================================================== */
-:root {
+:root,
+.dark {
   --color-fd-background: var(--color-paper);
   --color-fd-foreground: var(--color-ink);
   --color-fd-muted: var(--color-paper-soft);
@@ -36,6 +37,55 @@
   /* Fumadocs / Tailwind font tokens → brand four-role families. */
   --font-sans: var(--font-ibm-plex-sans), "Helvetica Neue", Arial, sans-serif;
   --font-mono: var(--font-ibm-plex-mono), "SFMono-Regular", ui-monospace, Consolas, monospace;
+}
+
+/* =============================================================================
+   NIGHT PAPER — the dark reading theme (the theme switch; paper stays the
+   default). Still the editorial page, not a developer dashboard: warm ink
+   ground, paper-coloured text, the oxblood lifted to read on it. Contrast on
+   --color-paper: ink 14.7:1, ink-soft 10.2:1, muted 5.9:1, accent 6.0:1.
+   ========================================================================== */
+.dark {
+  --color-paper: #161412;
+  --color-paper-soft: #1e1b18;
+  --color-ink: #ece5d8;
+  --color-ink-soft: #c9c0b2;
+  --color-muted: #9a9184;
+  --color-rule: #34302a;
+  --color-rule-strong: #5b544a;
+  --color-accent: #d9776c;
+  --color-accent-press: #e89a8f;
+  --color-accent-soft: #3b2421;
+
+  --paper-2: #24201c;
+  --paper-3: #2c2722;
+  --ink-0: #f6f0e6;
+
+  --blueprint: #8fb0d8;
+  --blueprint-soft: #1f2630;
+  --valid: #7fb593;
+  --valid-soft: #1c2a21;
+  --warn: #d6a95c;
+  --warn-soft: #2e2617;
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-2: 0 2px 6px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-3: 0 8px 28px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.35);
+
+  --code-text: var(--color-ink);
+  --code-muted: var(--color-muted);
+  --code-tag: #93b6db;
+  --code-attr: #e2a676;
+  --code-string: #a9c79a;
+  --code-comment: #8f8679;
+  --code-punctuation: #aaa298;
+
+  color-scheme: dark;
+}
+/* Line art drawn in ink on paper (the Gutenberg engraving) is inverted onto
+   the night ground. */
+.dark .paged-engraving {
+  filter: invert(0.88) sepia(0.15);
 }
 
 body {
@@ -259,6 +309,10 @@ h1 {
 .shiki span {
   color: var(--shiki-light);
 }
+.dark .shiki,
+.dark .shiki span {
+  color: var(--shiki-dark);
+}
 .shiki {
   background-color: transparent !important;
   font-family: var(--font-mono);
@@ -277,47 +331,93 @@ h1 {
 .shiki code {
   display: grid;
 }
-/* Annotated view: a line carrying a callout marker is flagged with the brand
-   highlight — a 2px oxblood left rule + an 8% accent tint, full-bleed to the
-   panel padding (SourcePanel.jsx). */
-.shiki .line[data-callout] {
+/* Numbered code (the example Raw and Annotated views, the inspector's Raw):
+   each line carries its number (lib/shiki.ts `data-line`), drawn in a gutter
+   that is not selected or copied with the code. */
+.paged-code-numbered .shiki .line::before {
+  content: attr(data-line);
+  display: inline-block;
+  width: 2.5ch;
+  margin-right: 14px;
+  text-align: right;
+  color: var(--code-comment);
+  opacity: 0.75;
+  user-select: none;
+}
+
+/* Annotated view: a line an annotation covers (or one carrying a callout
+   marker) is flagged with the brand highlight — a 2px oxblood left rule + an
+   8% accent tint, full-bleed to the panel padding (SourcePanel.jsx). The line
+   of the note under the pointer, and the note of the line, light up. */
+.shiki .line:is([data-callout], [data-note]) {
+  /* full-bleed to the sheet's 20px padding; the text stays where every line's
+     is (Fumadocs pads each line by --padding-left) */
   margin: 0 -20px;
-  padding: 0 20px;
-  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  padding: 0 calc(var(--padding-right, 16px) + 20px) 0 calc(var(--padding-left, 16px) + 20px);
+  background: color-mix(in srgb, var(--color-accent) 7%, transparent);
   box-shadow: inset 2px 0 0 var(--color-accent);
+  transition: background-color var(--dur-fast);
+}
+.shiki .line[data-note].is-hot {
+  background: color-mix(in srgb, var(--color-accent) 18%, transparent);
 }
 
 /* The Source Code Panel's two-column annotated layout — code + rule-left
-   marginalia — collapses to a single column on narrow screens. */
+   marginalia — collapses to a single column on narrow screens. Code lines do
+   not wrap (a wrapped line would break the numbering the notes cite); the
+   code column scrolls sideways instead. */
 .paged-annotated {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(190px, 260px);
+  align-items: start;
+}
+.paged-annotated-code {
+  min-width: 0;
+  overflow-x: auto;
+}
+.paged-annotated-code .shiki {
+  width: max-content;
+  min-width: 100%;
+}
+.paged-marginalia {
+  list-style: none;
+  margin: 0;
+  padding: 18px 20px;
+  border-left: 1px solid var(--color-rule);
+}
+.paged-marginalia li {
+  margin: 0 -8px var(--space-2);
+  padding: 4px 8px;
+  border-radius: 2px;
+  cursor: default;
+  outline: none;
+  transition: background-color var(--dur-fast);
+}
+.paged-marginalia li:is(.is-hot, :focus-visible) {
+  background: color-mix(in srgb, var(--color-accent) 9%, transparent);
+}
+.paged-marginalia-ref {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: -0.01em;
+  color: var(--color-accent);
+  margin-right: 8px;
+  white-space: nowrap;
+}
+.paged-marginalia-note {
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--color-ink-soft);
 }
 @media (max-width: 720px) {
   .paged-annotated {
     grid-template-columns: 1fr;
   }
-  .paged-annotated .paged-marginalia {
+  .paged-marginalia {
     border-left: 0;
     border-top: 1px solid var(--color-rule);
   }
-}
-/* In the annotated view the code shares the row with rule-left marginalia, so
-   long IDML lines must WRAP (pre-wrap + break) rather than run on — otherwise
-   they overflow the code column and collide with the notes. The brand's
-   annotated mode wraps for the same reason (SourcePanel.jsx). */
-.paged-annotated {
-  align-items: start;
-}
-.paged-annotated > :first-child {
-  min-width: 0;
-}
-.paged-annotated .shiki,
-.paged-annotated .shiki code,
-.paged-annotated .shiki .line {
-  white-space: pre-wrap;
-  word-break: break-word;
-  overflow-wrap: anywhere;
 }
 
 /* =============================================================================
@@ -363,4 +463,373 @@ h1 {
     padding-left: 0 !important;
     border-left: 0 !important;
   }
+}
+
+/* =============================================================================
+   READING MEASURE — running text keeps the brand measure (--reading-measure,
+   66ch); examples, tables, figures, card grids and code still use the full
+   column. Long lines are the main reason a long reference page tires the eye.
+   ========================================================================== */
+.prose > :is(p, ul:not(.paged-cardlist), ol, blockquote, dl) {
+  max-width: var(--reading-measure);
+}
+
+/* "On this page": Fumadocs renders it as an <h3>, which the brand's global h3
+   scale (app/brand.css) turned into a display heading bigger than the entries.
+   It is a label, set like the "In short" label. */
+#nd-toc #toc-title {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--color-muted);
+  margin-bottom: var(--space-3);
+}
+#nd-toc code {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-size: 0.92em;
+}
+
+/* Draft mark — a page that is not `published` (sidebar via lib/source.ts, and
+   beside the tier label on the page). Muted, ruled, never a warning colour. */
+.paged-draft-mark {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 4px;
+  border: 1px solid var(--color-rule-strong);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+
+/* Card-list tier mark (source.config.ts rehypeCardList): the linked page's tier
+   glyph, name, numeral and mode under the card head. */
+.prose ul.paged-cardlist .paged-card-tier {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--color-muted);
+}
+.prose ul.paged-cardlist .paged-card-tier svg {
+  flex-shrink: 0;
+  color: var(--color-ink-soft);
+}
+.prose ul.paged-cardlist .paged-card-tier-numeral {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+/* Site switch (components/site-switcher.tsx): both sites, the current one
+   marked with the tab underline the Source Code Panel uses. */
+.paged-site-switch {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--color-rule);
+  border-radius: 2px;
+  background: var(--color-paper-soft);
+}
+.paged-site-switch-item {
+  padding: 6px 10px;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  line-height: 1.2;
+  font-weight: 520;
+  white-space: nowrap;
+  color: var(--color-muted);
+  text-decoration: none;
+}
+.paged-site-switch-item + .paged-site-switch-item {
+  border-left: 1px solid var(--color-rule);
+}
+a.paged-site-switch-item:hover {
+  color: var(--color-accent);
+}
+.paged-site-switch-item.is-current {
+  color: var(--color-ink);
+  font-weight: 640;
+  box-shadow: inset 0 -2px 0 var(--color-ink);
+}
+
+/* =============================================================================
+   REFERENCE TABLES (element reference, element index). The header row stays
+   in view while a long table scrolls: the wrapper must not clip, so it only
+   scrolls sideways on a narrow screen — and there the first column stays put.
+   ========================================================================== */
+.paged-ref-table-wrap {
+  overflow: visible;
+}
+.paged-ref-table tbody tr {
+  scroll-margin-top: 56px; /* clear the sticky header on #attr-… links */
+}
+.paged-ref-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--color-paper);
+}
+/* The Paged columns are about this engine, not the format: a faint band. */
+.paged-ref-table .paged-col-paged {
+  background: color-mix(in srgb, var(--color-paper-soft) 70%, transparent);
+}
+.paged-ref-table thead th.paged-col-paged {
+  background: var(--color-paper-soft);
+}
+@media (max-width: 767px) {
+  .paged-ref-table-wrap {
+    overflow-x: auto;
+  }
+  .paged-ref-table thead th {
+    position: static;
+  }
+  .paged-ref-table :is(th, td):first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: var(--color-paper);
+    box-shadow: 1px 0 0 var(--color-rule);
+  }
+}
+/* Paged's importer / exporter marks: read, write — or not read. */
+.paged-io-mark {
+  display: inline-block;
+  padding: 0 5px;
+  border: 1px solid var(--color-rule-strong);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  color: var(--color-ink-soft);
+}
+.paged-io-mark.is-none {
+  border-style: dashed;
+  border-color: var(--color-rule);
+  color: var(--color-muted);
+}
+
+/* Element index filter + jump list (components/mdx/element-index-table.tsx). */
+.paged-index-filter {
+  margin: var(--space-4) 0 var(--space-5);
+}
+.paged-index-filter input {
+  width: 100%;
+  max-width: 420px;
+  padding: 9px 12px;
+  border: 1px solid var(--color-rule-strong);
+  border-radius: 2px;
+  background: var(--color-paper-soft);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+.paged-index-filter input:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+.paged-index-jump {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: var(--space-3);
+}
+.paged-index-jump a {
+  padding: 3px 8px;
+  border: 1px solid var(--color-rule);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-ink-soft);
+  text-decoration: none;
+}
+.paged-index-jump a:hover {
+  color: var(--color-accent);
+  border-color: var(--color-rule-strong);
+}
+.paged-index-jump a span {
+  color: var(--color-muted);
+}
+.paged-index-part {
+  margin: var(--space-6) 0 0;
+  font-family: var(--font-display-serif);
+  font-size: clamp(24px, 2.6vw, 34px);
+  letter-spacing: -0.03em;
+}
+.paged-element-link {
+  color: var(--code-tag);
+  text-decoration: underline;
+  text-decoration-color: var(--color-rule-strong);
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+.paged-element-link:hover {
+  color: var(--color-accent);
+  text-decoration-color: currentColor;
+}
+
+/* Framing switch (components/mdx/live-preview.tsx FitSwitch): over the live
+   canvas, or above the InDesign comparison. */
+.paged-fit-switch {
+  display: inline-flex;
+  border: 1px solid var(--color-rule-strong);
+  border-radius: 2px;
+  background: var(--color-paper-soft);
+}
+.paged-fit-switch.is-floating {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  box-shadow: var(--shadow-1);
+}
+.paged-fit-switch button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 5px 9px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 640;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.paged-fit-switch button + button {
+  border-left: 1px solid var(--color-rule);
+}
+.paged-fit-switch button[aria-pressed='true'] {
+  color: var(--color-ink);
+  box-shadow: inset 0 -2px 0 var(--color-ink);
+}
+.paged-fit-switch button:hover {
+  color: var(--color-accent);
+}
+/* InDesign's page rasters are white paper in either theme. */
+.paged-indesign-sheet {
+  background: #fff;
+}
+
+/* =============================================================================
+   INSPECTOR WORKSPACE (components/inspector/idml-inspector.tsx): package tree |
+   part | render on a wide screen, the render held in view while the part
+   scrolls; render on top of tree | part below that; one column on a phone.
+   The breakpoints follow the inspector's own width (a container), not the
+   window's: the docs sidebar takes a different share at every size.
+   ========================================================================== */
+.paged-inspector {
+  container: inspector / inline-size;
+}
+.paged-inspector-workspace {
+  display: grid;
+  gap: var(--space-4);
+  align-items: start;
+  grid-template-columns: minmax(190px, 240px) minmax(0, 1fr) minmax(300px, 0.85fr);
+  grid-template-areas: 'tree part render';
+}
+.paged-inspector-tree {
+  grid-area: tree;
+}
+.paged-inspector-part {
+  grid-area: part;
+  min-width: 0;
+}
+.paged-inspector-render {
+  grid-area: render;
+  min-width: 0;
+  position: sticky;
+  top: var(--space-4);
+}
+@container inspector (max-width: 1060px) {
+  .paged-inspector-workspace {
+    grid-template-columns: minmax(180px, 230px) minmax(0, 1fr);
+    grid-template-areas:
+      'render render'
+      'tree part';
+  }
+  .paged-inspector-render {
+    position: static;
+  }
+}
+@container inspector (max-width: 640px) {
+  .paged-inspector-workspace {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'render' 'tree' 'part';
+  }
+}
+
+/* =============================================================================
+   SEARCH (components/search-dialog.tsx): a page row with its kind, then one
+   passage clamped to two lines.
+   ========================================================================== */
+.paged-search-page {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.paged-search-title {
+  font-size: 14px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+.paged-search-kind {
+  flex-shrink: 0;
+  padding: 0 6px;
+  border: 1px solid var(--color-rule-strong);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 450;
+  line-height: 1.6;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.paged-search-crumbs {
+  font-size: 11.5px;
+  color: var(--color-muted);
+}
+.paged-search-snippet :is(p, li) {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-ink-soft);
+}
+.paged-search-snippet > div:last-child {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.paged-search-empty {
+  margin: 0;
+  padding: 24px 12px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--color-muted);
+}
+/* The playground's Monaco frame takes the editor theme's own ground. */
+.paged-monaco-frame {
+  background: #fffffe;
+}
+.dark .paged-monaco-frame {
+  background: #1e1e1e;
 }

@@ -3,6 +3,7 @@ import Link from '@/components/site-link';
 import { JsonLd } from '@/components/json-ld';
 import { getIdmlReference, getRefElement, type RefAttribute, type RefCount, type RefElement } from '@/lib/generated';
 import { absoluteUrl } from '@/lib/site';
+import { ElementIndexTable, type IndexRow } from './element-index-table';
 
 /**
  * <ElementReference name="TextFrame" /> — one IDML element, entirely from data
@@ -11,7 +12,12 @@ import { absoluteUrl } from '@/lib/site';
  * vocabulary, what Paged's importer reads and exporter writes, the typed
  * property behind an attribute, and the pages and examples that cover it.
  *
- * <ElementIndex /> lists every element, grouped by the package part it lives in.
+ * <ElementIndex /> lists every element, grouped by the package part it lives in,
+ * with a filter over element and attribute names (ElementIndexTable).
+ *
+ * The tables are `paged-ref-table`: the header row stays in view while a long
+ * table scrolls, and on a narrow screen the first column stays put while the
+ * rest scrolls sideways (global.css).
  */
 const th: CSSProperties = {
   fontFamily: 'var(--font-sans)',
@@ -94,16 +100,49 @@ function valueCell(a: RefAttribute): ReactNode {
   return types.length ? <span style={mono}>{types.join(' / ')}</span> : <span style={muted}>—</span>;
 }
 
+/** Plain text with `code` spans, as the generator keeps them. */
+function inlineCode(text: string): ReactNode[] {
+  return text.split(/(`[^`]+`)/g).map((part, i) =>
+    part.startsWith('`') && part.endsWith('`') && part.length > 1 ? (
+      <code key={i} style={{ ...mono, fontSize: 11.5 }}>
+        {part.slice(1, -1)}
+      </code>
+    ) : (
+      part
+    ),
+  );
+}
+
+/** Paged's importer / exporter as two marks: read, write — or "not read". */
 function pagedCell(a: RefAttribute): ReactNode {
   if (!a.paged) return <span style={muted}>—</span>;
   const { imported, exported } = a.paged;
-  if (!imported && !exported) return <span style={muted}>not read</span>;
+  if (!imported && !exported) return <span className="paged-io-mark is-none">not read</span>;
   return (
-    <span>
-      {imported ? 'read' : ''}
-      {imported && exported ? ' · ' : ''}
-      {exported ? 'written' : ''}
+    <span style={{ display: 'inline-flex', gap: 4 }}>
+      {imported ? <span className="paged-io-mark" title="Paged's importer reads it">read</span> : null}
+      {exported ? <span className="paged-io-mark" title="Paged's exporter writes it">write</span> : null}
     </span>
+  );
+}
+
+function AttributeName({ a }: { a: RefAttribute }) {
+  const name = (
+    <>
+      {a.name}
+      {a.kind === 'properties-child' ? <div style={{ ...muted, fontSize: 11 }}>in Properties</div> : null}
+    </>
+  );
+  const ex = a.explained;
+  if (!ex) return name;
+  return (
+    <Link
+      href={ex.href}
+      title={`Explained in ${ex.page}${ex.section ? ` › ${ex.section}` : ''}`}
+      style={{ color: 'inherit', textDecoration: 'underline', textDecorationStyle: 'dotted', textDecorationColor: 'var(--color-rule-strong)', textUnderlineOffset: 3 }}
+    >
+      {name}
+    </Link>
   );
 }
 
@@ -111,8 +150,8 @@ function AttributeTable({ el, documents }: { el: RefElement; documents: number }
   const showPaged = el.attributes.some((a) => a.paged);
   const showPath = el.attributes.some((a) => a.typed?.path);
   return (
-    <figure className="not-prose" style={{ margin: 'var(--space-4) 0', overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+    <figure className="not-prose paged-ref-table-wrap" style={{ margin: 'var(--space-4) 0' }}>
+      <table className="paged-ref-table" style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
         <thead>
           <tr>
             <th style={th}>Attribute</th>
@@ -120,23 +159,39 @@ function AttributeTable({ el, documents }: { el: RefElement; documents: number }
             <th style={th} title={`Share of the ${documents} documents that use ${el.name} at all`}>
               Seen in
             </th>
-            {showPaged ? <th style={th}>Paged</th> : null}
-            {showPath ? <th style={th}>paged.set</th> : null}
+            {showPaged ? (
+              <th style={th} className="paged-col-paged" title="What Paged's IDML importer reads and its exporter writes">
+                Paged
+              </th>
+            ) : null}
+            {showPath ? (
+              <th style={th} className="paged-col-paged" title="The typed property a paged.set script call changes">
+                paged.set
+              </th>
+            ) : null}
           </tr>
         </thead>
         <tbody>
           {el.attributes.map((a) => (
             <tr key={a.name} id={`attr-${a.name}`}>
-              <td style={{ ...td, ...mono, color: 'var(--code-tag)' }}>
-                {a.name}
-                {a.kind === 'properties-child' ? <div style={{ ...muted, fontSize: 11 }}>in Properties</div> : null}
+              <td style={{ ...td, ...mono, color: 'var(--code-tag)', minWidth: 170 }}>
+                <AttributeName a={a} />
+                {a.explained?.description ? (
+                  <div style={{ fontFamily: 'var(--font-sans)', fontSize: 12.5, lineHeight: 1.45, letterSpacing: 0, color: 'var(--color-ink-soft)', marginTop: 4, maxWidth: '44ch' }}>
+                    {inlineCode(a.explained.description)}
+                  </div>
+                ) : null}
                 {a.note ? <div style={{ fontFamily: 'var(--font-sans)', fontSize: 12.5, color: 'var(--color-ink-soft)', marginTop: 4 }}>{a.note}</div> : null}
               </td>
               <td style={td}>{valueCell(a)}</td>
               <td style={{ ...td, whiteSpace: 'nowrap' }}>{Math.round((a.docCount / Math.max(el.docCount, 1)) * 100)}%</td>
-              {showPaged ? <td style={{ ...td, whiteSpace: 'nowrap' }}>{pagedCell(a)}</td> : null}
+              {showPaged ? (
+                <td style={{ ...td, whiteSpace: 'nowrap' }} className="paged-col-paged">
+                  {pagedCell(a)}
+                </td>
+              ) : null}
               {showPath ? (
-                <td style={td}>
+                <td style={td} className="paged-col-paged">
                   {a.typed?.path ? (
                     <Link href="/docs/paged/scripting/settable-paths" style={mono}>
                       {a.typed.path}
@@ -227,13 +282,26 @@ export function ElementReference({ name }: { name: string }) {
         ) : null}
       </Section>
 
+      {el.pages.length ? (
+        <Section title="Explained in">
+          <ul>
+            {el.pages.map((p) => (
+              <li key={p.href}>
+                <Link href={p.href}>{p.title}</Link>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      ) : null}
+
       {el.attributes.length ? (
         <Section title="Attributes">
           <AttributeTable el={el} documents={ref.documents} />
           <p style={{ ...muted, fontSize: 13 }}>
             Values are listed only where real documents use a small, closed set; the number after each is how many
             documents use it. &ldquo;Seen in&rdquo; is the share of documents containing <code>{el.name}</code> that set
-            the attribute.
+            the attribute. An attribute name with a dotted underline links to the section of this reference that
+            explains it.
           </p>
         </Section>
       ) : null}
@@ -248,17 +316,6 @@ export function ElementReference({ name }: { name: string }) {
         </Section>
       ) : null}
 
-      {el.pages.length ? (
-        <Section title="Explained in">
-          <ul>
-            {el.pages.map((p) => (
-              <li key={p.href}>
-                <Link href={p.href}>{p.title}</Link>
-              </li>
-            ))}
-          </ul>
-        </Section>
-      ) : null}
 
       <p style={{ ...muted, fontSize: 12.5, marginTop: 'var(--space-6)' }}>
         Counts come from a survey of {ref.documents} IDML documents ({ref.censusDate}); only aggregate facts are
@@ -271,13 +328,6 @@ export function ElementReference({ name }: { name: string }) {
 
 export function ElementIndex() {
   const ref = getIdmlReference();
-  const groups = new Map<string, RefElement[]>();
-  for (const el of ref.elements) {
-    const part = el.parts[0]?.part ?? 'Other';
-    if (!groups.has(part)) groups.set(part, []);
-    groups.get(part)!.push(el);
-  }
-  const order = [...groups.keys()].sort((a, b) => groups.get(b)!.length - groups.get(a)!.length);
   const ld = {
     '@context': 'https://schema.org',
     '@type': 'DefinedTermSet',
@@ -289,47 +339,23 @@ export function ElementIndex() {
       url: absoluteUrl(`/reference/${el.slug}/`),
     })),
   };
+  const rows: IndexRow[] = ref.elements.map((el) => ({
+    name: el.name,
+    href: refHref(el.slug),
+    part: el.parts[0]?.part ?? 'Other',
+    attributes: el.attributes.map((a) => a.name),
+    docCount: el.docCount,
+    share: el.share,
+    reads: ref.coverage ? (el.paged?.reads ? el.paged.attributesRead : 0) : null,
+  }));
   return (
     <>
       <JsonLd data={ld} />
       <p>
         {ref.elements.length} elements, each found in real documents (a survey of {ref.documents}), grouped by the
-        package part they most often live in.
+        package part they most often live in. Type to narrow the list by element or attribute name.
       </p>
-      {order.map((part) => (
-        <section key={part}>
-          <h2>{part}</h2>
-          <figure className="not-prose" style={{ margin: 'var(--space-3) 0', overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  <th style={th}>Element</th>
-                  <th style={th}>Attributes</th>
-                  <th style={th}>Seen in</th>
-                  {ref.coverage ? <th style={th}>Paged</th> : null}
-                </tr>
-              </thead>
-              <tbody>
-                {groups
-                  .get(part)!
-                  .sort((a, b) => b.docCount - a.docCount)
-                  .map((el) => (
-                    <tr key={el.name}>
-                      <td style={td}>
-                        <Link href={refHref(el.slug)}>
-                          <code style={mono}>{el.name}</code>
-                        </Link>
-                      </td>
-                      <td style={td}>{el.attributes.length}</td>
-                      <td style={td}>{el.share}%</td>
-                      {ref.coverage ? <td style={td}>{el.paged?.reads ? `reads ${el.paged.attributesRead}` : '—'}</td> : null}
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </figure>
-        </section>
-      ))}
+      <ElementIndexTable rows={rows} th={th} td={td} />
     </>
   );
 }

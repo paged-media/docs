@@ -15,8 +15,10 @@ import { btn, label, sheet, strip } from './styles';
 
 /**
  * <IdmlInspector> — open an IDML package in the browser and see inside it: the
- * summary and a live render side by side, then the package tree beside the
- * selected part (Raw / Tree / Annotated).
+ * summary across the top, then one workspace of three panes — the package
+ * tree, the selected part (Linked / Raw / Tree) and the live render, side by
+ * side on a wide screen (render first, then tree and part, as the screen
+ * narrows; global.css `.paged-inspector-workspace`).
  *
  * Everything runs here. The file is read with `File.arrayBuffer()`, unzipped by
  * fflate, summarised from its own XML and rendered by the WebGPU viewer, whose
@@ -103,7 +105,7 @@ export function IdmlInspector({
   const busy = phase.kind === 'reading';
 
   return (
-    <div className="not-prose" style={{ margin: 'var(--space-4) 0 var(--space-6)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--space-4)' }}>
+    <div className="not-prose paged-inspector" style={{ margin: 'var(--space-4) 0 var(--space-6)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--space-4)' }}>
       <FileDrop onFile={onFile} compact={!!opened} busy={busy}>
         {!opened && sample && (
           <button
@@ -134,23 +136,17 @@ export function IdmlInspector({
 
       {opened && (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 420px), 1fr))', gap: 'var(--space-4)', alignItems: 'start' }}>
-            <SummaryPanel
-              summary={opened.summary}
-              fileName={opened.pkg.name}
-              fileSize={opened.pkg.fileSize}
-              entryCount={opened.pkg.entries.length}
-              refs={refs}
-              onSelect={selectPart}
-            />
-            <RenderPane key={opened.id} bytes={opened.pkg.bytes} fonts={opened.fonts} unavailable={opened.unavailable} />
-          </div>
+          <SummaryPanel
+            summary={opened.summary}
+            fileName={opened.pkg.name}
+            fileSize={opened.pkg.fileSize}
+            entryCount={opened.pkg.entries.length}
+            refs={refs}
+            onSelect={selectPart}
+          />
 
-          <div
-            ref={partsRef}
-            style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-4)', alignItems: 'flex-start', scrollMarginTop: 80 }}
-          >
-            <section style={{ ...sheet, flex: '1 1 260px' }} aria-label="Package">
+          <div ref={partsRef} className="paged-inspector-workspace" style={{ scrollMarginTop: 80 }}>
+            <section style={sheet} className="paged-inspector-tree" aria-label="Package">
               <div style={strip}>
                 <span style={label}>Package · {opened.pkg.entries.length} entries</span>
               </div>
@@ -158,12 +154,15 @@ export function IdmlInspector({
                 <PackageTree entries={opened.pkg.entries} selected={selected} onSelect={setSelected} />
               </div>
             </section>
-            <div style={{ flex: '3 1 480px', minWidth: 0 }}>
+            <div className="paged-inspector-part">
               {entry ? (
                 <PartView key={opened.id} entry={entry} refs={refs} />
               ) : (
                 <div style={{ ...sheet, padding: 16, fontFamily: 'var(--font-sans)', fontSize: 14 }}>Choose a part on the left.</div>
               )}
+            </div>
+            <div className="paged-inspector-render">
+              <RenderPane key={opened.id} bytes={opened.pkg.bytes} fonts={opened.fonts} unavailable={opened.unavailable} />
             </div>
           </div>
         </>

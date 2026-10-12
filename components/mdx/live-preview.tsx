@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { ViewerSessionLike } from '@paged-media/idml-viewer';
 import { createPreviewSession } from './sdk-loader';
-import { base64ToBytes, statusFromError, type PreviewStatus } from './viewer-common';
+import { base64ToBytes, statusFromError, type PreviewStatus, type Viewer } from './viewer-common';
+import { focusRect, inkBounds, scaleRect, type Rect } from './content-bounds';
 
 /**
  * The WebGPU live preview (briefing §6.2.1).
@@ -19,6 +21,12 @@ import { base64ToBytes, statusFromError, type PreviewStatus } from './viewer-com
  * staged), it shows a one-line note and the raw / annotated / tree views carry
  * the page.
  *
+ * Framing: the preview opens on the page's CONTENT, not the whole sheet — a
+ * small render of the page finds the ink, and the camera fits that box (with a
+ * margin, and a zoom cap so a single word is not blown up). "Whole page" goes
+ * back to the sheet. The InDesign comparison passes its own `focus` (measured
+ * on InDesign's raster) and drives `fit`, so both sides show the same region.
+ *
  * Lifecycle: the wasm is imported+initialized ONCE via the shared
  * `createPreviewSession()` singleton; each mount builds its own `Viewer` (own
  * WebGPU device) and `dispose()`s it on unmount, so switching tabs or having
@@ -27,13 +35,70 @@ import { base64ToBytes, statusFromError, type PreviewStatus } from './viewer-com
  * export emits the canvas shell and the viewer hydrates on the client.
  */
 type Status = PreviewStatus;
+export type Fit = 'content' | 'page';
 
+/** CSS px per pt: a content fit never zooms past this. */
+const MAX_CONTENT_ZOOM = 1.8;
+/** Canvas height bounds (CSS px); a content fit takes the region's shape between them. */
+const MIN_H = 180;
+const MAX_H = 480;
 
-export function LivePreview({ example, idmlBase64 }: { example: string; part: string; idmlBase64?: string }) {
+export function LivePreview({
+  example,
+  idmlBase64,
+  fit: fitProp,
+  onFitChange,
+  focus: focusProp,
+  toggle = true,
+}: {
+  example: string;
+  part: string;
+  idmlBase64?: string;
+  /** Controlled framing; omit to let the preview own it. */
+  fit?: Fit;
+  onFitChange?: (fit: Fit) => void;
+  /** The region (pt, page 1) a content fit shows; omit to measure the render. */
+  focus?: Rect | null;
+  /** Show the Fit content / Whole page switch over the canvas. */
+  toggle?: boolean;
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const viewerRef = useRef<{ dispose: () => void } | null>(null);
+  const viewerRef = useRef<Viewer | null>(null);
+  const sessionRef = useRef<ViewerSessionLike | null>(null);
+  const [width, setWidth] = useState(0);
   const [status, setStatus] = useState<Status>('loading');
   const [detail, setDetail] = useState('');
+  const [ownFit, setOwnFit] = useState<Fit>('content');
+  const [measured, setMeasured] = useState<Rect | null>(null);
+  const fit = fitProp ?? ownFit;
+  const focus = focusProp === undefined ? measured : focusProp;
+  // A content fit gives the canvas the region's shape, so a three-line example
+  // is not a strip of text in a tall empty box.
+  const height =
+    fit === 'content' && focus && width ? Math.round(Math.max(MIN_H, Math.min(MAX_H, (width * focus.h) / focus.w))) : MAX_H;
+  const framing = useRef({ fit, focus });
+  framing.current = { fit, focus };
+
+  const setFit = (next: Fit) => {
+    if (fitProp === undefined) setOwnFit(next);
+    onFitChange?.(next);
+  };
+
+  const frame = useCallback((mode: Fit, rect: Rect | null) => {
+    const viewer = viewerRef.current;
+    const canvas = canvasRef.current;
+    if (!viewer || !canvas) return;
+    // `fit` always repaints; the content camera below lands in the same frame.
+    // (A resized surface is blank until the next paint, and a camera that did
+    // not move would not ask for one.)
+    viewer.fit('page');
+    if (mode === 'page' || !rect) return;
+    const vw = canvas.clientWidth;
+    const vh = canvas.clientHeight;
+    const zoom = Math.max(viewer.minZoom, Math.min(MAX_CONTENT_ZOOM, viewer.maxZoom, 0.96 * Math.min(vw / rect.w, vh / rect.h)));
+    viewer.setZoom(zoom);
+    viewer.scrollTo(vw / 2 - (rect.x + rect.w / 2) * zoom, vh / 2 - (rect.y + rect.h / 2) * zoom);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -62,7 +127,8 @@ export function LivePreview({ example, idmlBase64 }: { example: string; part: st
 
         const viewer = await createViewer({
           canvas,
-          session: createPreviewSession, // rejects without a WebGPU adapter
+          // rejects without a WebGPU adapter; kept to read the page size and resize the surface
+          session: async () => (sessionRef.current = await createPreviewSession()),
           layoutMode: 'single',
           input: { wheelZoom: false, dragPan: true, doubleClickZoom: true, keyboard: false },
         });
@@ -74,7 +140,25 @@ export function LivePreview({ example, idmlBase64 }: { example: string; part: st
 
         await viewer.load(base64ToBytes(idmlBase64));
         if (cancelled) return;
-        viewer.fit('page');
+
+        // Find the ink on page 1 from a small render of it (pt via the page width).
+        let rect: Rect | null = null;
+        if (focusProp === undefined) {
+          const page = sessionRef.current?.page_layout().pages[0];
+          if (page) {
+            // Let the first paint finish: the session is borrowed for the whole
+            // readback, and a paint landing inside it is refused by the wasm.
+            await nextFrames(2);
+            if (cancelled) return;
+            const raster = await viewer.renderPageThumbnail(0, { width: 480 });
+            if (cancelled) return;
+            const k = page.widthPt / raster.width;
+            const ink = inkBounds(raster.rgba, raster.width, raster.height);
+            rect = focusRect(ink && scaleRect(ink, k), page.widthPt, page.heightPt);
+            setMeasured(rect);
+          }
+        }
+        frame(fitProp ?? 'content', focusProp === undefined ? rect : focusProp);
         setStatus('ready');
       } catch (e: unknown) {
         if (cancelled) return;
@@ -88,21 +172,47 @@ export function LivePreview({ example, idmlBase64 }: { example: string; part: st
       cancelled = true;
       const v = viewerRef.current;
       viewerRef.current = null;
+      sessionRef.current = null;
       try {
         v?.dispose();
       } catch {
         /* already gone */
       }
     };
+    // The viewer is built once per package; framing changes are applied below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idmlBase64]);
+
+  // Re-frame when the framing or the region changes after load.
+  useEffect(() => {
+    if (status === 'ready') frame(fit, focus);
+  }, [status, fit, focus, frame]);
+
+  // Follow the canvas: its width sets the content-fit height, and the viewer
+  // sizes its GPU surface only once, at first paint — so resize it on change.
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => {
+      setWidth(canvas.clientWidth);
+      const session = sessionRef.current;
+      if (status !== 'ready' || !session || !canvas.clientWidth) return;
+      session.resize(canvas.clientWidth, canvas.clientHeight, window.devicePixelRatio || 1);
+      frame(framing.current.fit, framing.current.focus);
+    });
+    ro.observe(canvas);
+    return () => ro.disconnect();
+  }, [status, frame]);
 
   return (
     <div className="not-prose relative">
       <canvas
         ref={canvasRef}
         aria-label={`Live WebGPU render of ${example}`}
-        className="block h-[480px] w-full rounded-[2px] bg-fd-muted"
+        className="block w-full rounded-[2px] bg-fd-muted"
+        style={{ height }}
       />
+      {status === 'ready' && toggle && focus ? <FitSwitch fit={fit} onChange={setFit} floating /> : null}
       {status !== 'ready' && (
         <div className="absolute inset-0 flex items-center justify-center rounded-[2px] border border-dashed border-fd-border bg-fd-card/85 p-6 text-center text-sm text-fd-muted-foreground">
           {status === 'loading' && <span>Rendering with WebGPU…</span>}
@@ -121,6 +231,27 @@ export function LivePreview({ example, idmlBase64 }: { example: string; part: st
           {status === 'error' && <span>Couldn’t render this example: {detail}</span>}
         </div>
       )}
+    </div>
+  );
+}
+
+function nextFrames(n: number): Promise<void> {
+  return new Promise((resolve) => {
+    const step = (left: number) => (left <= 0 ? resolve() : requestAnimationFrame(() => step(left - 1)));
+    step(n);
+  });
+}
+
+/** Fit content / Whole page — over the canvas, or above a comparison. */
+export function FitSwitch({ fit, onChange, floating }: { fit: Fit; onChange: (fit: Fit) => void; floating?: boolean }) {
+  return (
+    <div role="group" aria-label="Framing" className={`paged-fit-switch${floating ? ' is-floating' : ''}`}>
+      <button type="button" aria-pressed={fit === 'content'} onClick={() => onChange('content')}>
+        Fit content
+      </button>
+      <button type="button" aria-pressed={fit === 'page'} onClick={() => onChange('page')}>
+        Whole page
+      </button>
     </div>
   );
 }

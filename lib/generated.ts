@@ -466,6 +466,16 @@ export interface RefAttribute {
   paged: { imported: boolean; exported: boolean } | null;
   typed: RefTyped | null;
   note: string | null;
+  /** The section of our own prose that discusses the attribute on this element, if any. */
+  explained?: RefExplained | null;
+}
+export interface RefExplained {
+  /** Site-neutral href to the page section (`/docs/idml/<page>#<anchor>`). */
+  href: string;
+  page: string;
+  section: string | null;
+  /** The sentence that leads with the attribute there, inline `code` kept. */
+  description: string | null;
 }
 export interface RefElement {
   name: string;

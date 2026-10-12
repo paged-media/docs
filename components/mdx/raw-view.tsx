@@ -8,5 +8,5 @@ import { highlight } from '@/lib/shiki';
  */
 export async function RawView({ code, lang = 'xml' }: { code: string; lang?: string }) {
   const html = await highlight(code, lang);
-  return <div dangerouslySetInnerHTML={{ __html: html }} />;
+  return <div className="paged-code-numbered" dangerouslySetInnerHTML={{ __html: html }} />;
 }

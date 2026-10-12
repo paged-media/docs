@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { DocsPage, DocsBody, DocsTitle, DocsDescription } from 'fumadocs-ui/page';
+import { findNeighbour, type Item } from 'fumadocs-core/page-tree';
 import { source } from '@/lib/source';
 import { getMDXComponents } from '@/components/mdx';
 import { DifficultyLabel } from '@/components/mdx/difficulty-label';
@@ -53,18 +54,31 @@ export default async function Page(props: PageProps) {
   });
 
   return (
-    <DocsPage toc={page.data.toc} full={page.data.full}>
+    <DocsPage toc={page.data.toc} full={page.data.full} footer={{ items: neighbours(page.url) }}>
       <JsonLd data={jsonLd} />
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       {/* Auto-rendered from frontmatter so the label can never disagree with it. */}
-      <DifficultyLabel tier={page.data.tier as Tier} mode={page.data.diataxis as Diataxis} />
+      <DifficultyLabel tier={page.data.tier as Tier} mode={page.data.diataxis as Diataxis} status={page.data.status as Status} />
       <DocsBody>
         <MDX components={getMDXComponents()} />
         {autoCrossLink(params.slug)}
       </DocsBody>
     </DocsPage>
   );
+}
+
+// Previous / next by the sidebar's order, named by the pages' own titles: the
+// sidebar lists a section's index as "Overview" (lib/source.ts), which says
+// nothing in a pager at the foot of another section's page.
+function neighbours(url: string): { previous?: Item; next?: Item } {
+  const { previous, next } = findNeighbour(source.pageTree, url);
+  const titled = (item?: Item): Item | undefined => {
+    if (!item) return undefined;
+    const target = source.getPages().find((p) => p.url === item.url);
+    return { ...item, name: target?.data.title ?? item.name, description: target?.data.description ?? item.description };
+  };
+  return { previous: titled(previous), next: titled(next) };
 }
 
 // Site › Chapter › Page — built from the route, the chapter crumb titled from

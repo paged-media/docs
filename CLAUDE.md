@@ -41,7 +41,8 @@ workspace and NOT a monorepo subtree. It documents the **IDML format** *and* the
 
 ## Page contract
 
-Every page declares ONE tier (🟢 beginner / 🟡 intermediate / 🔴 pro) and ONE
+Every page declares ONE tier (beginner I / intermediate II / pro III — shown as a glyph and a
+numeral, `lib/tiers.ts`; never emoji or colour) and ONE
 Diátaxis mode (tutorial / how-to / reference / explanation) in frontmatter
 (schema: `lib/frontmatter.ts`). Every page is indexed regardless of `status`
 (`lib/metadata.ts`), so a page is not merged until it can face a search result.

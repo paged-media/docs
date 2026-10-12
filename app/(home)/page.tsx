@@ -1,5 +1,6 @@
 import Link from '@/components/site-link';
 import { Pic } from '@/components/icons';
+import { Frontispiece } from '@/components/frontispiece';
 
 import { JsonLd } from '@/components/json-ld';
 import { buildSiteJsonLd } from '@/lib/structured-data';
@@ -14,36 +15,22 @@ export const metadata: Metadata = {
 
 /**
  * The landing page of either site — the brand home (home.jsx): a two-column
- * hero with the Gutenberg frontispiece, the reader-tier band (form, not color —
- * tier glyphs + roman numerals, never traffic lights), and the "where to begin"
- * grid. The copy comes from HOME[SITE_ID]; the layout is shared. The masthead +
- * WIP banner come from the layout; the colophon footer follows via SiteFooter.
+ * hero with the frontispiece (Gutenberg here, the package on the IDML site),
+ * a band of questions a reader arrives with, each answered by one page, and the
+ * "where to begin" grid. The copy comes from HOME[SITE_ID]; the layout is
+ * shared. The masthead + WIP banner come from the layout; the colophon footer
+ * follows via SiteFooter.
  */
-/**
- * The IDML site opens on questions instead of reader tiers: each is a thing
- * people come to the format asking, answered by one chapter.
- */
-const QUESTIONS: [icon: string, question: string, answer: string, href: string][] = [
-  ['package', 'What’s inside a package?', 'The ZIP container, the design map, and the parts it names.', '/docs/idml/package-anatomy'],
-  ['story', 'How is text stored?', 'Stories as style runs, paragraph marks, and the frames that show them.', '/docs/idml/stories-text/story-structure'],
-  ['spread', 'Where do things sit on the page?', 'Spread coordinates, transforms, bounds and paths.', '/docs/idml/geometry-coordinates'],
-  ['xml', 'What does this element mean?', 'Every element and attribute, with counts from real documents.', '/docs/idml/reference'],
-  ['search', 'What is in my file?', 'Open an .idml file in the browser and walk its parts. Nothing is uploaded.', '/docs/idml/tools/inspector'],
-];
-
-const TIERS: [icon: string, name: string, numeral: string, desc: string][] = [
-  ['tierBeginner', 'Beginner', 'I', 'Plain-language explanations. Start here if IDML or paged media is new to you.'],
-  ['tierIntermediate', 'Intermediate', 'II', 'Working knowledge — package structure, stories, styles, and how pages compose.'],
-  ['tierPro', 'Pro', 'III', 'Deep reference — geometry, edge cases, and the format in full.'],
-];
+type Card = [icon: string, title: string, desc: string, href: string];
 
 interface HomeCopy {
   eyebrow: string;
   title: [string, string];
   lede: string;
   start: string;
-  browse: string;
-  cards: [icon: string, title: string, desc: string, href: string][];
+  browse: { label: string; href: string };
+  questions: { eyebrow: string; title: string; items: Card[] };
+  cards: Card[];
 }
 
 const HOME: Record<typeof SITE_ID, HomeCopy> = {
@@ -56,7 +43,18 @@ const HOME: Record<typeof SITE_ID, HomeCopy> = {
       'colour and graphics. Written from first principles, and every example is checked by opening ' +
       'it in InDesign.',
     start: '/docs/idml/foundations',
-    browse: '/docs/idml/overview',
+    browse: { label: 'Browse the elements', href: '/docs/idml/reference' },
+    questions: {
+      eyebrow: 'Start from a question',
+      title: 'What do you need to know?',
+      items: [
+        ['package', 'What’s inside a package?', 'The ZIP container, the design map, and the parts it names.', '/docs/idml/package-anatomy'],
+        ['story', 'How is text stored?', 'Stories as style runs, paragraph marks, and the frames that show them.', '/docs/idml/stories-text/story-structure'],
+        ['spread', 'Where do things sit on the page?', 'Spread coordinates, transforms, bounds and paths.', '/docs/idml/geometry-coordinates'],
+        ['xml', 'What does this element mean?', 'Every element and attribute, with counts from real documents.', '/docs/idml/reference'],
+        ['search', 'What is in my file?', 'Open an .idml file in the browser and walk its parts. Nothing is uploaded.', '/docs/idml/tools/inspector'],
+      ],
+    },
     cards: [
       ['page', 'Foundations', 'What IDML is, why it is a package, and how to read one by hand.', '/docs/idml/foundations'],
       ['package', 'Package anatomy', 'The ZIP container, the design map, and the parts it points to.', '/docs/idml/package-anatomy'],
@@ -71,11 +69,22 @@ const HOME: Record<typeof SITE_ID, HomeCopy> = {
       'engine, a viewer SDK, the paged.* scripting layer, a command line, and a plugin platform. ' +
       'This is how to build with it.',
     start: '/docs/paged/overview',
-    browse: '/docs/paged/sdk',
+    browse: { label: 'See what works today', href: '/docs/paged/state' },
+    questions: {
+      eyebrow: 'Start from a task',
+      title: 'What do you want to build?',
+      items: [
+        ['renderer', 'Show a document in a web page?', 'Load an .idml file, render its pages with WebGPU, drive the camera.', '/docs/paged/sdk'],
+        ['xml', 'Change a document from code?', 'Read, edit and author documents with the paged.* scripting layer.', '/docs/paged/scripting'],
+        ['page', 'Work from a terminal?', 'Open, author, render, export and verify documents with the paged command.', '/docs/paged/cli'],
+        ['package', 'Extend the editor?', 'Add tools, panels, commands and content types with the plugin SDK.', '/docs/paged/plugin-sdk'],
+        ['check', 'What works today?', 'Every capability, the layers that implement it, and the tests behind it.', '/docs/paged/state'],
+      ],
+    },
     cards: [
-      ['renderer', 'Viewer SDK', 'Load a document, render its pages, drive the camera.', '/docs/paged/sdk'],
-      ['xml', 'Scripting', 'Read, change and author documents from JavaScript.', '/docs/paged/scripting'],
-      ['package', 'Plugin SDK', 'Extend the editor with new content types and tools.', '/docs/paged/plugin-sdk'],
+      ['page', 'Overview', 'What Paged is, and how the engine, the SDKs and the editor fit together.', '/docs/paged/overview'],
+      ['renderer', 'The engine', 'How the parser and the renderer turn an IDML package into pages.', '/docs/paged/engine'],
+      ['package', 'Plugins', 'The first-party content plugins, all built on the plugin SDK.', '/docs/paged/plugins'],
     ],
   },
 };
@@ -133,135 +142,53 @@ export default function HomePage() {
                 Start here <Pic name="arrowRight" size={16} />
               </Link>
               <Link
-                href={copy.browse}
+                href={copy.browse.href}
                 style={{ ...ctaBase, background: 'transparent', color: 'var(--color-ink)', border: '1px solid var(--color-ink)' }}
               >
-                Browse the reference
+                {copy.browse.label}
               </Link>
             </div>
           </div>
 
-          {/* frontispiece */}
-          <figure style={{ margin: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
-            <div className="paged-cropmarks" style={{ padding: 4 }}>
-              <div
-                style={{
-                  width: 220,
-                  height: 220,
-                  borderRadius: '50%',
-                  background: 'var(--color-paper-soft)',
-                  border: '1px solid var(--color-rule)',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/brand/gutenberg.svg"
-                  alt="Engraved portrait of Johannes Gutenberg"
-                  style={{ width: '106%', height: '106%', objectFit: 'contain', display: 'block' }}
-                />
-              </div>
-            </div>
-            <figcaption className="type-meta" style={{ textAlign: 'center' }}>
-              Frontispiece · Johannes Gutenberg
-              <br />
-              c. 1400–1468
-            </figcaption>
-          </figure>
+          <Frontispiece />
         </div>
       </section>
 
-      {/* QUESTIONS — the IDML site's entry points */}
-      {SITE_ID === 'idml' ? (
-        <section style={{ background: 'var(--color-paper-soft)', borderTop: '1px solid var(--color-rule)', borderBottom: '1px solid var(--color-rule)' }}>
-          <div style={{ maxWidth: 1320, margin: '0 auto', padding: 'var(--space-7) var(--space-6)' }}>
-            <div style={{ maxWidth: '44ch', marginBottom: 'var(--space-6)' }}>
-              <div className="section-label" style={{ color: 'var(--color-accent)', marginBottom: 'var(--space-3)' }}>
-                Start from a question
-              </div>
-              <h2 className="section-title" style={{ fontSize: 'clamp(26px, 3vw, 40px)', margin: 0 }}>
-                What do you need to know?
-              </h2>
-            </div>
-            <div className="start-grid">
-              {QUESTIONS.map(([icon, question, answer, href]) => (
-                <Link key={href} href={href} className="start-card">
-                  <Pic name={icon} size={22} color="var(--color-ink-soft)" />
-                  <h3
-                    style={{
-                      fontFamily: 'var(--font-text-serif)',
-                      fontWeight: 650,
-                      fontSize: 22,
-                      letterSpacing: '-0.02em',
-                      color: 'var(--color-ink)',
-                      margin: 'var(--space-3) 0 var(--space-2)',
-                    }}
-                  >
-                    {question}
-                  </h3>
-                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14.5, lineHeight: 1.5, color: 'var(--color-ink-soft)', margin: 0 }}>
-                    {answer}
-                  </p>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      ) : (
-        <>
+      {/* QUESTIONS — the questions a reader arrives with, each answered by one page */}
       <section style={{ background: 'var(--color-paper-soft)', borderTop: '1px solid var(--color-rule)', borderBottom: '1px solid var(--color-rule)' }}>
         <div style={{ maxWidth: 1320, margin: '0 auto', padding: 'var(--space-7) var(--space-6)' }}>
           <div style={{ maxWidth: '44ch', marginBottom: 'var(--space-6)' }}>
             <div className="section-label" style={{ color: 'var(--color-accent)', marginBottom: 'var(--space-3)' }}>
-              Reader tiers
+              {copy.questions.eyebrow}
             </div>
             <h2 className="section-title" style={{ fontSize: 'clamp(26px, 3vw, 40px)', margin: 0 }}>
-              One page, one tier, one job.
+              {copy.questions.title}
             </h2>
-            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 16, lineHeight: 1.5, color: 'var(--color-ink-soft)', margin: 'var(--space-3) 0 0' }}>
-              Every page is written for a single reader and a single task. Filter the whole reference to
-              your depth — no traffic lights, just the shape of the page you&rsquo;re about to read.
-            </p>
           </div>
-          <div className="tiers-grid">
-            {TIERS.map(([icon, name, numeral, desc], i) => (
-              <div
-                key={name}
-                style={{
-                  paddingLeft: i === 0 ? 0 : 'var(--space-5)',
-                  borderLeft: i === 0 ? 'none' : '1px solid var(--color-rule)',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Pic name={icon} size={40} color="var(--color-ink)" stroke={1.4} />
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--color-rule-strong)' }}>{numeral}</span>
-                </div>
+          <div className="start-grid">
+            {copy.questions.items.map(([icon, question, answer, href]) => (
+              <Link key={question} href={href} className="start-card">
+                <Pic name={icon} size={22} color="var(--color-ink-soft)" />
                 <h3
                   style={{
-                    fontFamily: 'var(--font-display-serif)',
-                    fontWeight: 600,
-                    fontSize: 26,
+                    fontFamily: 'var(--font-text-serif)',
+                    fontWeight: 650,
+                    fontSize: 22,
                     letterSpacing: '-0.02em',
                     color: 'var(--color-ink)',
-                    margin: 'var(--space-4) 0 var(--space-2)',
+                    margin: 'var(--space-3) 0 var(--space-2)',
                   }}
                 >
-                  {name}
+                  {question}
                 </h3>
                 <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14.5, lineHeight: 1.5, color: 'var(--color-ink-soft)', margin: 0 }}>
-                  {desc}
+                  {answer}
                 </p>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
       </section>
-
-        </>
-      )}
 
       {/* WHERE TO BEGIN */}
       <section style={{ maxWidth: 1320, margin: '0 auto', padding: 'var(--space-7) var(--space-6) var(--space-8)' }}>

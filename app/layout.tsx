@@ -10,6 +10,7 @@ import {
 } from 'next/font/google';
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import { WipBanner } from '@/components/wip-banner';
+import PagedSearchDialog from '@/components/search-dialog';
 import { Analytics, GoogleAnalytics } from '@/components/analytics';
 import { site, SITE_ID } from '@/lib/site';
 import { OG_IMAGE } from '@/lib/metadata';
@@ -87,11 +88,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="flex min-h-screen flex-col">
         {/* The IDML reference is a finished reference, not a build log: no banner there. */}
         {SITE_ID !== 'idml' && <WipBanner />}
-        {/* Light-only (paper): the brand ships no dark palette, so the theme
-            toggle is disabled and the page is forced to the light theme. */}
+        {/* Paper is the default; the theme switch offers night paper (the
+            `.dark` tokens in app/global.css). */}
         <RootProvider
-          theme={{ enabled: false, defaultTheme: 'light', forcedTheme: 'light' }}
-          search={{ options: { type: 'static' } }}
+          theme={{ defaultTheme: 'light', enableSystem: false }}
+          // Our dialog (components/search-dialog.tsx): one row per page, kind
+          // labels and filters, exact title matches first; static index.
+          search={{ SearchDialog: PagedSearchDialog }}
         >
           {children}
         </RootProvider>

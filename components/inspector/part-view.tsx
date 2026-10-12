@@ -9,16 +9,18 @@ import { btn, mono, muted, sheet, strip, tab } from './styles';
 
 /**
  * One package entry, in the Source Code Panel's chrome: a mono path strip, the
- * views on the right, a copy action. XML gets Raw (Shiki-highlighted up to
- * `HIGHLIGHT_LIMIT` characters, plain text above it), Tree and Annotated; other
- * text gets Raw; images preview from a local blob URL; anything else shows what
- * it is and how big.
+ * views on the right, a copy action. XML opens on Linked — the source with
+ * every element name linked to its reference page, which is what a reader
+ * asking "what is this element?" needs first — and also has Raw
+ * (Shiki-highlighted up to `HIGHLIGHT_LIMIT` characters, plain text above it,
+ * numbered) and Tree; other text gets Raw; images preview from a local blob
+ * URL; anything else shows what it is and how big.
  */
-type View = 'raw' | 'tree' | 'annotated';
+type View = 'linked' | 'raw' | 'tree';
 const VIEWS: { id: View; label: string }[] = [
+  { id: 'linked', label: 'Linked' },
   { id: 'raw', label: 'Raw' },
   { id: 'tree', label: 'Tree' },
-  { id: 'annotated', label: 'Annotated' },
 ];
 
 /** Plain text past this many characters waits for a click. */
@@ -43,7 +45,7 @@ function Raw({ code }: { code: string }) {
   }, [code]);
 
   // `.shiki` brings its own padding (global.css).
-  if (html) return <div style={{ overflowX: 'auto' }} dangerouslySetInnerHTML={{ __html: html }} />;
+  if (html) return <div className="paged-code-numbered" style={{ overflowX: 'auto' }} dangerouslySetInnerHTML={{ __html: html }} />;
   const cut = !all && code.length > PLAIN_LIMIT;
   return (
     <div>
@@ -81,7 +83,7 @@ function ImagePreview({ entry }: { entry: PackageEntry }) {
 export function PartView({ entry, refs }: { entry: PackageEntry; refs: ElementRefs }) {
   const isXml = entry.kind === 'xml';
   const isText = isXml || entry.kind === 'text';
-  const [view, setView] = useState<View>('raw');
+  const [view, setView] = useState<View>(isXml ? 'linked' : 'raw');
   const [copied, setCopied] = useState(false);
   const code = useMemo(() => (isText ? entryText(entry) : ''), [entry, isText]);
 
@@ -123,7 +125,7 @@ export function PartView({ entry, refs }: { entry: PackageEntry; refs: ElementRe
       <div style={{ maxHeight: '70vh', overflow: 'auto' }}>
         {isText && (view === 'raw' || !isXml) && <Raw code={code} />}
         {isXml && view === 'tree' && <LazyTree code={code} />}
-        {isXml && view === 'annotated' && <AnnotatedXml code={code} refs={refs} />}
+        {isXml && view === 'linked' && <AnnotatedXml code={code} refs={refs} />}
         {entry.kind === 'image' && <ImagePreview entry={entry} />}
         {(entry.kind === 'font' || entry.kind === 'binary') && (
           <p style={{ margin: 0, padding: '18px 20px', fontFamily: 'var(--font-sans)', fontSize: 13.5, color: 'var(--color-ink-soft)' }}>

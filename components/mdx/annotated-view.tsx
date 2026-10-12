@@ -1,12 +1,16 @@
 import { highlight } from '@/lib/shiki';
 import type { ExampleAnnotation } from '@/lib/examples';
+import { AnnotatedPanel } from './annotated-panel';
 
 /**
  * The "annotated" view (briefing §6.2): the same source with line-by-line
- * callouts. Lines carrying a trailing `<!--#N-->` marker (stripped at highlight
- * time, see lib/shiki.ts) get the brand highlight; the notes sit in a rule-left
+ * notes. The code is numbered, and every line an annotation's `lines` covers
+ * (or that ends in a `<!--#N-->` marker, stripped at highlight time, see
+ * lib/shiki.ts) gets the brand highlight. The notes sit in a rule-left
  * marginalia column — mono line ref + IBM Plex Sans note — matching the Source
- * Code Panel's annotated mode (SourcePanel.jsx). Collapses on narrow screens.
+ * Code Panel's annotated mode (SourcePanel.jsx); pointing at a note lights its
+ * lines and pointing at a marked line lights its note (AnnotatedPanel).
+ * Collapses to one column on narrow screens.
  */
 export async function AnnotatedView({
   code,
@@ -15,46 +19,6 @@ export async function AnnotatedView({
   code: string;
   annotations?: ExampleAnnotation[];
 }) {
-  const html = await highlight(code, 'xml', true);
-  return (
-    <div className="paged-annotated">
-      <div dangerouslySetInnerHTML={{ __html: html }} />
-      <ol
-        className="paged-marginalia"
-        style={{
-          listStyle: 'none',
-          margin: 0,
-          padding: '18px 20px',
-          borderLeft: '1px solid var(--color-rule)',
-        }}
-      >
-        {annotations.map((a, i) => (
-          <li key={i} style={{ marginBottom: 'var(--space-3)' }}>
-            <span
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: 11,
-                letterSpacing: '-0.01em',
-                color: 'var(--color-accent)',
-                marginRight: 8,
-                whiteSpace: 'nowrap',
-              }}
-            >
-              L{a.lines}
-            </span>
-            <span
-              style={{
-                fontFamily: 'var(--font-sans)',
-                fontSize: 12,
-                lineHeight: 1.45,
-                color: 'var(--color-muted)',
-              }}
-            >
-              {a.note}
-            </span>
-          </li>
-        ))}
-      </ol>
-    </div>
-  );
+  const html = await highlight(code, 'xml', true, annotations);
+  return <AnnotatedPanel html={html} annotations={annotations} />;
 }

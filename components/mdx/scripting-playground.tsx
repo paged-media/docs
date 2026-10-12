@@ -134,7 +134,7 @@ export function ScriptingPlayground({
         </div>
 
         {/* Monaco code editor */}
-        <div style={{ borderBottom: '1px solid var(--color-rule)', background: '#fffffe' }}>
+        <div className="paged-monaco-frame" style={{ borderBottom: '1px solid var(--color-rule)' }}>
           <MonacoCodeInput value={source} onChange={setSource} height={codeHeight} />
         </div>
 

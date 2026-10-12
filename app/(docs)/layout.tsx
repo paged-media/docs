@@ -14,7 +14,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       <DocsLayout tree={source.pageTree} {...baseOptions}>
         {children}
       </DocsLayout>
-      <SiteFooter />
+      <SiteFooter variant="compact" />
     </>
   );
 }

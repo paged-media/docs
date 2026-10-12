@@ -1,6 +1,7 @@
 # Status
 
-What the documentation sites ship and what they do not. Last updated 2026-10-11
+What the documentation sites ship and what they do not. Last updated 2026-10-12 (the
+reading and navigation pass below); before that 2026-10-11
 (`@paged-media/idml-viewer` 0.71.1, `core.pin` at the engine tag `v0.71.1`), when the IDML
 reference moved to its own site ([ADR 805](adr/805-two-sites-one-app.md)). How the parts fit
 is in [`architecture.md`](architecture.md).
@@ -27,6 +28,25 @@ is in [`architecture.md`](architecture.md).
   API catalog, the surface comparison, the plugin capability reference, the REST reference
   and the activity feed are built from data pulled from other repositories.
 - **Demos.** Two `<LiveDemo>` embeds of the running editor and one recorded demo.
+- **Reading and navigation pass (2026-10-12).** Both sites:
+  - *Examples.* The Live and InDesign views open framed on the page's content (the ink is
+    measured on a small render, or on InDesign's raster, and both sides show the same
+    region), with a Whole page switch. Raw and Annotated code is numbered; an annotated
+    line is marked from the manifest's `lines`, and a note and its lines light each other.
+  - *Element reference.* An attribute discussed in a section of the reference links to it,
+    and 72 carry the sentence that explains them, found by the generator in our own prose
+    (`gen-idml-reference.mjs`, `explanationOf`). The index filters by element or attribute
+    name; the sidebar folds the element pages into one group per package part; table
+    headers stay in view.
+  - *Inspector.* Package tree, part and render side by side; a part opens in the Linked view.
+  - *Search.* One row per page with its kind (Guide, Element, Cookbook, API, …), its best
+    passage, kind filters, and an exact title match first (`components/search-dialog.tsx`).
+  - *Navigation.* A two-site switch in the masthead; a section's own page is "Overview" in
+    the sidebar; pages that are not `published` carry a Draft mark; card lists show the
+    linked page's tier mark (`lib/tiers.ts`); the IDML home has its own frontispiece.
+  - *Reading.* Running text keeps the 66ch measure; docs pages end on a one-line footer
+    (the full colophon closes the two home pages); a night-paper dark theme behind the
+    theme switch, paper by default.
 - **Checks.** Six workflows: the build with its manifest, reference and freshness checks;
   the example gate; the script gate; the similarity check; the link check; the deploy.
 
@@ -70,7 +90,6 @@ is in [`architecture.md`](architecture.md).
   ([ADR 803](adr/803-live-preview-uses-viewer-package.md)).
 - A server: no hosted search, no image optimisation, no run-time API
   ([ADR 804](adr/804-static-export-hosting.md)).
-- A dark theme: the theme switch is disabled and the light theme is forced.
 - Versioned documentation: the optional front matter field `formatVersion` is read by
   nothing.
 - A check that the manifests match `examples/_schema/manifest.schema.json`, and a check

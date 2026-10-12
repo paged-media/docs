@@ -105,8 +105,58 @@ const pageInfo = walk(CONTENT).map((file) => {
   const src = readFileSync(file, 'utf8');
   const title = src.match(/^title:\s*(.+)$/m)?.[1]?.replace(/^["']|["']$/g, '') ?? '';
   const rel = relative(CONTENT, file).replace(/\\/g, '/').replace(/\.mdx$/, '').replace(/(^|\/)index$/, '');
-  return { href: `/docs/idml/${rel}`, title, src };
+  return { href: `/docs/idml/${rel}`, title, src, sections: sectionsOf(src.replace(/^---[\s\S]*?---/, '')) };
 });
+/**
+ * A page's prose as sections (## / ### headings) of blocks — paragraphs and list
+ * items — skipping fenced code and JSX lines. Each heading keeps the anchor the
+ * site gives it (github-slugger rules over the heading's plain text).
+ */
+function sectionsOf(src) {
+  const out = [{ heading: null, anchor: null, blocks: [] }];
+  let cur = [];
+  let fence = false;
+  const flush = () => {
+    if (cur.length) out[out.length - 1].blocks.push(cur.join(' ').trim());
+    cur = [];
+  };
+  for (const line of src.split('\n')) {
+    if (/^\s*```/.test(line)) {
+      fence = !fence;
+      flush();
+      continue;
+    }
+    if (fence) continue;
+    const h = line.match(/^#{2,3}\s+(.*)$/);
+    if (h) {
+      flush();
+      const heading = h[1].trim();
+      out.push({ heading, anchor: slugify(plainText(heading)), blocks: [] });
+      continue;
+    }
+    if (/^\s*$/.test(line) || /^\s*([-*]|\d+\.)\s/.test(line) || /^\s*>/.test(line) || /^\s*<[A-Z/]/.test(line)) flush();
+    if (/^\s*$/.test(line) || /^\s*<[A-Z/]/.test(line)) continue;
+    cur.push(line.trim());
+  }
+  flush();
+  return out;
+}
+/** Markdown → plain text, keeping code spans' text. */
+function plainText(md) {
+  return md
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/[*_]{1,2}([^*_]+)[*_]{1,2}/g, '$1')
+    .replace(/`([^`]*)`/g, '$1');
+}
+/** github-slugger, which Fumadocs uses for heading anchors. */
+function slugify(text) {
+  return text
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\p{M}\s_-]/gu, '')
+    .replace(/ /g, '-');
+}
+const escRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 function pagesMentioning(name) {
   const re = new RegExp('[`<]' + name.replace(/[:]/g, '\\:') + '[\\s`>/]', 'g');
   return pageInfo
@@ -127,6 +177,69 @@ for (const id of existsSync(EXAMPLES) ? readdirSync(EXAMPLES) : []) {
   }
 }
 
+// ── Where an attribute is explained: a section of our own prose ──
+// A section counts for (element, attribute) when its heading names the element
+// ("The `Page` element", "`<GradientStop>`"), or when it names no element at
+// all and sits on one of the two pages that discuss the element most. That
+// keeps Page from borrowing what a "The `Spread` element" section says about
+// ItemTransform. Inside it, a block that LEADS with the attribute in bold
+// (`- **\`TextColumnCount\`**: the number of columns`) is its description; any
+// mention in code is enough for a link.
+const censusNames = new Set(census.elements.map((e) => e.element));
+const headingElements = (heading) =>
+  new Set([...(heading ?? '').matchAll(/`<?\/?([A-Za-z_][\w:.-]*)[^`]*`/g)].map((m) => m[1]).filter((n) => censusNames.has(n)));
+
+function explanationOf(elName, attr, topPages) {
+  const lead = new RegExp('^(?:[-*]\\s+)?\\*\\*`' + escRe(attr) + '(?:="[^"]*")?`');
+  const mention = new RegExp('`' + escRe(attr) + '(?:="[^"]*")?`');
+  let link = null;
+  for (const page of pageInfo) {
+    const top = topPages.includes(page.href);
+    for (const sec of page.sections) {
+      const named = headingElements(sec.heading);
+      if (!(named.has(elName) || (named.size === 0 && top))) continue;
+      const at = { href: `${page.href}${sec.anchor ? `#${sec.anchor}` : ''}`, page: page.title, section: sec.heading ? plainText(sec.heading) : null };
+      const block = sec.blocks.find((b) => lead.test(b));
+      if (block) return { ...at, description: describe(block, attr) };
+      if (!link && sec.blocks.some((b) => mention.test(b))) link = at;
+    }
+  }
+  return link ? { ...link, description: null } : null;
+}
+
+/**
+ * The description a bold-led block gives an attribute, dictionary-style:
+ *   `- **\`A\`**: the number of columns.`        → `The number of columns.`
+ *   `- **\`A\`**, the layer it is on;`           → `The layer it is on.`
+ *   `- **\`A\`** is the horizontal offset of …`  → `The horizontal offset of …`
+ *   `- **\`A\`** decides whether …`             → `Decides whether …`
+ * A lead that shares its sentence with other names keeps the whole sentence
+ * (`\`Self\` and \`Name\` work as on a <Color>`). First sentence only.
+ */
+function describe(block, attr) {
+  const m = block.match(/^(?:[-*]\s+)?\*\*(.+?)\*\*(.*)$/);
+  if (!m) return null;
+  const onlyAttr = new RegExp('^' + escRe(attr) + '(="[^"]*")?$').test(m[1].replace(/`/g, '').trim());
+  const after = m[2];
+  let text;
+  // "and `Name` work as…", "with `X`: …" — the sentence is about more than A.
+  const shared = /^\s+(and|or|plus|with)\b/.test(after) || /,\s+(is|are)\s/.test(after);
+  if (onlyAttr && !shared && /^\s*[:—–]\s*/.test(after)) text = after.replace(/^\s*[:—–]\s*/, '');
+  else if (onlyAttr && !shared && /^\s*,\s+[a-z]/.test(after)) text = after.replace(/^\s*,\s+/, '');
+  else if (onlyAttr && !shared && /^\s+[a-z]/.test(after)) text = after.trim().replace(/^(is|are)\s+/, '');
+  else text = `${m[1]}${after}`;
+  text = text
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/(^|[^*])\*([^*]+)\*/g, '$1$2')
+    .trim();
+  let sentence = text.split(/(?<=[.!?])\s+(?=[A-Z`])/)[0].replace(/[;,:]\s*$/, '');
+  if (!sentence || sentence.length < 8) return null;
+  if (!/[.!?…]$/.test(sentence)) sentence += '.';
+  if (sentence.length > 220) sentence = `${sentence.slice(0, 217).replace(/\s+\S*$/, '')}…`;
+  return sentence.charAt(0).toUpperCase() + sentence.slice(1);
+}
+
 // ── Selection: elements with something to say ──
 const metadataOnly = (e) => Object.keys(e.parts).every((p) => p === 'META-INF');
 const selected = census.elements.filter((e) => {
@@ -141,6 +254,8 @@ const pct = (n) => Math.round((n / DOCS) * 1000) / 10;
 
 const elements = selected
   .map((e) => {
+    const pages = pagesMentioning(e.element);
+    const topPages = pages.slice(0, 2).map((p) => p.href);
     const attributes = Object.entries(e.attributes)
       .map(([name, a]) => {
         const key = `${e.element}@${name}`;
@@ -157,6 +272,7 @@ const elements = selected
           paged: coverage ? { imported: !!paged?.imported, exported: !!paged?.exported } : null,
           typed: typed.get(key) ?? null,
           note: overrides[key]?.note ?? null,
+          explained: explanationOf(e.element, name, topPages),
         };
       })
       .sort((a, b) => b.docCount - a.docCount || a.name.localeCompare(b.name));
@@ -186,7 +302,7 @@ const elements = selected
           }
         : null,
       examples: examplesFor.get(e.element) ?? [],
-      pages: pagesMentioning(e.element),
+      pages,
     };
   })
   .sort((a, b) => a.name.localeCompare(b.name));

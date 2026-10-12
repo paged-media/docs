@@ -1,4 +1,15 @@
 import type { CSSProperties, ReactNode } from 'react';
+import { TIER_GLYPH_PATHS, type TierId } from '@/lib/tiers';
+
+function tierGlyph(tier: TierId): ReactNode {
+  return (
+    <g>
+      {TIER_GLYPH_PATHS[tier].map((d) => (
+        <path key={d} d={d} />
+      ))}
+    </g>
+  );
+}
 
 /**
  * The Paged crafted publishing icon set — ported verbatim from the brand UI kit
@@ -34,10 +45,11 @@ export const ICONS: Record<string, ReactNode> = {
   check: (<path d="M5 12.5l4.5 4.5L19 7" />),
   paragraph: (<g><path d="M9 4.5h8" /><path d="M13 4.5v15" /><path d="M9.5 4.5a3.5 3.5 0 000 7H10v-7" /></g>),
   external: (<g><path d="M14 5h5v5" /><path d="M19 5l-8 8" /><path d="M17 13.5V19H5V7h5.5" /></g>),
-  // Reader tiers — typographic depth: one line → a paragraph → a full spread.
-  tierBeginner: (<g><path d="M6 4.5h12v15H6z" /><path d="M9.5 12h5" /></g>),
-  tierIntermediate: (<g><path d="M6 4.5h12v15H6z" /><path d="M9 9h6" /><path d="M9 12h6" /><path d="M9 15h4" /></g>),
-  tierPro: (<g><path d="M3 5h8.5v14H3z" /><path d="M12.5 5H21v14h-8.5z" /><path d="M5.2 8.5h4.1" /><path d="M5.2 11h4.1" /><path d="M5.2 13.5h3" /><path d="M14.7 8.5H18.8" /><path d="M14.7 11H18.8" /><path d="M14.7 13.5H18.8" /></g>),
+  // Reader tiers — typographic depth: one line → a paragraph → a full spread
+  // (the paths live in lib/tiers.ts, shared with the card lists' tier marks).
+  tierBeginner: tierGlyph('beginner'),
+  tierIntermediate: tierGlyph('intermediate'),
+  tierPro: tierGlyph('pro'),
 };
 
 export type IconName = keyof typeof ICONS;

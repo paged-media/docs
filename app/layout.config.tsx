@@ -1,34 +1,16 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
-import { GithubInfoSafe } from '@/components/github-info-safe';
+import { SiteSwitcher } from '@/components/site-switcher';
 import { Wordmark } from '@/components/wordmark';
-import { SITES, SITE_ID } from '@/lib/site';
-
-// The sibling site, linked from every page's masthead.
-const sibling = SITES[SITE_ID === 'idml' ? 'paged' : 'idml'];
 
 export const baseOptions: BaseLayoutProps = {
   nav: {
     title: <Wordmark />,
   },
-  // Light-only (paper): the brand ships no dark palette, so the nav's
-  // light/dark toggle is removed entirely.
-  themeSwitch: { enabled: false },
   links: [
-    {
-      text: SITE_ID === 'idml' ? 'Paged docs' : 'IDML Reference',
-      url: `${sibling.origin}/`,
-      external: true,
-    },
-    {
-      type: 'custom',
-      // Stars/forks for the public renderer engine. Fetched at build time
-      // (output: 'export' renders it once) and baked into the static HTML;
-      // GITHUB_TOKEN (set in CI) lifts the API rate limit, and the Safe
-      // wrapper degrades to a plain repo link if the API is unreachable.
-      children: (
-        <GithubInfoSafe owner="paged-media" repo="core" token={process.env.GITHUB_TOKEN} />
-      ),
-    },
+    // Both sites, the current one marked (components/site-switcher.tsx).
+    { type: 'custom', children: <SiteSwitcher /> },
   ],
-  // Search uses the Fumadocs default (Orama) wired in app/api/search/route.ts.
+  // A plain link to the organisation: no star or fork counts in the masthead.
+  githubUrl: 'https://github.com/paged-media',
+  // Search: components/search-dialog.tsx over the static index from app/api/search/route.ts.
 };
