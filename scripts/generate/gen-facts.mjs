@@ -42,6 +42,16 @@ function countRows(path, { status }) {
   return n;
 }
 
+function countFiles(dir, ext) {
+  let n = 0;
+  for (const name of readdirSync(dir)) {
+    const p = join(dir, name);
+    if (statSync(p).isDirectory()) n += countFiles(p, ext);
+    else if (name.endsWith(ext)) n++;
+  }
+  return n;
+}
+
 function cliLeaves(cmds) {
   let n = 0;
   for (const c of cmds ?? []) n += c.subcommands?.length ? cliLeaves(c.subcommands) : 1;
@@ -61,7 +71,15 @@ for (const [id, d] of Object.entries(defs)) {
       const p = pathOf(d.from);
       if (!existsSync(p)) throw new Error(`source ${d.from} not pulled`);
       if (d.rows) value = countRows(p, d.rows);
-      else if (d.dirs) value = readdirSync(p).filter((n) => !(d.dirs.exclude ?? []).includes(n) && statSync(join(p, n)).isDirectory()).length;
+      else if (d.dirs)
+        value = readdirSync(p).filter(
+          (n) =>
+            !(d.dirs.exclude ?? []).includes(n) &&
+            statSync(join(p, n)).isDirectory() &&
+            (!d.dirs.with || existsSync(join(p, n, d.dirs.with))),
+        ).length;
+      else if (d.files) value = countFiles(p, d.files.ext);
+      else if (d.regexCount) value = (readFileSync(p, 'utf8').match(new RegExp(d.regexCount, 'gm')) ?? []).length;
       else if (d.regex) {
         const m = readFileSync(p, 'utf8').match(new RegExp(d.regex, 'm'));
         if (!m) throw new Error(`regex matched nothing in ${d.from}`);

@@ -1,5 +1,5 @@
 {
-  "$comment": "Every number and licence the docs state about the platform, defined by where it comes from. scripts/generate/gen-facts.mjs evaluates them into .generated/facts.json and public/facts.json; pages render them with <Fact id=\"…\" />, and check:facts fails a page that types one of these numbers by hand. `from` is a file under .generated/sources (pulled by sources.pin) or under this repo (`repo:`). Extractors: pointer (a JSON value), length (a JSON array's length), regex (first capture), rows (YAML rows `- id:` in a file or folder, optionally only those whose `status:` matches), dirs (sub-folders of a repo folder), cliLeaves (leaf commands of cli.json), dependsOn (which of the named packages a package.json depends on), license (an SPDX expression, written for people).",
+  "$comment": "Every number and licence the docs state about the platform, defined by where it comes from. scripts/generate/gen-facts.mjs evaluates them into .generated/facts.json and public/facts.json; pages render them with <Fact id=\"…\" />, and check:facts fails a page that types one of these numbers by hand. `from` is a file under .generated/sources (pulled by sources.pin) or under this repo (`repo:`). Extractors: pointer (a JSON value), length (a JSON array's length), regex (first capture), regexCount (matching lines), files (files with an extension, recursively), rows (YAML rows `- id:` in a file or folder, optionally only those whose `status:` matches), dirs (sub-folders of a repo folder, optionally only those containing `with`), cliLeaves (leaf commands of cli.json), dependsOn (which of the named packages a package.json depends on), license (an SPDX expression, written for people).",
   "facts": {
     "engine.version": {
       "label": "engine release",
@@ -132,6 +132,28 @@
           "@paged-media/pdf",
           "@paged-media/publish"
         ]
+      }
+    },
+    "scripting.examples": {
+      "label": "runnable scripting examples",
+      "from": "repo:data/scripting/examples.ts",
+      "regexCount": "^\\s+id: '"
+    },
+    "examples.indesignVerified": {
+      "label": "IDML examples checked in InDesign",
+      "from": "repo:examples",
+      "dirs": {
+        "exclude": [
+          "_schema"
+        ],
+        "with": "_verified"
+      }
+    },
+    "idml.pages": {
+      "label": "pages of IDML reference",
+      "from": "repo:content/docs/idml",
+      "files": {
+        "ext": ".mdx"
       }
     }
   }
