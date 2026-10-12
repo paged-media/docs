@@ -1,7 +1,7 @@
 /**
- * <StatusHeadline /> — the live headline stats band, generated from the state
- * registry (`.generated/matrix.json` → headline). Mirrors the numbers on the
- * state dashboard; nothing hand-typed.
+ * <StatusHeadline /> — the live headline stats band, computed from the
+ * capability record cockpit exports from CI test runs (`.generated/matrix.json`
+ * → headline). Nothing hand-typed.
  */
 import { getMatrix } from '@/lib/generated';
 
@@ -43,10 +43,12 @@ export function StatusHeadline() {
         <Stat value={`${h.green_pct ?? '—'}%`} label="Green of shipped" tone="valid" />
         <Stat value={h.failing ?? 0} label="Failing" tone={(h.failing ?? 0) > 0 ? 'warn' : 'muted'} />
         <Stat value={h.shipped_untested ?? 0} label="Untested" tone={(h.shipped_untested ?? 0) > 0 ? 'warn' : 'muted'} />
-        <Stat value={h.open_bugs ?? 0} label="Open bugs" tone={(h.open_bugs ?? 0) > 0 ? 'warn' : 'muted'} />
+        <Stat value={h.stale ?? 0} label="Re-test pending" tone="muted" />
       </div>
       <p style={{ fontSize: 11, color: 'var(--color-muted)', marginTop: 6 }}>
-        {chapters.length} chapters · generated from the capability registry{sourceCommit ? ` @ ${sourceCommit.slice(0, 8)}` : ''}.
+        {chapters.length} chapters · from the capability record of{' '}
+        {h.record_generated_at ? new Date(h.record_generated_at).toISOString().slice(0, 10) : 'unknown date'}
+        {sourceCommit ? ` (cockpit @ ${sourceCommit.slice(0, 8)})` : ''}, built from the newest CI test runs.
       </p>
     </div>
   );

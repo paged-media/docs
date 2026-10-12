@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * update-comparison — refresh data/comparison.json from current research, via
- * Claude Opus 4.8 with the web-search tool.
+ * Claude Opus 5.5 with the web-search tool.
  *
  * Two phases:
  *   1. RESEARCH — Opus 4.8 + web_search gathers current, dated facts about each
@@ -30,7 +30,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DATA = join(ROOT, 'data', 'comparison.json');
 const DRY_RUN = process.argv.includes('--dry-run');
-const MODEL = 'claude-opus-4-8';
+const MODEL = 'claude-opus-5-5';
 
 // ── load the SDK (optional dev dependency) ───────────────────────────────────
 let Anthropic;
@@ -141,7 +141,7 @@ const synth = await client.messages.create({
         `- Keep the same domain keys, titles, and baseline/differentiator tags; you may refine the per-row notes.\n` +
         `- Do NOT change Paged's scores or its pagedPlanned flags — copy them verbatim from CURRENT. Paged is an ` +
         `emerging platform and its honest scores are set internally, not from the open web.\n` +
-        `- Update ONLY the competitor scores/notes (indesign, quark, affinity, scribus, designcraft) where the research warrants.\n` +
+        `- Update ONLY the competitor scores/notes (${current.tools.filter((t) => t.key !== 'paged').map((t) => t.key).join(', ')}) where the research warrants.\n` +
         `- Set "snapshot" to ${today}.\n` +
         `- Keep notes factual, dated where a fact moves, and free of marketing language.\n\n` +
         `CURRENT (JSON):\n${JSON.stringify({ snapshot: current.snapshot, domains: current.domains, verdicts: current.verdicts }, null, 2)}\n\n` +
@@ -177,7 +177,22 @@ for (const d of updated.domains ?? []) {
   }
 }
 
-const merged = { ...current, snapshot: updated.snapshot || today, domains: updated.domains, verdicts: updated.verdicts };
+// Paged's scores, planned flags and evidence backing are set internally and
+// checked against the capability record (check:comparison); whatever the model
+// returned, they are copied back from CURRENT. Competitors get today's date.
+const currentRows = new Map(current.domains.flatMap((d) => d.rows.map((r) => [`${d.key}/${r.dimension}`, r])));
+for (const d of updated.domains ?? []) {
+  for (const r of d.rows ?? []) {
+    const was = currentRows.get(`${d.key}/${r.dimension}`);
+    if (!was) continue;
+    r.scores.paged = was.scores.paged;
+    if (was.pagedPlanned !== undefined) r.pagedPlanned = was.pagedPlanned;
+    else delete r.pagedPlanned;
+    if (was.paged) r.paged = was.paged;
+  }
+}
+const tools = current.tools.map((t) => (t.key === 'paged' ? t : { ...t, researched: today }));
+const merged = { ...current, snapshot: updated.snapshot || today, tools, domains: updated.domains, verdicts: updated.verdicts };
 
 if (DRY_RUN) {
   console.log('\n=== DRY RUN — proposed data/comparison.json ===\n');

@@ -5,8 +5,12 @@
  * the pages where it makes sense rather than injected everywhere.
  */
 import { JsonLd } from '@/components/json-ld';
+import { getFacts } from '@/lib/generated';
 
 export function SoftwareApplicationLd() {
+  // The application is the editor; its licence comes from its package.json
+  // (facts.json), first SPDX id of the dual licence.
+  const spdx = String(getFacts().facts['license.editor']?.value ?? 'AGPL-3.0-only').split(' ')[0];
   const data = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
@@ -18,7 +22,7 @@ export function SoftwareApplicationLd() {
       'Paged is an open-source desktop publishing platform built on a structurally valid IDML container, with a plugin SDK and an automation-first architecture — combining the open format of Scribus with the extensibility of the InDesign ecosystem.',
     url: 'https://paged.media',
     softwareHelp: 'https://docs.paged.media/',
-    license: 'https://spdx.org/licenses/MPL-2.0.html',
+    license: `https://spdx.org/licenses/${spdx}.html`,
     isAccessibleForFree: true,
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
   };

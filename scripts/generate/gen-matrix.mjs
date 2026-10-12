@@ -1,59 +1,27 @@
 #!/usr/bin/env node
 /**
- * gen-matrix — projects the state registry (`state.json` + `meta.json` +
- * `conformance.public.json`, pulled by pull-sources) into the compact JSON the
+ * gen-matrix — projects the capability record (cockpit's `exports/public.json`,
+ * schema cockpit.export.v1, pulled by pull-sources) into the compact JSON the
  * docs components read:
  *
  *   .generated/matrix.json       full capability grid (chapters × stages) + headline
  *   .generated/support-map.json  per-feature badge (claim + evidence) for <SupportBadge>
- *   .generated/conformance.json  per-document conformance levels
+ *   .generated/conformance.json  per-document conformance levels (none since state retired)
+ *   public/capabilities.json     the record itself, served for paged.media and anyone else
  *
- * The registry is the single source of truth; nothing here is hand-maintained.
- * A source change → re-pull → re-gen → the pages re-render. No human in the loop.
+ * Cockpit derives each feature's health from the newest CI test runs of every
+ * repo; a feature's claims say which components implement it. A cell is a
+ * claim, coloured by the feature's health. Nothing here is hand-maintained.
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const SRC = join(ROOT, '.generated', 'sources', 'state');
+const SRC = join(ROOT, '.generated', 'sources', 'cockpit', 'public.json');
 const GEN = join(ROOT, '.generated');
 
-/**
- * The matrix columns. Canonical source: `state.json`'s top-level `stages`
- * array — the state generator emits its registry/stages.yaml taxonomy with
- * every join, so a column added upstream flows through with no edit here.
- * The embedded list below is the FALLBACK only for older state snapshots
- * that predate that emission. Either way gen-matrix VALIDATES that every
- * stage present in the live data appears in the resolved list, so drift
- * fails this build loudly instead of being silently dropped.
- */
-const FALLBACK_STAGES = [
-  { id: 'core.parser', title: 'Parser', group: 'Core' },
-  { id: 'core.renderer', title: 'Renderer', group: 'Core' },
-  { id: 'core.mutation', title: 'Mutation', group: 'Core' },
-  { id: 'core.canvas-wasm', title: 'Canvas/WASM', group: 'Core' },
-  { id: 'core.sdk', title: 'SDK', group: 'Core' },
-  { id: 'editor.canvas', title: 'WASM Canvas', group: 'Editor' },
-  { id: 'editor.shell', title: 'Shell', group: 'Editor' },
-  { id: 'editor.panel', title: 'Panel', group: 'Editor' },
-  { id: 'editor.gesture', title: 'Gesture', group: 'Editor' },
-  { id: 'editor.script', title: 'Script', group: 'Editor' },
-  { id: 'editor.styleguide', title: 'Styleguide', group: 'Editor' },
-  { id: 'server.api', title: 'API', group: 'Server' },
-  { id: 'plugin.api', title: 'API', group: 'Plugins' },
-  { id: 'plugin.draw', title: 'Draw', group: 'Plugins' },
-  { id: 'plugin.web', title: 'Web', group: 'Plugins' },
-  { id: 'plugin.image', title: 'Image', group: 'Plugins' },
-  { id: 'plugin.data', title: 'Data', group: 'Plugins' },
-  { id: 'plugin.sheet', title: 'Sheet', group: 'Plugins' },
-  { id: 'plugin.publish', title: 'Publish', group: 'Plugins' },
-  { id: 'plugin.pdf', title: 'PDF', group: 'Plugins' },
-  { id: 'plugin.doc', title: 'Doc', group: 'Plugins' },
-];
-
-/** state.json's `stages[].group` uses the registry's lowercase group ids;
- *  map them onto the display groups the docs matrix renders. */
+/** Component groups → the display groups the matrix renders. */
 const GROUP_TITLES = { core: 'Core', editor: 'Editor', server: 'Server', plugin: 'Plugins' };
 
 function readJSON(path, fallback) {
@@ -64,47 +32,80 @@ function readJSON(path, fallback) {
   }
 }
 
-const state = readJSON(join(SRC, 'state.json'), null);
-if (!state) {
-  console.error(
-    'gen-matrix: no state.json under .generated/sources/state — run pull-sources first. Writing empty stubs.',
-  );
+const record = readJSON(SRC, null);
+if (!record) {
+  console.error('gen-matrix: no cockpit export under .generated/sources/cockpit — run pull-sources first. Writing empty stubs.');
+} else if (record.schema !== 'cockpit.export.v1') {
+  console.error(`gen-matrix: unexpected schema ${record.schema} (want cockpit.export.v1)`);
+  process.exit(1);
 }
-const meta = readJSON(join(SRC, 'meta.json'), {});
-const conf = readJSON(join(SRC, 'conformance.json'), null);
 const lock = readJSON(join(ROOT, '.generated', 'sources.lock.json'), {});
-const sourceCommit = lock?.sources?.state?.sha ?? null;
+const sourceCommit = lock?.sources?.cockpit?.sha ?? null;
 
 mkdirSync(GEN, { recursive: true });
+if (record) {
+  mkdirSync(join(ROOT, 'public'), { recursive: true });
+  copyFileSync(SRC, join(ROOT, 'public', 'capabilities.json'));
+}
 
-const features = state?.features ?? [];
-const chapters = state?.chapters ?? [];
-const headline = state?.meta?.headline ?? meta?.headline ?? {};
+const STAGES = (record?.components ?? [])
+  .slice()
+  .sort((a, b) => a.order - b.order)
+  .map((c) => ({ id: c.id, title: c.title, group: GROUP_TITLES[c.group] ?? c.group ?? 'Other' }));
 
-// Resolve the columns: prefer the taxonomy state.json carries (already
-// order-sorted by the generator); fall back to the embedded list ONLY when
-// the snapshot predates the emission.
-const stagesFromState = Array.isArray(state?.stages) && state.stages.length > 0;
-const STAGES = stagesFromState
-  ? state.stages.map((s) => ({ id: s.id, title: s.title, group: GROUP_TITLES[s.group] ?? s.group }))
-  : FALLBACK_STAGES;
-const STAGE_IDS = new Set(STAGES.map((s) => s.id));
+/** A feature's health as the evidence vocabulary the components render. */
+function evidenceOf(health) {
+  const t = health?.tests ?? {};
+  if (health?.state === 'broken' || (t.failed ?? 0) > 0) return 'red';
+  if (health?.state === 'healthy') return 'green';
+  if (health?.state === 'attention' && (t.linked ?? 0) > 0) return 'stale';
+  return 'none';
+}
+/** Lifecycle → the status words the pages use. */
+const STATUS = { stable: 'shipped', beta: 'shipped', experimental: 'experimental', planned: 'planned', deprecated: 'deprecated', retired: 'retired' };
 
-// Validate the stage taxonomy against the live data (drift → hard fail).
-if (features.length) {
-  const seen = new Set();
-  for (const f of features) for (const k of Object.keys(f.cells ?? {})) seen.add(k);
-  const unknown = [...seen].filter((s) => !STAGE_IDS.has(s));
-  if (unknown.length) {
-    console.error(
-      `gen-matrix: state.json has stage(s) not in the ${stagesFromState ? 'emitted' : 'embedded fallback'} taxonomy: ${unknown.join(', ')}.\n` +
-        (stagesFromState
-          ? '  state.json is internally inconsistent (cells vs its own top-level `stages`) — re-generate upstream.'
-          : '  Update FALLBACK_STAGES in scripts/generate/gen-matrix.mjs to match state/registry/stages.yaml,\n' +
-            '  or re-pull a state snapshot that carries the top-level `stages` array.'),
-    );
-    process.exit(1);
+// Reshape each feature into the cell form the rest of this file expects.
+const features = (record?.features ?? []).map((f) => {
+  const ev = evidenceOf(f.health);
+  const cells = {};
+  for (const c of f.claims ?? []) {
+    cells[c.component] = { impl: c.status, evidence: ev, note: c.note ?? null, present: true, freshness: { finished_at: f.health?.evidence_at ?? null } };
   }
+  return {
+    id: f.id,
+    title: f.title,
+    chapter: f.chapter,
+    status: STATUS[f.status] ?? f.status,
+    health: f.health,
+    is_red: ev === 'red',
+    is_shipped_untested: f.status === 'stable' && ev === 'none',
+    cells,
+  };
+});
+const chapters = (record?.chapters ?? []).map((c) => ({ chapter: c.id, title: c.title, group: c.group ?? 'format', order: c.order ?? 999 }));
+
+const shipped = features.filter((f) => f.status === 'shipped');
+const greenShipped = shipped.filter((f) => f.cells && Object.values(f.cells)[0]?.evidence === 'green');
+const pct = (n, d) => (d ? Math.round((100 * n) / d) : 0);
+const headline = {
+  total: features.length,
+  shipped: shipped.length,
+  shipped_pct: pct(shipped.length, features.length),
+  green_of_shipped: greenShipped.length,
+  green_pct: pct(greenShipped.length, shipped.length),
+  stale: features.filter((f) => evidenceOf(f.health) === 'stale').length,
+  failing: features.filter((f) => f.is_red).length,
+  shipped_untested: features.filter((f) => f.is_shipped_untested).length,
+  experimental: features.filter((f) => f.status === 'experimental').length,
+  planned: features.filter((f) => f.status === 'planned').length,
+  record_generated_at: record?.generated_at ?? null,
+};
+
+const STAGE_IDS = new Set(STAGES.map((s) => s.id));
+const unknownStages = [...new Set(features.flatMap((f) => Object.keys(f.cells)))].filter((s) => !STAGE_IDS.has(s));
+if (unknownStages.length) {
+  console.error(`gen-matrix: claims name component(s) the record does not list: ${unknownStages.join(', ')}`);
+  process.exit(1);
 }
 
 // ── helpers ────────────────────────────────────────────────────────────────
@@ -115,7 +116,7 @@ const normImpl = (cell) => {
 };
 const normEv = (cell) => {
   const v = cell?.evidence ?? null;
-  if (v === 'green' || v === 'red' || v === 'flaky') return v;
+  if (v === 'green' || v === 'red' || v === 'flaky' || v === 'stale') return v;
   return 'none';
 };
 
@@ -124,6 +125,7 @@ const normEv = (cell) => {
  * signal on IDML reference pages. Inverse of state's import-docs mapping:
  *   renderer shipped + green → Supported · verified
  *   renderer shipped + red   → Supported · failing
+ *   renderer shipped + stale → Supported · re-test pending (tests passed before the latest change)
  *   renderer shipped (else)  → Supported · untested
  *   renderer partial         → Parsed, partly rendered
  *   parser shipped only      → Parsed, not rendered
@@ -139,6 +141,7 @@ function badgeFor(cells) {
   if (ri === 'shipped') {
     if (re === 'green') return { key: 'supported-verified', label: 'Supported · verified', tone: 'valid' };
     if (re === 'red') return { key: 'supported-failing', label: 'Supported · failing', tone: 'warn' };
+    if (re === 'stale') return { key: 'supported-stale', label: 'Supported · re-test pending', tone: 'valid-muted' };
     return { key: 'supported-untested', label: 'Supported · untested', tone: 'valid-muted' };
   }
   if (ri === 'partial') return { key: 'partial', label: 'Parsed, partly rendered', tone: 'warn' };
@@ -155,19 +158,17 @@ for (const f of features) {
     const c = cells[id] ?? {};
     return { impl: normImpl(c), evidence: normEv(c), present: !!c.present, note: c.note ?? null };
   };
-  // Newest evidence timestamp across all cells — the "last changed" signal the
-  // freshness gate compares against an authored page's `reviewed` date.
-  let updatedAt = null;
-  for (const c of Object.values(cells)) {
-    const t = c?.freshness?.finished_at;
-    if (t && (!updatedAt || t > updatedAt)) updatedAt = t;
-  }
+  // When the feature's implementation last changed — the signal the freshness
+  // gate compares against an authored page's `reviewed` date. (Evidence dates
+  // move with every CI run and would make every guarded page stale daily.)
+  const updatedAt = f.health?.changed_at ?? null;
   supportFeatures[f.id] = {
     id: f.id,
     title: f.title,
     chapter: f.chapter,
     status: f.status ?? null,
-    achievedLevel: f.achieved_level ?? null,
+    achievedLevel: null,
+    health: f.health ?? null,
     updatedAt,
     badge: badgeFor(cells),
     parser: pick('core.parser'),
@@ -198,7 +199,7 @@ for (const f of features) {
     id: f.id,
     title: f.title,
     status: f.status ?? null,
-    achievedLevel: f.achieved_level ?? null,
+    achievedLevel: null,
     isRed: !!f.is_red,
     isShippedUntested: !!f.is_shipped_untested,
     cells,
@@ -206,19 +207,24 @@ for (const f of features) {
 }
 
 const chapterMeta = new Map(chapters.map((c) => [c.chapter, c]));
-const matrixChapters = [...byChapter.entries()].map(([chapter, feats]) => {
-  const cm = chapterMeta.get(chapter) ?? {};
-  return {
-    chapter,
-    title: cm.title ?? chapter,
-    group: cm.group ?? 'format',
-    total: cm.total ?? feats.length,
-    shippedPct: cm.shipped_pct ?? null,
-    greenPct: cm.green_pct ?? null,
-    trend: cm.trend ?? null,
-    features: feats,
-  };
-});
+const matrixChapters = [...byChapter.entries()]
+  .map(([chapter, feats]) => {
+    const cm = chapterMeta.get(chapter) ?? {};
+    const sh = feats.filter((f) => f.status === 'shipped');
+    const green = sh.filter((f) => Object.values(f.cells).some((c) => c.evidence === 'green'));
+    return {
+      chapter,
+      title: cm.title ?? chapter,
+      group: cm.group ?? 'format',
+      order: cm.order ?? 999,
+      total: feats.length,
+      shippedPct: pct(sh.length, feats.length),
+      greenPct: sh.length ? pct(green.length, sh.length) : null,
+      trend: null,
+      features: feats,
+    };
+  })
+  .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
 
 writeFileSync(
   join(GEN, 'matrix.json'),
@@ -226,7 +232,8 @@ writeFileSync(
     {
       generatedAt: new Date().toISOString(),
       sourceCommit,
-      generatedFromRegistryCount: state?.meta?.registry_count ?? features.length,
+      generatedFromRegistryCount: features.length,
+      recordGeneratedAt: record?.generated_at ?? null,
       headline,
       stages: STAGES,
       chapters: matrixChapters,
@@ -239,7 +246,7 @@ writeFileSync(
 // ── conformance.json (passthrough/normalize) ─────────────────────────────────
 writeFileSync(
   join(GEN, 'conformance.json'),
-  JSON.stringify({ generatedAt: new Date().toISOString(), sourceCommit, data: conf }, null, 2),
+  JSON.stringify({ generatedAt: new Date().toISOString(), sourceCommit, data: null }, null, 2),
 );
 
 console.log(

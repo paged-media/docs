@@ -1,0 +1,44 @@
+---
+title: paged.slide — presentations
+description: The presentation plugin — PowerPoint decks opened as native pages with their masters, charts, tables and notes, reworked with layout tools and exported back to .pptx.
+tier: intermediate
+diataxis: explanation
+status: draft
+owner: paged-docs
+describes: [plugin-slide]
+reviewed: "2026-10-12"
+---
+
+**In short:** `paged.slide` makes presentations a document type. A PowerPoint
+`.pptx` opens as native pages: one slide per page, layouts as master spreads,
+shapes, charts, tables and SmartArt as editable native content, and speaker notes
+kept with each slide. PowerPoint itself is the reference: geometry, baselines,
+chart bars and table styles are checked against what it draws. The plugin is in
+development and not yet in the public editor.
+
+## What it does
+
+- Reads `.pptx`, `.ppsx` and `.potx`: masters, layouts, themes, every preset and
+  custom shape, text, pictures, charts, tables (including PowerPoint's built-in
+  table styles) and SmartArt drawings.
+- Resolves PowerPoint's inheritance (theme, master, layout, slide) and writes the
+  deck as a native document, a page per slide.
+- A slide sorter (reorder, duplicate, delete, hide) and a speaker-notes panel; a
+  new slide from a layout.
+- In development: export back to `.pptx` (slide order, hidden slides and notes
+  first; edited slide content next), and a slideshow with a presenter view.
+
+## How it's built
+
+A Cargo workspace (`pptx-core`, `pptx-import`, `slide-resolve`, `slide-geom`,
+`slide-chart`, `slide-idml`, `pptx-export`) over the shared OOXML package layer,
+plus a TS bundle (`@paged-media/slide`). Scripts drive PowerPoint to record the
+answers the tests compare against.
+
+## Capability state
+
+<CapabilityMatrix chapter="plugin-slide" />
+
+## Recent activity
+
+<RepoActivity repo="plugin-slide" />

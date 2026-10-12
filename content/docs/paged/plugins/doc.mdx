@@ -1,0 +1,43 @@
+---
+title: paged.doc — Word documents
+description: The Word plugin — .docx read into native frames and styles, placed into a layout or opened on its own, with byte-level save-back that keeps everything paged did not change.
+tier: intermediate
+diataxis: explanation
+status: draft
+owner: paged-docs
+describes: [plugin-doc]
+reviewed: "2026-10-12"
+---
+
+**In short:** `paged.doc` brings Word documents into paged. A `.docx` is read into
+native content (paragraph and character styles, lists, tables, images, links,
+notes) and either poured into a frame of a layout or opened as a document of its
+own. Saving back writes a targeted patch into the original file, so whatever paged
+did not touch stays exactly as Word wrote it.
+
+## What it does
+
+- Reads the body, styles, lists, tables, images, hyperlinks and notes of a
+  `.docx` or `.dotx`, preserving every part it does not model verbatim.
+- Places a Word document into a frame as one undoable step, with an outline and
+  styles panel over the imported structure.
+- Saves edits back as byte-level patches (text, paragraph properties, table rows
+  and columns); edits it cannot write are listed in the Problems panel rather than
+  dropped silently.
+- In development: opening a Word document on its own, a page per section, with
+  Word's own pagination (line spacing, breaks and keeps).
+
+## How it's built
+
+A Cargo workspace over a shared OOXML package layer (`paged-ooxml`) that lowers
+DOCX into native content, plus a TS bundle (`@paged-media/doc`). An identity-based
+alignment between the source and the edited document is what lets save-back patch
+only what changed.
+
+## Capability state
+
+<CapabilityMatrix chapter="plugin-doc" />
+
+## Recent activity
+
+<RepoActivity repo="plugin-doc" />

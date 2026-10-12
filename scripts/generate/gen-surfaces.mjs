@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * gen-surfaces — projects the capability x surface matrix
- * (state/data/capability-matrix.json, pulled by pull-sources) into
+ * (cockpit/exports/capability-matrix.json, pulled by pull-sources) into
  * `.generated/surfaces.json` for the <SurfaceReach> component.
  *
  * WHY THIS EXISTS. The API index names the programmable surfaces and

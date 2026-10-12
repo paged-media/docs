@@ -40,22 +40,22 @@ The decisive correctness check: render a corpus document and diff it against an
 is *never loosen a threshold to hide a regression — fix it first.* This runs on
 both the engine's own fixtures and the editor's canvas.
 
-### 4. Conformance corpus
+### 4. Corpus fidelity
 
-A central harness runs the corpus (deterministic generated fixtures, real
-InDesign exports) through the engine at each **level** — parsed → rendered →
-mutatable → round-trips — pinned to a core release. Each fixture declares which
-features it exercises, so results route to features. See the live
-[conformance ladder](/docs/paged/state/conformance).
+The corpus (deterministic generated fixtures and real InDesign exports) is rendered
+by the engine and compared with InDesign's own PDFs, page by page, by colour
+difference (ΔE2000) and structural similarity (SSIM). Thresholds only tighten:
+a fixture that regresses is fixed, never re-baselined to pass. See
+[InDesign compatibility](/docs/paged/compare/paged-vs-indesign).
 
 ## How evidence becomes status
 
-Each repo's CI publishes its results; a converter maps them to registry stages and
-features (by suite, by a test→feature map, or by inline `@feat:` tags). The
-`paged-state` generator joins claims with evidence into the matrix you see on the
-[capability state](/docs/paged/state) pages — and into every
-[`<SupportBadge>`](/docs/idml/overview) across the IDML reference.
+Each repository's CI uploads its results. Tests name the capabilities they prove
+(an inline `@feat:` tag, or a test map for suites that cannot carry one), and the
+[cockpit](/docs/paged/repos/cockpit) registry joins the newest runs with its claims
+into the record the [capability state](/docs/paged/state) pages and every
+[`<SupportBadge>`](/docs/idml/overview) render.
 
-A claim with no passing test renders as **untested**, not green; a mapped test
-going red renders as **failing**. The honesty is structural — see
-[how the capability state works](/docs/paged/state/how-it-works).
+A claim with no linked test renders as **untested**, not green; a linked test going
+red renders as **failing**; a pass older than the latest code change renders as
+**re-test pending**. See [how the capability state works](/docs/paged/state/how-it-works).

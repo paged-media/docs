@@ -1,7 +1,7 @@
 'use client';
 /**
  * Client filter views for the generated paged.* scripting catalog. The catalog
- * is large (every host function + ~179 settable paths), so a search box makes it
+ * is large (every host function and settable path), so a search box makes it
  * navigable. Server data comes from <ScriptingCatalog> (lib/generated).
  */
 import { useMemo, useState } from 'react';

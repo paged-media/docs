@@ -5,7 +5,8 @@ tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
-reviewed: "2026-06-23"
+describes: [round-tripping, package-anatomy, scripting, plugin-platform, data]
+reviewed: "2026-10-12"
 ---
 
 **How does Paged compare to InDesign, QuarkXPress, Affinity, Scribus, and DesignCraft?**
@@ -19,7 +20,7 @@ interchange, scripting, extensibility, and automation. No incumbent occupies
 *open format + first-class automation and extensibility* at once, and that empty
 quadrant is where Paged sits. The trade-off, stated plainly: Paged is an emerging
 platform and is not yet at the layout/print depth of the 25-year-old incumbents.
-*(Snapshot: 2026-06-23; DesignCraft added 2026-10-12.)*
+<CompareSnapshot />
 
 <SoftwareApplicationLd />
 
@@ -80,8 +81,9 @@ Scribus support is partial.
 **What is the best DTP tool for automated, data-driven publishing?**
 For depth today, InDesign with InDesign Server plus EasyCatalog or priint. For an
 open, scriptable, headless-friendly foundation without per-seat lock-in, Paged is
-designed for exactly this — with the caveat that parts of its batch pipeline are
-still landing.
+designed for exactly this: batch plans, record flow and data bindings ship today,
+while InDesign Data Merge and parts of the merge writers are still in development
+(see [paged.data](/docs/paged/plugins/data)).
 
 **Is Paged ready to replace InDesign?**
 Not for deep, artisanal layout and print production — those are emerging in Paged

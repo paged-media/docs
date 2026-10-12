@@ -1,0 +1,43 @@
+name: update-comparison
+# Monthly: research the competitor columns of the DTP comparison (InDesign,
+# QuarkXPress, Affinity, Scribus, DesignCraft) and open a PR for a human to
+# review. Paged's own scores are not researched: they rest on the capability
+# record and check:comparison guards them. Needs the ANTHROPIC_API_KEY secret.
+on:
+  schedule:
+    - cron: "0 7 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Research and rewrite data/comparison.json
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then echo "::error::ANTHROPIC_API_KEY is not set"; exit 1; fi
+          npm install --no-save --no-package-lock @anthropic-ai/sdk >/dev/null
+          node scripts/update-comparison.mjs
+      - name: Open a pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet data/comparison.json; then echo "No changes"; exit 0; fi
+          branch="research/comparison-$(date -u +%Y-%m-%d)"
+          git config user.name "comparison-research[bot]"
+          git config user.email "comparison-research@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add data/comparison.json
+          git commit -q -m "comparison: competitor research $(date -u +%Y-%m-%d)"
+          git push -q -u origin "$branch"
+          gh pr create --title "Comparison: competitor research $(date -u +%Y-%m-%d)" --body "Monthly research of the competitor columns (scripts/update-comparison.mjs). Paged's scores and their evidence backing are unchanged by construction. **Review every changed score and note against its source before merging** — the research proposes, a person decides."

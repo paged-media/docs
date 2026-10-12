@@ -1,22 +1,59 @@
 {
-  "$comment": "Editorial DTP comparison matrix behind /docs/paged/compare. Ordinal 0-3 editorial scores on a dated snapshot, NOT vendor benchmarks. Roadmap-not-shipped Paged capabilities use pagedPlanned:true and are scored honestly, not as present. Update with `pnpm update:comparison` (researches current facts via Claude Opus) or by hand — then bump `snapshot`.",
+  "$comment": "Editorial DTP comparison matrix behind /docs/paged/compare. Ordinal 0-3 editorial scores on a dated snapshot, NOT vendor benchmarks. Roadmap-not-shipped Paged capabilities use pagedPlanned:true and are scored honestly, not as present. Update with `pnpm update:comparison` (researches current facts via Claude Opus) or by hand — then bump `snapshot`. Competitor tools carry a `researched` date; Paged's scores stay editorial but each row names the registry features (`paged.chapters` / `paged.features`) or facts it rests on, and check:comparison fails a score of 2 or more whose backing is planned, failing or less than half verified.",
   "snapshot": "2026-06-23",
   "scale": [
-    { "score": 0, "label": "None" },
-    { "score": 1, "label": "Limited / emerging" },
-    { "score": 2, "label": "Solid" },
-    { "score": 3, "label": "Comprehensive" }
+    {
+      "score": 0,
+      "label": "None"
+    },
+    {
+      "score": 1,
+      "label": "Limited / emerging"
+    },
+    {
+      "score": 2,
+      "label": "Solid"
+    },
+    {
+      "score": 3,
+      "label": "Comprehensive"
+    }
   ],
   "tools": [
-    { "key": "paged", "name": "Paged", "note": "Open-source IDML platform (emerging)" },
-    { "key": "indesign", "name": "Adobe InDesign", "note": "The incumbent; subscription" },
-    { "key": "quark", "name": "QuarkXPress", "note": "Proprietary; perpetual licence" },
-    { "key": "affinity", "name": "Affinity by Canva", "note": "Free, proprietary, single app" },
-    { "key": "scribus", "name": "Scribus", "note": "Open-source (GPL)" },
+    {
+      "key": "paged",
+      "name": "Paged",
+      "note": "Open-source IDML platform (emerging)"
+    },
+    {
+      "key": "indesign",
+      "name": "Adobe InDesign",
+      "note": "The incumbent; subscription",
+      "researched": "2026-06-23"
+    },
+    {
+      "key": "quark",
+      "name": "QuarkXPress",
+      "note": "Proprietary; perpetual licence",
+      "researched": "2026-06-23"
+    },
+    {
+      "key": "affinity",
+      "name": "Affinity by Canva",
+      "note": "Free, proprietary, single app",
+      "researched": "2026-06-23"
+    },
+    {
+      "key": "scribus",
+      "name": "Scribus",
+      "note": "Open-source (GPL)",
+      "researched": "2026-06-23"
+    },
     {
       "key": "designcraft",
       "name": "DesignCraft (ArtCraft)",
-      "note": "Open source (MIT OR Apache-2.0), pre-alpha; added 2026-10-12"
+      "note": "Open source (MIT OR Apache-2.0), pre-alpha; added 2026-10-12",
+      "researched": "2026-10-12"
     }
   ],
   "domains": [
@@ -27,8 +64,21 @@
       "rows": [
         {
           "dimension": "Open source & free to use",
-          "scores": { "paged": 3, "indesign": 0, "quark": 0, "affinity": 1, "scribus": 3, "designcraft": 3 },
-          "note": "Paged is MPL-2.0 OR PMEL; Scribus is GPL. Affinity is free-of-charge but proprietary and vendor-governed (Canva). DesignCraft (ArtCraft) is MIT OR Apache-2.0 and free."
+          "scores": {
+            "paged": 3,
+            "indesign": 0,
+            "quark": 0,
+            "affinity": 1,
+            "scribus": 3,
+            "designcraft": 3
+          },
+          "note": "Paged's engine is {fact:license.engine} and its editor {fact:license.editor}; Scribus is GPL. Affinity is free-of-charge but proprietary and vendor-governed (Canva). DesignCraft (ArtCraft) is MIT OR Apache-2.0 and free.",
+          "paged": {
+            "facts": [
+              "license.engine",
+              "license.editor"
+            ]
+          }
         }
       ]
     },
@@ -39,8 +89,21 @@
       "rows": [
         {
           "dimension": "Open, inspectable document container",
-          "scores": { "paged": 3, "indesign": 1, "quark": 0, "affinity": 0, "scribus": 2, "designcraft": 2 },
-          "note": "Paged's .paged is always a valid IDML (ZIP) package. InDesign's .indd is closed (IDML is its interchange form). .qxp and .af are proprietary; Scribus .sla is open XML but app-specific. DesignCraft has its own documented native format."
+          "scores": {
+            "paged": 3,
+            "indesign": 1,
+            "quark": 0,
+            "affinity": 0,
+            "scribus": 2,
+            "designcraft": 2
+          },
+          "note": "Paged's .paged is always a valid IDML (ZIP) package. InDesign's .indd is closed (IDML is its interchange form). .qxp and .af are proprietary; Scribus .sla is open XML but app-specific. DesignCraft has its own documented native format.",
+          "paged": {
+            "features": [
+              "round-tripping.native-reserialization",
+              "round-tripping.idml-reserialization"
+            ]
+          }
         }
       ]
     },
@@ -51,8 +114,21 @@
       "rows": [
         {
           "dimension": "Round-trips IDML with the InDesign ecosystem",
-          "scores": { "paged": 3, "indesign": 3, "quark": 1, "affinity": 1, "scribus": 1, "designcraft": 2 },
-          "note": "InDesign defines IDML. Paged reads and writes it natively. Affinity imports IDML but cannot export it; Scribus IDML import is partial. DesignCraft imports and exports IDML; its own gap list says the round trip is not yet measured on real InDesign files."
+          "scores": {
+            "paged": 3,
+            "indesign": 3,
+            "quark": 1,
+            "affinity": 1,
+            "scribus": 1,
+            "designcraft": 2
+          },
+          "note": "InDesign defines IDML. Paged reads and writes it natively. Affinity imports IDML but cannot export it; Scribus IDML import is partial. DesignCraft imports and exports IDML; its own gap list says the round trip is not yet measured on real InDesign files.",
+          "paged": {
+            "chapters": [
+              "round-tripping",
+              "package-anatomy"
+            ]
+          }
         }
       ]
     },
@@ -63,8 +139,20 @@
       "rows": [
         {
           "dimension": "Scriptable document model",
-          "scores": { "paged": 2, "indesign": 3, "quark": 2, "affinity": 0, "scribus": 2, "designcraft": 2 },
-          "note": "Paged exposes a sandboxed paged.* ECMAScript surface (emerging). InDesign has ExtendScript/UXP; Scribus has Python; Affinity has no scripting. DesignCraft drives every command over a JSON control channel, an MCP server and a headless CLI; it has no document scripting language."
+          "scores": {
+            "paged": 2,
+            "indesign": 3,
+            "quark": 2,
+            "affinity": 0,
+            "scribus": 2,
+            "designcraft": 2
+          },
+          "note": "Paged exposes a sandboxed paged.* ECMAScript surface (emerging). InDesign has ExtendScript/UXP; Scribus has Python; Affinity has no scripting. DesignCraft drives every command over a JSON control channel, an MCP server and a headless CLI; it has no document scripting language.",
+          "paged": {
+            "chapters": [
+              "scripting"
+            ]
+          }
         }
       ]
     },
@@ -75,8 +163,20 @@
       "rows": [
         {
           "dimension": "First-class plugin platform",
-          "scores": { "paged": 2, "indesign": 3, "quark": 1, "affinity": 0, "scribus": 1, "designcraft": 0 },
-          "note": "Paged ships a public plugin SDK (emerging). InDesign's SDK is mature but closed/paid; Quark has XTensions; Affinity has no plugins. DesignCraft documents no plugin system."
+          "scores": {
+            "paged": 2,
+            "indesign": 3,
+            "quark": 1,
+            "affinity": 0,
+            "scribus": 1,
+            "designcraft": 0
+          },
+          "note": "Paged ships a public plugin SDK (emerging). InDesign's SDK is mature but closed/paid; Quark has XTensions; Affinity has no plugins. DesignCraft documents no plugin system.",
+          "paged": {
+            "chapters": [
+              "plugin-platform"
+            ]
+          }
         }
       ]
     },
@@ -87,9 +187,21 @@
       "rows": [
         {
           "dimension": "Headless / data-merge / PIM-fed output",
-          "scores": { "paged": 2, "indesign": 3, "quark": 2, "affinity": 0, "scribus": 1, "designcraft": 1 },
+          "scores": {
+            "paged": 2,
+            "indesign": 3,
+            "quark": 2,
+            "affinity": 0,
+            "scribus": 1,
+            "designcraft": 1
+          },
           "pagedPlanned": true,
-          "note": "InDesign leans on InDesign Server + EasyCatalog/priint. Paged is automation-native and headless-friendly by design; parts of the batch pipeline are still landing. DesignCraft's headless CLI renders and drives documents; data merge is not documented."
+          "note": "InDesign leans on InDesign Server + EasyCatalog/priint. Paged is automation-native and headless-friendly by design; parts of the batch pipeline are still landing. DesignCraft's headless CLI renders and drives documents; data merge is not documented.",
+          "paged": {
+            "chapters": [
+              "data"
+            ]
+          }
         }
       ]
     },
@@ -100,8 +212,23 @@
       "rows": [
         {
           "dimension": "Desktop, web, and headless delivery",
-          "scores": { "paged": 3, "indesign": 1, "quark": 1, "affinity": 1, "scribus": 1, "designcraft": 3 },
-          "note": "Paged renders with WebGPU and runs in the browser as well as headless. The incumbents are desktop apps (InDesign adds a server product). DesignCraft runs natively on macOS, Windows, Linux and FreeBSD and in the browser via WebAssembly, with a headless CLI."
+          "scores": {
+            "paged": 3,
+            "indesign": 1,
+            "quark": 1,
+            "affinity": 1,
+            "scribus": 1,
+            "designcraft": 3
+          },
+          "note": "Paged renders with WebGPU and runs in the browser as well as headless. The incumbents are desktop apps (InDesign adds a server product). DesignCraft runs natively on macOS, Windows, Linux and FreeBSD and in the browser via WebAssembly, with a headless CLI.",
+          "paged": {
+            "chapters": [
+              "editor-shell"
+            ],
+            "facts": [
+              "cli.commands"
+            ]
+          }
         }
       ]
     },
@@ -112,9 +239,25 @@
       "rows": [
         {
           "dimension": "Professional page layout & typesetting",
-          "scores": { "paged": 1, "indesign": 3, "quark": 3, "affinity": 2, "scribus": 2, "designcraft": 1 },
+          "scores": {
+            "paged": 1,
+            "indesign": 3,
+            "quark": 3,
+            "affinity": 2,
+            "scribus": 2,
+            "designcraft": 1
+          },
           "pagedPlanned": true,
-          "note": "The honest gap: Paged is an emerging platform, not at the layout/typography depth of 25-year-old incumbents. Treated as baseline because every serious tool clears it. DesignCraft (pre-alpha) has a Knuth–Plass composer, threaded stories and styles, but threading text by hand is still its alpha blocker."
+          "note": "The honest gap: Paged is an emerging platform, not at the layout/typography depth of 25-year-old incumbents. Treated as baseline because every serious tool clears it. DesignCraft (pre-alpha) has a Knuth–Plass composer, threaded stories and styles, but threading text by hand is still its alpha blocker.",
+          "paged": {
+            "chapters": [
+              "typography",
+              "stories-text",
+              "styles",
+              "tables",
+              "layout-model"
+            ]
+          }
         }
       ]
     },
@@ -125,9 +268,22 @@
       "rows": [
         {
           "dimension": "CMYK, spot color, PDF/X, preflight",
-          "scores": { "paged": 1, "indesign": 3, "quark": 3, "affinity": 2, "scribus": 3, "designcraft": 2 },
+          "scores": {
+            "paged": 1,
+            "indesign": 3,
+            "quark": 3,
+            "affinity": 2,
+            "scribus": 3,
+            "designcraft": 2
+          },
           "pagedPlanned": true,
-          "note": "Scribus is notably strong here. Paged color/print production is emerging; several pieces are on the roadmap, not shipped. DesignCraft exports PDF/X-4 and PDF/A-2b with CMYK, spot colours, bleed and crop marks (per its README; pre-alpha)."
+          "note": "Scribus is notably strong here. Paged color/print production is emerging; several pieces are on the roadmap, not shipped. DesignCraft exports PDF/X-4 and PDF/A-2b with CMYK, spot colours, bleed and crop marks (per its README; pre-alpha).",
+          "paged": {
+            "chapters": [
+              "color-swatches",
+              "effects-transparency"
+            ]
+          }
         }
       ]
     }

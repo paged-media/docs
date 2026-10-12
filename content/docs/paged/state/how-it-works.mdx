@@ -1,48 +1,55 @@
 ---
 title: How the capability state works
-description: The registry, the test-evidence overlay, and the generation pipeline that keeps these pages in lock-step with the software — by construction, not by hand.
+description: The capability registry, where its test evidence comes from, and the pipeline that rebuilds these pages from CI test runs instead of by hand.
 tier: pro
 diataxis: explanation
-status: draft
+status: published
 owner: paged-docs
+reviewed: "2026-10-12"
 ---
 
-**In short:** there is one registry of capabilities. Every repo's tests publish
-evidence against it. The dashboard and these docs both render the joined result.
-Nothing on this page is hand-typed — it is **generated from the registry on every
-build**, so it cannot drift from reality without the build noticing.
+**In short:** there is one registry of capabilities. Every repository's CI
+publishes its test results; a nightly job, and every finished test run on a main
+branch, joins them to the registry and exports one record. These docs and
+[paged.media](https://paged.media) are built from that record, so a number on
+these pages is never typed by hand.
 
 ## The registry
 
-Each capability is one row, identified by a stable `chapter.feature` id and
-carrying a per-**layer** implementation status. The layers (the matrix columns)
-are the engine's parser, renderer, mutation, canvas/wasm, and SDK; the editor's
-canvas, shell, panel, gesture, script, and styleguide; the server API; and one
-column per content plugin (draw, web, image, data, sheet) plus the plugin API.
+Each capability is one row with a stable `chapter.feature` id, a lifecycle
+(stable, experimental, planned) and a **claim per layer**: which parts of the
+system implement it, and whether fully or partly. The layers are the matrix
+columns: the engine's parser, renderer, mutation, canvas and SDK; the editor's
+canvas, shell, panels, gestures and scripting; the plugin API; and one column per
+content plugin.
 
-A row only *claims* what it implements. Claims are honest about partial work, and
-a claim is never promoted on its own.
+A claim says what is built. It is never counted as proof.
 
-## The evidence overlay
+## The evidence
 
-Tests across every repo — the engine's Rust suites, the editor's Playwright
-journeys, the plugins' suites, and the corpus conformance harness — publish their
-results against feature ids. The registry joins claim and evidence per cell:
+Tests name the capabilities they prove: a tag in the test name
+(`@feat:chapter.feature`), or a mapping file for suites that cannot carry one.
+The registry reads the newest test results each repository's CI uploaded and
+gives every capability a health:
 
-- **shipped &amp; verified** — claimed, and a passing test backs it.
-- **shipped, untested** — claimed, but no test yet maps to it.
-- **failing** — claimed, but a mapped test is red.
-- **partial / planned** — the claim itself is not yet complete.
+- **verified** — a passing test run newer than the capability's latest code change.
+- **re-test pending** — its tests passed, but before the latest change.
+- **failing** — a linked test is red.
+- **untested** — no test names it yet.
 
-This is why a green cell means something: the registry claims, the tests verify,
-and the [matrix](/docs/paged/state/matrix) renders both.
+A test that names a capability the registry does not have is an error in the
+nightly run, so a new feature cannot hide behind a mistyped tag.
 
 ## Why these pages stay current
 
-The docs pull the registry (and the engine scripting catalog, the plugin manifest
-schema, the server OpenAPI spec, and the repos' commit history) at build time,
-governed by a pin file, and project them into the components you see. A nightly
-rebuild and an on-push trigger from the source repos keep the published site
-fresh. Authored prose that *describes* a moving source is gated: if the source
-changes and the page isn't re-reviewed, the build flags it. Generated pages
-simply re-render. Either way, "stale and nobody noticed" is designed out.
+The registry's export, the engine's scripting catalog and CLI surface, the
+plugin registries and each package's licence are pulled at build time and
+projected into the components you see. Counts in prose (functions, kernels,
+operations, the protocol version, licences) come from the same sources through a
+`<Fact>` component, and the build fails a page that types one of them by hand. The
+build also fails when the record is more than a week old or a source cannot be
+pulled, so a broken pipeline shows up as a red build rather than as quietly old
+numbers.
+
+The record itself is public: [capabilities.json](/capabilities.json) and
+[facts.json](/facts.json).

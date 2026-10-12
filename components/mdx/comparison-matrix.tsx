@@ -4,7 +4,8 @@
  * re-serialise tables; never ship it as an image or CSS-grid fake-table). Data
  * comes from lib/comparison-data.ts.
  */
-import { DOMAINS, SCALE, SNAPSHOT, TOOLS, VERDICTS, type ToolKey } from '@/lib/comparison-data';
+import { DOMAINS, SCALE, SNAPSHOT, TOOLS, VERDICTS, pagedEvidence, resolveNote, type ToolKey } from '@/lib/comparison-data';
+import { getMatrix } from '@/lib/generated';
 
 const TOOL_ORDER: ToolKey[] = ['paged', 'indesign', 'quark', 'affinity', 'scribus', 'designcraft'];
 const NAME: Record<ToolKey, string> = Object.fromEntries(TOOLS.map((t) => [t.key, t.name])) as Record<ToolKey, string>;
@@ -93,11 +94,12 @@ function DomainRows({ domain, cols }: { domain: (typeof DOMAINS)[number]; cols: 
         <tr key={row.dimension}>
           <td style={{ ...td, textAlign: 'left', fontFamily: 'var(--font-sans)', fontSize: 13 }}>
             {row.dimension}
-            {row.note ? <div style={{ fontSize: 11.5, color: 'var(--color-muted)', marginTop: 2 }}>{row.note}</div> : null}
+            {row.note ? <div style={{ fontSize: 11.5, color: 'var(--color-muted)', marginTop: 2 }}>{resolveNote(row.note)}</div> : null}
           </td>
           {cols.map((k) => (
             <td key={k} style={{ ...td, ...(k === 'paged' ? pagedCol : {}) }}>
               <Meter score={row.scores[k]} />
+              {k === 'paged' ? <PagedEvidenceLine row={row} /> : null}
               {k === 'paged' && row.pagedPlanned ? (
                 <div style={{ fontFamily: 'var(--font-sans)', fontSize: 9, fontWeight: 680, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--warn, #c80)', marginTop: 2 }}>planned</div>
               ) : null}
@@ -106,6 +108,39 @@ function DomainRows({ domain, cols }: { domain: (typeof DOMAINS)[number]; cols: 
         </tr>
       ))}
     </>
+  );
+}
+
+/** Under Paged's score: how many of the registry features it rests on tests verify today. */
+function PagedEvidenceLine({ row }: { row: (typeof DOMAINS)[number]['rows'][number] }) {
+  const e = pagedEvidence(row);
+  if (!e.features) return null;
+  return (
+    <div
+      title={`${e.verified} of ${e.features} shipped capabilities behind this score have passing tests newer than their latest change${e.failing ? `; ${e.failing} failing` : ''}${e.planned ? `; ${e.planned} more on the roadmap` : ''}`}
+      style={{ fontFamily: 'var(--font-sans)', fontSize: 9.5, color: e.failing ? 'var(--warn, #c80)' : 'var(--color-muted)', marginTop: 2, whiteSpace: 'nowrap' }}
+    >
+      <a href="/docs/paged/state/matrix" style={{ color: 'inherit' }}>
+        {e.verified}/{e.features} verified
+      </a>
+    </div>
+  );
+}
+
+/**
+ * <CompareSnapshot only={["designcraft"]} /> — the dates behind a comparison, from
+ * comparison.json: when each competitor was researched, and that Paged's own
+ * evidence is live. Never typed into a page, so a research update moves it.
+ */
+export function CompareSnapshot({ only }: { only?: ToolKey[] }) {
+  const tools = TOOLS.filter((t) => t.researched && (!only || only.includes(t.key)));
+  const byDate = new Map<string, string[]>();
+  for (const t of tools) byDate.set(t.researched!, [...(byDate.get(t.researched!) ?? []), t.name]);
+  const parts = [...byDate.entries()].map(([d, names]) => (byDate.size === 1 && !only ? d : `${names.join(', ')} ${d}`));
+  return (
+    <em>
+      ({only ? 'Researched' : 'Competitors researched'} {parts.join('; ')}; Paged&rsquo;s test evidence is live.)
+    </em>
   );
 }
 
@@ -127,7 +162,12 @@ export function ComparisonVerdicts() {
 export function ComparisonMethodology() {
   return (
     <aside className="not-prose" style={{ margin: '1.25rem 0', padding: '0.8rem 1rem', border: '1px dashed var(--color-rule)', borderRadius: 6, fontFamily: 'var(--font-sans)', fontSize: 12.5, color: 'var(--color-muted)' }}>
-      <strong style={{ color: 'var(--color-ink, inherit)' }}>Methodology.</strong> Scores are an ordinal 0–3 editorial judgement, not vendor benchmarks — snapshot {SNAPSHOT}.
+      <strong style={{ color: 'var(--color-ink, inherit)' }}>Methodology.</strong> Scores are an ordinal 0–3 editorial judgement, not vendor benchmarks.
+      Competitors were researched on the dates beside their names{' '}
+      ({TOOLS.filter((t) => t.researched).map((t) => `${t.name} ${t.researched}`).join(', ')}). Paged&rsquo;s scores rest on the capabilities named under each
+      cell, and their test evidence is live: “x/y verified” comes from the capability record of{' '}
+      {getMatrix().headline.record_generated_at?.slice(0, 10) ?? 'an unknown date'}, and the build refuses a score of 2 or more whose capabilities are planned,
+      failing or mostly unverified.
       “Baseline” rows are capabilities every serious tool clears; “differentiator” rows are where the field actually separates. Paged capabilities that are on the
       roadmap but not yet shipped are marked <em>planned</em> rather than scored as present. Some facts move (Affinity is now free and unified under Canva with a
       proprietary <code>.af</code> format that imports but cannot export IDML; Microsoft Publisher retires in October 2026). Corrections are welcome — open an issue

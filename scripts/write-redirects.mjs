@@ -48,6 +48,12 @@ const MOVED_TO_PAGED = {
   'edge-cases/graceful-degradation': 'engine/edge-cases/graceful-degradation',
 };
 
+// docs.paged.media pages that were retired: old path → the page that replaces it.
+const RETIRED_PAGED = {
+  'state/conformance': 'state/matrix',
+  'repos/state': 'repos/cockpit',
+};
+
 const chapters = (dir) =>
   readdirSync(join(ROOT, 'content/docs', dir)).filter((n) => statSync(join(ROOT, 'content/docs', dir, n)).isDirectory());
 const idmlChapters = chapters('idml');
@@ -74,6 +80,10 @@ if (SITE === 'paged') {
   for (const [from, to] of Object.entries(MOVED_TO_PAGED)) {
     for (const old of [`/docs/idml/${from}`, `/docs/${from}`]) rules.push([old, `/${to}/`], [`${old}/`, `/${to}/`]);
   }
+  // Pages retired on this site: old path → the page that now answers the question.
+  // The conformance ladder lived only in the retired state registry; per-feature
+  // verification is now the test health on the capability matrix (2026-10-12).
+  for (const [from, to] of Object.entries(RETIRED_PAGED)) rules.push([`/${from}`, `/${to}/`], [`/${from}/`, `/${to}/`]);
   // The IDML pillar is now its own site.
   rules.push(['/docs/idml', `${IDML}/`], ['/docs/idml/', `${IDML}/`]);
   rules.push(['/docs/idml/index.html', `${IDML}/`]);

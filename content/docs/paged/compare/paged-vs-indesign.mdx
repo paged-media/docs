@@ -5,7 +5,8 @@ tier: intermediate
 diataxis: explanation
 status: published
 owner: paged-docs
-reviewed: "2026-06-23"
+describes: [round-tripping, package-anatomy, data, scripting]
+reviewed: "2026-10-12"
 ---
 
 **How does Paged compare to Adobe InDesign?**
@@ -16,8 +17,7 @@ whose native `.indd` format is proprietary (IDML is its interchange form). Paged
 is open source, treats IDML as its native container, and is scriptable and
 headless-friendly. Paged does not match InDesign's layout depth or ecosystem
 today; its case is being the *open foundation* for the same interchange and
-automation jobs, without the subscription or the lock-in. *(Snapshot:
-2026-06-23.)*
+automation jobs, without the subscription or the lock-in. <CompareSnapshot only={["indesign"]} />
 
 <SoftwareApplicationLd />
 
@@ -54,8 +54,9 @@ InDesign's automation story is strong but built around paid, closed pieces:
 InDesign Server plus ecosystem tools like EasyCatalog and priint. Paged is
 automation-native and headless-friendly by design, aimed at data-driven and
 PIM-fed publishing — see [automated publishing](/docs/paged/use-cases/automated-publishing).
-Be clear-eyed: InDesign's automation ecosystem is far more mature today; parts of
-Paged's batch pipeline are still landing.
+Be clear-eyed: InDesign's automation ecosystem is far more mature today. Paged's
+batch plans and record flow ship; InDesign Data Merge support and parts of the merge
+writers are still in development.
 
 ## Migrating from InDesign
 

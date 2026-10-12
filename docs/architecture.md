@@ -95,14 +95,16 @@ project's own work is [ADR 800](adr/800-clean-room-documentation.md).
 
 ## Generated platform data
 
-`pnpm generate:docs` runs eleven stages. The first, `pull-sources.mjs`, fetches the files
+`pnpm generate:docs` runs twelve stages. The first, `pull-sources.mjs`, fetches the files
 named in `sources.pin` into `.generated/sources/`; the others project them into the JSON
 files that `lib/generated.ts` loads for server components. A missing file loads as empty
-data. See [ADR 802](adr/802-generated-platform-pages.md).
+data, except facts: a fact that cannot be evaluated fails the build. See
+[ADR 802](adr/802-generated-platform-pages.md) and [ADR 807](adr/807-capability-truth.md).
 
 | Source in `sources.pin` | Stage | Output in `.generated/` | Read by |
 |---|---|---|---|
-| `state` | `gen-matrix` | `matrix.json`, `support-map.json`, `conformance.json` | `CapabilityMatrix`, `StatusHeadline`, `SupportBadge`, `StageRow`, `ConformanceTable` |
+| `cockpit` | `gen-matrix` | `matrix.json`, `support-map.json` (and `public/capabilities.json`) | `CapabilityMatrix`, `StatusHeadline`, `SupportBadge`, `StageRow`, `pagedEvidence` in the comparison |
+| `core-catalog`, `cli-surface`, `editor-catalog`, `core-meta`, `plugin-*`, this repo | `gen-facts` (with `data/facts.json`) | `facts.json` (and `public/facts.json`) | `Fact`, `SoftwareApplicationLd`, `resolveNote` |
 | `core-catalog` | `gen-scripting`, `gen-idml-schema` | `scripting.json`, `idml-schema.json` | `ScriptingCatalog`, `FunctionPlayground`, `PathShowcase`, `PathReference`, `AttrTable` |
 | `sdk-catalog` | `gen-sdk` | `sdk-catalog.json` | `SdkCatalog` |
 | `cli-surface` | `gen-cli` | `cli.json` | `CliReference` |
@@ -145,7 +147,8 @@ in an iframe. This is why the host sends cross-origin isolation headers
 | `core` | `paged-inspect` and `paged-run`, built in CI at the commit in `core.pin`; three pulled JSON files (scripting catalog, viewer API catalog, command-line tree); the npm package `@paged-media/idml-viewer` at an exact version; the byte rules that `scripts/examples/assemble.ts` repeats. |
 | `plugin-sdk` | The manifest schema `packages/plugin-api/src/manifest.schema.json`, pulled. |
 | `editor` | The playground deployment that the iframes embed, with its query parameters and messages. |
-| `state`, `editor-server` | The feature registry with the capability matrix, and the OpenAPI document, pulled as JSON. |
+| `cockpit` | The capability record and the surface matrix its export workflow commits, pulled as JSON. |
+| `editor-server` | The OpenAPI document, pulled as JSON. |
 | a separate baseline repository | The fingerprint file the similarity check compares against. |
 
 In the other direction the repository offers one door: the deploy workflow rebuilds when it

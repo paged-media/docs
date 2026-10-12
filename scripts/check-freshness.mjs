@@ -15,8 +15,13 @@
  * prose against the changed reality and bump `reviewed`. Pages without
  * `describes` are not checked (not every page needs the guard).
  *
- * `describes` entries that aren't known registry feature ids are reported as
- * informational (e.g. a source path — a future enhancement), never a hard fail.
+ * An entry may name a registry feature id or a whole chapter (`plugin-sheets`'s
+ * chapter is `sheet`), which stands for every feature in it. A feature "changed"
+ * when its implementation last changed (cockpit's changed_at), not when its tests
+ * last ran. Entries that are neither are reported as informational.
+ *
+ * Pages under REQUIRED (plugins/, compare/) state capabilities in prose and must
+ * declare `describes` and `reviewed`.
  *
  * Run: node scripts/check-freshness.mjs [--warn]   (needs `pnpm generate:docs`)
  *   --warn  report only (exit 0); default fails the build on a stale page.
@@ -75,6 +80,13 @@ function listField(fm, name) {
     .filter(Boolean);
 }
 
+const REQUIRED = ['content/docs/paged/plugins/', 'content/docs/paged/compare/'];
+const byChapter = new Map();
+for (const f of Object.values(support)) {
+  if (!byChapter.has(f.chapter)) byChapter.set(f.chapter, []);
+  byChapter.get(f.chapter).push(f);
+}
+const missingDescribes = [];
 const stale = [];
 const missingReviewed = [];
 const info = [];
@@ -83,8 +95,11 @@ let checked = 0;
 for (const file of existsSync(CONTENT) ? walk(CONTENT) : []) {
   const fm = frontmatter(readFileSync(file, 'utf8'));
   const describes = listField(fm, 'describes');
-  if (!describes.length) continue;
   const rel = relative(ROOT, file);
+  if (!describes.length) {
+    if (REQUIRED.some((d) => rel.startsWith(d))) missingDescribes.push(rel);
+    continue;
+  }
   const reviewed = field(fm, 'reviewed');
   if (!reviewed) {
     missingReviewed.push(rel);
@@ -92,15 +107,16 @@ for (const file of existsSync(CONTENT) ? walk(CONTENT) : []) {
   }
   checked++;
   for (const id of describes) {
-    const f = support[id];
-    if (!f) {
-      info.push(`${rel}: describes "${id}" (not a registry feature id — not freshness-checked)`);
+    const feats = support[id] ? [support[id]] : (byChapter.get(id) ?? []);
+    if (!feats.length) {
+      info.push(`${rel}: describes "${id}" (neither a registry feature nor a chapter — not freshness-checked)`);
       continue;
     }
-    // `reviewed` is a day: evidence from later that same day does not make
-    // the page stale, so compare calendar days (ISO dates sort as strings).
-    if (f.updatedAt && f.updatedAt.slice(0, 10) > reviewed.slice(0, 10)) {
-      stale.push(`${rel}: "${id}" changed ${f.updatedAt.slice(0, 10)} > reviewed ${reviewed} — re-review and bump \`reviewed\``);
+    // `reviewed` is a day: a change later that same day does not make the page
+    // stale, so compare calendar days (ISO dates sort as strings).
+    const newest = feats.filter((f) => f.updatedAt).sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1))[0];
+    if (newest && newest.updatedAt.slice(0, 10) > reviewed.slice(0, 10)) {
+      stale.push(`${rel}: "${id}" changed ${newest.updatedAt.slice(0, 10)} (${newest.id}) > reviewed ${reviewed} — re-review and bump \`reviewed\``);
     }
   }
 }
@@ -108,6 +124,10 @@ for (const file of existsSync(CONTENT) ? walk(CONTENT) : []) {
 for (const i of info) console.log('  · ' + i);
 console.log(`check-freshness: ${checked} guarded page(s) checked`);
 
+if (missingDescribes.length) {
+  console.error('\nPages that state capabilities but declare no `describes:` (plugins/, compare/):');
+  for (const p of missingDescribes) console.error('  ✗ ' + p);
+}
 if (missingReviewed.length) {
   console.error('\nPages with `describes:` but no `reviewed:` date:');
   for (const p of missingReviewed) console.error('  ✗ ' + p);
@@ -117,6 +137,6 @@ if (stale.length) {
   for (const s of stale) console.error('  ✗ ' + s);
 }
 
-const failed = missingReviewed.length + stale.length;
+const failed = missingDescribes.length + missingReviewed.length + stale.length;
 if (failed && !WARN_ONLY) process.exit(1);
 if (!failed) console.log('check-freshness: OK');

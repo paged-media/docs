@@ -10,6 +10,7 @@ import { DifficultyLabel } from './difficulty-label';
 import { ExampleEmbed } from './example-embed';
 import { SupportBadge } from './support-badge';
 import { StageRow } from './stage-row';
+import { Fact } from './fact';
 import { CapabilityMatrix } from './capability-matrix';
 import { ConformanceTable } from './conformance-table';
 import { StatusHeadline } from './status-headline';
@@ -34,7 +35,7 @@ import { Callout, Note } from './callout';
 import { GutenbergAside } from './gutenberg-aside';
 import { RelatedAcrossPillars } from './related-across-pillars';
 import { XRef } from './xref';
-import { ComparisonMatrix, ComparisonVerdicts, ComparisonMethodology } from './comparison-matrix';
+import { ComparisonMatrix, ComparisonVerdicts, ComparisonMethodology, CompareSnapshot } from './comparison-matrix';
 import { SoftwareApplicationLd } from './software-application-ld';
 import { PackageGraph, CoordinateSpace, StyleCascade, StoryThreading } from '@/components/diagrams';
 import { InteractiveFigure, ScriptingExecutionModel, RenderPipeline } from '@/components/diagrams/interactive';
@@ -60,6 +61,7 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     ExampleEmbed,
     SupportBadge,
     StageRow,
+    Fact,
     CapabilityMatrix,
     ConformanceTable,
     StatusHeadline,
@@ -89,6 +91,7 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     RelatedAcrossPillars,
     XRef,
     ComparisonMatrix,
+    CompareSnapshot,
     ComparisonVerdicts,
     ComparisonMethodology,
     SoftwareApplicationLd,
