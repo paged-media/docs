@@ -7,9 +7,12 @@
  *                                  the parts and parents it appears in, its
  *                                  attributes, how many of the corpus's documents
  *                                  use each, and closed-vocabulary values
- *                                  (aggregates only; corpus/harness/attr-census.mjs)
+ *                                  (aggregates only; corpus/harness/attr-census.mjs).
+ *                                  Schema /1 or /2; /2 adds each attribute's parts
+ *                                  and how many documents depart from its usual value
  *   idml-coverage (plugin-publish)  which (element, attribute) pairs Paged's IDML
- *                                  importer reads and its exporter writes
+ *                                  importer reads and its exporter writes, and
+ *                                  (newer files) from which package parts
  *   core-catalog propertySchemas   the typed property behind an attribute: type,
  *                                  enum members, range, default, `paged.set` path
  *   data/idml-reference-overrides.json  reviewed per-attribute notes (optional)
@@ -47,6 +50,12 @@ if (!census) {
   console.warn('gen-idml-reference: data/idml-census.json missing — no element reference generated');
   process.exit(0);
 }
+// /2 keeps every /1 field and adds per-attribute `parts` and `nonModalDocs`.
+const CENSUS_SCHEMAS = ['paged.idml-census/1', 'paged.idml-census/2'];
+if (!CENSUS_SCHEMAS.includes(census.schema)) {
+  console.error(`gen-idml-reference: data/idml-census.json has schema ${census.schema}; this generator reads ${CENSUS_SCHEMAS.join(' and ')}`);
+  process.exit(1);
+}
 const DOCS = census.totals.documents;
 
 /** TextFramePreference → text-frame-preference; idPkg:Story → idpkg-story; XMLTag → xml-tag. */
@@ -58,15 +67,21 @@ export function slugOf(name) {
     .toLowerCase();
 }
 
-// ── Paged's reader and writer: (element, attribute) → {imported, exported} ──
+// ── Paged's reader and writer: (element, attribute) → {imported, exported, readParts} ──
+// `readParts` (the package parts the importer reads it from) comes with newer
+// coverage files; null when the file predates it.
 const pagedAttr = new Map();
 const pagedElements = new Set();
 for (const row of coverage?.rows ?? []) {
   const key = `${row.element}@${row.attribute}`;
-  const prev = pagedAttr.get(key) ?? { imported: false, exported: false };
-  pagedAttr.set(key, { imported: prev.imported || !!row.imported, exported: prev.exported || !!row.exported });
+  const prev = pagedAttr.get(key) ?? { imported: false, exported: false, readParts: null };
+  const readParts = Array.isArray(row.importParts) ? [...new Set([...(prev.readParts ?? []), ...row.importParts])].sort() : prev.readParts;
+  pagedAttr.set(key, { imported: prev.imported || !!row.imported, exported: prev.exported || !!row.exported, readParts });
   if (row.imported) pagedElements.add(row.element);
 }
+/** Read, but from none of the parts the census finds it in. */
+const misplacedRead = (paged, parts) =>
+  !!(paged?.imported && paged.readParts?.length && parts?.length && !paged.readParts.some((p) => parts.includes(p)));
 
 // ── Typed properties: (element, attribute) → schema row ──
 const typed = new Map();
@@ -260,6 +275,7 @@ const elements = selected
       .map(([name, a]) => {
         const key = `${e.element}@${name}`;
         const paged = pagedAttr.get(key) ?? null;
+        const parts = a.parts ? Object.keys(a.parts) : null;
         return {
           name,
           kind: a.kinds?.['properties-child'] && !a.kinds?.attribute ? 'properties-child' : 'attribute',
@@ -269,7 +285,21 @@ const elements = selected
           values: a.values ?? null,
           refKinds: a.refKinds ? Object.keys(a.refKinds) : null,
           propertyTypes: a.propertyTypes ? Object.keys(a.propertyTypes) : null,
-          paged: coverage ? { imported: !!paged?.imported, exported: !!paged?.exported } : null,
+          // census /2: where documents keep it, and how many depart from its usual value
+          parts: a.parts
+            ? Object.entries(a.parts)
+                .sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0]))
+                .map(([part, n]) => ({ part, docCount: n }))
+            : null,
+          nonModalDocs: typeof a.nonModalDocs === 'number' ? a.nonModalDocs : null,
+          paged: coverage
+            ? {
+                imported: !!paged?.imported,
+                exported: !!paged?.exported,
+                readParts: paged?.readParts ?? null,
+                misplaced: misplacedRead(paged, parts),
+              }
+            : null,
           typed: typed.get(key) ?? null,
           note: overrides[key]?.note ?? null,
           explained: explanationOf(e.element, name, topPages),
@@ -299,6 +329,7 @@ const elements = selected
             reads: pagedElements.has(e.element),
             attributesRead: attributes.filter((a) => a.paged?.imported).length,
             attributesWritten: attributes.filter((a) => a.paged?.exported).length,
+            attributesMisplaced: attributes.filter((a) => a.paged?.misplaced).length,
           }
         : null,
       examples: examplesFor.get(e.element) ?? [],
@@ -313,6 +344,7 @@ writeFileSync(
   JSON.stringify(
     {
       documents: DOCS,
+      censusSchema: census.schema,
       censusDate: census.generatedAt,
       coverage: coverage ? { rows: coverage.rows?.length ?? 0 } : null,
       typedLinks: typed.size,
@@ -345,7 +377,9 @@ writeFileSync(
   JSON.stringify({ title: 'Element reference', icon: 'xml', pages: ['index', ...elements.map((e) => e.slug)] }, null, 2) + '\n',
 );
 
+const misplacedCount = elements.reduce((n, e) => n + (e.paged?.attributesMisplaced ?? 0), 0);
 console.log(
-  `gen-idml-reference: ${elements.length} element pages (of ${census.elements.length} in the census)` +
-    `, coverage ${coverage ? 'yes' : 'no'}, ${typed.size} typed links`,
+  `gen-idml-reference: ${elements.length} element pages (of ${census.elements.length} in the census, ${census.schema})` +
+    `, coverage ${coverage ? 'yes' : 'no'}, ${typed.size} typed links` +
+    (misplacedCount ? `, ${misplacedCount} attributes read from the wrong part` : ''),
 );
