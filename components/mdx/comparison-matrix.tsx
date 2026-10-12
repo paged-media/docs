@@ -6,7 +6,7 @@
  */
 import { DOMAINS, SCALE, SNAPSHOT, TOOLS, VERDICTS, type ToolKey } from '@/lib/comparison-data';
 
-const TOOL_ORDER: ToolKey[] = ['paged', 'indesign', 'quark', 'affinity', 'scribus'];
+const TOOL_ORDER: ToolKey[] = ['paged', 'indesign', 'quark', 'affinity', 'scribus', 'designcraft'];
 const NAME: Record<ToolKey, string> = Object.fromEntries(TOOLS.map((t) => [t.key, t.name])) as Record<ToolKey, string>;
 
 const th: React.CSSProperties = {

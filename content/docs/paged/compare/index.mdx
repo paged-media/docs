@@ -1,5 +1,5 @@
 ---
-title: "Paged vs InDesign, QuarkXPress, Affinity & Scribus"
+title: "Paged vs InDesign, QuarkXPress, Affinity, Scribus & DesignCraft"
 description: How Paged compares to the major desktop-publishing tools — an open-source, IDML-compatible, scriptable platform measured against the incumbents on a dated capability matrix.
 tier: intermediate
 diataxis: explanation
@@ -8,7 +8,7 @@ owner: paged-docs
 reviewed: "2026-06-23"
 ---
 
-**How does Paged compare to InDesign, QuarkXPress, Affinity, and Scribus?**
+**How does Paged compare to InDesign, QuarkXPress, Affinity, Scribus, and DesignCraft?**
 
 **In short:** Paged is an open-source desktop publishing platform built on a
 structurally valid IDML container, with a plugin SDK and an automation-first
@@ -19,7 +19,7 @@ interchange, scripting, extensibility, and automation. No incumbent occupies
 *open format + first-class automation and extensibility* at once, and that empty
 quadrant is where Paged sits. The trade-off, stated plainly: Paged is an emerging
 platform and is not yet at the layout/print depth of the 25-year-old incumbents.
-*(Snapshot: 2026-06-23.)*
+*(Snapshot: 2026-06-23; DesignCraft added 2026-10-12.)*
 
 <SoftwareApplicationLd />
 
@@ -39,7 +39,9 @@ how *open* the format is, and how *automatable* the tool is.
 InDesign is the most capable and the most closed and most expensive. Affinity is
 free but proprietary, with no scripting and no plugins. Scribus is open source but
 has no plugin platform and only partial IDML interchange. QuarkXPress is
-proprietary and desktop-bound. **None of them is simultaneously open-format and
+proprietary and desktop-bound. DesignCraft, from the ArtCraft suite, is open
+source and agent-drivable over MCP, but it is pre-alpha and has no plugin
+platform. **None of them is simultaneously open-format and
 automation-first.** Paged is built for exactly that corner: an open `.paged`
 container that is always a valid IDML package, a public plugin SDK, and a
 scriptable, headless-friendly, web-native engine — so documents are automatable
@@ -53,6 +55,7 @@ and interchangeable rather than locked in a single vendor's app.
 - **[Paged vs InDesign](/docs/paged/compare/paged-vs-indesign)** — the open, IDML-compatible foundation for the same automation jobs, without the subscription or the closed format.
 - **[Paged vs Scribus](/docs/paged/compare/paged-vs-scribus)** — two open-source tools; Paged adds IDML compatibility and a plugin platform, Scribus leads on print today.
 - **[Paged vs QuarkXPress](/docs/paged/compare/paged-vs-quarkxpress)** — open vs proprietary for structured, data-driven publishing.
+- **[Paged vs ArtCraft (DesignCraft)](/docs/paged/compare/paged-vs-artcraft)** — two open-source, IDML-speaking newcomers: one document platform with plugins, or one Rust app per medium.
 - **[Open-source DTP alternatives](/docs/paged/compare/open-source-dtp)** — the landscape of free and open desktop-publishing tools.
 
 ## Related
@@ -64,7 +67,7 @@ and interchangeable rather than locked in a single vendor's app.
 ## Frequently asked questions
 
 **Is there an open-source alternative to InDesign?**
-Yes — both Scribus and Paged are open source. Paged is distinctive because its
+Yes — Scribus, Paged and ArtCraft's DesignCraft (pre-alpha) are open source. Paged is distinctive because its
 documents are a valid IDML package, so they round-trip with the InDesign
 ecosystem instead of being a one-way island, and it ships a plugin SDK and a
 scripting layer for automation.

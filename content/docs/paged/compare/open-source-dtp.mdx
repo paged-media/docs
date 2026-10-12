@@ -1,21 +1,22 @@
 ---
 title: "Open-source desktop publishing software"
-description: The landscape of free and open-source desktop publishing tools — Scribus, Paged, and the alternatives to InDesign — and how to choose between them.
+description: The landscape of free and open-source desktop publishing tools — Scribus, Paged, DesignCraft and the alternatives to InDesign — and how to choose.
 tier: beginner
 diataxis: explanation
 status: published
 owner: paged-docs
-reviewed: "2026-06-23"
+reviewed: "2026-10-12"
 ---
 
 **What open-source desktop publishing software is there, and how do you choose?**
 
 **In short:** the two main open-source desktop publishing tools are **Scribus**
 (mature, GPL, strong on print) and **Paged** (open source, IDML-native,
-scriptable, web-delivered). If you also count "free but proprietary," **Affinity**
+scriptable, web-delivered). **DesignCraft**, part of the ArtCraft suite, is a
+newer, pre-alpha MIT/Apache-licensed take on the InDesign workflow. If you also count "free but proprietary," **Affinity**
 is free of charge yet closed. For an open *format* that round-trips with the
 InDesign ecosystem plus scripting and plugins, Paged is the distinctive option;
-for proven print output today, Scribus leads. *(Snapshot: 2026-06-23.)*
+for proven print output today, Scribus leads. *(Snapshot: 2026-06-23; DesignCraft added 2026-10-12.)*
 
 <SoftwareApplicationLd />
 
@@ -28,6 +29,11 @@ for proven print output today, Scribus leads. *(Snapshot: 2026-06-23.)*
   IDML container, with a [scripting layer](/docs/paged/scripting) and a [plugin
   SDK](/docs/paged/plugin-sdk). Web/WebGPU and headless delivery. Layout and print
   depth are emerging.
+- **[DesignCraft (ArtCraft)](/docs/paged/compare/paged-vs-artcraft)** — a
+  clean-room, MIT OR Apache-2.0 reimplementation of the InDesign workflow in Rust,
+  one of twelve [ArtCraft](https://getartcraft.com/apps) apps. Desktop and web,
+  IDML import and export, PDF/X-4 export, and agent control over MCP. Pre-alpha:
+  threading text by hand is still missing, and there is no plugin platform.
 
 ## "Free" that isn't open
 
@@ -40,6 +46,8 @@ for proven print output today, Scribus leads. *(Snapshot: 2026-06-23.)*
 - Need **proven print output** today? Scribus.
 - Need an **open format that round-trips with InDesign**, plus **scripting and
   plugins** and **automation**? Paged.
+- Want a **permissively licensed, InDesign-like desktop app** and can wait for
+  it to mature? Watch DesignCraft.
 - Want a **free, polished single app** and don't need openness or scripting?
   Affinity.
 
@@ -56,9 +64,10 @@ IDML-compatible (so it round-trips with InDesign) and adds scripting, plugins,
 and automation — at the cost of still-emerging layout depth.
 
 **Is there free desktop publishing software?**
-Yes — Scribus and Paged are free and open source; Affinity is free of charge but
+Yes — Scribus, Paged and DesignCraft are free and open source; Affinity is free of charge but
 proprietary.
 
 **Can open-source DTP tools read InDesign files?**
 Via IDML, InDesign's interchange format. Paged reads and writes IDML natively;
+DesignCraft imports and exports it (not yet measured on real InDesign files);
 Scribus support is partial.
