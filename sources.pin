@@ -70,7 +70,8 @@
       "ref": "main",
       "files": {
         "api-catalog.json": "packages/client/api-catalog.json",
-        "package.json": "package.json"
+        "package.json": "package.json",
+        "canvas-package.json": "apps/canvas/package.json"
       }
     },
     "plugin-sheets": {

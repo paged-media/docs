@@ -71,10 +71,17 @@ for (const [id, d] of Object.entries(defs)) {
         if (d.pointer) value = pointer(json, d.pointer);
         else if (d.length) value = pointer(json, d.length)?.length;
         else if (d.cliLeaves) value = cliLeaves(pointer(json, d.cliLeaves));
+        else if (d.dependsOn) value = d.dependsOn.names.filter((n) => n in (pointer(json, d.dependsOn.pointer) ?? {}));
       }
     }
     if (value === undefined || value === null || value === '') throw new Error('evaluated to nothing');
-    const display = d.license ? human(String(value)) : typeof value === 'number' ? value.toLocaleString('en-GB') : String(value);
+    const display = d.license
+      ? human(String(value))
+      : Array.isArray(value)
+        ? value.join(', ')
+        : typeof value === 'number'
+          ? value.toLocaleString('en-GB')
+          : String(value);
     out[id] = { value, display, label: d.label, from: d.from ?? null };
   } catch (e) {
     errors.push(`${id}: ${e.message}`);
