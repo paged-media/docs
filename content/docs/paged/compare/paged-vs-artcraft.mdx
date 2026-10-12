@@ -1,0 +1,100 @@
+---
+title: "Paged vs ArtCraft (DesignCraft)"
+description: "Paged vs ArtCraft DesignCraft: two open-source, IDML-speaking layout tools, one a document platform with plugins, one a suite of separate Rust apps."
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+reviewed: "2026-10-12"
+---
+
+**How does Paged compare to ArtCraft and its page-layout app, DesignCraft?**
+
+**In short:** [ArtCraft](https://getartcraft.com/apps) is a suite of twelve
+open-source desktop apps written in Rust, each a clean-room take on one
+professional tool. Its page-layout app, **DesignCraft**, follows InDesign's
+workflow, is licensed MIT OR Apache-2.0, imports and exports IDML, and can be
+driven by agents over MCP. Paged is also open source and IDML-native, but it is
+one document platform: text, pictures, vectors, spreadsheets, data and web
+content are plugins that live in frames of the same document, with one undo and
+one scripting surface. Both are young. DesignCraft describes itself as
+pre-alpha; Paged's layout and print depth are still emerging. *(Snapshot:
+2026-10-12.)*
+
+<SoftwareApplicationLd />
+
+## Verdict
+
+- **Choose DesignCraft** for a free, permissively licensed desktop app that
+  looks and works like InDesign, with PDF/X and EPUB export and a control
+  channel agents can drive, once it reaches its alpha.
+- **Choose Paged** for a document whose `.paged` file *is* a valid IDML package,
+  a public plugin SDK, a sandboxed scripting model, and one document that mixes
+  content types instead of one app per medium.
+
+## At a glance
+
+<ComparisonMatrix only={["paged", "designcraft"]} />
+
+## One platform or one app per medium
+
+ArtCraft splits the creative suite the way the incumbents do: PhotoCraft for
+images, VectorCraft for vectors, GridCraft for spreadsheets, DeckCraft for
+presentations, PdfCraft for PDFs, DesignCraft for layout, and more. Each is a
+separate application with its own format.
+
+Paged starts from the page. A spreadsheet, a raster retouch, a vector drawing, a
+data-bound record or a block of HTML is a frame in the same document, laid out
+and rendered by the same engine:
+
+| Job | ArtCraft | Paged |
+|---|---|---|
+| Page layout | DesignCraft | the Paged editor and engine |
+| Vector drawing | VectorCraft | [paged.draw](/docs/paged/plugins/draw), in a frame |
+| Image retouching | PhotoCraft | [paged.image](/docs/paged/plugins/image), in a frame |
+| Spreadsheets and charts | GridCraft | [paged.sheet](/docs/paged/plugins/sheets), in a frame |
+| Presentations | DeckCraft | paged.slide (in development): a deck opens as pages |
+| PDFs | PdfCraft | `@paged-media/pdf`: a PDF opens as an editable document |
+
+## Format and interchange
+
+DesignCraft has its own documented native format and imports and exports IDML.
+Its own gap list says the IDML round trip has not yet been measured on real
+InDesign-authored files, and that `.indd` is not read yet.
+
+Paged has no separate native format: a `.paged` file is always a structurally
+valid IDML package, so InDesign opens it directly. Unchanged parts round-trip
+byte for byte, and rendering is checked against InDesign's own output. See
+[InDesign compatibility](/docs/paged/compare/paged-vs-indesign).
+
+## Automation and extensibility
+
+DesignCraft exposes every menu item, tool, panel control and dialog over a JSON
+control channel and an MCP server, and ships a headless command-line tool. It
+documents no plugin system and no document scripting language.
+
+Paged has a sandboxed [scripting](/docs/paged/scripting) model over the document
+(frames, stories, styles), a command-line tool, and a public [plugin
+SDK](/docs/paged/plugin-sdk) — the same toolkit Paged's own content types are
+built with. See [automated publishing](/docs/paged/use-cases/automated-publishing).
+
+## Licensing
+
+DesignCraft and the other ArtCraft apps are MIT OR Apache-2.0. Paged's engine is
+MPL-2.0, and its editor AGPL-3.0, each OR a commercial licence (PMEL) for teams
+that need different terms.
+
+## Frequently asked questions
+
+**Is DesignCraft an open-source InDesign alternative?**
+Yes. It is a clean-room, MIT/Apache-licensed reimplementation of the InDesign
+workflow in Rust. It is pre-alpha today.
+
+**Can DesignCraft and Paged exchange files?**
+Through IDML. Both read and write it, and every `.paged` file is already an IDML
+package. How much survives a trip through DesignCraft has not been measured.
+
+**Which is better for agents and automation?**
+Both are built for it. DesignCraft lets an agent drive the application's UI
+commands over MCP; Paged gives scripts and agents the document model itself, with
+undo, plus a plugin SDK to add new content types.

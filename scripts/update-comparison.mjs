@@ -141,7 +141,7 @@ const synth = await client.messages.create({
         `- Keep the same domain keys, titles, and baseline/differentiator tags; you may refine the per-row notes.\n` +
         `- Do NOT change Paged's scores or its pagedPlanned flags — copy them verbatim from CURRENT. Paged is an ` +
         `emerging platform and its honest scores are set internally, not from the open web.\n` +
-        `- Update ONLY the competitor scores/notes (indesign, quark, affinity, scribus) where the research warrants.\n` +
+        `- Update ONLY the competitor scores/notes (indesign, quark, affinity, scribus, designcraft) where the research warrants.\n` +
         `- Set "snapshot" to ${today}.\n` +
         `- Keep notes factual, dated where a fact moves, and free of marketing language.\n\n` +
         `CURRENT (JSON):\n${JSON.stringify({ snapshot: current.snapshot, domains: current.domains, verdicts: current.verdicts }, null, 2)}\n\n` +
