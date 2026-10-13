@@ -115,6 +115,13 @@ function inlineCode(text: string): ReactNode[] {
   );
 }
 
+/** Running text with `code` spans, styled as the prose around it styles code. */
+function proseCode(text: string): ReactNode[] {
+  return text.split(/(`[^`]+`)/g).map((part, i) =>
+    part.startsWith('`') && part.endsWith('`') && part.length > 1 ? <code key={i}>{part.slice(1, -1)}</code> : part,
+  );
+}
+
 /** Paged's importer / exporter as two marks: read, write — or "not read". */
 function pagedCell(a: RefAttribute): ReactNode {
   if (!a.paged) return <span style={muted}>—</span>;
@@ -235,14 +242,14 @@ export function ElementReference({ name }: { name: string }) {
     name: el.name,
     termCode: el.name,
     url,
-    description: el.summary ?? `The ${el.name} element of the IDML file format.`,
+    description: el.summary?.replace(/`/g, '') ?? `The ${el.name} element of the IDML file format.`,
     inDefinedTermSet: absoluteUrl('/reference/'),
   };
   return (
     <>
       <JsonLd data={ld} />
       <p>
-        {el.summary ? `${el.summary} ` : null}
+        {el.summary ? <>{proseCode(el.summary)} </> : null}
         <code>{el.name}</code> appears in {el.docCount} of the {ref.documents} documents surveyed ({el.share}%)
         {primary ? (
           <>
