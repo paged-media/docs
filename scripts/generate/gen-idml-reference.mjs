@@ -15,7 +15,8 @@
  *                                  (newer files) from which package parts
  *   core-catalog propertySchemas   the typed property behind an attribute: type,
  *                                  enum members, range, default, `paged.set` path
- *   data/idml-reference-overrides.json  reviewed per-attribute notes (optional)
+ *   data/idml-reference-overrides.json  reviewed notes: `Element@Attribute` for one
+ *                                  element, `*@Attribute` shared by all (optional)
  *
  * Writes .generated/idml-reference.json, and one stub page per element under
  * content/docs/idml/reference/ (gitignored; regenerated before every build), so
@@ -45,6 +46,19 @@ const census = readJSON(join(ROOT, 'data', 'idml-census.json'));
 const coverage = readJSON(join(GEN, 'sources', 'idml-coverage', 'idml-coverage.json'));
 const catalog = readJSON(join(GEN, 'sources', 'core-catalog', 'catalog.json'));
 const overrides = readJSON(join(ROOT, 'data', 'idml-reference-overrides.json')) ?? {};
+
+/**
+ * An attribute's note: the element's own (`Element@Attribute`), else the one
+ * the attribute shares across elements (`*@Attribute`), unless that lists
+ * the element in `except` or the chapters already describe the attribute here.
+ */
+function noteOf(element, name, explained) {
+  const own = overrides[`${element}@${name}`]?.note;
+  if (own) return own;
+  const shared = overrides[`*@${name}`];
+  if (!shared?.note || shared.except?.includes(element) || explained?.description) return null;
+  return shared.note;
+}
 
 if (!census) {
   console.warn('gen-idml-reference: data/idml-census.json missing — no element reference generated');
@@ -276,6 +290,7 @@ const elements = selected
         const key = `${e.element}@${name}`;
         const paged = pagedAttr.get(key) ?? null;
         const parts = a.parts ? Object.keys(a.parts) : null;
+        const explained = explanationOf(e.element, name, topPages);
         return {
           name,
           kind: a.kinds?.['properties-child'] && !a.kinds?.attribute ? 'properties-child' : 'attribute',
@@ -301,8 +316,8 @@ const elements = selected
               }
             : null,
           typed: typed.get(key) ?? null,
-          note: overrides[key]?.note ?? null,
-          explained: explanationOf(e.element, name, topPages),
+          note: noteOf(e.element, name, explained),
+          explained,
         };
       })
       .sort((a, b) => b.docCount - a.docCount || a.name.localeCompare(b.name));

@@ -7,7 +7,8 @@ import { partsHash } from '../../lib/parts-hash';
  * `pnpm examples:verify --check` — the CI half of InDesign verification (no
  * InDesign needed). A `verified` stamp is evidence about exact bytes, so:
  *   - its partsHash must match the package as committed
- *   - its page images must exist, one per verified page
+ *   - its page images must exist, one per verified page, each with its
+ *     display copy (p<N>@3x.webp)
  *   - its page count must agree with the manifest's `expect.pages`
  * An example with no `verified` block only warns while verification rolls out.
  */
@@ -31,6 +32,10 @@ for (const id of listExamples()) {
   const images = existsSync(dir) ? readdirSync(dir).filter((f) => /^p\d+\.webp$/.test(f)) : [];
   if (v.pages !== undefined && images.length !== v.pages) {
     problems.push(`${where}: ${images.length} page image(s) in _verified/, ${v.pages} verified page(s)`);
+  }
+  const missing = images.filter((f) => !existsSync(join(dir, f.replace('.webp', '@3x.webp'))));
+  if (missing.length) {
+    problems.push(`${where}: no display copy of ${missing.join(', ')} — pnpm examples:verify-indesign --rasters ${id}`);
   }
   if (m.expect?.pages !== undefined && v.pages !== undefined && v.pages !== m.expect.pages) {
     problems.push(`${where}: InDesign verified ${v.pages} page(s), expect.pages is ${m.expect.pages}`);

@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * stage-verified — copies each example's InDesign page images
- * (examples/<id>/_verified/p*.webp, committed by verify-indesign.ts) to
+ * (examples/<id>/_verified/p<N>.webp at 96 dpi and p<N>@3x.webp at 288 dpi,
+ * committed by verify-indesign.ts) to
  * public/examples/<id>/ so the static export serves them. public/examples/ is
  * generated and gitignored; run by `pnpm build` and `pnpm dev`.
  */
@@ -19,7 +20,7 @@ for (const id of readdirSync(SRC)) {
   const dir = join(SRC, id, '_verified');
   if (!existsSync(dir)) continue;
   for (const f of readdirSync(dir)) {
-    if (!/^p\d+\.webp$/.test(f)) continue;
+    if (!/^p\d+(@3x)?\.webp$/.test(f)) continue;
     mkdirSync(join(OUT, id), { recursive: true });
     copyFileSync(join(dir, f), join(OUT, id, f));
     n++;

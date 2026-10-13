@@ -7,8 +7,9 @@ import { InDesignCompare } from './indesign-compare';
  * verification stamp. Both sides open framed on the page's content
  * (InDesignCompare). Rendered only while the stamp matches the package
  * (ExampleEmbed checks partsHash), so a stale claim never ships. The page
- * images are InDesign's PDF rasterised at 96 dpi (FOGRA39), staged into
- * /examples/<id>/ by scripts/stage-verified.mjs.
+ * images are InDesign's PDF rasterised (FOGRA39) at 96 dpi, the record the
+ * ΔE is measured on, and at 288 dpi for display; scripts/stage-verified.mjs
+ * stages both into /examples/<id>/.
  */
 export function InDesignView({
   example,
@@ -20,7 +21,10 @@ export function InDesignView({
   idmlBase64?: string;
 }) {
   const v = manifest.verified!;
-  const pages = Array.from({ length: v.pages ?? 1 }, (_, i) => `/examples/${example}/p${i + 1}.webp`);
+  const pages = Array.from({ length: v.pages ?? 1 }, (_, i) => ({
+    src: `/examples/${example}/p${i + 1}.webp`,
+    sharp: `/examples/${example}/p${i + 1}@3x.webp`,
+  }));
   const version = v.indesignVersion?.split('.').slice(0, 3).join('.');
   return (
     <div className="not-prose">

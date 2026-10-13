@@ -18,6 +18,26 @@ loader.config({ monaco });
 
 // Same-origin worker. Syntax highlighting (Monarch) runs on the main thread, so
 // even if the language worker is unavailable the editor still highlights + edits.
+//
+// There is no TypeScript worker (its language service is a 6.6 MB download), so
+// the JavaScript features that would ask one for diagnostics, fixes, hovers or
+// completions stay off; left on, each one throws "Missing requestHandler" from
+// the plain editor worker.
+monaco.typescript.javascriptDefaults.setModeConfiguration({
+  completionItems: false,
+  hovers: false,
+  documentSymbols: false,
+  definitions: false,
+  references: false,
+  documentHighlights: false,
+  rename: false,
+  diagnostics: false,
+  documentRangeFormattingEdits: false,
+  signatureHelp: false,
+  onTypeFormattingEdits: false,
+  codeActions: false,
+  inlayHints: false,
+});
 if (typeof window !== 'undefined') {
   (self as unknown as { MonacoEnvironment?: unknown }).MonacoEnvironment = {
     getWorker() {

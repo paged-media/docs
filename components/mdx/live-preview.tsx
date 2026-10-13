@@ -38,9 +38,9 @@ type Status = PreviewStatus;
 export type Fit = 'content' | 'page';
 
 /** CSS px per pt: a content fit never zooms past this. */
-const MAX_CONTENT_ZOOM = 1.8;
+export const MAX_CONTENT_ZOOM = 1.8;
 /** Canvas height bounds (CSS px); a content fit takes the region's shape between them. */
-const MIN_H = 180;
+export const MIN_H = 180;
 const MAX_H = 480;
 
 export function LivePreview({

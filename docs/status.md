@@ -1,7 +1,7 @@
 # Status
 
-What the documentation sites ship and what they do not. Last updated 2026-10-12 (the
-reading and navigation pass below); before that 2026-10-11
+What the documentation sites ship and what they do not. Last updated 2026-10-13 (the
+follow-up to the reading and navigation pass below); before that 2026-10-11
 (`@paged-media/idml-viewer` 0.71.1, `core.pin` at the engine tag `v0.71.1`), when the IDML
 reference moved to its own site ([ADR 805](adr/805-two-sites-one-app.md)). How the parts fit
 is in [`architecture.md`](architecture.md).
@@ -47,6 +47,21 @@ is in [`architecture.md`](architecture.md).
   - *Reading.* Running text keeps the 66ch measure; docs pages end on a one-line footer
     (the full colophon closes the two home pages); a night-paper dark theme behind the
     theme switch, paper by default.
+- **Follow-up (2026-10-13).**
+  - *Attribute notes.* `data/idml-reference-overrides.json` gives the element pages a line
+    under 819 of the 3175 attributes: notes shared by every element with the attribute
+    (`*@Name`, with an `except` list) or one element's own (`Cell@Name`), written from
+    Paged's model and importer; a description harvested from the chapters takes precedence.
+  - *Sharper InDesign crops.* Verification also writes each page at 288 dpi
+    (`p<N>@3x.webp`; `pnpm examples:verify-indesign --rasters` redoes them from the kept
+    PDF); a crop is drawn from it, and both sides of the comparison stop at the live
+    preview's 1.8 px per point. `pnpm examples:verify` requires the display copies.
+  - *Script playground.* The JavaScript features that would ask for a TypeScript worker
+    are off, so the editor no longer throws "Missing requestHandler" while typing.
+  - *Browsers.* A smoke pass over both exports in Chromium, Firefox and WebKit (Playwright
+    1.63): search, element filter, annotated code, the InDesign comparison, the playground,
+    dark theme, and no sideways scroll at 390px. WebKit draws the live preview through
+    WebGPU without cross-origin isolation (it ignores `credentialless`).
 - **Checks.** Six workflows: the build with its manifest, reference and freshness checks;
   the example gate; the script gate; the similarity check; the link check; the deploy.
 

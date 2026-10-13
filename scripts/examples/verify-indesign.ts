@@ -15,10 +15,15 @@ import { partsHash } from '../../lib/parts-hash';
  *   1. assemble the package and hand it to InDesign (indesign/verify-example.jsx)
  *   2. require: it opened, no font or link is missing, and it re-saved the
  *      file as IDML; record the PDF's fonts (the preview has only Open Sans)
- *   3. rasterise InDesign's PDF (FOGRA39, 96 dpi) to lossless WebP
+ *   3. rasterise InDesign's PDF (FOGRA39, 96 dpi) to lossless WebP — the
+ *      record the ΔE is measured on — and again at 288 dpi for display
+ *      (p<N>@3x.webp: the comparison enlarges a crop of the page)
  *   4. render the same package with paged-inspect and ΔE-diff each page
  *   5. write examples/<id>/_verified/ and the manifest's `verified` block,
  *      whose partsHash ties the stamp to these exact parts
+ *
+ * `--rasters [id…]` redoes only the display images, from the PDF the last
+ * verification kept in _verified/ (gitignored, so on the machine that ran it).
  *
  * Env: INDESIGN_APP (default "Adobe InDesign 2025"), PAGED_INSPECT and
  * PAGED_DIFF (default ../core/target/release/…), FOGRA39_ICC.
@@ -31,6 +36,7 @@ const ICC = process.env.FOGRA39_ICC ?? '/Library/Application Support/Adobe/Color
 const FONT = resolve('public/fonts/OpenSans.ttf');
 const JSX = resolve('scripts/examples/indesign/verify-example.jsx');
 const DPI = '96';
+const DISPLAY_DPI = '288';
 const PAGE_BUDGET = 60 * 1024;
 
 interface InDesignResult {
@@ -84,6 +90,19 @@ function pagePngs(dir: string, prefix: string): string[] {
     .filter((f) => f.startsWith(prefix) && f.endsWith('.png'))
     .sort()
     .map((f) => join(dir, f));
+}
+
+/** InDesign's pages at display resolution, as `p<N>@3x.webp` beside the 96 dpi record. */
+function writeDisplayRasters(pdf: string, dest: string): number {
+  const work = mkdtempSync(join(tmpdir(), 'verify-display-'));
+  try {
+    sh('pdftoppm', ['-r', DISPLAY_DPI, '-png', '-defaultcmykprofile', ICC, pdf, join(work, 'hi')]);
+    const pngs = pagePngs(work, 'hi');
+    pngs.forEach((png, i) => sh('cwebp', ['-quiet', '-lossless', '-z', '9', png, '-o', join(dest, `p${i + 1}@3x.webp`)]));
+    return pngs.length;
+  } finally {
+    rmSync(work, { recursive: true, force: true });
+  }
 }
 
 function verify(id: string, m: ExampleManifest): void {
@@ -147,6 +166,7 @@ function verify(id: string, m: ExampleManifest): void {
     const size = readFileSync(webp).length;
     if (size > PAGE_BUDGET) console.warn(`  ! ${id} p${i + 1}.webp is ${Math.round(size / 1024)} KB (budget ${PAGE_BUDGET / 1024} KB)`);
   });
+  writeDisplayRasters(pdf, dest);
 
   const verifiedAt = new Date().toISOString().slice(0, 10);
   const record = {
@@ -170,9 +190,27 @@ function verify(id: string, m: ExampleManifest): void {
   console.log(`  ✓ ${id}: InDesign ${r.version}, ${record.pages} page(s), ΔE mean ${record.fidelity.meanDE} / p99 ${record.fidelity.p99DE}`);
 }
 
+function rasters(requested: string[]) {
+  const ids = requested.length ? requested : listExamples();
+  let n = 0;
+  for (const id of ids) {
+    const dest = join(exampleDir(id), '_verified');
+    const pdf = join(dest, 'indesign.pdf');
+    if (readManifest(id).verified?.status !== 'verified') continue;
+    if (!existsSync(pdf)) {
+      console.error(`  ✗ ${id}: no ${pdf} — run the full verification on this machine`);
+      process.exitCode = 1;
+      continue;
+    }
+    n += writeDisplayRasters(pdf, dest);
+  }
+  console.log(`${n} display page image(s) written at ${DISPLAY_DPI} dpi`);
+}
+
 function main() {
-  for (const tool of [INSPECT, DIFF]) if (!existsSync(tool)) throw new Error(`not found: ${tool} (set PAGED_INSPECT / PAGED_DIFF)`);
   if (!existsSync(ICC)) throw new Error(`FOGRA39 profile not found: ${ICC} (set FOGRA39_ICC)`);
+  if (process.argv[2] === '--rasters') return rasters(process.argv.slice(3));
+  for (const tool of [INSPECT, DIFF]) if (!existsSync(tool)) throw new Error(`not found: ${tool} (set PAGED_INSPECT / PAGED_DIFF)`);
   const requested = process.argv.slice(2);
   const ids = (requested.length ? requested : listExamples()).filter((id) => {
     const m = readManifest(id);

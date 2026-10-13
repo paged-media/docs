@@ -40,6 +40,8 @@ const td: CSSProperties = {
   color: 'var(--color-ink-soft)',
 };
 const mono: CSSProperties = { fontFamily: 'var(--font-mono)', fontSize: 12.5, letterSpacing: '-0.01em' };
+/** A line under an attribute's name: what it means, from the chapters or the reviewed notes. */
+const gloss: CSSProperties = { fontFamily: 'var(--font-sans)', fontSize: 12.5, lineHeight: 1.45, letterSpacing: 0, color: 'var(--color-ink-soft)', marginTop: 4, maxWidth: '44ch' };
 const chip: CSSProperties = {
   ...mono,
   display: 'inline-block',
@@ -187,12 +189,8 @@ function AttributeTable({ el, documents }: { el: RefElement; documents: number }
             <tr key={a.name} id={`attr-${a.name}`}>
               <td style={{ ...td, ...mono, color: 'var(--code-tag)', minWidth: 170 }}>
                 <AttributeName a={a} />
-                {a.explained?.description ? (
-                  <div style={{ fontFamily: 'var(--font-sans)', fontSize: 12.5, lineHeight: 1.45, letterSpacing: 0, color: 'var(--color-ink-soft)', marginTop: 4, maxWidth: '44ch' }}>
-                    {inlineCode(a.explained.description)}
-                  </div>
-                ) : null}
-                {a.note ? <div style={{ fontFamily: 'var(--font-sans)', fontSize: 12.5, color: 'var(--color-ink-soft)', marginTop: 4 }}>{a.note}</div> : null}
+                {a.explained?.description ? <div style={gloss}>{inlineCode(a.explained.description)}</div> : null}
+                {a.note ? <div style={gloss}>{inlineCode(a.note)}</div> : null}
               </td>
               <td style={td}>{valueCell(a)}</td>
               <td style={{ ...td, whiteSpace: 'nowrap' }}>{Math.round((a.docCount / Math.max(el.docCount, 1)) * 100)}%</td>

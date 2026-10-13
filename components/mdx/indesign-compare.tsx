@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, type CSSProperties } from 'react';
-import { FitSwitch, LivePreview, type Fit } from './live-preview';
+import { FitSwitch, LivePreview, MAX_CONTENT_ZOOM, MIN_H, type Fit } from './live-preview';
 import { focusRect, imageInk, scaleRect, type Rect } from './content-bounds';
 
 /**
@@ -11,12 +11,20 @@ import { focusRect, imageInk, scaleRect, type Rect } from './content-bounds';
  * preview, so both sides show the same region at the same aspect. "Whole page"
  * shows both sheets entire.
  *
- * The images are InDesign's PDF rasterised at 96 dpi (1 px = 0.75 pt), so a
- * crop is enlarged at most MAX_UPSCALE times: beyond that the raster blurs.
+ * Ink is measured on the 96 dpi record (1 px = 0.75 pt); what is drawn is the
+ * 288 dpi copy, so a crop stays sharp when enlarged. A crop is drawn at most
+ * MAX_CONTENT_ZOOM CSS px per point, the live side's own limit, so a small
+ * object appears at the same size on both sides.
  */
 const PT_PER_PX = 72 / 96;
-const MAX_UPSCALE = 2.5;
 const MAX_HEIGHT = 456;
+
+export interface InDesignPage {
+  /** The 96 dpi record. */
+  src: string;
+  /** The same page at 288 dpi. */
+  sharp: string;
+}
 
 interface Measured {
   width: number;
@@ -33,7 +41,7 @@ export function InDesignCompare({
   version,
 }: {
   example: string;
-  pages: string[];
+  pages: InDesignPage[];
   part: string;
   idmlBase64?: string;
   version?: string;
@@ -45,7 +53,7 @@ export function InDesignCompare({
   useEffect(() => {
     let live = true;
     void Promise.all(
-      pages.map((src) =>
+      pages.map(({ src }) =>
         imageInk(src)
           .then(({ ink, width, height }) => ({ width, height, crop: focusRect(ink, width, height) }))
           .catch(() => null),
@@ -74,9 +82,13 @@ export function InDesignCompare({
       ) : null}
       <div className="grid gap-4 md:grid-cols-2">
         <figure className="m-0">
-          <div className="paged-indesign-sheet flex flex-col gap-3 rounded-[2px] border border-fd-border p-3">
-            {pages.map((src, i) => (
-              <PageImage key={src} src={src} alt={`InDesign's rendering of ${example}, page ${i + 1}`} m={measured[i]} crop={fit === 'content'} />
+          {/* At least as tall as the live canvas, the crop centred in it, so the two sheets line up. */}
+          <div
+            className="paged-indesign-sheet flex flex-col justify-center gap-3 rounded-[2px] border border-fd-border p-3"
+            style={{ minHeight: MIN_H }}
+          >
+            {pages.map((page, i) => (
+              <PageImage key={page.src} page={page} alt={`InDesign's rendering of ${example}, page ${i + 1}`} m={measured[i]} crop={fit === 'content'} />
             ))}
           </div>
           <figcaption className="mt-2 text-xs text-fd-muted-foreground">InDesign {version}</figcaption>
@@ -96,11 +108,24 @@ export function InDesignCompare({
   );
 }
 
-/** One InDesign page: whole, or cropped to its ink by positioning the image in a clipping box. */
-function PageImage({ src, alt, m, crop }: { src: string; alt: string; m: Measured | null; crop: boolean }) {
+/**
+ * One InDesign page: whole, or cropped to its ink by positioning the image in
+ * a clipping box. The box is laid out in the record's pixels and percentages,
+ * so either raster fills it.
+ */
+function PageImage({ page, alt, m, crop }: { page: InDesignPage; alt: string; m: Measured | null; crop: boolean }) {
   if (!crop || !m?.crop) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={alt} loading="lazy" className="mx-auto block h-auto max-h-[456px] w-auto max-w-full" />;
+    // The whole sheet at the record's size; a high-density screen takes the sharp copy.
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={page.src}
+        srcSet={`${page.src} 1x, ${page.sharp} 3x`}
+        alt={alt}
+        loading="lazy"
+        className="mx-auto block h-auto max-h-[456px] w-auto max-w-full"
+      />
+    );
   }
   const c = m.crop;
   const box: CSSProperties = {
@@ -108,7 +133,7 @@ function PageImage({ src, alt, m, crop }: { src: string; alt: string; m: Measure
     overflow: 'hidden',
     margin: '0 auto',
     aspectRatio: `${c.w} / ${c.h}`,
-    width: `min(100%, ${Math.round(c.w * MAX_UPSCALE)}px, ${Math.round((MAX_HEIGHT * c.w) / c.h)}px)`,
+    width: `min(100%, ${Math.round(c.w * PT_PER_PX * MAX_CONTENT_ZOOM)}px, ${Math.round((MAX_HEIGHT * c.w) / c.h)}px)`,
   };
   const img: CSSProperties = {
     position: 'absolute',
@@ -120,7 +145,7 @@ function PageImage({ src, alt, m, crop }: { src: string; alt: string; m: Measure
   return (
     <div style={box}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt={alt} style={img} />
+      <img src={page.sharp} alt={alt} style={img} />
     </div>
   );
 }
