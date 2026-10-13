@@ -6,7 +6,7 @@ diataxis: reference
 status: published
 owner: paged-docs
 describes: [styles.paragraph.crud, styles.based-on-chain, styles.next-style-overrides]
-reviewed: 2026-10-11
+reviewed: 2026-10-13
 ---
 
 **A paragraph style carries both the geometry of a paragraph and the character defaults its text starts from.**
@@ -65,9 +65,8 @@ Their meaning is the same as on a character style; see
 [typography](/docs/idml/typography) chapter.
 
 > **In Paged:** `Ligatures`, `KerningMethod` and the `OTF…` OpenType attributes are read from
-> character styles and ranges but not yet from paragraph styles, where InDesign also writes
-> them; a run whose only source for them is its paragraph style gets the defaults (ligatures on,
-> metric kerning, no extra OpenType features).
+> paragraph styles too, where InDesign writes them, and reach every run whose own range and
+> character style leave them unset.
 
 ## Paragraph geometry
 
@@ -78,9 +77,10 @@ Their meaning is the same as on a character style; see
 binding-relative `ToBindingSide` and `AwayFromBindingSide`. The justified modes differ in their
 last line; see [justification and line-breaking](/docs/idml/typography/justification-and-linebreaking).
 
-> **In Paged:** `CenterJustified` and `RightJustified` are set ragged (centred and flush right)
-> instead of justified, and `FullyJustified` is composed like `LeftJustified`. Both are known
-> engine issues. `ToBindingSide` is set left and `AwayFromBindingSide` right.
+> **In Paged:** every value is set as InDesign sets it. The justified modes stretch every line
+> but the last, which is set flush left, centred or flush right as the name says, or justified
+> too for `FullyJustified`; the binding-relative values follow the side of the spine the page
+> is on.
 
 ## Option families
 
@@ -93,7 +93,7 @@ topic:
   `HyphenateBeforeLast`, `HyphenateCapitalizedWords`, `HyphenateLadderLimit`,
   `HyphenationZone`, …). See [justification and line-breaking](/docs/idml/typography/justification-and-linebreaking)
   and [composer and OpenType features](/docs/idml/typography/composer-and-opentype).
-- **Drop caps and tabs:** `DropCapCharacters`, `DropCapLines`, `DropCapDetail` and the
+- **Drop caps and tabs:** `DropCapCharacters`, `DropCapLines`, `DropcapDetail` and the
   `<TabList>`. See [drop caps and tabs](/docs/idml/typography/drop-caps-and-tabs).
 - **Lists, keeps and columns:** `BulletsAndNumberingListType`, `NumberingExpression` and the
   list children; `KeepLinesTogether`, `KeepAllLinesTogether`, `KeepFirstLines`,
@@ -114,9 +114,12 @@ nested styles as `<Properties><AllNestedStyles type="list">`, one `record` per n
 each naming the character style, the delimiter, how many times it repeats and whether the
 delimiter itself is included.
 
-> **In Paged:** nested styles are applied when they come as `<NestedStyle>` elements under the
-> paragraph style, a form InDesign does not write. The `<AllNestedStyles>` list InDesign writes is
-> not read yet, so nested styles from an InDesign file are not applied.
+> **In Paged:** the `<AllNestedStyles>` list InDesign writes is read, on a paragraph style and on
+> a `<ParagraphStyleRange>`, and nested styles are applied with InDesign's delimiter rules,
+> including `Repetition` and `Inclusive`. A nested style sits under a character style the run
+> applies itself and over the paragraph style. Line and GREP styles (`<AllLineStyles>`,
+> `<AllGREPStyles>`) are read and saved back but not applied yet. The `<NestedStyle>` element
+> earlier Paged versions wrote is still read, and saving rewrites it into InDesign's list.
 > <SupportBadge feature="stories-text.nested-styles" />
 
 ## `NextStyle`

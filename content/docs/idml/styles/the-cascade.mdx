@@ -6,7 +6,7 @@ diataxis: explanation
 status: published
 owner: paged-docs
 describes: [styles.based-on-chain, styles.cascade]
-reviewed: 2026-10-11
+reviewed: 2026-10-13
 ---
 
 **`BasedOn` names a style's parent; a style's effective values are its own attributes, then whatever its parents supply for the rest.**
@@ -44,7 +44,8 @@ at `[No character style]`; a style that names no parent is based on that root.
 > **In Paged:** the importer reads both the typed child and the attribute; when a style has
 > both, the attribute wins. The exporter always writes the child, as `type="object"` with the
 > parent's `Self`. A reserved root written in the `type="string"` form (`$ID/[No paragraph
-> style]`) is not matched to the root style, so the chain stops one step early. `Swatch/None`
+> style]`) is matched to the root of the same kind, so the chain reaches the document's own
+> root, in the child and the attribute form alike. `Swatch/None`
 > on a text style's stroke, or on an object, table or cell style's fill or stroke, is read as
 > unset rather than as "no paint", so a parent's colour shows through (see
 > [conflict resolution](/docs/idml/styles/conflict-resolution)).

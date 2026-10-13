@@ -6,7 +6,7 @@ diataxis: reference
 status: published
 owner: paged-docs
 describes: [typography.knuth-plass, typography.justification-spacing, typography.hyphenation]
-reviewed: 2026-10-11
+reviewed: 2026-10-13
 ---
 
 **`Justification` sets how a paragraph's lines sit in the column; the spacing and hyphenation attributes set how much the composer may stretch, squeeze and split words to get there.**
@@ -44,10 +44,12 @@ A line that holds a single word has no space to stretch. `SingleWordJustificatio
 such a line is set in justified text: `FullyJustified` (letter-spaced to fill the measure, the
 value in almost every document of the census), `LeftAlign`, `CenterAlign` or `RightAlign`.
 
-> **In Paged:** the three ragged values and `LeftJustified` are set as described.
-> `CenterJustified` and `RightJustified` are set ragged, centred and flush right, instead of
-> justified; `FullyJustified` is set like `LeftJustified`, with a ragged last line; the
-> binding-relative values are set left and right. These are known engine issues.
+> **In Paged:** every value is set as the table describes, as measured against InDesign. The
+> four justified values stretch the same lines and differ only in the last one, which is set
+> flush left, centred, flush right or, for `FullyJustified`, justified as well. The two
+> binding-relative values are resolved from the side of the spine the page sits on: on a
+> right-hand page `ToBindingSide` is flush left, on a left-hand page flush right.
+> `SingleWordJustification` is not read yet.
 
 ## The forced line break
 

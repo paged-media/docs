@@ -6,7 +6,7 @@ diataxis: explanation
 status: published
 owner: paged-docs
 describes: [layers.model, layers.nested-groups, layers.ops]
-reviewed: 2026-10-11
+reviewed: 2026-10-13
 ---
 
 **An item shows when its layer is visible and the item itself is visible; it prints when, in addition, its layer is printable and the item is not marked non-printing.**
@@ -54,8 +54,11 @@ layer inside a hidden parent is hidden, and a layer inside a locked parent is lo
 > **In Paged:** the renderer draws an item only when its layer is visible, its layer is
 > printable and the item is visible; a nested layer inherits a hidden or locked parent. The
 > renderer makes no difference between screen and print, so a non-printing layer is hidden in
-> the rendered page too. Locked layers and items are drawn and only block selection in the
-> editor. <SupportBadge feature="layers.model" /> <SupportBadge feature="layers.ops" />
+> the rendered page too. An item's own `Nonprinting` is read and saved back but not applied:
+> the item is drawn and exported. Locked layers and items are drawn. A locked item cannot be
+> moved, resized, restacked or deleted, by the editor or by a script, while its fill, stroke and
+> text can still change, as in InDesign; a locked layer only blocks selection in the editor.
+> <SupportBadge feature="layers.model" /> <SupportBadge feature="layers.ops" />
 
 ## When content goes missing
 

@@ -31,7 +31,7 @@
     },
     {
       "lines": "14-16",
-      "note": "The test: AppliedConditions lists both conditions, separated by a space. If BOTH prints, one visible condition is enough to show a run; if it does not, one hidden condition hides it."
+      "note": "The test: AppliedConditions lists both conditions, separated by a space. BOTH prints: one visible condition is enough to show a run, and only a run whose conditions are all hidden is left out."
     }
   ],
   "expect": {
@@ -41,7 +41,7 @@
     "stories": 1,
     "frames": 1,
     "paragraphs": 1,
-    "runs": 2
+    "runs": 3
   },
   "pathological": false,
   "license": "MIT",

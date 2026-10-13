@@ -6,7 +6,7 @@ diataxis: reference
 status: published
 owner: paged-docs
 describes: [color-swatches.gradients, color-swatches.process-spot-tint, color-swatches.fill-stroke-apply]
-reviewed: 2026-10-11
+reviewed: 2026-10-13
 ---
 
 **A gradient is a swatch made of stops that point at colours; a tint is a colour at reduced strength, either as a named `<Tint>` swatch or as a `FillTint` on one object.**
@@ -64,13 +64,12 @@ Strokes have the same set: `GradientStrokeAngle`, `GradientStrokeStart`,
   GradientFillAngle="90". InDesign draws the first stop, Sun, at the bottom.
 </ExampleEmbed>
 
-> **In Paged:** linear and radial gradients render, and a radial gradient is centred at its
-> `GradientFillStart`. Midpoints are honoured, but Paged applies a stop's `Midpoint` to the
-> blend that follows the stop, not to the one before it. Paged also measures
-> `GradientFillAngle` clockwise, so a 90° gradient runs from top to bottom with the first
-> stop at the top: the example above renders upside down compared with InDesign. Both are
-> known engine issues. CMYK stops are blended in CMYK before conversion to the screen.
-> <SupportBadge feature="color-swatches.gradients" />
+> **In Paged:** linear and radial gradients render as InDesign places them, measured against
+> its output. `GradientFillAngle` turns counter-clockwise, so the example above has Sun at the
+> bottom; a linear gradient starts at its `GradientFillStart` and a radial one is centred
+> there; a stop's `Midpoint` bends the blend before that stop. CMYK stops are blended in CMYK
+> before conversion to the screen. On an anchored frame only the angle is read, not the start
+> or the length. <SupportBadge feature="color-swatches.gradients" />
 
 ## Named tints: the `<Tint>` element
 
@@ -110,9 +109,12 @@ same as writing no `FillTint` at all. InDesign writes `-1` often, so a reader mu
 it as a negative percentage. Values from 0 to 100 are a tint; 100 is full strength.
 
 > **In Paged:** named `<Tint>` swatches are read, including tints of spot colours, which keep
-> their spot ink. `FillTint="-1"` is treated as no tint. On a process colour, a `FillTint`
-> currently previews lighter than the same percentage as a named tint, where InDesign shows
-> both alike; this is a known engine issue.
+> their spot ink. `FillTint="-1"` is treated as no tint. When the document's CMYK profile is
+> available, a `FillTint` scales the colour's inks and then goes through the profile, exactly as
+> a named tint does, so the two spellings show alike, as in InDesign; without a profile they take
+> simpler conversions and can differ. A `FillTint` on an object that applies a `<Tint>` swatch is
+> taken against the swatch's base colour, not compounded with it. A shape's own `StrokeTint` is
+> not read yet, so its stroke paints at full strength.
 > <SupportBadge feature="color-swatches.process-spot-tint" /> <SupportBadge feature="color-swatches.fill-stroke-apply" />
 
 ## Frequently asked questions

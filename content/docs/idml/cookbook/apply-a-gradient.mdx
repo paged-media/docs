@@ -6,7 +6,7 @@ diataxis: how-to
 status: published
 owner: paged-docs
 describes: [color-swatches.gradients]
-reviewed: 2026-10-11
+reviewed: 2026-10-13
 ---
 
 **A gradient in IDML is a named swatch, applied to a shape exactly the way a flat colour is. Its direction belongs to the shape.**
@@ -70,11 +70,10 @@ as its radius. [Download the sample](/downloads/gradient-fill.idml).
   blend between two, use a tint — see
   [gradients & tints](/docs/idml/color-swatches/gradients-and-tints).
 
-> **In Paged:** linear and radial gradients, midpoints and `GradientFillStart` for radial
-> gradients are read and drawn. Paged currently draws `GradientFillAngle="90"` from top to
-> bottom, the opposite of InDesign; the example above shows the difference against
-> InDesign's own rendering. It also applies a stop's `Midpoint` to the segment after the
-> stop rather than before it. <SupportBadge feature="color-swatches.gradients" />
+> **In Paged:** linear and radial gradients, midpoints, `GradientFillStart` and
+> `GradientFillLength` are read and drawn the way InDesign draws them: `GradientFillAngle="90"`
+> runs from bottom to top, so the example above shows Sun at the bottom, and a stop's
+> `Midpoint` bends the segment before that stop. <SupportBadge feature="color-swatches.gradients" />
 
 For the palette as a whole — colours, process and spot, where swatches live — see
 [Color & swatches](/docs/idml/color-swatches).

@@ -65,9 +65,11 @@ Transparency is independent of colour. A tint makes a colour lighter but keeps i
 opacity lets what is beneath show through. See
 [gradients & tints](/docs/idml/color-swatches/gradients-and-tints).
 
-> **In Paged:** object-level opacity, blend modes and all nine effects are read and drawn; the
-> effects follow InDesign's parameters as measured against InDesign's own output. The fill,
-> stroke and content levels are only partly kept apart; see the pages that follow.
+> **In Paged:** opacity and blend modes are applied at all four levels, each to its own part,
+> and all nine effects are read and drawn; the effects follow InDesign's parameters as measured
+> against InDesign's own output. At the fill, stroke and content levels the drop shadow is drawn
+> too; the other effects there are read and saved back but not drawn. The pages that follow
+> give the details.
 > <SupportBadge feature="effects-transparency.opacity" /> <SupportBadge feature="effects-transparency.drop-shadow" />
 
 ## Frequently asked questions

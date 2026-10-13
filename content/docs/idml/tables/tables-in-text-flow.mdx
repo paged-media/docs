@@ -38,10 +38,11 @@ The paragraph's attributes still apply to the table as a whole. Its alignment pl
 is narrower than the column, and its space before and after separate the table from its
 neighbours, together with the table's own `SpaceBefore` and `SpaceAfter`.
 
-> **In Paged:** a table that shares a `<CharacterStyleRange>` with the text paragraphs before and
-> after it is currently drawn after the following text instead of between the paragraphs. Writing
-> the table's paragraph in a range of its own, as the example does, places it correctly. This is a
-> known engine issue.
+> **In Paged:** a table stands at its own place in the paragraph's text, as InDesign sets it,
+> whether or not it shares a `<CharacterStyleRange>` with the text around it. Text before it in
+> the same paragraph ends a line, the table takes a line of its own, and text after it starts the
+> next line of the same paragraph, with no first-line indent, space before or list number of its
+> own. <SupportBadge feature="tables.model" />
 
 ## Breaking across frames
 

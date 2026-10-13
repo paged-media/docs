@@ -6,7 +6,7 @@ diataxis: reference
 status: published
 owner: paged-docs
 describes: [typography.knuth-plass, typography.ligatures-opentype, typography.capitalization]
-reviewed: 2026-10-11
+reviewed: 2026-10-13
 ---
 
 **The composer decides where a paragraph's lines break; the OpenType attributes decide which glyphs a run's characters become.**
@@ -81,9 +81,11 @@ the CJK `OTFHVKana` and `OTFProportionalMetrics`.
 <AttrTable element="CharacterStyleRange" attrs={['Ligatures', 'Capitalization', 'OTFContextualAlternate', 'OTFFigureStyle', 'OTFFraction', 'OTFOrdinal']} />
 
 > **In Paged:** `Ligatures`, the small-capital values of `Capitalization` and the nine features in
-> the table above are passed to the shaper, from runs and character styles. They are not yet read
-> from paragraph styles. A font without small capitals shows the letters unchanged rather than
-> scaled capitals. The narrower `OTF…` attributes are not read.
+> the table above are passed to the shaper, from runs, character styles and paragraph styles.
+> `AllCaps` also turns on the font's case-sensitive forms and capital spacing (`case`, `cpsp`), as
+> InDesign does. A font without small capitals shows the letters unchanged rather than scaled
+> capitals. Of the narrower attributes, `OTFHistorical` (`hist`) and `OTFStylisticAlternate`
+> (`salt`) are applied; the others are not read.
 > <SupportBadge feature="typography.ligatures-opentype" /> <SupportBadge feature="typography.capitalization" />
 
 ## Frequently asked questions

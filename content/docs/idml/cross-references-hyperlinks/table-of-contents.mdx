@@ -72,12 +72,13 @@ the `TOCStyle` it came from. Every other story says `AppliedTOCStyle="n"`. In th
 Because the page numbers are typed out, a table of contents goes stale when text moves
 to other pages, until it is regenerated.
 
-> **In Paged:** a text frame whose `AppliedTOCStyle` names a TOC style has its story
-> replaced by a fresh list: entries in story order, each with the label of the page its
-> story starts on (section numbering included), set in the entry's `FormatStyle`. The
-> title paragraph and `RunIn` are not applied yet. Paged does not yet read the attribute
-> on `Story`, where InDesign writes it, so a table of contents made in InDesign shows its
-> saved text. <SupportBadge feature="cross-references-hyperlinks.toc" />
+> **In Paged:** a table of contents prints the text its story holds, stale or not, as
+> InDesign does until the table is updated. Only an empty story whose text frame names a TOC
+> style in `AppliedTOCStyle` is filled with a fresh list: entries in story order, each with
+> the label of the page its story starts on (section numbering included), set in the entry's
+> `FormatStyle`; the title paragraph and `RunIn` are not applied there yet. The attribute on
+> `Story`, where InDesign writes it, is not read yet.
+> <SupportBadge feature="cross-references-hyperlinks.toc" />
 
 ## Frequently asked questions
 

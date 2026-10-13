@@ -6,7 +6,7 @@ diataxis: explanation
 status: published
 owner: paged-docs
 describes: [styles.cascade, styles.based-on-chain]
-reviewed: 2026-10-11
+reviewed: 2026-10-13
 ---
 
 **A style in IDML is a named bundle of formatting that text, frames and tables point at instead of repeating the values.**
@@ -42,10 +42,10 @@ different stories into one sequence (see
 [lists, keep options and span columns](/docs/idml/typography/lists-keep-span)).
 
 > **In Paged:** paragraph, character, object, table, cell and TOC styles are read, and the
-> five cascading kinds resolve through their `BasedOn` chains. Stroke styles and numbering
-> lists are read only from `Resources/Styles.xml`, so the ones InDesign writes to
-> `Resources/Graphic.xml` and `designmap.xml` are not picked up yet. A built-in stroke style
-> still draws by its name. <SupportBadge feature="styles.cascade" />
+> five cascading kinds resolve through their `BasedOn` chains. Stroke styles are read from
+> `Resources/Graphic.xml` and numbering lists from `designmap.xml`, where InDesign writes them;
+> definitions in `Resources/Styles.xml`, where earlier Paged versions wrote them, are still read.
+> A built-in stroke style draws by its name. <SupportBadge feature="styles.cascade" />
 
 ## Names, ids and groups
 

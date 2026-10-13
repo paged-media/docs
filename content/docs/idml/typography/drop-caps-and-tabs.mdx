@@ -36,10 +36,12 @@ uses one.
   One paragraph whose first character drops three lines.
 </ExampleEmbed>
 
-> **In Paged:** drop caps are set from `DropCapCharacters` and `DropCapLines`. `DropCapDetail`,
-> which InDesign-authored files in the census do not carry, is read and kept as an integer. A
-> drop cap's own character style is not parsed: the drop cap takes the formatting of the
-> characters it is made of. <SupportBadge feature="typography.drop-caps" />
+> **In Paged:** drop caps are set from `DropCapCharacters` and `DropCapLines`, on the paragraph
+> or its style. `DropcapDetail`, as InDesign spells it (the older `DropCapDetail` spelling reads
+> too), is read and kept as an integer. A drop cap's own character style, which InDesign writes
+> as the paragraph's first nested style with the `Dropcap` delimiter, is applied to the cap;
+> without one the cap takes the formatting of the characters it is made of.
+> <SupportBadge feature="typography.drop-caps" />
 
 ## The tab character
 

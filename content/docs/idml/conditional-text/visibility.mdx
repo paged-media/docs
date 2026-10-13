@@ -8,18 +8,17 @@ owner: paged-docs
 describes:
   - conditional-text.visibility-filtering
   - conditional-text.condition-ops
-reviewed: 2026-10-11
+reviewed: 2026-10-13
 ---
 
 **Hidden conditional text stays in the story but is left out of the page, and the visible text closes up around it.**
 
 **In short:** Whether a run prints depends on the `Visible` flags of the conditions it
 names in `AppliedConditions`. A run with no conditions always prints. A run with one
-condition prints when that condition is visible. Hidden text is not composed at all: it
-takes no space, and the lines are set as though it were not there. A run that names
-several conditions, some visible and some hidden, is the open case: the rule InDesign
-applies to it is being verified. Condition sets and indicators do not decide visibility
-by themselves.
+condition prints when that condition is visible. A run that names several conditions
+prints while any one of them is visible, and is left out only when all of them are hidden.
+Hidden text is not composed at all: it takes no space, and the lines are set as though it
+were not there. Condition sets and indicators do not decide visibility by themselves.
 
 ## One condition
 
@@ -52,8 +51,8 @@ the same test: straight after opening this minimal file, InDesign composed it wi
 hidden condition still showing, and applied the visibility only once a condition's
 visibility changed. Its own files may behave differently; the cause is not known.
 
-> **In Paged:** a run is hidden when any condition it names is hidden, so BOTH does not
-> print in the live view. That differs from InDesign and is a known engine issue. Hidden
+> **In Paged:** a run prints while any condition it names is visible, as in InDesign, so BOTH
+> prints in the live view; a condition id that names no `Condition` counts as visible. Hidden
 > runs are removed before layout, so a story can report more runs than the page shows.
 > <SupportBadge feature="conditional-text.visibility-filtering" />
 
