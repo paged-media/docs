@@ -74,8 +74,12 @@ A shadow inside `StrokeTransparencySetting` is cast by the stroke alone; one ins
 
 > **In Paged:** drop shadows are drawn for rectangles, ovals, polygons, lines and text frames
 > by these rules, matched to InDesign on test pages for lines, ovals, polygons and rectangles.
-> A group's shadow is drawn for the group as a whole. A shadow at the stroke level is kept as
-> the stroke's shadow; one at the content level is not drawn.
+> A group's shadow is drawn for the group as a whole. A shadow at the fill, stroke or content
+> level is cast by that part alone, and a part's opacity weakens its shadow, as in InDesign.
+> `BlendMode` (an explicit `Normal` included), `Spread`, `Noise` and `UseGlobalLight` are
+> applied, the last with the document's light from `<TransparencyPreference>`; the WebGPU
+> renderer does not apply spread and noise yet. `KnockedOut` and `HonorOtherEffects` are read
+> and saved back.
 > <SupportBadge feature="effects-transparency.drop-shadow" />
 
 ## Inner shadow
@@ -86,7 +90,8 @@ A shadow inside the object's edge, as if the object were cut out of the page. Po
 `Angle` and `Distance` (default 120° and 7 pt), softened by `Size`, hardened by
 `ChokeAmount`. Default `Multiply`, 75 %.
 
-> **In Paged:** inner shadows are drawn by the rules above, the light angle included.
+> **In Paged:** inner shadows are drawn by the rules above, the light angle included, and
+> `UseGlobalLight` takes the document's light.
 > <SupportBadge feature="effects-transparency.inner-shadow" />
 
 ## Outer glow and inner glow
@@ -102,7 +107,9 @@ too. `Source` on an inner glow is `EdgeSourced` (from the edge inward) or `Cente
 mode is `Screen`, which lightens; a black glow under `Screen` draws nothing.
 
 > **In Paged:** both glows are drawn; a glow whose `EffectColor` does not resolve is drawn
-> white, a shadow black. <SupportBadge feature="effects-transparency.glows" />
+> white, a shadow black. An explicit `BlendMode="Normal"` is honoured rather than read as the
+> `Screen` default. `Technique` is read; the `Precise` technique is drawn as soft as `Softer`.
+> <SupportBadge feature="effects-transparency.glows" />
 
 ## Bevel and emboss
 
@@ -115,8 +122,10 @@ wide; `Depth`, a percentage that can go far above 100, makes it steeper rather t
 result; `Soften` blurs it. The highlight and shadow each have a colour, an opacity and a blend
 mode (`Screen` and `Multiply` by default).
 
-> **In Paged:** bevels are drawn with a facet `Size` wide, shaded against the light. Where the
-> facet is wider than half the object, InDesign fades it and Paged does not yet.
+> **In Paged:** bevels are drawn with a facet `Size` wide, shaded against the light, with the
+> highlight's and the shadow's own blend modes; `UseGlobalLight` takes the document's angle and
+> altitude. Where the facet is wider than half the object, InDesign fades it and Paged does not
+> yet.
 > <SupportBadge feature="effects-transparency.bevel-emboss" />
 
 ## Satin

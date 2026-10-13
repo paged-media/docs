@@ -53,10 +53,10 @@ child of `<Document>` in `designmap.xml`, can carry the count across stories
 > **In Paged:** bullets and numbers are generated from the paragraph's list attributes with the
 > numbering formats InDesign offers, and the text after the marker lands on the hanging indent.
 > `<NumberingFormat>`, `<AppliedNumberingList>` and the marker character styles are read as the
-> typed children InDesign writes. `<NumberingList>` definitions are read only from
-> `Resources/Styles.xml`, not from `designmap.xml` where InDesign writes them, so numbering
-> continues across stories only for lists defined there. Multi-level numbering
-> (`NumberingLevel`) is not read yet. <SupportBadge feature="styles.bullets-numbering" />
+> typed children InDesign writes. `<NumberingList>` definitions are read from `designmap.xml`,
+> where InDesign writes them (and from `Resources/Styles.xml` in older files), so a list's
+> `ContinueNumbersAcrossStories` setting applies. Multi-level numbering (`NumberingLevel`) is
+> not read yet. <SupportBadge feature="styles.bullets-numbering" />
 
 ## Keep options
 

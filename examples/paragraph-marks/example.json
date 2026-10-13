@@ -44,7 +44,8 @@
     "builds": true,
     "pages": 1,
     "stories": 1,
-    "frames": 1
+    "frames": 1,
+    "paragraphs": 3
   },
   "pathological": false,
   "license": "MIT",

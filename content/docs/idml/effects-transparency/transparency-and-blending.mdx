@@ -76,12 +76,13 @@ and the result is faded or blended as a whole. Three overlapping 50 %-opaque sha
 different from the same shapes in a 50 %-opaque group: in the group they do not show through
 each other.
 
-> **In Paged:** object-level `Opacity` and `BlendMode` are applied to rectangles, ovals,
-> polygons, text frames and groups; a group is composed as a unit. Paged also reads
-> `HardLight`, `ColorDodge`, `Difference`, `Exclusion`, `Hue`, `Saturation`, `Color` and
-> `Luminosity`. Opacity and blend mode on a graphic line are not applied yet, and
-> `IsolateBlending` and `KnockoutGroup` are not read. The fill, stroke and content levels are
-> not kept apart: an opacity or blend mode found there is applied to the whole object.
+> **In Paged:** `Opacity` and `BlendMode` are applied at each of the four levels to its own
+> part, on rectangles, ovals, polygons, graphic lines, text frames and groups: a 30 % fill fades
+> the fill alone, not the stroke or the text. A group is composed as a unit. `IsolateBlending`
+> and `KnockoutGroup` are read and saved back; the CPU rasteriser and the PDF export honour
+> them, while the WebGPU renderer of the live preview still composes every group as isolated
+> and a knockout group like an ordinary one. Paged also reads `HardLight`, `ColorDodge`,
+> `Difference`, `Exclusion`, `Hue`, `Saturation`, `Color` and `Luminosity`.
 > <SupportBadge feature="effects-transparency.opacity" /> <SupportBadge feature="effects-transparency.blend-modes" /> <SupportBadge feature="effects-transparency.transparency-groups" />
 
 ## Frequently asked questions

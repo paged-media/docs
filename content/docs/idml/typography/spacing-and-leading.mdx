@@ -6,7 +6,7 @@ diataxis: reference
 status: published
 owner: paged-docs
 describes: [typography.tracking-kerning, typography.leading, typography.scale-skew]
-reviewed: 2026-10-11
+reviewed: 2026-10-13
 ---
 
 **Spacing inside a line comes from tracking and kerning; spacing between lines comes from leading.**
@@ -44,11 +44,10 @@ or `Optical` appears among the recorded values.
 `KerningValue` is manual kerning: an amount in thousandths of an em added to the automatic
 kerning at that position, set on the range it applies to.
 
-> **In Paged:** kerning is applied by the shaper from the font's pairs. The `$ID/`-prefixed
-> values are not recognised yet: every one of them, `$ID/None` included, falls back to metric
-> kerning. The bare value `None` does turn kerning off, and optical kerning is not implemented
-> (it is set like metric kerning). `KerningValue` is not read yet. These are known engine
-> issues. <SupportBadge feature="typography.tracking-kerning" />
+> **In Paged:** kerning is applied by the shaper from the font's pairs. `KerningMethod` is read
+> with or without the `$ID/` prefix, so `$ID/None` turns kerning off. Optical kerning is not
+> implemented: `$ID/Optical` is set like metric kerning. `KerningValue` is not read yet.
+> <SupportBadge feature="typography.tracking-kerning" />
 
 ## Leading
 

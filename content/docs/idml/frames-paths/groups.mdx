@@ -52,8 +52,11 @@ Settings wrapped in `<StrokeTransparencySetting>` or `<ContentTransparencySettin
 the stroke or the content of the object that carries them.
 
 > **In Paged:** members render at their composed positions, and a group's opacity, blend mode
-> and drop shadow are composited over the group as a whole. A drop shadow or wide stroke that
-> reaches beyond the members' outline can still be cut at the group's edge.
+> and drop shadow are composited over the group as a whole. `IsolateBlending` and
+> `KnockoutGroup` are read and honoured; see
+> [transparency and blending](/docs/idml/effects-transparency/transparency-and-blending). A
+> drop shadow or wide stroke that reaches beyond the members' outline can still be cut at the
+> group's edge.
 > <SupportBadge feature="frames-paths.groups" />
 > <SupportBadge feature="effects-transparency.transparency-groups" />
 

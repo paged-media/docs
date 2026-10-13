@@ -6,7 +6,7 @@ diataxis: reference
 status: published
 owner: paged-docs
 describes: [styles.character.crud, styles.cascade]
-reviewed: 2026-10-11
+reviewed: 2026-10-13
 ---
 
 **A character style formats a run inside a paragraph, and usually sets only the few attributes that differ from the text around it.**
@@ -51,10 +51,13 @@ A few attributes need more than a name:
 
 > **In Paged:** the character attributes above are applied, including small capitals through
 > the font's `smcp` and `c2sc` (a font without them shows the letters unchanged, not scaled
-> capitals), `Position` with InDesign's default size and offset (58.3 % and 33.3 %; the
-> document's own settings are not read yet), and `VerticalScale`. `KerningMethod` values with the
-> `$ID/` prefix are not recognised yet and fall back to metric kerning. Underline and
-> strikethrough are drawn; their gap colours are not.
+> capitals), `AllCaps` with the font's case-sensitive forms and capital spacing (`case` and
+> `cpsp`), and `VerticalScale`. `Superscript` and `Subscript` use InDesign's default size and
+> offset (58.3 % and 33.3 %; the document's own settings are not read yet). The four OpenType
+> positions use the font's `sups`, `subs`, `numr` and `dnom` glyphs at the run's size on its
+> baseline; a font without the feature prints the plain glyph. `KerningMethod` is read with or
+> without the `$ID/` prefix; `Optical` is set like metric kerning. Underline and strikethrough
+> are drawn; their gap colours are not.
 > <SupportBadge feature="typography.capitalization" /> <SupportBadge feature="typography.position-super-subscript" /> <SupportBadge feature="typography.vertical-scale" />
 
 ## A local override beats the style

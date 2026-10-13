@@ -6,7 +6,7 @@ diataxis: explanation
 status: published
 owner: paged-docs
 describes: [styles.cascade, conditional-text.visibility-filtering]
-reviewed: 2026-10-11
+reviewed: 2026-10-13
 ---
 
 **A run's effective value for each attribute comes from the first of three layers that sets it: the run itself, its character style, then its paragraph style.**
@@ -72,8 +72,10 @@ Two constructs change the formatting or visibility of part of a paragraph on top
 - **Conditions** hide or show runs. A run lists its conditions in `AppliedConditions`; each
   `<Condition>` has a `Visible` flag. See [conditional text](/docs/idml/conditional-text).
 
-> **In Paged:** a run is hidden before layout when any of its conditions is set
-> `Visible="false"`. <SupportBadge feature="conditional-text.visibility-filtering" />
+> **In Paged:** a nested style applies under a character style the run applies itself and over
+> the paragraph style, the order InDesign uses. A run is left out before layout only when every
+> condition it names is set `Visible="false"`; one visible condition keeps it.
+> <SupportBadge feature="conditional-text.visibility-filtering" />
 
 ## Frequently asked questions
 

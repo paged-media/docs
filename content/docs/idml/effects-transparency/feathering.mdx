@@ -50,7 +50,8 @@ opacities instead of colours:
 - **`GradientStart`** is the start of the ramp, an `x y` pair in the object's coordinates;
   **`Length`** its length in points; **`Angle`** its direction in degrees.
 - **`HiliteAngle`** and **`HiliteLength`** are written alongside; they do not set the ramp's
-  direction.
+  direction. On a radial feather, InDesign moves the focal point of the fade toward the
+  circle's edge along `HiliteAngle`.
 - The ramp is defined by **`<OpacityGradientStop>`** children, each with an `Opacity` (percent),
   a `Location` (percent along the ramp) and a `Midpoint`, as on a gradient swatch's stops.
 
@@ -61,7 +62,10 @@ with opacity stops in six.
 
 > **In Paged:** all three feathers are drawn. The basic feather reads `CornerType`
 > `Diffusion`, `Rounded` and `Sharp`; the gradient feather takes its direction from `Angle`, not
-> from `HiliteAngle`. <SupportBadge feature="effects-transparency.feather" /> <SupportBadge feature="effects-transparency.gradient-feather" />
+> from `HiliteAngle`. A radial gradient feather with no `GradientStart` of its own is placed
+> where InDesign places it, measured against its PDF output. The radial focal point that
+> `HiliteAngle` and `HiliteLength` move is not applied yet, and `FollowShapeMode` is read and
+> saved back. <SupportBadge feature="effects-transparency.feather" /> <SupportBadge feature="effects-transparency.gradient-feather" />
 
 ## Frequently asked questions
 

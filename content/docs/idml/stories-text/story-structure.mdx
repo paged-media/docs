@@ -108,7 +108,9 @@ A `CharacterStyleRange` is also where IDML places everything that flows with the
   `ResultText`.
 - **XML tagging** (`XMLElement`), which can wrap ranges. See
   [the structured-content layer](/docs/idml/tagged-xml/the-structured-content-layer).
-- **Notes and tracked changes** (`Note`, `Change`). Neither is part of the printed text.
+- **Notes and tracked changes** (`Note`, `Change`). A note is not part of the printed text. A
+  story with tracked changes prints as if every change were accepted: text inside
+  `<Change ChangeType="DeletedText">` is left out, and inserted or moved text prints in place.
   <SupportBadge feature="stories-text.notes" />
 - **Ruby** (`RubyFlag`, `RubyString`), set as attributes on the range. <SupportBadge feature="typography.ruby" />
 

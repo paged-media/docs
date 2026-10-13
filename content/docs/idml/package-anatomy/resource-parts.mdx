@@ -42,8 +42,9 @@ TintValue="…">`. Swatch folders (`ColorGroup`) are defined in the design map, 
 The colour model itself is covered in [colour and swatches](/docs/idml/color-swatches).
 
 > **In Paged:** colours, named tints, gradients and the reserved swatches are read and
-> rendered. `Ink`, `MixedInk` and `StrokeStyle` are not read, and custom stroke patterns
-> are read only from `Styles.xml`, not from this part. <SupportBadge feature="package-anatomy.graphic-part" />
+> rendered. Custom stroke patterns are read from this part, a dashed style's dashes from its
+> `DashArray`. A built-in `StrokeStyle` element is not read; a stroke that names one is drawn
+> by the name. `Ink` and `MixedInk` are not read. <SupportBadge feature="package-anatomy.graphic-part" />
 
 ## `Fonts.xml`: the faces in use
 
@@ -108,9 +109,12 @@ default instance.
 The rest (export, print, view and XML preferences) configure the application and do not
 change the pages.
 
-> **In Paged:** the importer reads `ChapterNumberPreference` from this part; page sizes
-> come from the pages themselves. The exporter writes `TextPreference UseOpticalSize`
-> to match how it composed variable fonts.
+> **In Paged:** the importer reads from this part the bleed and slug offsets in
+> `DocumentPreference`, `ChapterNumberPreference`, `FootnoteOption`, `GridPreference` and the
+> document's global light in `TransparencyPreference`; page sizes and facing pages come from
+> the pages themselves. An edited bleed or slug is written back onto the existing
+> `DocumentPreference`. The exporter writes `TextPreference UseOpticalSize` to match how it
+> composed variable fonts.
 
 ## Frequently asked questions
 

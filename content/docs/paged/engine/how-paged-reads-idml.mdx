@@ -44,9 +44,11 @@ revision ([ADR 022](https://github.com/paged-media/plugin-publish/blob/main/docs
 It reads the package in a fixed order:
 
 1. `designmap.xml`: the part list, layers, sections, text variables, hyperlinks,
-   bookmarks, conditions and document settings;
-2. `Resources/Preferences.xml` (the chapter number), `Resources/Graphic.xml` and
-   `Resources/Styles.xml`, each by its fixed path;
+   bookmarks, conditions, numbering lists, colour groups and document settings;
+2. `Resources/Preferences.xml` (bleed and slug, the chapter number, footnote options, the
+   grid and the global light; these win over the same settings in the design map),
+   `Resources/Graphic.xml` (swatches and stroke styles) and `Resources/Styles.xml`, each by
+   its fixed path;
 3. every master spread, then every spread, then every story the design map names.
 
 A part the design map names but the archive lacks stops the import. A reference that

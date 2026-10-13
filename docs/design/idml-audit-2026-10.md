@@ -68,58 +68,81 @@ writer must include for InDesign to open a file (InDesign as the oracle, ADR 120
 
 ## Engine findings raised by the audit
 
-Not documentation work; reported to the engine:
+Not documentation work; reported to the engine. Core v0.71.7 (`ad571c7`, with the IDML
+adapter at plugin-publish `200e002`) fixed most of them; each is marked below, and the
+"In Paged" asides were updated to match.
 
 - Gradient direction: InDesign draws `GradientFillAngle="90"` with the first stop at the
   bottom (the angle turns counter-clockwise from left-to-right). Paged draws it top-down,
   and `cookbook/apply-a-gradient` describes Paged's direction. Found by the InDesign
   verification of `examples/gradient-fill` (ADR 806, worst-page mean ΔE 4.0).
+  **Fixed in core v0.71.7:** the angle turns counter-clockwise, and the cookbook says so.
 - Gradient `Midpoint` is applied to the blend after its stop; InDesign's files put
   non-default midpoints on later stops (usually the last), so it governs the blend before.
+  **Fixed in core v0.71.7:** a midpoint bends the segment before its stop.
 - `FillTint` on a process colour previews too light (blended in linear RGB, not through
   the profile); InDesign renders a 40 % `<Tint>` and `FillTint="40"` identically
-  (`examples/named-tint`).
+  (`examples/named-tint`). **Fixed in core v0.71.7:** a tint scales the inks, then the CMYK
+  profile. Still open: a shape's own `StrokeTint` is not read.
 - Opacity and effects in `Fill`/`Stroke`/`ContentTransparencySetting` are applied to the
   whole object; graphic-line opacity and blend mode, `IsolateBlending`, `KnockoutGroup`,
   `GradientFillStart` (linear) and `AnchorSpaceAbove` are not read or applied.
+  **Fixed in core v0.71.7:** each target is applied to its own part, and graphic-line
+  opacity and blend mode, isolation, knockout and the linear start are applied (ADR 135).
+  Still open: `AnchorSpaceAbove`; the WebGPU renderer composes every group as isolated.
 - Placement the importer does not read (found from the census during wave 2):
   `ColorGroup` (InDesign writes it in the design map with `ColorGroupSwatch` children),
   `NumberingList` (design map), `DocumentPreference` / `FootnoteOption` / `GridPreference`
   (`Preferences.xml`), stroke styles such as `DashedStrokeStyle` (`Graphic.xml`); the
   importer looks for each in another part. `Ink`, `MixedInk` and `StrokeStyle` are not read.
   Vertical writing is read from `Story@StoryDirection`; InDesign writes `StoryPreference`
-  `StoryOrientation`.
+  `StoryOrientation`. **Fixed in core v0.71.7:** each is read where InDesign writes it
+  (`DocumentPreference` for bleed and slug), `StoryOrientation` included. Still open: `Ink`,
+  `MixedInk` and the built-in `StrokeStyle` element are not read.
 - Nested styles: InDesign writes `<Properties><AllNestedStyles>`; the importer reads only a
-  `<NestedStyle>` element InDesign does not write.
+  `<NestedStyle>` element InDesign does not write. **Fixed in core v0.71.7:** the list is
+  read and applied (ADR 134); line and GREP styles are read but not rendered.
 - Paragraph styles: `Ligatures`, `KerningMethod` and the `OTF…` attributes are not read on
-  `ParagraphStyle` (InDesign writes them there).
+  `ParagraphStyle` (InDesign writes them there). **Fixed in core v0.71.7.**
 - `<BasedOn type="string">$ID/[No paragraph style]</BasedOn>` (InDesign's form for the
   built-in roots) is stored without its `ParagraphStyle/` prefix, so the chain stops a step
-  early.
+  early. **Fixed in core v0.71.7:** the bare `$ID/` parent reaches the root of its kind.
 - A table sharing a `CharacterStyleRange` with the text around it is drawn after the
-  following paragraph.
-- Cell `FirstBaselineOffset` is parsed but not applied.
+  following paragraph. **Fixed in core v0.71.7:** a table is a character of its paragraph
+  (ADR 136).
+- Cell `FirstBaselineOffset` is parsed but not applied. **Fixed in core v0.71.7** for the
+  cell's own value; a cell style's value is still not read.
 - `paged-inspect` counts a forced line break (U+2028) as a paragraph; InDesign counts 3
   paragraphs in `examples/paragraph-marks`, the inspector 4. The rendering agrees with
-  InDesign.
-- `examples/object-style` differs from InDesign's rendering by a mean ΔE of 2.1.
+  InDesign. **Fixed in core v0.71.7:** the example now expects 3 paragraphs.
+- `examples/object-style` differs from InDesign's rendering by a mean ΔE of 2.1. Open.
 - Bold from a character style: `examples/local-override` asks for Open Sans Bold, and
   InDesign's PDF contains only Open Sans Regular. Check what InDesign substitutes before
-  documenting how `FontStyle` resolves.
+  documenting how `FontStyle` resolves. Open.
 
 - `KerningMethod` values arrive as `$ID/None` / `$ID/Optical`; the renderer matches
   only `None` / `Optical`, so text InDesign set to no kerning is drawn kerned.
+  **Fixed in core v0.71.7:** the prefix is accepted; optical kerning is still set as metric.
 - `CenterJustified` and `RightJustified` paragraphs are set ragged, not justified.
+  **Fixed in core v0.71.7**, with `FullyJustified` and the binding-side values;
+  `SingleWordJustification` is still not read.
 - Conditional text, MEASURED (InDesign 20.0.1, `examples/conditional-two-conditions`): a
   run carrying several conditions prints while ANY of them is visible. Paged hides it when
   any is hidden (wrong rule). Observed too: straight after opening that minimal file,
   InDesign composed it with the hidden condition showing, until a condition's visibility
-  changed.
+  changed. **Fixed in core v0.71.7:** the any-visible rule; the example expects 3 runs.
 - Table of contents: Paged reads `AppliedTOCStyle` only on `TextFrame`; InDesign writes it
   on `Story` (91 documents), so InDesign's TOCs are never regenerated. TOC styles sit
   directly under `idPkg:Styles` in InDesign's files, not in a `RootTOCStyleGroup`.
-- Condition sets: the importer ignores each `VisibilityPair`'s `Visibility`.
+  **Partly fixed in core v0.71.7:** a stored TOC prints its saved text and only an empty one
+  is built; the `Story` attribute is still not read.
+- Condition sets: the importer ignores each `VisibilityPair`'s `Visibility`. Open.
 - Bookmarks: nothing writes a PDF outline, although the registry lists bookmarks as shipped.
+  Open.
+- Also fixed in core v0.71.7, found since: text inside a tracked deletion
+  (`<Change ChangeType="DeletedText">`) no longer prints; a footnote's reference mark is
+  drawn where InDesign keeps it, and the note area sits at the foot of its frame (ADR 136);
+  `DropcapDetail` is read in InDesign's spelling.
 
 
 ## Group A — detail
