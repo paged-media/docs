@@ -88,10 +88,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="flex min-h-screen flex-col">
         {/* The IDML reference is a finished reference, not a build log: no banner there. */}
         {SITE_ID !== 'idml' && <WipBanner />}
-        {/* Paper is the default; the theme switch offers night paper (the
-            `.dark` tokens in app/global.css). */}
+        {/* The reader's system setting picks paper or night paper (the `.dark`
+            tokens in app/global.css); the theme switch overrides it. */}
         <RootProvider
-          theme={{ defaultTheme: 'light', enableSystem: false }}
+          theme={{ defaultTheme: 'system', enableSystem: true }}
           // Our dialog (components/search-dialog.tsx): one row per page, kind
           // labels and filters, exact title matches first; static index.
           search={{ SearchDialog: PagedSearchDialog }}

@@ -64,3 +64,49 @@ jobs:
           # generate:docs (re-run by build) pulls the cross-repo sources.
           GH_TOKEN: ${{ secrets.DOCS_SOURCES_TOKEN || secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: keep the export for the browser tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: out-${{ matrix.site }}
+          path: out
+          retention-days: 3
+
+  browsers:
+    # Each site's export in Chromium, Firefox and WebKit (tests/browsers/).
+    # macOS, because Playwright's WebKit runs there without system packages:
+    # on Linux it needs `--with-deps`, i.e. apt, which has hung CI runs before.
+    needs: build
+    runs-on: macos-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        site: [idml, paged]
+    env:
+      SITE: ${{ matrix.site }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        timeout-minutes: 10
+      - uses: actions/download-artifact@v4
+        with:
+          name: out-${{ matrix.site }}
+          path: out
+      - name: install the three browsers
+        run: pnpm exec playwright install chromium firefox webkit
+        timeout-minutes: 10
+      - name: browser tests (${{ matrix.site }})
+        run: pnpm test:browsers
+        timeout-minutes: 15
+      - name: keep traces of failures
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-traces-${{ matrix.site }}
+          path: test-results
+          retention-days: 7

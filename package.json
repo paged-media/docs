@@ -29,7 +29,8 @@
     "build:idml": "SITE=idml pnpm build",
     "build:paged": "SITE=paged pnpm build",
     "examples:verify": "tsx scripts/examples/check-verified.ts",
-    "examples:verify-indesign": "tsx scripts/examples/verify-indesign.ts"
+    "examples:verify-indesign": "tsx scripts/examples/verify-indesign.ts",
+    "test:browsers": "playwright test -c tests/browsers/playwright.config.ts"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
@@ -45,6 +46,7 @@
     "zod": "^4.6.1"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/mdx": "^2.0.14",
     "@types/node": "^22.20.2",

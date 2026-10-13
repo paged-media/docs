@@ -48,22 +48,32 @@ is in [`architecture.md`](architecture.md).
     (the full colophon closes the two home pages); a night-paper dark theme behind the
     theme switch, paper by default.
 - **Follow-up (2026-10-13).**
-  - *Attribute notes.* `data/idml-reference-overrides.json` gives the element pages a line
-    under 819 of the 3175 attributes: notes shared by every element with the attribute
-    (`*@Name`, with an `except` list) or one element's own (`Cell@Name`), written from
-    Paged's model and importer; a description harvested from the chapters takes precedence.
+  - *Attribute notes.* `data/idml-reference-overrides.json` gives 2466 of the 3175
+    attribute rows a line saying what the attribute is, and 163 of the 194 element pages an
+    opening summary. Notes are shared by every element with the attribute (`*@Name`, with an
+    `except` list) or one element's own (`Cell@Name`); a description harvested from the
+    chapters takes precedence. Each entry names its `source`: Paged's code, our chapters,
+    the census or corpus, an InDesign probe, or general DTP knowledge. Where the sources
+    disagreed, InDesign 20.0.1 decided: letter spacing is a percentage of the font's space
+    width, a rule's offset reaches its near edge, superscript and subscript shifts are a
+    percentage of the type size.
   - *Sharper InDesign crops.* Verification also writes each page at 288 dpi
     (`p<N>@3x.webp`; `pnpm examples:verify-indesign --rasters` redoes them from the kept
     PDF); a crop is drawn from it, and both sides of the comparison stop at the live
     preview's 1.8 px per point. `pnpm examples:verify` requires the display copies.
   - *Script playground.* The JavaScript features that would ask for a TypeScript worker
     are off, so the editor no longer throws "Missing requestHandler" while typing.
-  - *Browsers.* A smoke pass over both exports in Chromium, Firefox and WebKit (Playwright
-    1.63): search, element filter, annotated code, the InDesign comparison, the playground,
-    dark theme, and no sideways scroll at 390px. WebKit draws the live preview through
-    WebGPU without cross-origin isolation (it ignores `credentialless`).
-- **Checks.** Six workflows: the build with its manifest, reference and freshness checks;
-  the example gate; the script gate; the similarity check; the link check; the deploy.
+  - *Browsers.* `tests/browsers/` runs each export in Chromium, Firefox and WebKit
+    (Playwright 1.63, `pnpm test:browsers`; the `browsers` job of `build.yml`, on macOS so
+    WebKit needs no system packages): search, the element filter and notes, annotated code,
+    the InDesign comparison and its caption, the playground, the theme, and no sideways
+    scroll at 390px. WebKit draws the live preview through WebGPU without cross-origin
+    isolation (it ignores `credentialless`).
+  - *Theme.* Follows the reader's system setting; the switch offers light, dark and system.
+  - *paged.media.* The docs deploy starts a build of `paged-website` through the Pages API
+    (or calls `SITE_DEPLOY_HOOK` when set), so a new capability record reaches the site.
+- **Checks.** Six workflows: the build with its manifest, reference and freshness checks,
+  then the browser tests; the example gate; the script gate; the similarity check; the link check; the deploy.
 
 ## Limits of what is shipped
 

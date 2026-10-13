@@ -50,6 +50,7 @@ export function LivePreview({
   onFitChange,
   focus: focusProp,
   toggle = true,
+  onStatusChange,
 }: {
   example: string;
   part: string;
@@ -61,6 +62,8 @@ export function LivePreview({
   focus?: Rect | null;
   /** Show the Fit content / Whole page switch over the canvas. */
   toggle?: boolean;
+  /** Told whenever the preview starts, renders, or falls back. */
+  onStatusChange?: (status: Status) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const viewerRef = useRef<Viewer | null>(null);
@@ -70,6 +73,7 @@ export function LivePreview({
   const [detail, setDetail] = useState('');
   const [ownFit, setOwnFit] = useState<Fit>('content');
   const [measured, setMeasured] = useState<Rect | null>(null);
+  useEffect(() => onStatusChange?.(status), [status, onStatusChange]);
   const fit = fitProp ?? ownFit;
   const focus = focusProp === undefined ? measured : focusProp;
   // A content fit gives the canvas the region's shape, so a three-line example

@@ -3,6 +3,7 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { FitSwitch, LivePreview, MAX_CONTENT_ZOOM, MIN_H, type Fit } from './live-preview';
 import { focusRect, imageInk, scaleRect, type Rect } from './content-bounds';
+import type { PreviewStatus } from './viewer-common';
 
 /**
  * InDesign's page images beside Paged's live render, framed alike. Each
@@ -49,6 +50,9 @@ export function InDesignCompare({
   const [fit, setFit] = useState<Fit>('content');
   const [measured, setMeasured] = useState<(Measured | null)[]>(() => pages.map(() => null));
   const [done, setDone] = useState(false);
+  // The caption only promises a live render while there is, or is about to be, one.
+  const [liveStatus, setLiveStatus] = useState<PreviewStatus>('loading');
+  const live = liveStatus === 'loading' || liveStatus === 'ready';
 
   useEffect(() => {
     let live = true;
@@ -74,7 +78,7 @@ export function InDesignCompare({
   const canCrop = measured.some((m) => m?.crop);
 
   return (
-    <div>
+    <div className="paged-indesign-compare">
       {canCrop ? (
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 'var(--space-2)' }}>
           <FitSwitch fit={fit} onChange={setFit} />
@@ -99,9 +103,18 @@ export function InDesignCompare({
               Measuring the page…
             </div>
           ) : (
-            <LivePreview example={example} part={part} idmlBase64={idmlBase64} fit={fit} onFitChange={setFit} focus={focus ?? null} toggle={false} />
+            <LivePreview
+              example={example}
+              part={part}
+              idmlBase64={idmlBase64}
+              fit={fit}
+              onFitChange={setFit}
+              focus={focus ?? null}
+              toggle={false}
+              onStatusChange={setLiveStatus}
+            />
           )}
-          <figcaption className="mt-2 text-xs text-fd-muted-foreground">Paged, live in this browser</figcaption>
+          <figcaption className="mt-2 text-xs text-fd-muted-foreground">{live ? 'Paged, live in this browser' : 'Paged'}</figcaption>
         </figure>
       </div>
     </div>

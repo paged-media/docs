@@ -12,5 +12,7 @@ export const baseOptions: BaseLayoutProps = {
   ],
   // A plain link to the organisation: no star or fork counts in the masthead.
   githubUrl: 'https://github.com/paged-media',
+  // Light, dark, or the reader's system setting (the default, app/layout.tsx).
+  themeSwitch: { mode: 'light-dark-system' },
   // Search: components/search-dialog.tsx over the static index from app/api/search/route.ts.
 };

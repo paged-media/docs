@@ -50,3 +50,7 @@ content/docs/idml/reference/
 # Generated each build from the capability record and facts (gen-matrix, gen-facts).
 public/capabilities.json
 public/facts.json
+
+# Playwright (tests/browsers)
+test-results/
+playwright-report/

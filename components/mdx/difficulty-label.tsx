@@ -28,7 +28,9 @@ export function DifficultyLabel({ tier, mode, status }: { tier: Tier; mode: Diat
         width: 'fit-content',
         alignItems: 'center',
         gap: 9,
-        margin: '0 0 var(--space-5)',
+        // The page column already spaces its children 16px apart; a small
+        // margin keeps the label with the page's heading, not floating.
+        margin: '0 0 var(--space-2)',
         padding: '6px 12px',
         border: '1px solid var(--color-rule)',
         borderRadius: 2,

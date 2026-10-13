@@ -40,8 +40,8 @@
 }
 
 /* =============================================================================
-   NIGHT PAPER — the dark reading theme (the theme switch; paper stays the
-   default). Still the editorial page, not a developer dashboard: warm ink
+   NIGHT PAPER — the dark reading theme (follows the reader's system setting;
+   the theme switch overrides it). Still the editorial page, not a developer dashboard: warm ink
    ground, paper-coloured text, the oxblood lifted to read on it. Contrast on
    --color-paper: ink 14.7:1, ink-soft 10.2:1, muted 5.9:1, accent 6.0:1.
    ========================================================================== */

@@ -74,8 +74,25 @@ jobs:
 
       - name: rebuild paged.media from the new capability record
         # paged.media reads /capabilities.json and /facts.json at build time.
+        # paged-website is a Git-connected Pages project in the same account,
+        # so the deploy token can start a build of its main branch through the
+        # Pages API; a deploy hook (SITE_DEPLOY_HOOK), when set, is used instead.
+        # A failure here warns: the docs are already deployed.
         if: matrix.site == 'paged'
         env:
           SITE_DEPLOY_HOOK: ${{ secrets.SITE_DEPLOY_HOOK }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          if [ -n "$SITE_DEPLOY_HOOK" ]; then curl -fsS -X POST "$SITE_DEPLOY_HOOK" > /dev/null; else echo "SITE_DEPLOY_HOOK not set; paged.media rebuilds on its own schedule"; fi
+          if [ -n "$SITE_DEPLOY_HOOK" ]; then
+            curl -fsS -X POST "$SITE_DEPLOY_HOOK" > /dev/null && echo "paged.media: deploy hook called"
+            exit 0
+          fi
+          response=$(curl -sS -X POST \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/paged-website/deployments" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -F branch=main)
+          if echo "$response" | jq -e '.success' > /dev/null; then
+            echo "paged.media: build $(echo "$response" | jq -r '.result.id') started from main"
+          else
+            echo "::warning::paged.media was not rebuilt: $(echo "$response" | jq -c '.errors')"
+          fi
