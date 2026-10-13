@@ -10,7 +10,15 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.71.7 (tag commit ad571c7). The core parity campaign's first
+# Currently: v0.71.9 (tag commit 3e77f36). Exact positions (leading and glyph
+# advances summed exactly, rounded once), text wrap as InDesign sets it
+# (jump-object and next-column wraps, the ragged breaker beside a wrap, contour
+# written `Contour`), the composer's line allowance and a hyphenation zone that
+# no longer widens word spaces, and condition sets that record each condition's
+# visibility. No wire change; protocol 71. All four packages answer at 0.71.9 on
+# the registry (`latest`), checked before this pin moved.
+#
+# v0.71.7 (tag commit ad571c7). The core parity campaign's first
 # release: every rule asked of InDesign 20.0.1 and gated against its PDF.
 # Justified last lines and the binding side, gradients and tints, conditional
 # text, stored TOC text, tracked deletions and button states, tables and
@@ -142,4 +150,4 @@
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-ad571c7e83f127cc80eb565b508aefe76a08440b
+3e77f368a3c1bcccd6e5692afc45e6ce141c937a
