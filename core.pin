@@ -10,7 +10,17 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.71.5 (tag commit 921a99a). Placed images: an image-free frame
+# Currently: v0.71.7 (tag commit ad571c7). The core parity campaign's first
+# release: every rule asked of InDesign 20.0.1 and gated against its PDF.
+# Justified last lines and the binding side, gradients and tints, conditional
+# text, stored TOC text, tracked deletions and button states, tables and
+# footnote references as characters of their line, nested/line/GREP styles and
+# OpenType features, transparency per fill/stroke/content with group isolation
+# and knockout, and a PDF export whose text is real text. Additive catalog
+# paths only; protocol 71. All four packages answer at 0.71.7 on the registry
+# (`latest`), checked before this pin moved.
+#
+# v0.71.5 (tag commit 921a99a). Placed images: an image-free frame
 # no longer blanks every placed image after it on the GPU canvas; a frame that
 # names FillProportionally covers itself at one uniform scale instead of
 # stretching, in the render, `paged place --fit` and the IDML export alike; a
@@ -132,4 +142,4 @@
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-921a99a544504d75c794eb8f2a67da9cfbd83e7b
+ad571c7e83f127cc80eb565b508aefe76a08440b
