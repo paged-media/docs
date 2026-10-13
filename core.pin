@@ -10,7 +10,7 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.71.5 (tag commit 921a99a). Placed images: an image-free frame
+# Currently: v0.71.7 (tag commit ad571c7). Placed images: an image-free frame
 # no longer blanks every placed image after it on the GPU canvas; a frame that
 # names FillProportionally covers itself at one uniform scale instead of
 # stretching, in the render, `paged place --fit` and the IDML export alike; a
@@ -132,4 +132,4 @@
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-921a99a544504d75c794eb8f2a67da9cfbd83e7b
+ad571c7e83f127cc80eb565b508aefe76a08440b
