@@ -10,7 +10,16 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.71.9 (tag commit 3e77f36). Exact positions (leading and glyph
+# Currently: v0.71.10 (tag commit d52ae6a). The GPU lane held to the CPU lane
+# (ADR 146): drop shadows share one stamp set, the page isolation layer is
+# bounded by what the page paints, dashed strokes and gradient feathers draw on
+# Vello, and a CPU-vs-Vello parity gate runs hard on every core push. A rotated
+# frame's gradient default as InDesign sets it (ADR 147), canned Wavy strokes,
+# and dashes laid out side by side as InDesign fits them (ADR 148). No wire or
+# catalog change; protocol 71. All four packages answer at 0.71.10 on the
+# registry (`latest`), checked before this pin moved.
+#
+# v0.71.9 (tag commit 3e77f36). Exact positions (leading and glyph
 # advances summed exactly, rounded once), text wrap as InDesign sets it
 # (jump-object and next-column wraps, the ragged breaker beside a wrap, contour
 # written `Contour`), the composer's line allowance and a hyphenation zone that
@@ -150,4 +159,4 @@
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-3e77f368a3c1bcccd6e5692afc45e6ce141c937a
+d52ae6a25eb5e375da014e797fcfd1d49a3a1e57
