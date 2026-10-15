@@ -6,7 +6,7 @@ diataxis: reference
 status: published
 owner: paged-docs
 describes: [styles.object.crud, frames-paths.corner-options]
-reviewed: 2026-10-11
+reviewed: 2026-10-15
 ---
 
 **An object style supplies the formatting a frame or shape takes when it does not set a value itself.**
@@ -36,10 +36,12 @@ Object styles sit under `<RootObjectStyleGroup>` in `Resources/Styles.xml`, opti
 
 <AttrTable element="ObjectStyle" attrs={['FillColor', 'FillTint', 'StrokeColor', 'StrokeTint', 'StrokeWeight', 'StrokeType', 'StrokeAlignment', 'CornerOption', 'CornerRadius', 'TopLeftCornerOption', 'TopLeftCornerRadius', 'AppliedParagraphStyle']} />
 
-Corners come in two spellings. `CornerOption` and `CornerRadius` set all four corners at once;
-`TopLeftCornerOption`, `TopRightCornerOption`, `BottomLeftCornerOption` and
-`BottomRightCornerOption`, each with its own `…CornerRadius`, set them one by one. InDesign
-writes both. The corner tokens are `None`, `RoundedCorner`, `InverseRoundedCorner`,
+Corners come in two spellings, and InDesign writes both: `CornerOption` and `CornerRadius` for
+all four corners, and `TopLeftCornerOption`, `TopRightCornerOption`, `BottomLeftCornerOption` and
+`BottomRightCornerOption`, each with its own `…CornerRadius`. It reads only the second. A style
+with just the all-corner pair gives its items square corners; where the two disagree, the
+per-corner attributes win; and a per-corner option with no radius is 12 pt, whatever
+`CornerRadius` says. The corner tokens are `None`, `RoundedCorner`, `InverseRoundedCorner`,
 `InsetCorner`, `BevelCorner` and `FancyCorner`.
 
 `AppliedParagraphStyle` gives the paragraph style a text frame's new text starts in;
@@ -57,13 +59,14 @@ categories' settings are child elements of the style: `<TextFramePreference>`,
 `<ObjectStyle…EffectsCategorySettings>` blocks for transparency effects on the object, its
 fill, stroke and content.
 
-> **In Paged:** an object style's fill, fill tint, stroke, stroke tint, stroke weight and the
-> all-corner `CornerOption` / `CornerRadius` cascade into the items that apply it, and all five
-> corner shapes are drawn. The per-corner attributes, the `Enable…` switches, the
-> `AppliedParagraphStyle` default and the effect, text-frame and wrap categories of an object
-> style are not read yet; an item's own effects, text-frame options and wrap are.
+> **In Paged:** an object style's fill, fill tint, stroke, stroke tint and stroke weight cascade
+> into the items that apply it, through `BasedOn`. A rectangle that states no corners of its own
+> takes its style's all-corner `CornerOption` / `CornerRadius`, not the per-corner attributes
+> InDesign reads, so the two can differ; all five corner shapes are drawn. Its `Enable…` switches decide which of these reach the item, and its text-frame
+> options, text wrap and anchored-object settings apply to an item that does not state its own.
+> The `AppliedParagraphStyle` default and the effect categories are not read yet.
 > `Swatch/None` on an object style is read as unset rather than "no paint". Object styles
-> survive a save. <SupportBadge feature="styles.object.crud" /> <SupportBadge feature="frames-paths.corner-options" />
+> survive a save; an edit to a style the document already had is not written back yet. <SupportBadge feature="styles.object.crud" /> <SupportBadge feature="frames-paths.corner-options" />
 
 ## How the style and the item combine
 
@@ -86,5 +89,6 @@ Each switches one category of the style on or off. A disabled category is not pa
 style, so applying the style does not touch that aspect of the item.
 
 **How are rounded corners written on an object style?**
-With `CornerOption="RoundedCorner"` and `CornerRadius` for all four corners, and with the
-per-corner `TopLeftCornerOption` / `TopLeftCornerRadius` family. InDesign writes both.
+With the per-corner `TopLeftCornerOption` / `TopLeftCornerRadius` family, which is what InDesign
+reads. It also writes `CornerOption="RoundedCorner"` and `CornerRadius` for all four corners,
+which it ignores.

@@ -6,7 +6,7 @@ diataxis: explanation
 status: draft
 owner: paged-docs
 describes: [plugin-slide]
-reviewed: "2026-10-12"
+reviewed: "2026-10-15"
 ---
 
 **In short:** `paged.slide` makes presentations a document type. A PowerPoint
@@ -25,9 +25,16 @@ development.
 - Resolves PowerPoint's inheritance (theme, master, layout, slide) and writes the
   deck as a native document, a page per slide.
 - A slide sorter (reorder, duplicate, delete, hide) and a speaker-notes panel; a
-  new slide from a layout.
-- In development: export back to `.pptx` (slide order, hidden slides and notes
-  first; edited slide content next), and a slideshow with a presenter view.
+  new slide from a layout. Slides, layouts and placeholders are objects that
+  scripts and panels read and write (notes, the hidden flag, the transition).
+- Fonts the deck embeds are used when their licence allows installing or
+  editing them; restricted and preview-only faces are named, not used.
+- Export back to `.pptx` from the original deck: the page order, duplicated and
+  deleted slides, hidden flags, speaker notes and sections, checked by
+  PowerPoint opening the written deck without a repair prompt. An unedited
+  document exports the original bytes.
+- In development: writing edited slide content into the exported deck, and a
+  slideshow with a presenter view.
 
 ## How it's built
 

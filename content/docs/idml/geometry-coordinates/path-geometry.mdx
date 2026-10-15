@@ -6,7 +6,7 @@ diataxis: reference
 status: published
 owner: paged-docs
 describes: [geometry-coordinates.bezier-path-geometry, frames-paths.corner-options]
-reviewed: 2026-10-11
+reviewed: 2026-10-15
 ---
 
 **`PathGeometry` records a page item's outline anchor by anchor, with Bézier handles, and it is the shape the item is drawn from.**
@@ -79,11 +79,12 @@ whose path is four corner points is drawn by InDesign as a rectangle.
 
 ## Corner options
 
-A rectangle's corners can be shaped without changing its path: `CornerOption` with
-`CornerRadius` applies to all four corners, and `TopLeftCornerOption`,
-`TopLeftCornerRadius` and their siblings override single corners. The values InDesign
-writes are `None`, `RoundedCorner`, `InverseRoundedCorner`, `InsetCorner`, `BevelCorner`
-and `FancyCorner`. The path keeps the square corners; the treatment is applied on top.
+A rectangle's corners can be shaped without changing its path: `TopLeftCornerOption`,
+`TopLeftCornerRadius` and their siblings set each corner, in the values `None`,
+`RoundedCorner`, `InverseRoundedCorner`, `InsetCorner`, `BevelCorner` and `FancyCorner`. An
+option with no radius is 12 pt. InDesign writes `CornerOption` and `CornerRadius` for all four
+corners as well, but does not read them: the per-corner attributes alone shape the corners.
+The path keeps the square corners; the treatment is applied on top.
 
 > **In Paged:** all five treatments draw their own corner geometry, with per-corner radii.
 > <SupportBadge feature="frames-paths.corner-options" /> On polygons the support is partial.

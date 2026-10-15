@@ -6,7 +6,7 @@ diataxis: reference
 status: published
 owner: paged-docs
 describes: [tables.row-col-sizing, tables.spans, tables.cell-composition]
-reviewed: 2026-10-13
+reviewed: 2026-10-15
 ---
 
 **A table's `<Row>` and `<Column>` children size its tracks; its `<Cell>` children hold the content and most of the formatting.**
@@ -76,10 +76,10 @@ content that overflows the cell.
 
 > **In Paged:** a cell is composed like a small text frame. Insets come from the cell's own
 > attributes, not from its cell style. Vertical justification and rotation are applied. The first
-> line is placed by the cell's own `FirstBaselineOffset` (the ascent by default), with
-> `MinimumFirstBaselineOffset` as a floor for every value, and each later paragraph one leading
-> below the one before. A first-baseline setting that only the cell style carries is not read
-> yet, so such a cell sets its first line by the ascent.
+> line is placed by the cell's `FirstBaselineOffset` (the ascent by default), its own or, when it
+> states none, its cell style's through `BasedOn`, with `MinimumFirstBaselineOffset` as a floor
+> for every value, as in a text frame; each later paragraph sits one leading below the one
+> before.
 > <SupportBadge feature="tables.cell-composition" /> <SupportBadge feature="tables.cell-vertical-justification" /> <SupportBadge feature="tables.cell-rotation" />
 
 ### Fill and edge strokes
@@ -92,8 +92,9 @@ apply, InDesign writes the resulting stroke on each cell's matching edge, so the
 are what most often draws a table's grid. A value on the cell wins over its cell style.
 
 > **In Paged:** the fill colour and the edge strokes are drawn, each edge in its stroke style (a
-> double line as two rules, dotted styles as dots, other styles solid). A cell's `FillTint` is not
-> modelled: a tinted fill shows at 100 %. Edge gap colours are not painted.
+> double line as two rules, dotted styles as dots, other styles solid). A cell's `FillTint`, else
+> its cell style's through `BasedOn`, tints its fill, and a style's edge tints apply the same way.
+> Edge gap colours are not painted.
 > <SupportBadge feature="tables.borders-strokes" />
 
 ### Diagonal lines

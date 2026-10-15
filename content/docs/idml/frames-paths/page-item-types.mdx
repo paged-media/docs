@@ -6,7 +6,7 @@ diataxis: reference
 status: published
 owner: paged-docs
 describes: [frames-paths.page-item-kinds, frames-paths.corner-options, frames-paths.arrowheads]
-reviewed: 2026-10-11
+reviewed: 2026-10-15
 ---
 
 **IDML has six page-item elements; they share one skeleton and differ in a few fields each.**
@@ -57,10 +57,12 @@ page: [text frames](/docs/idml/frames-paths/text-frames).
 A panel when filled, a picture frame when it holds an `<Image>`, `<EPS>` or `<PDF>`, an
 outline otherwise. Its path has four corner anchors.
 
-Corners can be shaped without changing the path. `CornerOption` and `CornerRadius` apply to
-all four corners; `TopLeftCornerOption` and `TopLeftCornerRadius` (and their siblings) set
-one corner. The values InDesign writes are `None`, `RoundedCorner`, `InverseRoundedCorner`,
-`InsetCorner`, `BevelCorner` and `FancyCorner`.
+Corners can be shaped without changing the path. `TopLeftCornerOption` and
+`TopLeftCornerRadius` (and their siblings) set each corner, in the values `None`,
+`RoundedCorner`, `InverseRoundedCorner`, `InsetCorner`, `BevelCorner` and `FancyCorner`; an
+option with no radius is 12 pt. InDesign also writes `CornerOption` and `CornerRadius` for all
+four, but draws from the per-corner attributes alone: a rectangle that spells its corners only
+in that pair opens with square corners.
 
 `StrokeAlignment` places the stroke centred on the path, inside it or outside it
 (`CenterAlignment`, `InsideAlignment`, `OutsideAlignment`). `EndJoin` and `MiterLimit` shape
@@ -68,8 +70,8 @@ the corners of the stroke.
 
 <AttrTable element="Rectangle" attrs={['CornerOption', 'CornerRadius', 'TopLeftCornerOption', 'TopLeftCornerRadius', 'StrokeAlignment', 'EndJoin', 'MiterLimit', 'ContentType']} />
 
-> **In Paged:** all five corner treatments draw their own geometry, per corner.
-> <SupportBadge feature="frames-paths.corner-options" /> Inside and outside stroke alignment is
+> **In Paged:** all five corner treatments draw their own geometry, per corner, read from the
+> per-corner attributes as InDesign reads them. <SupportBadge feature="frames-paths.corner-options" /> Inside and outside stroke alignment is
 > exact on rectangles; on polygons and open paths the stroke stays centred.
 > <SupportBadge feature="frames-paths.stroke-alignment" />
 

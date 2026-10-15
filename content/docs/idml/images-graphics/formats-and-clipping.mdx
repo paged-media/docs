@@ -6,7 +6,7 @@ diataxis: explanation
 status: published
 owner: paged-docs
 describes: [images-graphics.placed-images, images-graphics.image-clipping, images-graphics.clipping-paths]
-reviewed: 2026-10-11
+reviewed: 2026-10-15
 ---
 
 **An IDML file names its pictures but rarely contains them; what a reader can draw depends on finding the files and decoding their formats. The frame outline, and optionally a clipping path, decides what part shows.**
@@ -39,10 +39,13 @@ elements, `<PDF>` and `<EPS>`, because they are page descriptions rather than pi
 
 > **In Paged:** PNG, JPEG (including CMYK JPEG with an embedded profile), WebP, TIFF, GIF and
 > BMP decode, and SVG is rasterised; very large JPEGs are scaled down while decoding.
-> Photoshop files need the paged.image plugin. Linked PDF and EPS files are recognised but
-> not rasterised; an embedded `<PDF>` or `<EPS>` shows the frame's own fill with a marker and
-> a diagnostic. A frame whose link the host cannot resolve gets the grey missing-image
-> placeholder. <SupportBadge feature="images-graphics.placed-images" /> <SupportBadge feature="images-graphics.cmyk-jpeg-icc" /> <SupportBadge feature="images-graphics.eps-decode" /> <SupportBadge feature="images-graphics.missing-image-placeholder" />
+> Photoshop files need the paged.image plugin. A placed PDF, linked or embedded (an Illustrator
+> `.ai` file is one), is drawn from its own drawing operations and stays vector: its first page,
+> inside the PDF's own crop box (the placement's `PageNumber` and `PDFCrop` are not read yet).
+> Its colours go through RGB rather than the document's CMYK profile, and patterns and shadings
+> paint mid-grey. EPS is recognised but not drawn: the frame shows its own
+> fill, and an embedded `<EPS>` adds a marker and a diagnostic. A frame whose link the host
+> cannot resolve gets the grey missing-image placeholder. <SupportBadge feature="images-graphics.placed-images" /> <SupportBadge feature="images-graphics.cmyk-jpeg-icc" /> <SupportBadge feature="images-graphics.eps-decode" /> <SupportBadge feature="images-graphics.missing-image-placeholder" />
 
 ## The frame outline crops the picture
 
