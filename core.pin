@@ -10,7 +10,7 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.71.10 (tag commit d52ae6a). The GPU lane held to the CPU lane
+# Currently: v0.71.11 (tag commit 97b6e72). The GPU lane held to the CPU lane
 # (ADR 146): drop shadows share one stamp set, the page isolation layer is
 # bounded by what the page paints, dashed strokes and gradient feathers draw on
 # Vello, and a CPU-vs-Vello parity gate runs hard on every core push. A rotated
@@ -159,4 +159,4 @@
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-d52ae6a25eb5e375da014e797fcfd1d49a3a1e57
+97b6e72f25a28b6d8d071d45f64395c0f0a402f1
