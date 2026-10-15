@@ -60,13 +60,13 @@ categories' settings are child elements of the style: `<TextFramePreference>`,
 fill, stroke and content.
 
 > **In Paged:** an object style's fill, fill tint, stroke, stroke tint and stroke weight cascade
-> into the items that apply it, through `BasedOn`. A rectangle that states no corners of its own
-> takes its style's all-corner `CornerOption` / `CornerRadius`, not the per-corner attributes
-> InDesign reads, so the two can differ; all five corner shapes are drawn. Its `Enable…` switches decide which of these reach the item, and its text-frame
+> into the items that apply it, and its four per-corner attributes into a rectangle that states
+> no corners of its own, each through `BasedOn` as InDesign reads them; all five corner shapes
+> are drawn. Its `Enable…` switches decide which of these reach the item, and its text-frame
 > options, text wrap and anchored-object settings apply to an item that does not state its own.
 > The `AppliedParagraphStyle` default and the effect categories are not read yet.
 > `Swatch/None` on an object style is read as unset rather than "no paint". Object styles
-> survive a save; an edit to a style the document already had is not written back yet. <SupportBadge feature="styles.object.crud" /> <SupportBadge feature="frames-paths.corner-options" />
+> survive a save, and an edited style is written back with its corners in both spellings. <SupportBadge feature="styles.object.crud" /> <SupportBadge feature="frames-paths.corner-options" />
 
 ## How the style and the item combine
 
