@@ -10,7 +10,18 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.71.10 (tag commit d52ae6a). The GPU lane held to the CPU lane
+# Currently: v0.71.12 (tag commit ee5d9bf). Footnotes as InDesign sets them:
+# numbered through each story with page/spread/section restarts and prefix and
+# suffix (ADR 156), under each column or across the frame (ADR 160), and a note
+# too tall for its frame continued in the next under the continuing rule or its
+# reference line moved on (ADR 161). Every page-number style InDesign offers
+# (ADR 157), multi-level lists (ADR 158), column rules (ADR 155), placed PDFs
+# drawn from their own operations (ADR 154), and seven additive catalog paths
+# (line setting, no-break, list level). Protocol 71. All four packages answer
+# at 0.71.12 on the registry (`latest`), checked before this pin moved.
+# (v0.71.11 was released while this pin stayed put.)
+#
+# v0.71.10 (tag commit d52ae6a). The GPU lane held to the CPU lane
 # (ADR 146): drop shadows share one stamp set, the page isolation layer is
 # bounded by what the page paints, dashed strokes and gradient feathers draw on
 # Vello, and a CPU-vs-Vello parity gate runs hard on every core push. A rotated
@@ -159,4 +170,4 @@
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-d52ae6a25eb5e375da014e797fcfd1d49a3a1e57
+ee5d9bf0df17901117730ca871625704d7c7e022
