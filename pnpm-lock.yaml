@@ -12,8 +12,8 @@ importers:
         specifier: ^4.7.0
         version: 4.7.0(monaco-editor@0.55.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@paged-media/idml-viewer':
-        specifier: 0.71.10
-        version: 0.71.10
+        specifier: 0.71.12
+        version: 0.71.12
       fflate:
         specifier: ^0.8.3
         version: 0.8.3
@@ -503,8 +503,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@paged-media/idml-viewer@0.71.10':
-    resolution: {integrity: sha512-oWtU/lzMO92iQCMuK3Ampo2LMy+foBjOLKB8Ipymzfqnw5+YXuZk8/hpJlDey5B0c+A4fmdKU6aQhgKp6OLvRg==}
+  '@paged-media/idml-viewer@0.71.12':
+    resolution: {integrity: sha512-VgOZ5Po3V34U54j8bQtST7sDJE/OetwZ2IAZAOXOBE2AZUOVpXm+s3X41mUPi1wfxZUK52KQpFyc0xAb6tvoUQ==}
 
   '@playwright/test@1.63.0':
     resolution: {integrity: sha512-oxMK4vllB9RK5NQ2l1pq1IfOf2AvnEuj/vYGDj0H2nMtmtZpKtCwt/l00GEO6xjGfpBNAvjovvYdCm50dRQkpQ==}
@@ -2415,7 +2415,7 @@ snapshots:
   '@next/swc-win32-x64-msvc@16.3.4':
     optional: true
 
-  '@paged-media/idml-viewer@0.71.10': {}
+  '@paged-media/idml-viewer@0.71.12': {}
 
   '@playwright/test@1.63.0':
     dependencies:
