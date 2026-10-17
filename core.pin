@@ -10,7 +10,18 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.71.13 (tag commit c6f329e). The canvas worker and the viewer
+# Currently: v0.72.0 (tag commit 9d5d184). Protocol 72: generated text,
+# editorial notes and bookmarks over the wire. Generate Index writes the index as
+# InDesign does (ADR 168); a cross-reference prints its destination's page live
+# and Update Cross-References rewrites its text from its format (ADR 169);
+# endnotes are read and numbered as InDesign numbers them (ADR 170); PDF export
+# writes the document's bookmarks as a nested outline (ADR 171); an editorial
+# note is one character of the text that prints nothing, and notes are inserted,
+# edited, deleted and converted to text (ADR 172); bookmarks are created,
+# renamed, moved and deleted (ADR 173). All four packages answer at 0.72.0 on the
+# registry (`latest`), checked before this pin moved.
+#
+# v0.71.13 (tag commit c6f329e). The canvas worker and the viewer
 # session no longer hold themselves across an await (a timer landing in a GPU
 # wait crashed them); a rotated frame, group or placed image scales along its own
 # axes; a picture without a transform is clipped to its frame, as InDesign does;
@@ -181,4 +192,4 @@
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-c6f329e0bf4033bfbd080e8019d52255e4183820
+9d5d1849edc831062962d9edde9a0bfde5e94410
