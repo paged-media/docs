@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
-    "@paged-media/idml-viewer": "0.71.13",
+    "@paged-media/idml-viewer": "0.72.0",
     "fflate": "^0.8.3",
     "fumadocs-core": "^16.15.8",
     "fumadocs-ui": "^16.15.8",
