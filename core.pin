@@ -10,7 +10,18 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.71.12 (tag commit ee5d9bf). Footnotes as InDesign sets them:
+# Currently: v0.71.13 (tag commit c6f329e). The canvas worker and the viewer
+# session no longer hold themselves across an await (a timer landing in a GPU
+# wait crashed them); a rotated frame, group or placed image scales along its own
+# axes; a picture without a transform is clipped to its frame, as InDesign does;
+# a committed change reports what it changed (a handle resize's reflow, a
+# script's writes and pages, a page's origin in its spread, a table's header and
+# footer bands; ADR 159, additive). IDML export keeps next/previous page numbers,
+# replaced tables, re-poured cells and text typed into empty or new paragraphs,
+# and writes crops in InDesign's convention. Protocol 71. All four packages
+# answer at 0.71.13 on the registry (`latest`), checked before this pin moved.
+#
+# v0.71.12 (tag commit ee5d9bf). Footnotes as InDesign sets them:
 # numbered through each story with page/spread/section restarts and prefix and
 # suffix (ADR 156), under each column or across the frame (ADR 160), and a note
 # too tall for its frame continued in the next under the continuing rule or its
@@ -170,4 +181,4 @@
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-ee5d9bf0df17901117730ca871625704d7c7e022
+c6f329e0bf4033bfbd080e8019d52255e4183820
