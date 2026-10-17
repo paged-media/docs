@@ -10,7 +10,15 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.72.0 (tag commit 9d5d184). Protocol 72: generated text,
+# Currently: v0.73.0 (tag commit 4114445). Protocol 73: endnotes inserted,
+# deleted and converted from footnotes as InDesign does it (ADR 174). The first
+# endnote of a document makes the endnote story on a page of its own, in an
+# endnote frame over the margin box; a new note's range goes after the range of
+# the reference before it; a footnote converts to an endnote of its text in one
+# undo step; the endnotes collection reads. All four packages answer at 0.73.0
+# on the registry (`latest`), checked before this pin moved.
+#
+# v0.72.0 (tag commit 9d5d184). Protocol 72: generated text,
 # editorial notes and bookmarks over the wire. Generate Index writes the index as
 # InDesign does (ADR 168); a cross-reference prints its destination's page live
 # and Update Cross-References rewrites its text from its format (ADR 169);
@@ -192,4 +200,4 @@
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-9d5d1849edc831062962d9edde9a0bfde5e94410
+411444567982506e79fea6dae34f136ed0ca99e7
