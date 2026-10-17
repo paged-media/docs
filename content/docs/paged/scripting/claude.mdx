@@ -38,16 +38,16 @@ the key and limits how much the deployment spends. A deployment without that ser
 
 ## From the command line
 
-The `paged` CLI from `@paged-media/cli` runs the same loop against a document file, with your
+The `paged-node` command from `@paged-media/cli` runs the same loop against a document file, with your
 own credential (`ANTHROPIC_API_KEY`). The package is not on npm yet; until it is, run it from a
 checkout of the plugin SDK repository.
 
 ```bash
 # change an existing document
-paged ai flyer.paged "shorten the body copy so nothing is overset" -o flyer-fixed.paged
+paged-node ai flyer.paged "shorten the body copy so nothing is overset" -o flyer-fixed.paged
 
 # build a new document from a brief
-paged ai --new a4 "a two-page spring catalogue for a tea shop" -o catalogue.paged --font Inter.ttf
+paged-node ai --new a4 "a two-page spring catalogue for a tea shop" -o catalogue.paged --font Inter.ttf
 ```
 
 `--verbose` prints each script and its result as it runs. Pass a font with `--font` when
