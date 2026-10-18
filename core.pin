@@ -10,7 +10,7 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.73.4 (tag commit 8eb9e21). A patch on protocol 73: a
+# Currently: v0.74.0 (tag commit b612da5). A patch on protocol 73: a
 # keep that moves a note's reference, verified against InDesign (C-45); a
 # cross-reference's chapter number and live captions print live (L-09);
 # tagged PDF elements named after their paragraph style, its PDF export tag
@@ -227,4 +227,4 @@
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-8eb9e21febaffbf5bb15e5158bb83896141682b2
+b612da5dca16f4716e2bf0f4483beba4091a0e78
