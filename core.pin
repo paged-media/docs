@@ -10,7 +10,16 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.73.3 (tag commit a8dce53). A patch on protocol 73
+# Currently: v0.73.4 (tag commit 8eb9e21). A patch on protocol 73: a
+# keep that moves a note's reference, verified against InDesign (C-45); a
+# cross-reference's chapter number and live captions print live (L-09);
+# tagged PDF elements named after their paragraph style, its PDF export tag
+# as the role (ADR 182); A-33 complete (ADR 183); and the IDML adapter's
+# tracked-insertion edits, buttons and multi-state objects kept on save, and
+# caption providers and export tags read. All four packages answer at 0.73.4
+# on the registry (`latest`), checked before this pin moved.
+#
+# v0.73.3 (tag commit a8dce53). A patch on protocol 73
 # (v0.73.2, the zip 9 security update, was released while this pin stayed
 # put): nested tables drawn as tables and rows that fit the text area (ADRs
 # 176, 177); a story that grows a page for its footnotes and continues a note
@@ -218,4 +227,4 @@
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-a8dce53f775608342c8d79d50ea1867ced2702d0
+8eb9e21febaffbf5bb15e5158bb83896141682b2
