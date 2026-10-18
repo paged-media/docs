@@ -10,7 +10,18 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.73.1 (tag commit 7a257bb). Additive on protocol 73: a table
+# Currently: v0.73.3 (tag commit a8dce53). A patch on protocol 73
+# (v0.73.2, the zip 9 security update, was released while this pin stayed
+# put): nested tables drawn as tables and rows that fit the text area (ADRs
+# 176, 177); a story that grows a page for its footnotes and continues a note
+# where it stopped, and each chain frame setting lines at its own measure
+# (ADRs 178, 179); the viewer opens a .paged container from its model part
+# (ADR 181); Create Tagged PDF (ADR 182); an IDML save that drops a removed
+# page's spread and states a blank document's setup (ADR 183); and the
+# `paged package` command. All four packages answer at 0.73.3 on the registry
+# (`latest`), checked before this pin moved.
+#
+# v0.73.1 (tag commit 7a257bb). Additive on protocol 73: a table
 # row's Start Row option moves it and the rows after it as a paragraph's
 # StartParagraph moves its first line, asked of InDesign (ADR 175); the
 # rowStartRow / rowKeepWithNext paths reach a row through any of its cells.
@@ -207,4 +218,4 @@
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-7a257bb54b9d2f71fb8e6e0a5644179d0d2db2c4
+a8dce53f775608342c8d79d50ea1867ced2702d0
