@@ -17,7 +17,7 @@ it breaks in the same build.
 - **Minimum viable fragment.** The smallest package that demonstrates one concept.
   No noise.
 - **Authored, never copied.** Author parts clean-room (briefing §6.1). The shapes
-  are grounded in our own parser (`engine/core/crates/paged-parse` in paged-media/paged) and the
+  are grounded in our own parser (`engine/core/crates/idml-import` in paged-media/paged) and the
   `paged-gen` generators — not transcribed from the spec.
 - **`editable` is the chapter-relevant part** (the story, the spread, …). It is
   what the reader sees in the raw/annotated/tree views and, later, edits in the

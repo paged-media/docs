@@ -29,8 +29,9 @@ did not touch stays exactly as Word wrote it.
 
 ## How it's built
 
-A Cargo workspace over a shared OOXML package layer (`paged-ooxml`) that lowers
-DOCX into native content, plus a TS bundle (`@paged-media/doc`). An identity-based
+A Cargo workspace (`docx-core`, `docx-import`, `docx-lower`, `docx-export`,
+`docx-skeleton`, `docx-js`) over the shared OOXML package layer (`paged-ooxml`, in
+`platform/shared/ooxml`) that lowers DOCX into native content, plus a TS bundle (`@paged-media/doc`). An identity-based
 alignment between the source and the edited document is what lets save-back patch
 only what changed.
 

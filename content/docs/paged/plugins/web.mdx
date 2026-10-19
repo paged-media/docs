@@ -29,8 +29,9 @@ to the sandboxed preview when the wasm isn't available).
 
 ## How it's built
 
-`web-model` (pure source model + linter) + `web-bundle` (manifest, source panel,
-sandboxed preview, render command).
+`web-model` (pure source model + linter), `web-bundle` (manifest, source panel,
+sandboxed preview, render command) and `web-render`, the Rust/WASM crate that lays out
+HTML and CSS with Blitz and lowers it to the engine's scene layer.
 
 ## Capability state
 

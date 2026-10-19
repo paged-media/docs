@@ -38,8 +38,9 @@ development.
 
 ## How it's built
 
-A Cargo workspace (`pptx-core`, `pptx-import`, `slide-resolve`, `slide-geom`,
-`slide-chart`, `slide-idml`, `pptx-export`) over the shared OOXML package layer,
+A Cargo workspace (`pptx-core`, `pptx-import`, `pptx-export`, `pptx-fonts`,
+`slide-resolve`, `slide-geom`, `slide-chart`, `slide-native`, `slide-js`) over the
+shared OOXML package layer (`paged-ooxml`, in `platform/shared/ooxml`),
 plus a TS bundle (`@paged-media/slide`). Scripts drive PowerPoint to record the
 answers the tests compare against.
 

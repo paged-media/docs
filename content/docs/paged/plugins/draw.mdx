@@ -31,7 +31,8 @@ engine's vector scene-layer surface.
 ## How it's built
 
 A host-agnostic core (`draw-geometry` pure math, `draw-tools` state machines)
-plus a `draw-bundle` (manifest + `activate` + React panel) — the
+plus a `draw-bundle` (manifest + `activate` + React panel) and a Rust image tracer
+(`draw-trace`, with its wasm binding `trace-js`) — the
 incubate-then-extract pattern. Tested as unit suites and an end-to-end editor
 journey.
 

@@ -21,7 +21,8 @@ zero-copy byte slices and parse-on-demand.
 
 ## Opening the container
 
-The entry point is `Container::open`, which takes the raw bytes of an `.idml` file.
+The entry point is `open_source_archive` in the `idml-import` crate, which takes the raw
+bytes of an `.idml` file.
 The IDML package is a ZIP archive, so the first thing it does is open that archive
 and walk every entry once:
 
@@ -46,15 +47,15 @@ With the entries in hand, the open path does exactly three things before returni
    `application/vnd.adobe.indesign-idml-package`. A missing or wrong mimetype stops
    the open here. (The full check, and what it rejects, is the subject of
    [Validation and recovery](/docs/paged/engine/parser-internals/validation-and-recovery).)
-2. **Reads the designmap.** It pulls `designmap.xml` out of the entry map and parses
-   it into a `DesignMap` — the manifest that lists which spreads, stories, masters,
-   and resource parts the package references. This is the table of contents the rest
-   of the document is walked from.
-3. **Returns the `Container`.** The returned struct holds the mimetype string, the
-   raw designmap bytes, the parsed `DesignMap`, and the full entry map. From here,
-   any part can be fetched by path with `container.entry("Stories/Story_u1f8.xml")`.
+2. **Finds the designmap.** It pulls `designmap.xml` out of the entry map and keeps
+   its raw bytes. The manifest — which spreads, stories, masters and resource parts
+   the package references — is parsed by the import that follows, not here, so the
+   opened archive carries no model data.
+3. **Returns the `SourceArchive`.** The returned struct holds the mimetype string, the
+   raw designmap bytes and the full entry map. From here, any part can be fetched by
+   path with `archive.entry("Stories/Story_u1f8.xml")`.
 
-So a freshly opened container has parsed exactly two things: the mimetype string and
+So a freshly opened archive has checked exactly one thing, the mimetype, and located
 the designmap. Everything else is still sitting in the entry map as undecoded bytes,
 waiting to be asked for.
 
@@ -107,19 +108,19 @@ the part.
 
 ## Parsing on demand
 
-The container open parses only the mimetype and the designmap. Everything else is
-parsed *lazily*, by the layer above — `paged-scene`'s `Document::open` — and only the
-parts the manifest actually points at.
+The archive open reads only the mimetype and finds the designmap. Everything else is
+parsed by the import that follows — `import_idml_archive` — and only the parts the
+manifest actually points at.
 
-When a document is opened for rendering, `Document::open` walks the designmap and
-parses each referenced part by fetching its bytes from the container and running the
+When a document is imported for rendering, `import_idml_archive` parses the designmap
+and then each referenced part, fetching its bytes from the archive and running the
 matching parser:
 
 - a `Resources/Graphic.xml` entry, if present, through the graphic parser (the color
   and gradient palette);
 - a `Resources/Styles.xml` entry, if present, through the style parser;
-- each master spread, then each body spread, through `Spread::parse`;
-- each story the manifest lists, through `Story::parse`.
+- each master spread, then each body spread, through `parse_spread`;
+- each story the manifest lists, through `parse_story`.
 
 Each parser runs against a `Bytes` slice fetched by key. A story is parsed when the
 document is built; a part the manifest never references is never parsed at all, even
@@ -138,13 +139,14 @@ the table that defines it is already in typed form.
 Putting the path end to end:
 
 ```
-Container::open(bytes)
+open_source_archive(bytes)
   ├─ decompress every ZIP entry  → entries: { path → Bytes }   (zero-copy slices)
   ├─ check "mimetype"            → reject if not the IDML constant
-  └─ parse "designmap.xml"       → DesignMap (the manifest)
+  └─ keep "designmap.xml"        → raw bytes
 
-Document::open(bytes)            (one layer up, in paged-scene)
-  ├─ Container::open(...)        (the above)
+import_idml(bytes)               (the import, in idml-import)
+  ├─ open_source_archive(...)    (the above)
+  ├─ parse designmap.xml         → DesignMap (the manifest)
   ├─ parse Resources/Graphic.xml (if present)   ┐
   ├─ parse Resources/Styles.xml  (if present)   │  each: fetch Bytes by key,
   ├─ parse each master + spread                 │  read in one quick-xml pass
@@ -160,8 +162,9 @@ out of these choices — and the trade-offs they imply — is the subject of
 ## Frequently asked questions
 
 **Does opening a container parse the whole document?**
-No. `Container::open` decompresses every ZIP entry into memory but only parses two
-things: the `mimetype` part (to validate it) and `designmap.xml` (the manifest).
+No. `open_source_archive` decompresses every ZIP entry into memory but only reads the
+`mimetype` part (to validate it) and finds `designmap.xml` (the manifest), which the
+import parses next.
 Stories, spreads, styles, and graphics stay as undecoded byte slices until the layer
 above parses them on demand — and a part the manifest never references is never
 parsed at all.

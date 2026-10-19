@@ -206,14 +206,14 @@ export function ScriptingExecutionModel() {
  */
 export function RenderPipeline() {
   const stages = [
-    { label: 'parse', sub: 'paged-parse — ZIP + XML → an AST: the design map, spreads, stories, styles, and graphics.' },
+    { label: 'parse', sub: 'idml-import — ZIP + XML → an AST: the design map, spreads, stories, styles, and graphics.' },
     { label: 'scene', sub: 'paged-scene — resolve the style cascade and thread stories through their frame chains.' },
     { label: 'text', sub: 'paged-text — shape runs and lay out paragraphs with InDesign-calibrated Knuth-Plass line breaking.' },
     { label: 'compose', sub: 'paged-compose — emit a versioned display list: the single source both renderers consume.' },
-    { label: 'GPU', sub: 'paged-gpu — rasterize the display list through Vello (WebGPU) or tiny-skia (headless CPU).' },
+    { label: 'GPU', sub: 'paged-gpu — rasterize the display list through Vello (WebGPU) or vello_cpu (headless CPU).' },
   ];
 
-  const crate = ['paged-parse', 'paged-scene', 'paged-text', 'paged-compose', 'paged-gpu'];
+  const crate = ['idml-import', 'paged-scene', 'paged-text', 'paged-compose', 'paged-gpu'];
 
   return (
     <InteractiveFigure

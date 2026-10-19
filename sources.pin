@@ -50,11 +50,11 @@
       }
     },
     "idml-coverage": {
-      "$comment": "Which IDML (element, attribute) pairs Paged's importer reads and its exporter writes, extracted from the IDML adapter source by tools/idml-coverage (gated by idml_coverage_json_is_current). Feeds the element reference (ADR 805 / gen-idml-reference). Pinned to a commit, bumped deliberately. The pin is the monorepo commit 4c1cbc0 (the imported history's copy of the archived plugin-publish repository's c6dc762, the same file byte for byte), so the path is the adapter's place at that time, modules/publish; the adapter has since moved into the engine (engine/core/docs/reference/idml-coverage.json).",
+      "$comment": "Which IDML (element, attribute) pairs Paged's importer reads and its exporter writes, extracted from the IDML adapter source (engine/core/crates/idml-import and idml-export) by idml-coverage (gated by idml_coverage_json_is_current). Feeds the element reference (ADR 805 / gen-idml-reference). Read from the monorepo's main like the other always-fresh sources; it was frozen at the archived plugin-publish repository's copy until the adapter moved into the engine.",
       "repo": "paged",
-      "ref": "4c1cbc05247bdde0b994280b1362f2a76648f1e1",
+      "ref": "main",
       "files": {
-        "idml-coverage.json": "modules/publish/docs/reference/idml-coverage.json"
+        "idml-coverage.json": "engine/core/docs/reference/idml-coverage.json"
       }
     },
     "editor-catalog": {

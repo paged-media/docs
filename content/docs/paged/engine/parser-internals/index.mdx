@@ -10,7 +10,7 @@ owner: paged-docs
 **The parser is the layer that turns an IDML package into a typed tree the rest of the renderer can walk — and nothing more.**
 
 **In short:** Everything in this reference describes a *format*. This chapter
-describes the *code that reads it*. Paged's parser, the `paged-parse` crate, takes
+describes the *code that reads it*. Paged's parser, the `idml-import` crate, takes
 the raw bytes of an `.idml` file and produces a typed Abstract Syntax Tree (AST):
 plain Rust structs for spreads, stories, styles, and resources, with the XML and the
 ZIP machinery left behind. It is deliberately narrow — it opens the container,
@@ -31,7 +31,7 @@ engine never has to touch XML.
 Its single job is this transformation:
 
 ```
-.idml bytes  →  paged-parse  →  typed AST  →  renderer
+.idml bytes  →  idml-import  →  typed AST  →  renderer
    (ZIP of XML)                  (Rust structs)
 ```
 
@@ -108,7 +108,7 @@ time.
 ## Frequently asked questions
 
 **Is the parser the same thing as the renderer?**
-No. The parser (`paged-parse`) only reads — it turns IDML bytes into a typed AST and
+No. The parser (`idml-import`) only reads — it turns IDML bytes into a typed AST and
 stops there. The renderer is the pipeline above it that lays out text, resolves color
 and style, and rasterises pages. They are separate crates with a clean boundary: the
 parser knows nothing about pixels, and the renderer never touches XML. See
@@ -123,7 +123,8 @@ large documents.
 
 **Why is the parser kept so deliberately thin?**
 Because reading and interpreting are different jobs, and mixing them makes both
-harder to trust. Keeping `paged-parse` to ZIP and XML plumbing means the layer that
+harder to trust. Keeping `idml-import` to ZIP and XML plumbing means the layer that
 faithfully mirrors the file's bytes stays small and auditable, while the harder work
-of resolving references and cascading styles lives one layer up in `paged-scene`,
-where it can be reasoned about on a fully-typed tree.
+of resolving references and cascading styles happens afterwards, when the import
+(`import_idml`, in the same crate) builds a `paged-scene` document from the typed
+tree, where it can be reasoned about on fully-typed values.

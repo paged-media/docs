@@ -35,7 +35,7 @@ paged-media/paged). Not the engine (`engine/core`), not the editor
    `<ExampleEmbed example="…" />`. They are validated against the REAL renderer in
    CI (`paged-inspect` built from the commit in `core.pin`) — a broken example
    breaks the build. Author parts by studying our own parser
-   (`engine/core/crates/paged-parse` in paged-media/paged) and the `paged-gen`
+   (`engine/core/crates/idml-import` in paged-media/paged) and the `paged-gen`
    generators, never the spec.
 
 3. **Naming line.** `idml` the *format* stays (`.idml`, designmap, element names).

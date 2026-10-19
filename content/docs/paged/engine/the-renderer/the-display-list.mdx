@@ -28,7 +28,7 @@ display list, and *only then* does a backend turn that list into pixels. That ex
 hop buys three things:
 
 - **One scene, many backends.** The list is the seam between *what to paint* and
-  *how*. The WebGPU/Vello backend and the CPU (tiny-skia) backend consume the exact
+  *how*. The WebGPU/Vello backend and the CPU (`vello_cpu`) backend consume the exact
   same list, so the live preview and the CI fidelity render agree by construction.
   See [rendering backends](/docs/paged/engine/the-renderer/rendering-backends).
 - **Cheap re-painting.** A built page caches its display list. The interactive
