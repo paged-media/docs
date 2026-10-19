@@ -96,6 +96,12 @@
     },
     "license.engine": {
       "label": "engine licence",
+      "from": "engine-main/Cargo.toml",
+      "regex": "^license = \"([^\"]+)\"",
+      "license": true
+    },
+    "license.engine.release": {
+      "label": "engine licence of the release the docs pin (core.pin)",
       "from": "core-meta/Cargo.toml",
       "regex": "^license = \"([^\"]+)\"",
       "license": true
@@ -110,6 +116,12 @@
       "label": "content-plugin licence",
       "from": "plugin-sheets/package.json",
       "pointer": "/license",
+      "license": true
+    },
+    "license.server": {
+      "label": "paged.server licence",
+      "from": "server-meta/Cargo.toml",
+      "regex": "^license = \"([^\"]+)\"",
       "license": true
     },
     "license.docs": {

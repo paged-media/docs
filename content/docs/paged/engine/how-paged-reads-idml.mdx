@@ -15,8 +15,8 @@ reviewed: 2026-10-11
 **Paged reads IDML through an adapter: the package is imported into Paged's own document model, and everything after that works on the model, not on the XML.**
 
 **In short:** IDML is a format Paged reads and writes, not the shape of its engine. The
-IDML adapter (`idml-import` and `idml-export`, kept in the plugin-publish repository and
-compiled into the engine) turns a package into the native document model. The engine then
+IDML adapter (`idml-import` and `idml-export`, crates of the engine workspace under
+`engine/core/crates/`, compiled into the engine) turns a package into the native document model. The engine then
 lays out the whole document in one build, produces a display list per page, and paints it
 on the CPU or the GPU. A `.paged` file is an IDML package that also carries the model
 itself, so it opens without an IDML parse.
@@ -38,9 +38,12 @@ The read-only viewer SDK always takes the second path.
 
 ## 2. Import: IDML parts to the native model
 
-The importer lives in plugin-publish and is linked into the engine wasm at a pinned
-revision ([ADR 022](https://github.com/paged-media/paged/blob/main/modules/publish/docs/adr/022-idml-relocates-to-plugin-publish.md),
-[ADR 651](https://github.com/paged-media/paged/blob/main/modules/publish/docs/adr/651-idml-compiled-into-engine-wasm.md)).
+The importer is compiled into the engine wasm
+([ADR 651](https://github.com/paged-media/paged/blob/main/modules/publish/docs/adr/651-idml-compiled-into-engine-wasm.md)).
+It was kept in a repository of its own and pinned by revision
+([ADR 022](https://github.com/paged-media/paged/blob/main/modules/publish/docs/adr/022-idml-relocates-to-plugin-publish.md));
+it is now a crate of the engine workspace (`engine/core/crates/idml-import`) and
+builds with the engine at the same commit.
 It reads the package in a fixed order:
 
 1. `designmap.xml`: the part list, layers, sections, text variables, hyperlinks,
@@ -110,8 +113,9 @@ on that model. A `.paged` file can skip the import entirely when it carries a cu
 model part.
 
 **Where does the IDML parser live?**
-In the plugin-publish repository, as the `idml-import` and `idml-export` crates. The
-engine takes them as dependencies pinned to a revision and compiles them into its wasm,
+In the engine workspace of the `paged-media/paged` repository, as the `idml-import` and
+`idml-export` crates (`engine/core/crates/`). Until they moved there they were kept in a
+repository of their own and pinned by revision. The engine compiles them into its wasm,
 so the published packages read IDML with no extra install.
 
 **What happens when an IDML file references something that is not there?**

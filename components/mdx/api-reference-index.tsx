@@ -43,7 +43,7 @@ export function ApiReferenceIndex() {
       title: 'REST API',
       href: '/docs/paged/api/rest',
       count: `${rest.endpointCount} endpoints`,
-      blurb: 'The editor-server HTTP API — documents, assets, auth, and billing — generated from its OpenAPI spec.',
+      blurb: 'The server HTTP API, generated from its OpenAPI spec. The editor-server is retired; paged.server publishes no spec yet.',
     },
     {
       title: 'Plugin manifest',

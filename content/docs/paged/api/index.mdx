@@ -1,6 +1,6 @@
 ---
 title: API reference
-description: Every programmable surface of paged in one place — the paged.* scripting API, the paged command line, the Viewer SDK, the editor-server REST API, and the plugin manifest — each generated from its own source of truth.
+description: Every programmable surface of paged in one place — the paged.* scripting API, the paged command line, the Viewer SDK, the server REST API, and the plugin manifest — each generated from its own source of truth.
 tier: intermediate
 diataxis: reference
 status: published
@@ -25,8 +25,9 @@ and the plugin manifest schema — so none of them drift from the running code.
   verify it deterministically. The lane a build system wants.
 - **[Viewer SDK](/docs/paged/sdk)** — embed a WebGPU IDML viewer on a canvas:
   load a document, drive the camera, render to bytes, listen for events.
-- **[REST API](/docs/paged/api/rest)** — the editor-server HTTP surface for
-  accounts, document storage, billing, and assets.
+- **[REST API](/docs/paged/api/rest)** — the server's HTTP surface. The
+  editor-server it documented is retired; its replacement, paged.server
+  (`apps/server`), publishes no OpenAPI specification yet.
 - **[Plugin manifest](/docs/paged/plugin-sdk)** — the declarative contract a
   plugin bundle ships to contribute tools, panels, commands, and document
   behaviour.

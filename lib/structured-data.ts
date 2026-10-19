@@ -13,6 +13,7 @@
 import { site, SITE_ID } from '@/lib/site';
 import type { Tier } from '@/lib/frontmatter';
 import type { GlossaryTerm } from '@/lib/glossary';
+import { getFacts } from '@/lib/generated';
 
 const BASE = site.origin;
 
@@ -47,6 +48,8 @@ export function parseFaq(markdown: string): FaqPair[] {
     const end = i + 1 < matches.length ? matches[i + 1].index ?? section.length : section.length;
     const a = section
       .slice(start, end)
+      // A <Fact id="…" /> in an answer is the fact's current value, as on the page.
+      .replace(/<Fact\s+id="([^"]+)"\s*\/>/g, (tag, id: string) => getFacts().facts[id]?.display ?? tag)
       .replace(/\*\*/g, '')
       .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // strip md links → text
       .replace(/`/g, '')

@@ -17,13 +17,13 @@ say-so.
 
 ## The four tiers
 
-### 1. Unit (per repo, language-native)
+### 1. Unit (per component, language-native)
 
 The [engine](/docs/paged/repos/core) runs Rust `cargo nextest` across its
-crates (parse, layout, mutation, color, export). The
-[editor](/docs/paged/repos/editor) and [server](/docs/paged/repos/editor-server)
-run TypeScript suites; the [plugins](/docs/paged/plugins) run vitest (TS) and,
-where they're Rust/WASM, nextest. Several plugins enforce a **registry-driven
+crates (parse, layout, mutation, color, export), and so do the Rust parts of the
+[server](/docs/paged/repos/editor-server) and the [plugins](/docs/paged/plugins).
+The TypeScript side of the monorepo — the [editor](/docs/paged/repos/editor), the
+plugin bundles and the extension SDK — runs on `bun test`. Several plugins enforce a **registry-driven
 coverage gate** — every kernel/function declared must have at least one test.
 
 ### 2. End-to-end & DTP journeys
@@ -50,7 +50,7 @@ a fixture that regresses is fixed, never re-baselined to pass. See
 
 ## How evidence becomes status
 
-Each repository's CI uploads its results. Tests name the capabilities they prove
+Each component's CI lane uploads its results. Tests name the capabilities they prove
 (an inline `@feat:` tag, or a test map for suites that cannot carry one), and the
 [cockpit](/docs/paged/repos/cockpit) registry joins the newest runs with its claims
 into the record the [capability state](/docs/paged/state) pages and every

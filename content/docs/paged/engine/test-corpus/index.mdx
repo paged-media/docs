@@ -32,8 +32,8 @@ and where this reference borrows its right to make them.
 The two bodies of test material answer two different questions, and it is worth
 keeping them apart from the start.
 
-**The fidelity loop asks: do the pixels match?** It lives in the engine repo
-(`core`). A generator emits IDML fixtures; InDesign exports a reference PDF from the
+**The fidelity loop asks: do the pixels match?** It lives with the engine
+(`engine/core` in the `paged-media/paged` repository). A generator emits IDML fixtures; InDesign exports a reference PDF from the
 same documents; the renderer rasterises its own version; an image-diff tool
 (ΔE2000 colour difference plus SSIM structural similarity) compares the two,
 page by page, against per-fixture tolerances. If the renderer drifts away from
@@ -88,7 +88,7 @@ neither corpus covers. The corpus narrows the unknowns; it does not eliminate th
 
 **What is the difference between the fidelity loop and the examples loop?**
 They guard different things and measure at different depths. The **fidelity loop**
-lives in the engine (`core`): it diffs the renderer's rasterised pages against
+lives with the engine (`engine/core`): it diffs the renderer's rasterised pages against
 InDesign's own reference PDFs using ΔE2000 and SSIM, so it is *pixel-deep* but only
 covers the generated fixtures. The **examples loop** lives in these docs: it runs
 every embedded IDML example through the renderer's introspection tool, checking the
