@@ -7,8 +7,9 @@
  * strong gate: it catches a script that references a renamed fn, passes a bad
  * value, or hits a failed precondition — the moment the engine changes.
  *
- * paged-run is found via $PAGED_RUN, else the sibling core debug/release build.
- * Build it with:  cargo build -p paged-run   (in ~/paged/core)
+ * paged-run is found via $PAGED_RUN, else the debug/release build in a sibling
+ * checkout of paged-media/paged (../paged/engine/core).
+ * Build it with:  cargo build -p paged-run   (in ../paged/engine/core)
  *
  *   pnpm tsx scripts/scripting/validate.ts
  */
@@ -24,7 +25,7 @@ const ROOT = process.cwd();
 function findPagedRun(): string | null {
   if (process.env.PAGED_RUN && existsSync(process.env.PAGED_RUN)) return process.env.PAGED_RUN;
   for (const profile of ['release', 'debug']) {
-    const p = join(ROOT, '..', 'core', 'target', profile, 'paged-run');
+    const p = join(ROOT, '..', 'paged', 'engine', 'core', 'target', profile, 'paged-run');
     if (existsSync(p)) return p;
   }
   return null;
@@ -69,7 +70,7 @@ class Session {
 async function main() {
   const bin = findPagedRun();
   if (!bin) {
-    console.error('validate:scripting: paged-run not found. Build it: (cd ../core && cargo build -p paged-run), or set $PAGED_RUN.');
+    console.error('validate:scripting: paged-run not found. Build it: (cd ../paged/engine/core && cargo build -p paged-run), or set $PAGED_RUN.');
     process.exit(2);
   }
 

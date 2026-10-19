@@ -82,17 +82,20 @@ if (features) {
 }
 
 /**
- * Engine back-tests from the sibling core repo, if present: every example must
+ * Engine back-tests from the sibling monorepo checkout (../paged, the engine at
+ * engine/core), if present: every example must
  * be backed by a real paged-script test (its `test` fn must exist, and its id
  * must be referenced in a test file). Skipped silently when core is absent.
  */
 function coreTestText(): string | null {
-  const dir = join(ROOT, '..', 'core', 'crates', 'paged-script', 'tests');
+  const dir = join(ROOT, '..', 'paged', 'engine', 'core', 'crates', 'paged-script', 'tests');
   if (!existsSync(dir)) return null;
   let text = '';
+  // The monorepo gathers a crate's integration tests into one binary, tests/it/.
   for (const f of ['dtp_examples.rs', 'scripting_feature_evidence.rs', 'script_basics.rs']) {
-    const p = join(dir, f);
-    if (existsSync(p)) text += readFileSync(p, 'utf8') + '\n';
+    for (const p of [join(dir, 'it', f), join(dir, f)]) {
+      if (existsSync(p)) text += readFileSync(p, 'utf8') + '\n';
+    }
   }
   return text || null;
 }

@@ -13,7 +13,7 @@ actually see — and it's the engine behind this site's live preview.**
 **In short:** Everywhere else in this reference we treat IDML as *content and
 intent* — a story flows through a frame, a paragraph applies a style. The renderer
 is what closes the loop: it reads that intent and produces a faithful page. It is
-an open-source engine written in Rust ([`paged-media/core`](https://github.com/paged-media/core),
+an open-source engine written in Rust ([`engine/core` in `paged-media/paged`](https://github.com/paged-media/paged/tree/main/engine/core),
 dual-licensed MPL-2.0 OR PMEL), built as a small chain of focused crates that hand
 work to each other — parse, model, layout, compose, rasterize. This chapter walks
 that chain so you understand what happens between "an archive of XML" and "a page on
@@ -25,7 +25,7 @@ key idea: IDML describes a document's *content and intent*, not rendered pixels.
 that's intent. Turning it into a page that matches what InDesign would have drawn is
 a genuinely hard job, and it's the renderer's whole reason to exist.
 
-The renderer is **open**. It lives in the public `paged-media/core` repository,
+The renderer is **open**. It lives in the public `paged-media/paged` repository (`engine/core`),
 dual-licensed **MPL-2.0 OR PMEL**, so you can read every line of the code these
 pages describe. When this reference says "our parser reads this attribute" or "the
 rasterizer approximates that effect," there's a real function behind the sentence —
@@ -81,7 +81,7 @@ produced by exactly the code described here.
 ## Frequently asked questions
 
 **Is the renderer open source?**
-Yes. The renderer-core engine lives in the public `paged-media/core` repository and
+Yes. The renderer-core engine lives in the public `paged-media/paged` repository (`engine/core`) and
 is dual-licensed **MPL-2.0 OR PMEL** (the Paged Media Enterprise License). Every
 stage these pages describe — parse, model, layout, compose, rasterize — is real,
 readable Rust. The commercial editor is a separate, private product that consumes

@@ -13,6 +13,13 @@ endpoints below are **generated from the server's OpenAPI spec** (which is itsel
 generated from the server's Zod contracts), so this reference matches the running
 service.
 
+<Callout type="warn">
+The editor-server is retired. Its replacement, paged.server (`apps/server` in the
+[paged-media/paged](https://github.com/paged-media/paged/tree/main/apps/server)
+repository), syncs repositories and serves an MCP endpoint, and publishes no OpenAPI
+specification yet, so the endpoint list below is empty until it does.
+</Callout>
+
 Authentication is cookie-based (a better-auth session). All routes live under
 `/api/*`; the spec is also served live at the server's `/openapi.json`.
 

@@ -3,7 +3,8 @@
  * gen-activity — normalizes the per-repo commit lists pulled by pull-sources
  * (.generated/sources/activity.json) into `.generated/activity.json`: an
  * interleaved cross-repo timeline plus a per-repo index, for the <ActivityFeed>
- * and <RepoActivity> components.
+ * and <RepoActivity> components. Path-scoped feeds (a monorepo component,
+ * `.generated/sources/activity-components.json`) join the per-repo index only.
  *
  * This is the "current state of the app" feed — what changed, where, recently,
  * across all repos. Refreshed every build/nightly, so it's always live.
@@ -26,6 +27,9 @@ function readJSON(p) {
 }
 
 const perRepo = readJSON(SRC) ?? {};
+// Path-scoped feeds (a monorepo component): shown by <RepoActivity>, kept out of
+// the timeline, which already has the whole repository's commits.
+const components = readJSON(join(ROOT, '.generated', 'sources', 'activity-components.json')) ?? {};
 mkdirSync(GEN, { recursive: true });
 
 const timeline = [];
@@ -45,7 +49,7 @@ writeFileSync(
       generatedAt: new Date().toISOString(),
       repoCount: Object.keys(perRepo).length,
       timeline: timeline.slice(0, TIMELINE_MAX),
-      perRepo,
+      perRepo: { ...components, ...perRepo },
       summary,
     },
     null,

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # build-preview-wasm.sh — build the WebGPU paged-sdk (ViewerSession) wasm that
-# powers the docs <live preview>, from a sibling `core` checkout.
+# powers the docs <live preview>, from the engine in a sibling checkout of
+# paged-media/paged (../paged/engine/core).
 #
 # SUPERSEDED for the normal path: the live preview now consumes the PUBLISHED
 # `@paged-media/idml-viewer` package, whose bundled wasm `scripts/prepare-preview-wasm.mjs`
@@ -21,7 +22,7 @@
 set -euo pipefail
 
 DOCS_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-CORE_DIR="${CORE_DIR:-$DOCS_ROOT/../core}"
+CORE_DIR="${CORE_DIR:-$DOCS_ROOT/../paged/engine/core}"
 OUT_DIR="$DOCS_ROOT/public/preview"
 TARGET_DIR="$CORE_DIR/target/wasm32-unknown-unknown/release"
 

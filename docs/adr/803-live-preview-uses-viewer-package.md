@@ -83,7 +83,7 @@ later. `scripts/build-preview-wasm.sh:7` names a workflow,
 
 - [ADR 801](801-validated-examples.md), [ADR 804](804-static-export-hosting.md) — the
   packages that are previewed; the static host that serves the wasm
-- [ADR 112](https://github.com/paged-media/core/blob/main/docs/adr/112-viewer-sdk-is-a-sibling.md)
+- [ADR 112](https://github.com/paged-media/paged/blob/main/engine/core/docs/adr/112-viewer-sdk-is-a-sibling.md)
   (core) — the viewer SDK renders with WebGPU and carries no second renderer
-- [ADR 123](https://github.com/paged-media/core/blob/main/docs/adr/123-viewer-ships-from-core.md)
+- [ADR 123](https://github.com/paged-media/paged/blob/main/engine/core/docs/adr/123-viewer-ships-from-core.md)
   (core) — the package and its bundled wasm are published from the engine repository

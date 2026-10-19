@@ -8,8 +8,13 @@
  * `.generated/sources/`. The downstream `gen-*` stages read ONLY from there, so
  * the rest of the pipeline is offline + deterministic.
  *
+ * Product sources live in the monorepo paged-media/paged (repo `paged` in
+ * sources.pin, each file a path inside it); the per-component repositories it
+ * replaced are archived.
+ *
  * Two modes, chosen per-source:
- *   - LOCAL (default when the sibling working copy exists under ~/paged/<repo>):
+ *   - LOCAL (default when the sibling working copy `../<repo>` exists next to
+ *     this checkout; for the monorepo that is `../paged`):
  *     copy the file straight from disk. Ideal for local iteration against the
  *     live workspace — what you see is what's on your machine right now.
  *     Exception: a source whose `ref` is "core.pin", or a commit sha, is read
@@ -33,7 +38,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const SIBLINGS = resolve(ROOT, '..'); // ~/paged
+const SIBLINGS = resolve(ROOT, '..'); // the directory holding the sibling checkouts (../paged, ../cockpit)
 const OUT = join(ROOT, '.generated', 'sources');
 const PIN = JSON.parse(readFileSync(join(ROOT, 'sources.pin'), 'utf8'));
 
@@ -130,8 +135,8 @@ console.log(`pull-sources → ${OUT}  (${lock.mode})`);
 
 // ── data sources ──────────────────────────────────────────────────────────
 for (const [key, src] of Object.entries(PIN.sources)) {
-  // Plugin repos live one level down (~/paged/plugins/<repo>).
-  const repoDir = [join(SIBLINGS, src.repo), join(SIBLINGS, 'plugins', src.repo)].find((d) => existsSync(d)) ?? join(SIBLINGS, src.repo);
+  // The sibling checkout of the source's repository: ../paged for the monorepo.
+  const repoDir = join(SIBLINGS, src.repo);
   // `remote: true` marks a file CI produces (cockpit's export): the sibling
   // working copy may be on any branch and need not have it, so always fetch.
   const useLocal = !REMOTE && !src.remote && existsSync(repoDir);
@@ -210,6 +215,28 @@ for (const repo of act.repos) {
   }
 }
 writeFileSync(join(OUT, 'activity.json'), JSON.stringify(activity, null, 2));
+
+// Path-scoped feeds: one component of a repository (engine/core of the
+// monorepo), keyed by the name a page's <RepoActivity repo=…> uses.
+const components = {};
+for (const [name, { repo, path }] of Object.entries(act.components ?? {})) {
+  try {
+    const json = sh('gh', [
+      'api',
+      `repos/${ORG}/${repo}/commits?per_page=${act.perRepo}&path=${encodeURIComponent(path)}`,
+      '--jq',
+      '[.[] | {sha: .sha, date: .commit.author.date, author: (.author.login // .commit.author.name), message: (.commit.message | split("\\n")[0]), url: .html_url}]',
+    ]);
+    components[name] = JSON.parse(json);
+    console.log(`  ✓ activity/${name} (${components[name].length} commits, ${repo}/${path})`);
+    lock.activity[name] = components[name].length;
+  } catch (e) {
+    console.warn(`  ! activity/${name}: ${e.message.split('\n')[0]}`);
+    components[name] = [];
+    lock.activity[name] = 0;
+  }
+}
+writeFileSync(join(OUT, 'activity-components.json'), JSON.stringify(components, null, 2));
 
 writeFileSync(join(ROOT, '.generated', 'sources.lock.json'), JSON.stringify(lock, null, 2));
 

@@ -18,7 +18,7 @@ jobs:
   # core.pin is "bump to the latest core RELEASE TAG on every release". Nothing
   # enforced it, so the pin lagged 5 releases (v0.35.0 while core was at v0.40.0).
   # This job warns — never hard-fails a docs PR (a release may be cut between the
-  # tag and the pin PR) — when core.pin != the commit of core's latest v* tag.
+  # tag and the pin PR) — when core.pin != the commit of the engine's latest v* tag (paged-media/paged).
   # Runs on push-to-main and the weekly drift cron; skipped on PRs to keep them
   # green. Promote `::warning` → a failing `exit 1` if the cadence keeps slipping.
   pin-freshness:
@@ -26,21 +26,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: checkout core (tags only)
-        uses: actions/checkout@v4
-        with:
-          repository: paged-media/core
-          fetch-depth: 0
-          path: core
       - name: compare core.pin to latest release tag
+        # The engine's release tags live in the monorepo paged-media/paged; read
+        # them with ls-remote rather than cloning the whole monorepo's history.
         run: |
           pinned="$(grep -v '^#' core.pin | head -1 | tr -d '[:space:]')"
-          latest_tag="$(git -C core tag --list 'v*' --sort=-v:refname | head -1)"
-          latest_sha="$(git -C core rev-list -n1 "$latest_tag")"
+          repo=https://github.com/paged-media/paged.git
+          latest_tag="$(git ls-remote --tags --refs "$repo" 'v*' | awk '{print $2}' | sed 's|refs/tags/||' | sort -V | tail -1)"
+          latest_sha="$(git ls-remote "$repo" "refs/tags/$latest_tag^{}" | awk '{print $1}')"
+          [ -z "$latest_sha" ] && latest_sha="$(git ls-remote "$repo" "refs/tags/$latest_tag" | awk '{print $1}')"
           echo "core.pin       = $pinned"
           echo "latest tag     = $latest_tag ($latest_sha)"
           if [ "$pinned" != "$latest_sha" ]; then
-            echo "::warning title=core.pin stale::core.pin ($pinned) is not the latest release tag $latest_tag ($latest_sha). Per the pin policy in core.pin, bump it on every core release: git -C core rev-list -n1 $latest_tag"
+            echo "::warning title=core.pin stale::core.pin ($pinned) is not the latest release tag $latest_tag ($latest_sha). Per the pin policy in core.pin, bump it on every engine release: git -C paged rev-list -n1 $latest_tag"
           else
             echo "core.pin is current with $latest_tag."
           fi
@@ -59,22 +57,23 @@ jobs:
             echo "ref=$(grep -v '^#' core.pin | head -1 | tr -d '[:space:]')" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: checkout core (public, no token needed)
+      # The engine lives in the monorepo paged-media/paged at engine/core;
+      # the checkout lands at ./core, so the workspace is ./core/engine/core.
+      - name: checkout the monorepo (public, no token needed)
         uses: actions/checkout@v4
         with:
-          repository: paged-media/core
+          repository: paged-media/paged
           ref: ${{ steps.core.outputs.ref }}
           path: core
 
-      # core/rust-toolchain.toml pins the channel; rustup honors it inside ./core.
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
-          workspaces: core
+          workspaces: core/engine/core
           key: ${{ steps.core.outputs.ref }}
 
       - name: build paged-inspect
-        run: cargo build --release --manifest-path core/Cargo.toml -p paged-renderer --bin paged-inspect
+        run: cargo build --release --manifest-path core/engine/core/Cargo.toml -p paged-renderer --bin paged-inspect
 
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
@@ -84,7 +83,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: validate every example against the renderer
-        run: PAGED_INSPECT="$PWD/core/target/release/paged-inspect" pnpm validate:examples
+        run: PAGED_INSPECT="$PWD/core/engine/core/target/release/paged-inspect" pnpm validate:examples
 
       - name: InDesign stamps still match their packages
         # A `verified` block is evidence about exact bytes: edit a part and the

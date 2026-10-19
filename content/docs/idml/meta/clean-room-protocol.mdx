@@ -71,11 +71,11 @@ The same method runs in three places:
 - **The engine.** Paged's engine has a generator that writes IDML fixtures, one feature
   variant per page. InDesign exports each to PDF, and a diff gates the engine's rendering
   against that PDF. A rule measured this way is recorded beside the code that implements
-  it ([core ADR 120](https://github.com/paged-media/core/blob/main/docs/adr/120-indesign-is-the-oracle.md)).
+  it ([core ADR 120](https://github.com/paged-media/paged/blob/main/engine/core/docs/adr/120-indesign-is-the-oracle.md)).
 - **The IDML adapter.** A spelling rule in Paged's IDML writer counts as correct only
   when InDesign reads the result as intended, not when Paged's own reader reads it back.
   Each rule is recorded as a measurement against a named InDesign version
-  ([plugin-publish ADR 653](https://github.com/paged-media/plugin-publish/blob/main/docs/adr/653-indesign-is-the-oracle.md)).
+  ([plugin-publish ADR 653](https://github.com/paged-media/paged/blob/main/modules/publish/docs/adr/653-indesign-is-the-oracle.md)).
   The rules a writer must follow are collected in
   [what InDesign needs to open a file](/docs/idml/package-anatomy/what-indesign-requires).
 - **This reference's examples.** Every example is opened in InDesign, which must open it
