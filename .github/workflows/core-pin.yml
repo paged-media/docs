@@ -1,7 +1,9 @@
 name: core-pin
-# core.pin tracks the latest core RELEASE tag (policy in its header). Nightly,
-# open a PR when a newer v* tag exists; the examples gate on that PR validates
-# every example against the new engine before anyone merges it.
+# core.pin tracks the latest engine RELEASE tag (policy in its header). The
+# engine lives in the monorepo paged-media/paged (engine/core), whose v* tags are
+# the engine releases. Nightly, open a PR when a newer v* tag exists; the
+# examples gate on that PR validates every example against the new engine before
+# anyone merges it.
 on:
   schedule:
     - cron: "20 5 * * *"
@@ -16,13 +18,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Find the latest core release tag
+      - name: Find the latest engine release tag (paged-media/paged v* tags)
         id: tag
         run: |
-          latest=$(git ls-remote --tags --refs https://github.com/paged-media/core.git 'v*' \
+          latest=$(git ls-remote --tags --refs https://github.com/paged-media/paged.git 'v*' \
             | awk '{print $2}' | sed 's|refs/tags/||' | sort -V | tail -1)
-          sha=$(git ls-remote https://github.com/paged-media/core.git "refs/tags/$latest^{}" | awk '{print $1}')
-          [ -z "$sha" ] && sha=$(git ls-remote https://github.com/paged-media/core.git "refs/tags/$latest" | awk '{print $1}')
+          sha=$(git ls-remote https://github.com/paged-media/paged.git "refs/tags/$latest^{}" | awk '{print $1}')
+          [ -z "$sha" ] && sha=$(git ls-remote https://github.com/paged-media/paged.git "refs/tags/$latest" | awk '{print $1}')
           current=$(grep -o 'Currently: v[0-9.]*' core.pin | sed 's/Currently: //')
           echo "latest=$latest" >> "$GITHUB_OUTPUT"
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
@@ -46,4 +48,4 @@ jobs:
           git checkout -b "$branch"
           git commit -qam "deps: core.pin → $LATEST (${SHA:0:7})"
           git push -q -u origin "$branch"
-          gh pr create --title "core.pin → $LATEST" --body "The latest core release is $LATEST (${SHA:0:7}); core.pin is at $CURRENT. The examples gate on this PR validates every example against the new engine. Update the release summary in core.pin's header comment before merging."
+          gh pr create --title "core.pin → $LATEST" --body "The latest engine release (paged-media/paged) is $LATEST (${SHA:0:7}); core.pin is at $CURRENT. The examples gate on this PR validates every example against the new engine. Update the release summary in core.pin's header comment before merging."

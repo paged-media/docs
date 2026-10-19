@@ -86,7 +86,7 @@ it deploys to GitHub Pages. `public/CNAME` and `public/.nojekyll` date from comm
 
 - [ADR 802](802-generated-platform-pages.md), [ADR 803](803-live-preview-uses-viewer-package.md)
   — the source pull that keeps the build in Actions; the wasm served from `/preview/`
-- [ADR 212](https://github.com/paged-media/editor/blob/main/docs/adr/212-one-automation-surface.md)
+- [ADR 212](https://github.com/paged-media/paged/blob/main/apps/editor/docs/adr/212-one-automation-surface.md)
   (editor) — the playground and the script bridge that the iframes embed
 
 ## Amendment — 2026-10-11

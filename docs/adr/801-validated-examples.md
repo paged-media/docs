@@ -86,5 +86,5 @@ views and editable part by hand.
 
 - [ADR 800](800-clean-room-documentation.md) — examples are authored, not copied
 - [ADR 803](803-live-preview-uses-viewer-package.md) — the live view of an example
-- [ADR 006](https://github.com/paged-media/core/blob/main/docs/adr/006-protocol-coupled-versioning.md)
+- [ADR 006](https://github.com/paged-media/paged/blob/main/engine/core/docs/adr/006-protocol-coupled-versioning.md)
   (core) — the release tags and package versions the pin follows

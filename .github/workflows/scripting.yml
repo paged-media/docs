@@ -28,22 +28,23 @@ jobs:
             echo "ref=$(grep -v '^#' core.pin | head -1 | tr -d '[:space:]')" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: checkout core (public, no token needed)
+      # The engine lives in the monorepo paged-media/paged at engine/core;
+      # the checkout lands at ./core, so the workspace is ./core/engine/core.
+      - name: checkout the monorepo (public, no token needed)
         uses: actions/checkout@v4
         with:
-          repository: paged-media/core
+          repository: paged-media/paged
           ref: ${{ steps.core.outputs.ref }}
           path: core
 
-      # core/rust-toolchain.toml pins the channel; rustup honors it inside ./core.
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
-          workspaces: core
+          workspaces: core/engine/core
           key: ${{ steps.core.outputs.ref }}
 
       - name: build paged-run (the headless NDJSON engine session)
-        run: cargo build --release --manifest-path core/Cargo.toml -p paged-run
+        run: cargo build --release --manifest-path core/engine/core/Cargo.toml -p paged-run
 
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
@@ -66,4 +67,4 @@ jobs:
         run: pnpm check:scripting
 
       - name: execute every example + seed against the engine
-        run: PAGED_RUN="$PWD/core/target/release/paged-run" pnpm validate:scripting
+        run: PAGED_RUN="$PWD/core/engine/core/target/release/paged-run" pnpm validate:scripting

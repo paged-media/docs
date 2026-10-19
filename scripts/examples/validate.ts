@@ -13,8 +13,8 @@ import { listExamples, exampleDir, readManifest, type ExampleManifest } from './
  * needs no GPU and no font. If the renderer stops accepting an example, this
  * fails and the docs build is visibly broken.
  *
- * The paged-inspect binary is resolved from $PAGED_INSPECT, else a sibling
- * ~/paged/core checkout (mirrors sync-wasm.sh's sibling convention).
+ * The paged-inspect binary is resolved from $PAGED_INSPECT, else the build in a
+ * sibling checkout of paged-media/paged (../paged/engine/core).
  */
 interface InspectReport {
   totals: {
@@ -32,12 +32,12 @@ function resolveInspect(): string {
     return process.env.PAGED_INSPECT;
   }
   for (const profile of ['release', 'debug']) {
-    const guess = join(process.cwd(), '..', 'core', 'target', profile, 'paged-inspect');
+    const guess = join(process.cwd(), '..', 'paged', 'engine', 'core', 'target', profile, 'paged-inspect');
     if (existsSync(guess)) return guess;
   }
   throw new Error(
-    'paged-inspect not found. Set $PAGED_INSPECT, or build it from core:\n' +
-      '  (cd ../core && cargo build --release -p paged-renderer --bin paged-inspect)',
+    'paged-inspect not found. Set $PAGED_INSPECT, or build it from the engine (paged-media/paged, engine/core):\n' +
+      '  (cd ../paged/engine/core && cargo build --release -p paged-renderer --bin paged-inspect)',
   );
 }
 

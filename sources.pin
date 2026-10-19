@@ -1,5 +1,5 @@
 {
-  "$comment": "Pinned cross-repo sources for the docs generation pipeline (scripts/generate/pull-sources.mjs). The docs are generated FROM these machine-readable sources so they never go stale by hand. `ref` is the git ref to pull from (default `main` = always-fresh); set an explicit commit SHA to freeze a source for a reproducible build. pull-sources records the RESOLVED sha of each source in .generated/sources.lock.json for provenance. Local runs prefer the sibling working copy under ~/paged/<repo> when present (pass --remote to force GitHub). Bump policy: this file + the nightly re-pull + on-push dispatch are the freshness controls. Same spirit as core.pin.",
+  "$comment": "Pinned cross-repo sources for the docs generation pipeline (scripts/generate/pull-sources.mjs). The docs are generated FROM these machine-readable sources so they never go stale by hand. `ref` is the git ref to pull from (default `main` = always-fresh); set an explicit commit SHA to freeze a source for a reproducible build. pull-sources records the RESOLVED sha of each source in .generated/sources.lock.json for provenance. Local runs prefer the sibling working copy `../<repo>` next to this checkout when present (pass --remote to force GitHub). Since 2026-10-18 the product code lives in the monorepo paged-media/paged (sibling `../paged`); every product source names repo `paged` and a path inside it. The earlier per-component repositories are archived. Bump policy: this file + the nightly re-pull + on-push dispatch are the freshness controls. Same spirit as core.pin.",
   "org": "paged-media",
   "sources": {
     "cockpit": {
@@ -21,120 +21,155 @@
       }
     },
     "core-catalog": {
-      "repo": "core",
+      "repo": "paged",
       "ref": "core.pin",
       "files": {
-        "catalog.json": "crates/paged-introspect/catalog.json"
+        "catalog.json": "engine/core/crates/paged-introspect/catalog.json"
       }
     },
     "sdk-catalog": {
-      "repo": "core",
+      "repo": "paged",
       "ref": "core.pin",
       "files": {
-        "api.json": "web/idml-viewer/api-catalog.json"
+        "api.json": "engine/core/web/idml-viewer/api-catalog.json"
       }
     },
     "cli-surface": {
       "$comment": "The `paged` command tree, walked out of clap itself by `cargo run -p paged-cli --example emit-cli-surface`. Added 2026-09-09: docs.paged.media had no CLI page at all, and writing one by hand would have made a second statement of the tree that drifts the first time a flag is added.",
-      "repo": "core",
+      "repo": "paged",
       "ref": "core.pin",
       "files": {
-        "cli.json": "crates/paged-cli/cli.json"
+        "cli.json": "engine/core/crates/paged-cli/cli.json"
       }
     },
     "plugin-sdk": {
-      "repo": "plugin-sdk",
+      "repo": "paged",
       "ref": "main",
       "files": {
-        "manifest.schema.json": "packages/plugin-api/src/manifest.schema.json"
-      }
-    },
-    "editor-server": {
-      "repo": "editor-server",
-      "ref": "main",
-      "files": {
-        "openapi.json": "generated/openapi.json"
+        "manifest.schema.json": "platform/extensions/packages/plugin-api/src/manifest.schema.json"
       }
     },
     "idml-coverage": {
-      "$comment": "Which IDML (element, attribute) pairs Paged's importer reads and its exporter writes, extracted from the plugin-publish source by tools/idml-coverage (gated by idml_coverage_json_is_current). Feeds the element reference (ADR 805 / gen-idml-reference). Pinned to a commit, bumped deliberately.",
-      "repo": "plugin-publish",
-      "ref": "c6dc762",
+      "$comment": "Which IDML (element, attribute) pairs Paged's importer reads and its exporter writes, extracted from the IDML adapter source by tools/idml-coverage (gated by idml_coverage_json_is_current). Feeds the element reference (ADR 805 / gen-idml-reference). Pinned to a commit, bumped deliberately. The pin is the monorepo commit 4c1cbc0 (the imported history's copy of the archived plugin-publish repository's c6dc762, the same file byte for byte), so the path is the adapter's place at that time, modules/publish; the adapter has since moved into the engine (engine/core/docs/reference/idml-coverage.json).",
+      "repo": "paged",
+      "ref": "4c1cbc05247bdde0b994280b1362f2a76648f1e1",
       "files": {
-        "idml-coverage.json": "docs/reference/idml-coverage.json"
+        "idml-coverage.json": "modules/publish/docs/reference/idml-coverage.json"
       }
     },
     "editor-catalog": {
       "$comment": "The editor's programmable client surface (@paged-media/client): its members and the wire kinds they reach. One column of the surface table.",
-      "repo": "editor",
+      "repo": "paged",
       "ref": "main",
       "files": {
-        "api-catalog.json": "packages/client/api-catalog.json",
-        "package.json": "package.json",
-        "canvas-package.json": "apps/canvas/package.json"
+        "api-catalog.json": "apps/editor/packages/client/api-catalog.json",
+        "package.json": "apps/editor/package.json",
+        "canvas-package.json": "apps/editor/apps/canvas/package.json"
       }
     },
     "plugin-sheets": {
-      "repo": "plugin-sheets",
+      "repo": "paged",
       "ref": "main",
       "files": {
-        "package.json": "package.json"
+        "package.json": "modules/sheet/package.json"
       },
       "dirs": {
-        "functions": "registry/functions"
+        "functions": "modules/sheet/registry/functions"
       }
     },
     "plugin-image": {
-      "repo": "plugin-image",
+      "repo": "paged",
       "ref": "main",
       "files": {
-        "package.json": "package.json",
-        "kernels.yaml": "registry/kernels.yaml"
+        "package.json": "modules/image/package.json",
+        "kernels.yaml": "modules/image/registry/kernels.yaml"
       }
     },
     "plugin-data": {
-      "repo": "plugin-data",
+      "repo": "paged",
       "ref": "main",
       "files": {
-        "package.json": "package.json"
+        "package.json": "modules/data/package.json"
       },
       "dirs": {
-        "functions": "registry/functions"
+        "functions": "modules/data/registry/functions"
       }
     },
     "core-meta": {
       "$comment": "The engine workspace's Cargo metadata at core.pin (its licence).",
-      "repo": "core",
+      "repo": "paged",
       "ref": "core.pin",
       "files": {
-        "Cargo.toml": "Cargo.toml"
+        "Cargo.toml": "engine/core/Cargo.toml"
       }
     }
   },
   "activity": {
-    "$comment": "Cross-repo recent-commit feed. Pulled at build time via `gh api` (token-authenticated; private repos included by user decision). perRepo = commits fetched per repo.",
+    "$comment": "Cross-repo recent-commit feed. Pulled at build time via `gh api` (token-authenticated; private repos included by user decision). perRepo = commits fetched per repo. `repos` are whole-repository feeds and make up the timeline; `components` are path-scoped feeds of a repository (the monorepo's components, keyed by the name a <RepoActivity repo=…> uses) and are not added to the timeline, which already carries the monorepo's commits.",
     "perRepo": 12,
     "repos": [
-      "core",
-      "editor",
-      "editor-server",
+      "paged",
       "docs",
       "cockpit",
-      "plugin-sdk",
-      "plugin-draw",
-      "plugin-web",
-      "plugin-image",
-      "plugin-sheets",
-      "plugin-data",
       "plugin-template",
-      "viewer",
       "website",
       "brand",
       "thoughts",
-      "corpus",
-      "plugin-doc",
-      "plugin-slide",
-      "plugin-publish"
-    ]
+      "corpus"
+    ],
+    "components": {
+      "core": {
+        "repo": "paged",
+        "path": "engine/core"
+      },
+      "viewer": {
+        "repo": "paged",
+        "path": "engine/core/web/idml-viewer"
+      },
+      "editor": {
+        "repo": "paged",
+        "path": "apps/editor"
+      },
+      "editor-server": {
+        "repo": "paged",
+        "path": "apps/server"
+      },
+      "plugin-sdk": {
+        "repo": "paged",
+        "path": "platform/extensions"
+      },
+      "plugin-publish": {
+        "repo": "paged",
+        "path": "modules/publish"
+      },
+      "plugin-draw": {
+        "repo": "paged",
+        "path": "modules/draw"
+      },
+      "plugin-web": {
+        "repo": "paged",
+        "path": "modules/web"
+      },
+      "plugin-image": {
+        "repo": "paged",
+        "path": "modules/image"
+      },
+      "plugin-sheets": {
+        "repo": "paged",
+        "path": "modules/sheet"
+      },
+      "plugin-data": {
+        "repo": "paged",
+        "path": "modules/data"
+      },
+      "plugin-doc": {
+        "repo": "paged",
+        "path": "modules/doc"
+      },
+      "plugin-slide": {
+        "repo": "paged",
+        "path": "modules/slide"
+      }
+    }
   }
 }

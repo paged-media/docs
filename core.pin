@@ -1,16 +1,23 @@
-# The paged-media/core commit that the example-validation gate builds
-# `paged-inspect` from (briefing §6.2 / §7 "docs version to the renderer's minor
-# version"). Format: a single commit SHA on the first non-comment line.
+# The engine commit that the example-validation gate builds `paged-inspect`
+# from (briefing §6.2 / §7 "docs version to the renderer's minor version").
+# Format: a single commit SHA on the first non-comment line.
+#
+# REPOSITORY: since 2026-10-18 the engine lives in the monorepo paged-media/paged
+# at engine/core, and this pin names a paged-media/paged commit (the gates check
+# it out and build `core/engine/core`). The release tags v0.N.P were carried
+# over to the monorepo. The "tag commit" values in the history below, from
+# v0.73.3 back, name commits of the archived paged-media/core repository
+# (v0.73.4 was 8eb9e21 there).
 #
 # PIN POLICY: this pin tracks the LATEST core RELEASE TAG, not core@main. Bump it
 # to the new tag's commit on every core release (e.g. v0.35.0 → the commit
-# `git -C core rev-list -n1 v0.35.0` resolves to), via a deliberate PR. This keeps
+# `git -C paged rev-list -n1 v0.35.0` resolves to), via a deliberate PR. This keeps
 # the docs gate building paged-inspect from the exact engine the published
 # @paged-media packages ship from — so a validated example is one a released
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.73.4 (tag commit 8eb9e21). A patch on protocol 73: a
+# Currently: v0.73.4 (tag commit 9408270). A patch on protocol 73: a
 # keep that moves a note's reference, verified against InDesign (C-45); a
 # cross-reference's chapter number and live captions print live (L-09);
 # tagged PDF elements named after their paragraph style, its PDF export tag
@@ -227,4 +234,4 @@
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/idml-viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-8eb9e21febaffbf5bb15e5158bb83896141682b2
+94082703cf34b96a0fcde034f2f8875962caedc2

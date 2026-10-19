@@ -26,10 +26,10 @@ import { partsHash } from '../../lib/parts-hash';
  * verification kept in _verified/ (gitignored, so on the machine that ran it).
  *
  * Env: INDESIGN_APP (default "Adobe InDesign 2025"), PAGED_INSPECT and
- * PAGED_DIFF (default ../core/target/release/…), FOGRA39_ICC.
+ * PAGED_DIFF (default ../paged/engine/core/target/release/…), FOGRA39_ICC.
  */
 const APP = process.env.INDESIGN_APP ?? 'Adobe InDesign 2025';
-const CORE_RELEASE = resolve('..', 'core', 'target', 'release');
+const CORE_RELEASE = resolve('..', 'paged', 'engine', 'core', 'target', 'release');
 const INSPECT = process.env.PAGED_INSPECT ?? join(CORE_RELEASE, 'paged-inspect');
 const DIFF = process.env.PAGED_DIFF ?? join(CORE_RELEASE, 'paged-diff');
 const ICC = process.env.FOGRA39_ICC ?? '/Library/Application Support/Adobe/Color/Profiles/Recommended/CoatedFOGRA39.icc';

@@ -81,9 +81,9 @@ and `check-feature-refs` skips when no registry data was pulled. According to co
 
 ## Related
 
-- [ADR 019](https://github.com/paged-media/core/blob/main/docs/adr/019-capability-catalog-one-contract.md)
+- [ADR 019](https://github.com/paged-media/paged/blob/main/engine/core/docs/adr/019-capability-catalog-one-contract.md)
   (core) — the catalog the scripting pages are a projection of
-- [ADR 303](https://github.com/paged-media/plugin-sdk/blob/main/docs/adr/303-manifest-schema.md)
+- [ADR 303](https://github.com/paged-media/paged/blob/main/platform/extensions/docs/adr/303-manifest-schema.md)
   (plugin-sdk) — the manifest schema the plugin reference is generated from
 - ADR 009, the stage matrix the capability pages render; ADR 032, a proposal for the
   published status feed; [ADR 804](804-static-export-hosting.md), the deploy

@@ -15,9 +15,10 @@ Write links site-neutral (`/docs/idml/<path>`, `/docs/paged/<path>`); `lib/site.
 A standalone public documentation website. **Fumadocs (Next.js App Router +
 MDX) + TypeScript + pnpm@9.** Single Next app at the repo root — NOT a pnpm
 workspace and NOT a monorepo subtree. It documents the **IDML format** *and* the
-**renderer-core** (`core/crates/paged-renderer` and friends). Not the engine
-(`core`), not the editor (`editor`), not the assets (`corpus`), not the viewer
-(`viewer`).
+**renderer-core** (`engine/core/crates/paged-renderer` and friends in the monorepo
+paged-media/paged). Not the engine (`engine/core`), not the editor
+(`apps/editor`), not the assets (`corpus`), not the viewer
+(`engine/core/web/idml-viewer`).
 
 ## The three hard rules
 
@@ -34,7 +35,8 @@ workspace and NOT a monorepo subtree. It documents the **IDML format** *and* the
    `<ExampleEmbed example="…" />`. They are validated against the REAL renderer in
    CI (`paged-inspect` built from the commit in `core.pin`) — a broken example
    breaks the build. Author parts by studying our own parser
-   (`core/crates/paged-parse`) and the `paged-gen` generators, never the spec.
+   (`engine/core/crates/paged-parse` in paged-media/paged) and the `paged-gen`
+   generators, never the spec.
 
 3. **Naming line.** `idml` the *format* stays (`.idml`, designmap, element names).
    `idml` the *project* prefix is gone — it's `paged`.
@@ -60,9 +62,12 @@ pnpm validate:examples  # full gate; needs paged-inspect (see examples/README.md
 
 ## Engine consumption
 
-The example gate builds `paged-inspect` from `core` at `core.pin` (interim
-build-from-core; Decision B open for the inspector). `core.pin` tracks the latest
-core RELEASE TAG — bump it per release, not to main (policy lives in the pin's
+The example gate builds `paged-inspect` from the monorepo paged-media/paged
+(`engine/core`) at `core.pin`, a paged-media/paged commit (interim build-from-core;
+Decision B open for the inspector). The per-component repositories (core, editor,
+viewer, plugin-*) are archived; `sources.pin` reads every product source from
+`paged` (locally the sibling `../paged`). `core.pin` tracks the latest
+engine RELEASE TAG — bump it per release, not to main (policy lives in the pin's
 header comment). The WebGPU live preview is WIRED: `ExampleEmbed`'s `live` slot
 renders the assembled package via the PUBLISHED `@paged-media/idml-viewer`
 (`createViewer`); its bundled wasm is staged into `public/preview` by

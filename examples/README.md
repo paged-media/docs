@@ -17,7 +17,7 @@ it breaks in the same build.
 - **Minimum viable fragment.** The smallest package that demonstrates one concept.
   No noise.
 - **Authored, never copied.** Author parts clean-room (briefing §6.1). The shapes
-  are grounded in our own parser (`core/crates/paged-parse`) and the
+  are grounded in our own parser (`engine/core/crates/paged-parse` in paged-media/paged) and the
   `paged-gen` generators — not transcribed from the spec.
 - **`editable` is the chapter-relevant part** (the story, the spread, …). It is
   what the reader sees in the raw/annotated/tree views and, later, edits in the
@@ -32,9 +32,10 @@ UCF-faithful) and runs it through `paged-inspect --json` (built from the commit 
 validation (parse + build display list) — no GPU, no font required.
 
 ```bash
-# local: build the inspector once from a sibling core checkout, then validate
-(cd ../core && cargo build --release -p paged-renderer --bin paged-inspect)
-pnpm validate:examples            # auto-finds ../core/target/release/paged-inspect
+# local: build the inspector once from a sibling checkout of paged-media/paged
+# (the engine is engine/core), then validate
+(cd ../paged/engine/core && cargo build --release -p paged-renderer --bin paged-inspect)
+pnpm validate:examples            # auto-finds ../paged/engine/core/target/release/paged-inspect
 # or point at any build:
 PAGED_INSPECT=/path/to/paged-inspect pnpm validate:examples
 ```
