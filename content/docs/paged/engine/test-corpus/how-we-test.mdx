@@ -114,7 +114,7 @@ and any failed fixture fails the run.
 
 ## The CPU backend, and why CI uses it
 
-The renderer can rasterise two ways: the default **CPU backend (tiny-skia)** and a
+The renderer can rasterise two ways: the default **CPU backend (`vello_cpu`, Vello's CPU renderer)** and a
 **GPU backend (Vello, via wgpu)**. The fidelity gate runs on the CPU backend, on
 purpose. CI runners are headless and have no usable GPU, so a GPU-only gate could
 not run there at all. The CPU path is deterministic and host-independent, which is

@@ -10,7 +10,7 @@
  *                                  (aggregates only; corpus/harness/attr-census.mjs).
  *                                  Schema /1 or /2; /2 adds each attribute's parts
  *                                  and how many documents depart from its usual value
- *   idml-coverage (plugin-publish)  which (element, attribute) pairs Paged's IDML
+ *   idml-coverage (engine/core)     which (element, attribute) pairs Paged's IDML
  *                                  importer reads and its exporter writes, and
  *                                  (newer files) from which package parts
  *   core-catalog propertySchemas   the typed property behind an attribute: type,

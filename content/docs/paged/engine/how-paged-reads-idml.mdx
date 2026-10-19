@@ -86,7 +86,7 @@ than dropped silently.
 ## 4. Paint: one display list, two rasterisers
 
 A display list is a flat list of drawing commands with resolved paints. The same list is
-painted by tiny-skia on the CPU (the command line, snapshots, the fidelity gate) or by
+painted by `vello_cpu` on the CPU (the command line, snapshots, the fidelity gate) or by
 Vello on the GPU (WebGPU in the browser, including this site's live preview)
 ([ADR 100](https://github.com/paged-media/paged/blob/main/engine/core/docs/adr/100-two-rasterisers-one-trait.md)).
 PDF export writes from the same lists. The stages in detail are in

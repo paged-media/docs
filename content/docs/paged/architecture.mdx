@@ -28,7 +28,7 @@ parse → scene → text → compose → GPU
 Parse reads the ZIP + XML into a model; scene resolves spreads, frames, and story
 threading; text lays out with an InDesign-calibrated Knuth–Plass composer;
 compose emits a display list; and the GPU layer rasterizes it. Forward rendering
-is **WebGPU** (Vello); a CPU backend (tiny-skia) remains for headless fidelity
+is **WebGPU** (Vello); a CPU backend on `vello_cpu`, from the same rendering model, is the path of record for headless fidelity
 testing. The [renderer reference](/docs/paged/engine/the-renderer) covers this in depth.
 
 <RenderPipeline />

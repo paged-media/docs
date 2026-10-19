@@ -21,8 +21,8 @@ that govern everything non-fatal.
 
 ## The hard checks
 
-Opening a container, in `Container::open`, applies two validations before it will
-return a document.
+Opening the archive, in `open_source_archive`, applies two validations before it will
+return anything.
 
 **It must be a readable ZIP.** The bytes are opened as a ZIP archive. If they are not
 a valid archive — truncated, corrupt, not a ZIP at all — the ZIP layer raises an
@@ -91,7 +91,7 @@ There is a meaningful distinction between the two `MissingEntry` variants. At th
 parser layer, the parser's own behaviour for an entry it can't find is *tolerant* — it
 skips. The scene layer deliberately lifts that to a *structured error* for the parts
 the manifest promises: if the designmap says a story exists and it doesn't, that is a
-broken package and the caller should know, so `Document::open` turns the missing entry
+broken package and the caller should know, so the import (`import_idml_archive`) turns the missing entry
 into `OpenError::MissingEntry` rather than silently dropping the story.
 
 ## The recovery model

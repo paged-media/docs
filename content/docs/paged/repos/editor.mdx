@@ -21,16 +21,17 @@ running in a Web Worker that renders to an `OffscreenCanvas`, with a
   styles, transform with gestures (translate, rotate, scale, shear).
 - A panel system (properties, styles, swatches, layers, pathfinder, …), a command
   palette, and a [`paged.*` script editor + REPL](/docs/paged/scripting).
-- Hosts the content [plugins](/docs/paged/plugins) — draw, image, sheets, web,
-  data — through the [Plugin SDK](/docs/paged/plugin-sdk).
+- Hosts the content [plugins](/docs/paged/plugins) — draw, web, image, sheet, data,
+  doc, slide and publish — through the [Plugin SDK](/docs/paged/plugin-sdk).
 
 ## How it's organized
 
 Packages of the monorepo's Bun workspace: `apps/canvas` (the app), `packages/client` (the wasm boundary —
 the `CanvasClient`, the wire protocol + `PROTOCOL_VERSION`, the SAB primitives),
-`packages/shell` (state, registries, dockview substrate, theme), `packages/catalog`
+`packages/shell` (state, registries, the cockpit layout and chrome, theme), `packages/catalog`
 (declarative commands/panels), `packages/repository` (documents as local
-repositories), `packages/tools`, and `packages/ui` (input primitives).
+repositories), `packages/tools` (the built-in tools and their gestures), `packages/ui`
+(input primitives), and `apps/devtools` (a scene inspector).
 
 ## How it consumes the engine
 

@@ -20,18 +20,22 @@ its wasm interface.
   threading, cascade-resolved styles, gradients, and placed images.
 - Lays out text with an InDesign-calibrated **Knuth–Plass** composer (hyphenation,
   tab stops, multi-font runs).
-- Renders through **WebGPU (Vello)** for forward output, with a **tiny-skia** CPU
-  backend kept for headless fidelity testing.
+- Renders with one rendering model on two lanes: **Vello on WebGPU** in the browser,
+  and **`vello_cpu`** on the CPU for the command line, headless fidelity testing and
+  snapshots.
 - Offers a mutation layer (insert/delete/edit, all undoable), a headless
-  `ViewerSession`, PDF export, and byte-faithful round-trip serialization.
+  `ViewerSession`, PDF/X-4 export, and byte-faithful IDML round-trip.
+- Keeps a document as a repository (`paged-repo`: content-addressed parts, commits,
+  refs and evidence) and serves an MCP tool catalog (`paged-mcp`).
 
 ## How it's organized
 
-A multi-crate workspace following the pipeline: `paged-parse` → `paged-scene` →
-`paged-text` → `paged-compose` → `paged-gpu`, with `paged-renderer` orchestrating
+A multi-crate workspace following the pipeline: `idml-import` → `paged-scene` →
+`paged-text` → `paged-compose` → `paged-gpu`, with `idml-export` writing IDML back,
+`paged-model` holding the document model, `paged-renderer` orchestrating
 and `paged-fidelity` running the ΔE2000/SSIM diff harness. The scripting surface
-lives in `paged-script` (Boa) + `paged-run` (headless CLI), and the public
-scripting catalog in `paged-introspect`.
+lives in `paged-script` (Boa) + `paged-run` (headless NDJSON session), the `paged`
+command line in `paged-cli`, and the public scripting catalog in `paged-introspect`.
 
 ## How you consume it
 
