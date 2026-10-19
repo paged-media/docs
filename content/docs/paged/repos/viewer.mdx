@@ -15,15 +15,19 @@ in this documentation.
 ## What it is
 
 The viewer ships from the [engine](/docs/paged/repos/core)'s
-`core/web/idml-viewer`, published as **`@paged-media/idml-viewer`**. This site's
-`<live preview>` consumes that published package directly — the same renderer the
+`engine/core/web/idml-viewer` in the
+[`paged-media/paged`](https://github.com/paged-media/paged/tree/main/engine/core/web/idml-viewer)
+repository. Releases up to <Fact id="engine.version" /> were published as
+**`@paged-media/idml-viewer`**; on the main line the package is named
+**`@paged-media/viewer`**. This site's `<live preview>` consumes the published
+package directly — the same renderer the
 editor uses, minus everything to do with editing.
 
 ## Status
 
-The standalone `viewer` repo is a forward slot — currently unstarted; the viewer
-ships from core today. The plan is a thin standalone-app shell over the npm
-package.
+The separate `viewer` repository was never more than a placeholder and is archived;
+the viewer ships from the engine's directory. A standalone app would be a thin shell
+over the npm package.
 
 ## Recent activity
 

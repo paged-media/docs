@@ -1,25 +1,42 @@
 ---
 title: Repositories
-description: A tour of the repositories that make up paged — the engine, the editor and its server, the viewer, the registry, the docs, and the brand kit.
+description: Where paged's code lives — one public monorepo for the engine, editor, server, viewer, modules and extension SDK, plus the registry, the docs and the brand kit.
 tier: beginner
 diataxis: explanation
 status: draft
 owner: paged-docs
 ---
 
-**In short:** paged is a multi-repo system. The engine is public; the commercial
-app and its plumbing are private. Each repo below has a page with what it does,
-how it's built, and its recent activity.
+**In short:** the product is one public repository,
+[`paged-media/paged`](https://github.com/paged-media/paged), that holds the engine,
+the editor, the server, the viewer, the built-in modules and the extension SDK at one
+revision. Everything in it is <Fact id="license.engine" />. Three repositories sit
+beside it: the capability registry, this documentation site, and the brand kit.
 
-- **[core](/docs/paged/repos/core)** — the Rust render engine (public).
-- **[editor](/docs/paged/repos/editor)** — the commercial editing frontend.
-- **[editor-server](/docs/paged/repos/editor-server)** — the REST backend.
-- **[viewer](/docs/paged/repos/viewer)** — the slim read-only WebGPU viewer.
+## The monorepo
+
+Each component keeps its own directory with its own README, docs and build
+instructions. The per-component repositories it was assembled from (`core`,
+`editor`, `editor-server`, `viewer`, `plugin-sdk` and the `plugin-*` repositories)
+are archived and read-only; their history is part of the monorepo.
+
+| Component | Path in `paged-media/paged` | Page |
+| --- | --- | --- |
+| The render engine | `engine/core` | [core](/docs/paged/repos/core) |
+| The viewer | `engine/core/web/idml-viewer` | [viewer](/docs/paged/repos/viewer) |
+| The editor | `apps/editor` | [editor](/docs/paged/repos/editor) |
+| The server (paged.server) | `apps/server` | [server](/docs/paged/repos/editor-server) |
+| The `paged` npm package (engine and `paged` command) | `packages/paged` | [command line](/docs/paged/cli) |
+| The extension contract and SDK | `platform/extensions` | [Plugin SDK](/docs/paged/plugin-sdk) |
+| The built-in modules | `modules/{publish,draw,web,image,sheet,data,doc,slide}` | [Plugins](/docs/paged/plugins) |
+
+## Beside the monorepo
+
 - **[cockpit](/docs/paged/repos/cockpit)** — the capability registry and its test-evidence join.
 - **[docs](/docs/paged/repos/docs)** — this site.
 - **[brand](/docs/paged/repos/brand)** — the design tokens / cockpit kit.
-
-The five content plugins have their own section: **[Plugins](/docs/paged/plugins)**.
+- **[plugin-template](/docs/paged/plugins/template)** — the starter for a plugin of
+  your own, built only on the published packages.
 
 ## Recent activity across all repos
 

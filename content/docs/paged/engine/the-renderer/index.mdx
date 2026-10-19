@@ -14,7 +14,7 @@ actually see — and it's the engine behind this site's live preview.**
 intent* — a story flows through a frame, a paragraph applies a style. The renderer
 is what closes the loop: it reads that intent and produces a faithful page. It is
 an open-source engine written in Rust ([`engine/core` in `paged-media/paged`](https://github.com/paged-media/paged/tree/main/engine/core),
-dual-licensed MPL-2.0 OR PMEL), built as a small chain of focused crates that hand
+dual-licensed <Fact id="license.engine" />), built as a small chain of focused crates that hand
 work to each other — parse, model, layout, compose, rasterize. This chapter walks
 that chain so you understand what happens between "an archive of XML" and "a page on
 your screen."
@@ -26,8 +26,11 @@ that's intent. Turning it into a page that matches what InDesign would have draw
 a genuinely hard job, and it's the renderer's whole reason to exist.
 
 The renderer is **open**. It lives in the public `paged-media/paged` repository (`engine/core`),
-dual-licensed **MPL-2.0 OR PMEL**, so you can read every line of the code these
-pages describe. When this reference says "our parser reads this attribute" or "the
+dual-licensed **<Fact id="license.engine" />**, so you can read every line of the code these
+pages describe. The behaviour these pages describe is that of the engine release
+<Fact id="engine.version" />, the release the docs' examples are validated against;
+that release was published under <Fact id="license.engine.release" />, and the
+repository's main line is now <Fact id="license.engine" />. When this reference says "our parser reads this attribute" or "the
 rasterizer approximates that effect," there's a real function behind the sentence —
 and where a feature isn't done yet, we say so with a <SupportBadge status="parsed-not-rendered" /> badge
 rather than quietly pretending otherwise.
@@ -82,11 +85,12 @@ produced by exactly the code described here.
 
 **Is the renderer open source?**
 Yes. The renderer-core engine lives in the public `paged-media/paged` repository (`engine/core`) and
-is dual-licensed **MPL-2.0 OR PMEL** (the Paged Media Enterprise License). Every
-stage these pages describe — parse, model, layout, compose, rasterize — is real,
-readable Rust. The commercial editor is a separate, private product that consumes
-the engine across a published-package boundary; it is not what this chapter
-documents.
+is dual-licensed <Fact id="license.engine" /> (PMEL is the Paged Media Enterprise License).
+The release these pages describe, <Fact id="engine.version" />, was published under
+<Fact id="license.engine.release" />. Every stage these pages describe — parse, model,
+layout, compose, rasterize — is real, readable Rust. The editor lives in the same
+repository (`apps/editor`, <Fact id="license.editor" />) and drives the engine through
+its wasm interface; it is not what this chapter documents.
 
 **Does the renderer need Adobe InDesign?**
 No. The whole point of the engine is to interpret IDML *without* InDesign. It opens

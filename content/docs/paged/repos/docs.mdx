@@ -19,8 +19,8 @@ own sources** at build time — the capability record of the
 [registry](/docs/paged/repos/cockpit) (with the test health of every capability),
 the engine [scripting catalog](/docs/paged/scripting), the plugin registries,
 each package's licence, the
-[plugin manifest schema](/docs/paged/plugin-sdk), the server
-[OpenAPI spec](/docs/paged/api), and the repos' commit history. A pin file
+[plugin manifest schema](/docs/paged/plugin-sdk), and the commit history of the
+[`paged-media/paged`](/docs/paged/repos) monorepo and the repositories beside it. A pin file
 records the sources; a nightly rebuild and on-push triggers keep it fresh; and a
 freshness gate flags authored prose whose capabilities' code has moved; the build
 fails a page that types a platform number by hand (`<Fact>` renders it), a
@@ -31,7 +31,7 @@ more than a week old. The design rule:
 ## How it consumes the engine
 
 The IDML examples are validated in CI against the real renderer (`paged-inspect`
-built from a pinned core release), and the live preview embeds the published
+built from a pinned engine release of `paged-media/paged`), and the live preview embeds the published
 [viewer](/docs/paged/repos/viewer). The clean-room rule governs the IDML
 reference prose.
 

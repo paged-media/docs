@@ -28,8 +28,13 @@ development) text rebuilt into editable paragraphs.
 
 ## How it's built
 
-The `idml-import` and `idml-export` crates and the `pdf-import` crate, plus two TS
-bundles (`@paged-media/publish`, `@paged-media/pdf`).
+The module lives at `modules/publish` in the
+[`paged-media/paged`](https://github.com/paged-media/paged/tree/main/modules/publish)
+repository: the `pdf-import` crate and two TS bundles (`@paged-media/publish`,
+`@paged-media/pdf`). The IDML adapter it started with, the `idml-import` and
+`idml-export` crates, is now part of the engine workspace
+(`engine/core/crates/idml-import`, `engine/core/crates/idml-export`), so it builds
+with the engine at the same commit.
 
 ## Capability state
 

@@ -10,10 +10,11 @@ reviewed: "2026-06-20"
 ---
 
 **In short:** one **Rust render engine** reads and renders IDML. Everything else
-consumes it across a package boundary: the **editor** (full editing) and the
-**viewer** (read-only) use its wasm; the **server** backs the editor's accounts
-and storage; five **content plugins** add new kinds of content; and a
-**capability registry** tracks what works across all of it.
+consumes it across its wasm interface: the **editor** (full editing) and the
+**viewer** (read-only) use its wasm; the **server** syncs and shares the editor's
+documents; the **content plugins** add new kinds of content; and a
+**capability registry** tracks what works across all of it. All of these but the
+registry live in one repository, [`paged-media/paged`](/docs/paged/repos).
 
 ## The render pipeline
 
@@ -34,32 +35,35 @@ testing. The [renderer reference](/docs/paged/engine/the-renderer) covers this i
 
 ## Who consumes the engine
 
-The engine publishes wasm packages (`@paged-media/canvas-wasm`,
-`introspect-wasm`, `idml-viewer`). Consumers never take a source dependency:
+The engine's wasm packages are built in the monorepo, and its components build
+against them at the same revision; outside it, the engine ships as published npm
+packages. None of its consumers reaches into the engine's Rust source:
 
-- **[Editor](/docs/paged/repos/editor)** — the commercial app: full canvas,
+- **[Editor](/docs/paged/repos/editor)** (`apps/editor`) — the app: full canvas,
   mutation, gestures, panels, and the `paged.*` [scripting](/docs/paged/scripting)
   layer, running the engine in a Web Worker on an `OffscreenCanvas`.
-- **[Viewer](/docs/paged/repos/viewer)** — a slim, read-only WebGPU viewer
+- **[Viewer](/docs/paged/repos/viewer)** (`engine/core/web/idml-viewer`) — a slim, read-only WebGPU viewer
   (renderer-core only). It's both the community viewer and the docs live preview.
-- **[Editor-server](/docs/paged/repos/editor-server)** — the backend for
-  accounts, storage, billing, and asset proxies; also drives the engine headlessly
-  for document automation.
+- **[paged.server](/docs/paged/repos/editor-server)** (`apps/server`) — the
+  optional remote: sync and sharing of document repositories, an MCP endpoint, and
+  a relay to an open editor tab. It replaces the earlier editor-server.
 
 ## Extending the system
 
 Content beyond IDML's native constructs comes from **[plugins](/docs/paged/plugins)** —
-vector drawing, web (HTML/CSS), raster images, spreadsheets, and database
-publishing — built on the **[Plugin SDK](/docs/paged/plugin-sdk)** contract.
+vector drawing, web (HTML/CSS), raster images, spreadsheets, database
+publishing, Word, presentations, IDML and PDF — built on the
+**[Plugin SDK](/docs/paged/plugin-sdk)** contract (`platform/extensions`). The
+first-party ones are the monorepo's built-in modules (`modules/*`).
 
 ## Keeping everyone honest
 
 The **[capability registry](/docs/paged/state)** holds one row per capability
-with a per-layer status and a test-evidence overlay. Every repo's tests publish
+with a per-layer status and a test-evidence overlay. Every component's tests publish
 against it; this documentation reads from it. That's why the support badges
 throughout the [IDML reference](/docs/idml/overview) are live, not hand-kept.
 
 ## The repositories
 
-See **[Repositories](/docs/paged/repos)** for a per-repo tour, and
+See **[Repositories](/docs/paged/repos)** for where each component lives, and
 **[How it's tested](/docs/paged/testing)** for the verification system.

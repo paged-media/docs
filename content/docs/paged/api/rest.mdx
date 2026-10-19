@@ -1,26 +1,21 @@
 ---
 title: REST API
-description: The editor-server REST surface — authentication, files, account, billing, fonts, and image search — generated from the server's OpenAPI specification.
+description: The server's REST surface, generated from its OpenAPI specification. The editor-server it documented is retired; paged.server publishes no specification yet.
 tier: pro
 diataxis: reference
 status: published
 owner: paged-docs
 ---
 
-**In short:** the [editor-server](/docs/paged/repos/editor-server) exposes a
-REST API for the editor's account, storage, billing, and asset features. The
-endpoints below are **generated from the server's OpenAPI spec** (which is itself
-generated from the server's Zod contracts), so this reference matches the running
-service.
+**In short:** this page lists the server's REST endpoints, **generated from its
+OpenAPI spec**, so the reference matches the running service. The editor-server
+it documented exposed the editor's account, storage, billing and asset features.
 
 <Callout type="warn">
-The editor-server is retired. Its replacement, paged.server (`apps/server` in the
+The editor-server is retired. Its replacement, [paged.server](/docs/paged/repos/editor-server) (`apps/server` in the
 [paged-media/paged](https://github.com/paged-media/paged/tree/main/apps/server)
 repository), syncs repositories and serves an MCP endpoint, and publishes no OpenAPI
 specification yet, so the endpoint list below is empty until it does.
 </Callout>
-
-Authentication is cookie-based (a better-auth session). All routes live under
-`/api/*`; the spec is also served live at the server's `/openapi.json`.
 
 <RestApiReference />

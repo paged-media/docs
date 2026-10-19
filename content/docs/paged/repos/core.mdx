@@ -1,5 +1,5 @@
 ---
-title: core — the render engine
+title: engine/core — the render engine
 description: The Rust render engine that parses and renders IDML — the parse→scene→text→compose→GPU pipeline, the wasm boundary, and the dual rasterization backends.
 tier: intermediate
 diataxis: explanation
@@ -7,9 +7,12 @@ status: draft
 owner: paged-docs
 ---
 
-**In short:** `core` is the heart of paged — a Rust workspace that reads an IDML
-package and renders it pixel-faithfully. It's public (dual-licensed) and is the
-only repo every other consumer depends on, across a wasm/package boundary.
+**In short:** the engine is the heart of paged — a Rust workspace that reads an IDML
+package and renders it pixel-faithfully. It lives at `engine/core` in the public
+[`paged-media/paged`](https://github.com/paged-media/paged/tree/main/engine/core)
+repository (it was the `core` repository until the monorepo replaced it), is
+<Fact id="license.engine" />, and is the component every other one builds on, across
+its wasm interface.
 
 ## What it does
 
@@ -32,9 +35,13 @@ scripting catalog in `paged-introspect`.
 
 ## How you consume it
 
-Published to npm as `@paged-media/canvas-wasm`, `introspect-wasm`, and
-`idml-viewer` (versioned `0.<protocol>.<patch>`). No consumer takes a source
-dependency. The [renderer reference](/docs/paged/engine/the-renderer) documents its behavior;
+Inside the monorepo, the editor and the modules build against the engine's wasm
+packages at the same revision. Outside it, the engine ships on npm, versioned
+`0.<protocol>.<patch>`: the release these docs pin, <Fact id="engine.version" />, was
+published under <Fact id="license.engine.release" /> as `@paged-media/canvas-wasm`,
+`introspect-wasm`, `sdk` and `idml-viewer`. On the main line the public packages are
+`@paged-media/paged` (the engine with the `paged` command, from `packages/paged`) and
+`@paged-media/viewer`. The [renderer reference](/docs/paged/engine/the-renderer) documents its behavior;
 the [scripting layer](/docs/paged/scripting) documents its `paged.*` surface.
 
 ## Recent activity

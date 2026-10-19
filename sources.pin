@@ -102,6 +102,22 @@
       "files": {
         "Cargo.toml": "engine/core/Cargo.toml"
       }
+    },
+    "engine-main": {
+      "$comment": "The engine workspace's Cargo metadata on the monorepo's main (its current licence; core-meta is the licence of the pinned release).",
+      "repo": "paged",
+      "ref": "main",
+      "files": {
+        "Cargo.toml": "engine/core/Cargo.toml"
+      }
+    },
+    "server-meta": {
+      "$comment": "paged.server's Cargo metadata on the monorepo's main (its licence).",
+      "repo": "paged",
+      "ref": "main",
+      "files": {
+        "Cargo.toml": "apps/server/server/Cargo.toml"
+      }
     }
   },
   "activity": {

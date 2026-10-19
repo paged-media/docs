@@ -1,33 +1,44 @@
 ---
-title: editor-server — the backend
-description: The TypeScript REST backend for the editor — Fastify + SQLite/Drizzle + better-auth + Stripe — handling accounts, storage, billing, asset proxies, and headless document automation.
+title: apps/server — paged.server
+description: paged.server, the optional remote for paged repositories in apps/server — sync, sharing, an MCP endpoint and a live relay, in Rust on Cloudflare. It replaces the editor-server.
 tier: intermediate
 diataxis: explanation
 status: draft
 owner: paged-docs
 ---
 
-**In short:** `editor-server` is the backend behind the [editor](/docs/paged/repos/editor) —
-a Fastify 5 modular monolith on SQLite (Drizzle) with better-auth sessions and
-Stripe billing. It's offline-first: every external service is optional and
-env-gated.
+**In short:** paged.server is the optional remote behind the
+[editor](/docs/paged/repos/editor). It lives at `apps/server` in the public
+[`paged-media/paged`](https://github.com/paged-media/paged/tree/main/apps/server)
+repository and is <Fact id="license.server" />. It replaces the TypeScript
+`editor-server` (a separate repository, now archived), which this page described
+until the monorepo.
 
 ## What it does
 
-- **Auth** (better-auth sessions), **account** profiles, **storage** with
-  per-user isolation, **billing** (Stripe webhooks + plan gating), **fonts**
-  (Google Fonts proxy) and **images** (Pexels/Unsplash search) proxies, and a
-  background **jobs** queue (GDPR export/delete, TTL cleanup).
-- **Document automation** — a brief → agent job → engine → export pipeline that
-  drives the [engine](/docs/paged/repos/core)'s headless `paged-run` over a
-  stdio bridge, plus a data-merge bridge to the data plugin.
+The editor works without a server: a document is a repository in the browser, with
+its history, branches and releases. paged.server adds what needs a remote:
+
+- **Sync** — push and pull of document repositories.
+- **Sharing** — workspaces, members, roles and change requests.
+- **An MCP endpoint** — a connector an assistant reaches over OAuth.
+- **A live relay** — calls from that connector to an editor tab that is open.
+
+It holds no format knowledge of its own: the repository format is the engine's
+`paged-repo` crate, the same code the browser and the command line run.
 
 ## How it's organized
 
-`src/modules/*` (one Fastify plugin per domain), `src/contracts/` (Zod schemas —
-the OpenAPI source of truth), `src/db/` (SQLite + migrations). The full REST
-surface is documented, generated from its spec, on the
-[REST API page](/docs/paged/api).
+A Rust workspace (`apps/server/server`) built for Cloudflare Workers: one Worker
+for routing, sign-in and the sync and MCP endpoints, Durable Objects for each
+repository, workspace and live session, and an object bucket for large blobs. Its
+decision records are in `apps/server/docs/adr`.
+
+## Its HTTP API
+
+The editor-server's REST API was generated from its OpenAPI specification.
+paged.server publishes no OpenAPI specification yet, so the
+[REST API page](/docs/paged/api/rest) has no endpoints to list until it does.
 
 ## Recent activity
 

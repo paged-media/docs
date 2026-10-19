@@ -11,8 +11,8 @@ reviewed: 2026-10-11
 
 **An IDML import can fail in two stages, each with a small set of named errors. If none fires, the document is complete; there is no partial result.**
 
-**In short:** The IDML importer (`idml-import`, kept in the plugin-publish repository and
-compiled into the engine) first opens the archive: it unzips every entry, checks the
+**In short:** The IDML importer (`idml-import`, a crate of the engine workspace at
+`engine/core/crates/idml-import`, compiled into the engine) first opens the archive: it unzips every entry, checks the
 `mimetype` and finds `designmap.xml`. Its failures are `ParseError`. It then parses the
 design map and every part the design map names. A named part that is missing is
 `OpenError::MissingEntry`; a part that is present but not well-formed is a `ParseError`

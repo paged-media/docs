@@ -13,7 +13,10 @@ reviewed: "2026-10-12"
 first-party plugins are built on the same [Plugin SDK](/docs/paged/plugin-sdk)
 contract any third party uses, so they are its worked examples. Each renders into
 the document through the engine's scene-layer surfaces and persists into the
-`.paged` container. The engine is <Fact id="license.engine" />; the plugins are
+`.paged` container. They are the built-in modules of the
+[`paged-media/paged`](https://github.com/paged-media/paged/tree/main/modules) repository,
+one directory each under `modules/` (`draw`, `web`, `image`, `sheet`, `data`, `doc`,
+`slide`, `publish`). The engine is <Fact id="license.engine" />; the plugins are
 <Fact id="license.plugins" />.
 
 - **[paged.draw](/docs/paged/plugins/draw)** — vector drawing (pen, paths,
@@ -31,7 +34,7 @@ the document through the engine's scene-layer surfaces and persists into the
   PDF as an editable document.
 
 Plus **[plugin-template](/docs/paged/plugins/template)** — the fork-and-go
-starter.
+starter, a repository of its own outside the monorepo.
 
 ## Plugin capability state
 

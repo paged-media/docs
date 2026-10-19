@@ -33,13 +33,14 @@ from the system's own artifacts, so they stay true as the code moves.
 
 - **[Plugins](/docs/paged/plugins)** — the first-party content plugins: draw,
   web, image, sheets, data, Word, slides, IDML and PDF.
-- **[Repositories](/docs/paged/repos)** — how the engine, editor, server, viewer,
-  and cockpit (the capability registry) repos fit together.
+- **[Repositories](/docs/paged/repos)** — the one monorepo that holds the engine,
+  editor, server, viewer and modules, where each lives in it, and the registry,
+  docs and brand repositories beside it.
 - **[Capability state](/docs/paged/state)** — the live matrix of what works, at
   which layer, backed by test evidence. The system's source of truth for status.
 
 > The platform documentation is **generated from the system itself** wherever
 > possible — the capability registry, the engine's scripting catalog, the plugin
-> manifest schema, the server's OpenAPI spec, and the repos' commit history.
+> manifest schema, and the repositories' commit history.
 > When the software changes, these pages change on the next build. See
 > [how the capability state works](/docs/paged/state/how-it-works).
