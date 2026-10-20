@@ -1,6 +1,6 @@
 ---
 title: Paged Viewer SDK
-description: The Paged Viewer SDK is the WebGPU rendering API — load an IDML document, render its pages, and drive a pan/zoom camera — published as @paged-media/idml-viewer. It is the read-only sibling of the editor.
+description: The Paged Viewer SDK is the WebGPU rendering API — load an IDML document, render its pages, and drive a pan/zoom camera — published as @paged-media/viewer. It is the read-only sibling of the editor.
 tier: intermediate
 diataxis: explanation
 status: published
@@ -15,7 +15,7 @@ document, lays out its pages, and renders them to a canvas (or to raw pixels),
 with a camera you drive for pan and zoom. It does **not** mutate documents or run
 scripts; that is the editor's job.
 
-**In short:** the Viewer SDK ships as **`@paged-media/idml-viewer`** — a small
+**In short:** the Viewer SDK ships as **`@paged-media/viewer`** — a small
 TypeScript wrapper over the engine's `paged-sdk` WebGPU session. You call
 `createViewer({ canvas })`, `await viewer.load(bytes)`, and then drive
 `zoom`/`scroll`/`goToPage`/`fit` while the engine renders. The same package
@@ -27,7 +27,7 @@ embeddable, and safe to drop into any page.
 ## The shape of the API
 
 ```ts
-import { createViewer } from '@paged-media/idml-viewer';
+import { createViewer } from '@paged-media/viewer';
 
 const viewer = await createViewer({ canvas });
 await viewer.load(idmlBytes);          // ArrayBuffer | Uint8Array | Blob | URL
@@ -43,9 +43,9 @@ viewer.on('pageChanged', ({ page }) => updatePager(page));
 
 | Layer | Package | Role |
 |---|---|---|
-| TS wrapper | `@paged-media/idml-viewer` | the ergonomic API: `createViewer`, the `Viewer` interface, the camera helpers. The surface you import. |
-| WebGPU session | `@paged-media/sdk` (`ViewerSession`) | the wasm boundary: load, set page, present a camera, render to a canvas or to bytes. |
-| Introspection | `@paged-media/introspect-wasm` (`Inspector`) | read-only document inspection: scene tree, property descriptors, single-page PNG render. |
+| TS wrapper | `@paged-media/viewer` | the ergonomic API: `createViewer`, the `Viewer` interface, the camera helpers. The surface you import. |
+| WebGPU session | `@paged-media/viewer/session` (`ViewerSession`) | the wasm boundary: load, set page, present a camera, render to a canvas or to bytes. |
+| Introspection | `@paged-media/paged/introspect` (`Inspector`) | read-only document inspection: scene tree, property descriptors, single-page PNG render. |
 
 ## What the SDK does — and does not — do
 
@@ -86,7 +86,7 @@ No. The SDK is renderer-core only: it shows a document. The editor adds mutation
 scripting, panels, and plugins on top of the same engine.
 
 **Can I edit a document with the SDK?**
-Not through `@paged-media/idml-viewer`. It is read-only by design. Editing flows
+Not through `@paged-media/viewer`. It is read-only by design. Editing flows
 through the editor and the [scripting layer](/docs/paged/scripting).
 
 **Does it work without WebGPU?**

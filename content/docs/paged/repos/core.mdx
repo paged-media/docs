@@ -42,10 +42,11 @@ command line in `paged-cli`, and the public scripting catalog in `paged-introspe
 Inside the monorepo, the editor and the modules build against the engine's wasm
 packages at the same revision. Outside it, the engine ships on npm, versioned
 `0.<protocol>.<patch>`: the release these docs pin, <Fact id="engine.version" />, was
-published under <Fact id="license.engine.release" /> as `@paged-media/canvas-wasm`,
-`introspect-wasm`, `sdk` and `idml-viewer`. On the main line the public packages are
-`@paged-media/paged` (the engine with the `paged` command, from `packages/paged`) and
-`@paged-media/viewer`. The [renderer reference](/docs/paged/engine/the-renderer) documents its behavior;
+published under <Fact id="license.engine.release" /> as two packages, both from
+`paged-media/paged`: `@paged-media/paged` (the engine, with `./introspect` for
+read-only inspection, `./repo` for the document repository, and the `paged` command)
+and `@paged-media/viewer` (the WebGPU viewer, with its wasm session as `./session`).
+The editor takes them from the workspace, not from npm. The [renderer reference](/docs/paged/engine/the-renderer) documents its behavior;
 the [scripting layer](/docs/paged/scripting) documents its `paged.*` surface.
 
 ## Recent activity

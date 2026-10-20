@@ -57,7 +57,7 @@ onDidChange(l): Disposable
 undoable Operation channel — plugin and native edits share one history. The
 typed `Mutation` union (path topology, properties, swatches, gradients,
 layers, pathfinder booleans, batches, …) is re-exported by
-`@paged-media/plugin-api`; batches apply atomically and undo as one step.
+`@paged-media/plugin-sdk/api`; batches apply atomically and undo as one step.
 
 Coordinate convention for `pathAnchors` and `hitTest`: anchor tables are in
 the element's local frame (apply the result's `itemTransform` to reach

@@ -38,7 +38,7 @@ Three things matter here:
 
 - **`id` is reverse-DNS** and doubles as the namespace: every id this bundle
   registers must start with `com.example.hello.` — the host enforces it.
-- **`apiVersion`** is a range against `@paged-media/plugin-api`. The host
+- **`apiVersion`** is a range against the contract's API version. The host
   refuses to load a bundle whose range it cannot satisfy — loudly, at load.
 - **`contributes` declares, code registers.** The manifest is the reviewable
   claim; `activate` is the implementation. The CLI checks they agree.
@@ -46,14 +46,14 @@ Three things matter here:
 Validate it any time:
 
 ```bash
-paged-plugin validate manifest.json
+npx paged-plugin validate manifest.json
 ```
 
 ## 2 · The bundle
 
 ```ts
 import { defineBundle } from "@paged-media/plugin-sdk";
-import type { PluginManifest } from "@paged-media/plugin-api";
+import type { PluginManifest } from "@paged-media/plugin-sdk/api";
 import manifest from "./manifest.json";
 
 export const helloBundle = defineBundle({
@@ -87,8 +87,8 @@ registered disappears. The `dispose()` you return only needs to release things
 you allocated *outside* the host (timers, caches) — returning a no-op is
 legitimate and common.
 
-Note also the import discipline: **types from `@paged-media/plugin-api`,
-values from the host.** The API package is type-only; your module graph stays
+Note also the import discipline: **types from `@paged-media/plugin-sdk/api`,
+values from the host.** The `./api` entry is type-only; your module graph stays
 free of editor code, which is what keeps bundles unit-testable without a
 browser and portable to the future isolate runtime unchanged.
 

@@ -10,7 +10,7 @@ reviewed: "2026-06-23"
 
 **The wasm session under the `Viewer` — raw renderer-core, no input handling.**
 
-**In short:** `ViewerSession` (from `@paged-media/sdk`) is the WebGPU session that
+**In short:** `ViewerSession` (from `@paged-media/viewer/session`) is the WebGPU session that
 the friendly `Viewer` API wraps. It loads IDML, reports load diagnostics, lays
 out pages, and renders — either to a canvas via `present(...)` or to raw RGBA
 bytes via `render_page_to_bytes(...)`. It has no camera state, no event system,

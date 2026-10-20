@@ -36,8 +36,9 @@ testing. The [renderer reference](/docs/paged/engine/the-renderer) covers this i
 ## Who consumes the engine
 
 The engine's wasm packages are built in the monorepo, and its components build
-against them at the same revision; outside it, the engine ships as published npm
-packages. None of its consumers reaches into the engine's Rust source:
+against them at the same revision; outside it, the engine ships as the npm packages
+`@paged-media/paged` (the engine and the `paged` command) and `@paged-media/viewer`
+(the read-only viewer). None of its consumers reaches into the engine's Rust source:
 
 - **[Editor](/docs/paged/repos/editor)** (`apps/editor`) — the app: full canvas,
   mutation, gestures, panels, and the `paged.*` [scripting](/docs/paged/scripting)

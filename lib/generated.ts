@@ -314,7 +314,7 @@ export function getRestApi(): RestApi {
   return load('rest-api.json', { generatedAt: '', sourceCommit: null, info: { title: null, version: null, openapi: null }, endpointCount: 0, groups: [] });
 }
 
-// ── SDK catalog (@paged-media/idml-viewer + ViewerSession + Inspector) ───────
+// ── SDK catalog (@paged-media/viewer + ViewerSession + Inspector) ────────────
 export interface SdkMember {
   name: string;
   kind: string; // function | method | property | event | class | type
@@ -341,7 +341,7 @@ export function getSdkCatalog(): SdkCatalog {
     generatedAt: '',
     sourceMode: 'none',
     sourceCommit: null,
-    package: '@paged-media/idml-viewer',
+    package: '@paged-media/viewer',
     memberCount: 0,
     groups: [],
   });

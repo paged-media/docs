@@ -1,13 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { SessionDiagnostic, SessionPagesLayout, SessionRaster, Viewer, ViewerSessionLike } from '@paged-media/idml-viewer';
+import type { SessionDiagnostic, SessionPagesLayout, SessionRaster, Viewer, ViewerSessionLike } from '@paged-media/viewer';
 import { createPreviewSession, type SessionFont } from '@/components/mdx/sdk-loader';
 import { statusFromError, type PreviewStatus } from '@/components/mdx/viewer-common';
 import { btn, label, mono, muted, sheet, strip } from './styles';
 
 /**
- * The live render of a dropped package: the published @paged-media/idml-viewer
+ * The live render of a dropped package: the published @paged-media/viewer
  * over a canvas, with the SDK playground's toolbar (fit, zoom, page navigation,
  * layout) and page thumbnails.
  *
@@ -114,7 +114,7 @@ export function RenderPane({
     }
     void (async () => {
       try {
-        const { createViewer } = await import('@paged-media/idml-viewer');
+        const { createViewer } = await import('@paged-media/viewer');
         if (cancelled) return;
         const canvas = canvasRef.current;
         if (!canvas) return;

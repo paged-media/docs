@@ -4,10 +4,11 @@
 //
 // Decision-B path: the preview no longer builds paged-sdk from a core checkout
 // (the retired scripts/build-preview-wasm.sh). It consumes the wasm bundled with
-// `@paged-media/idml-viewer` — the published viewer at the release pinned in
-// package.json (0.35.0 → core v0.35.0). That package ships `wasm/paged_sdk.js`
-// (the wasm-bindgen `--target web` glue) + `wasm/paged_sdk_bg.wasm`, already
-// wasm-opt'd by core's publish workflow.
+// `@paged-media/viewer` — the published viewer at the release pinned in
+// package.json (0.74.1 → engine v0.74.1). Its `./session` entry is the
+// ViewerSession: the package ships `wasm/paged_sdk.js` (the wasm-bindgen
+// `--target web` glue) + `wasm/paged_sdk_bg.wasm`, already wasm-opt'd by the
+// release workflow.
 //
 // We copy both into public/preview so they are served as plain static assets,
 // loaded lazily by the LivePreview client component (NOT bundled into any page
@@ -29,12 +30,11 @@ const require = createRequire(import.meta.url);
 const DOCS_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT_DIR = join(DOCS_ROOT, 'public', 'preview');
 
-// Resolve the installed package's wasm dir via its main entry (works under
-// pnpm's symlinked store, no hard-coded node_modules path). The package's
-// `exports` map doesn't expose package.json, so resolve the entry (dist/index.js)
-// and walk up out of dist/ to the package root.
-const entry = require.resolve('@paged-media/idml-viewer'); // .../dist/index.js
-const WASM_DIR = join(dirname(entry), '..', 'wasm');
+// Resolve the installed package's wasm dir via its `./session` entry (works
+// under pnpm's symlinked store, no hard-coded node_modules path). `./session`
+// resolves to wasm/paged_sdk.js, so its directory is the wasm dir.
+const session = require.resolve('@paged-media/viewer/session'); // .../wasm/paged_sdk.js
+const WASM_DIR = dirname(session);
 
 const FILES = ['paged_sdk.js', 'paged_sdk_bg.wasm', 'paged_sdk.d.ts'];
 

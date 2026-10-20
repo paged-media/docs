@@ -17,7 +17,32 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.73.4 (tag commit 9408270). A patch on protocol 73: a
+# Currently: v0.74.1 (tag commit 9cad32a). Protocol 74, the first release from
+# the monorepo paged-media/paged (v0.74.0 was tagged and never published;
+# v0.74.1 supersedes it). The npm packages are renamed: `@paged-media/paged`
+# (the engine, with `./introspect`, `./repo` and the `paged` command with
+# `paged mcp`) replaces canvas-wasm and introspect-wasm, and
+# `@paged-media/viewer` (with the session as `./session`) replaces idml-viewer
+# and sdk (ADR 185, PM-0008). In the engine: the document repository,
+# `paged-repo` (ADR 180); tracked changes kept, accepted and rejected as
+# InDesign keeps them (ADR 184); a mutation names the pages it created and the
+# wire describes itself as JSON Schema (ADRs 186, 187); snapshots drawn on the
+# worker's GPU, a lost device replaced, and one rendering model, Vello on the
+# GPU and vello_cpu on the CPU, with tiny-skia retired (ADRs 188, 189); a
+# placed SVG draws its filters (ADR 190); groups transform about their box and
+# reflections read as the flip with the smaller turn (ADRs 191, 192);
+# page-item snippets for Copy and Paste (ADR 193); deleting a style moves its
+# text to the root style, the state hash covers the whole model and undo
+# restores it exactly (ADRs 194, 195, 197); fitting alignment takes IDML's
+# anchor names (ADR 196); a link that resolves to nothing is missing (ADR
+# 198); the IDML writer spells a changed number as the f32 it is (ADR 199);
+# threading, paragraph returns and unset margins (ADR 200); a face's ascent is
+# its OS/2 typographic ascender (ADR 201); a table's outer cells' edges are
+# its border (ADR 202); and a frame's feathers and interior effects apply to
+# its picture (ADR 203). All three packages (paged, viewer, plugin-sdk) answer
+# at 0.74.1 on the registry (`latest`), checked before this pin moved.
+#
+# v0.73.4 (tag commit 9408270). A patch on protocol 73: a
 # keep that moves a note's reference, verified against InDesign (C-45); a
 # cross-reference's chapter number and live captions print live (L-09);
 # tagged PDF elements named after their paragraph style, its PDF export tag
@@ -232,6 +257,6 @@
 # check the registry rather than the workflow's conclusion.
 #
 # The WebGPU live preview does not build from this commit — it consumes the
-# published npm `@paged-media/idml-viewer` at the matching release (its bundled
+# published npm `@paged-media/viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-94082703cf34b96a0fcde034f2f8875962caedc2
+9cad32ad5836e96d5a2f55bb5a0da840c5461a96

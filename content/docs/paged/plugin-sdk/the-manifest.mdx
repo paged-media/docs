@@ -18,7 +18,7 @@ load time. Code registers; the manifest declares — and the two must agree.
 | `id` | string | yes | Reverse-DNS identity, e.g. `media.paged.draw`. Must match `^[a-z][a-z0-9]*(\.[a-z][a-z0-9-]*)+$`. Doubles as the **namespace prefix** for every contributed id and the key for the plugin's storage partition. |
 | `name` | string | yes | Human-readable name. |
 | `version` | string | yes | The bundle's own semver. |
-| `apiVersion` | string | yes | Range against `@paged-media/plugin-api` — `*`, exact (`0.2.0`), or caret (`^0.2`). See [Versioning](/docs/paged/plugin-sdk/versioning) for the 0.x caret rule. The host refuses unsatisfied ranges at load. |
+| `apiVersion` | string | yes | Range against the contract's API version (`API_VERSION` in `@paged-media/plugin-sdk`) — `*`, exact (`0.2.0`), or caret (`^0.2`). See [Versioning](/docs/paged/plugin-sdk/versioning) for the 0.x caret rule. The host refuses unsatisfied ranges at load. |
 | `publisher` | string | no | Publisher identity. |
 | `capabilities` | object | no | What the plugin asks to do (below). |
 | `contributes` | object | no | What the plugin registers (below). |

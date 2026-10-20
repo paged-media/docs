@@ -13,7 +13,7 @@ failure mode it prevents.
 
 ## Rule 1 — Types from the API, values from the host
 
-`@paged-media/plugin-api` is **type-only**: every export is `export type`, so
+`@paged-media/plugin-sdk/api` is **type-only**: every export is `export type`, so
 nothing from the contract exists in your bundle at runtime. All runtime values
 — registries, the document surface, storage — arrive through the `BundleHost`
 parameter of `activate`.

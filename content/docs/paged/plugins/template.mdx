@@ -17,8 +17,11 @@ works from a clean checkout.
 ## What it gives you
 
 - A minimal manifest + `activate()` skeleton that loads in the editor.
-- A dependency setup floating on the published canary packages, with a standing
-  CI lane that proves the clean-checkout build.
+- One dependency, `@paged-media/plugin-sdk` from npm (`latest`): a peer at run
+  time, a dev dependency for its types (`@paged-media/plugin-sdk/api`), tests and
+  the `paged-plugin` bin, with a standing CI lane that proves the clean-checkout
+  build. `npx -p @paged-media/plugin-sdk paged-plugin init my-plugin` writes the
+  same starting point.
 
 Follow **[Build a plugin](/docs/paged/plugin-sdk/build-a-plugin)** to go from
 this template to a shipped bundle.

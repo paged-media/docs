@@ -39,7 +39,7 @@ content/docs/**/*.mdx ── fumadocs-mdx ────────────�
 examples/<id>/ ── lib/examples.ts, assembleIdml ─────────────────────────┤
 sources.pin ── pull-sources ──> .generated/sources/ ── gen-* ──> .generated/*.json
                                                   └─ lib/generated.ts ────┤
-@paged-media/idml-viewer (npm) ── prepare-preview-wasm ──> public/preview/ ┤
+@paged-media/viewer (npm) ──── prepare-preview-wasm ──> public/preview/ ┤
                                                                           v
                                       next build (output: 'export') ──> out/
                                       wrangler pages deploy out ──────> host
@@ -122,7 +122,7 @@ what it describes).
 ## Live preview and demos
 
 The `live` view of an example and `<SdkPlayground>` render in the browser with the npm
-package `@paged-media/idml-viewer`. Its wasm is copied to `public/preview/` at build time
+package `@paged-media/viewer` (its `./session` entry). Its wasm is copied to `public/preview/` at build time
 and loaded from there on demand; it needs WebGPU
 ([ADR 803](adr/803-live-preview-uses-viewer-package.md)).
 
@@ -144,7 +144,7 @@ in an iframe. This is why the host sends cross-origin isolation headers
 
 | Repository | What this repository takes from it |
 |---|---|
-| `core` | `paged-inspect` and `paged-run`, built in CI at the commit in `core.pin`; three pulled JSON files (scripting catalog, viewer API catalog, command-line tree); the npm package `@paged-media/idml-viewer` at an exact version; the byte rules that `scripts/examples/assemble.ts` repeats. |
+| `core` | `paged-inspect` and `paged-run`, built in CI at the commit in `core.pin`; three pulled JSON files (scripting catalog, viewer API catalog, command-line tree); the npm package `@paged-media/viewer` at an exact version; the byte rules that `scripts/examples/assemble.ts` repeats. |
 | `plugin-sdk` | The manifest schema `packages/plugin-api/src/manifest.schema.json`, pulled. |
 | `editor` | The playground deployment that the iframes embed, with its query parameters and messages. |
 | `cockpit` | The capability record and the surface matrix its export workflow commits, pulled as JSON. |

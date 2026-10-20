@@ -24,22 +24,30 @@ overlays, storage, and diagnostics. Everything a bundle registers is disposable,
 and the host tracks all of it — deactivating a plugin restores the editor
 exactly as it was.
 
-## The packages
+## The package
 
-| Package | Role |
+Everything ships in one npm package, `@paged-media/plugin-sdk`:
+
+| Entry | Role |
 |---|---|
-| `@paged-media/plugin-api` | the contract: manifest types and schema, the bundle lifecycle, the full `BundleHost` surface, and curated re-exports of the contribution and wire types. **Type-only** — nothing in it exists at runtime. |
-| `@paged-media/plugin-sdk` | the runtime: `defineBundle`, `loadBundle`, the in-process host implementation, the [gesture kit](/docs/paged/plugin-sdk/the-gesture-kit), version negotiation. |
-| `@paged-media/plugin-cli` | tooling: `paged-plugin validate <manifest.json>` checks a manifest against the schema and the namespace rule. |
+| `@paged-media/plugin-sdk/api` | the contract: manifest types and schema, the bundle lifecycle, the full `BundleHost` surface, and curated re-exports of the contribution and wire types. **Type-only** — nothing in it exists at runtime. |
+| `@paged-media/plugin-sdk` | the runtime: `defineBundle`, `loadBundle`, the in-process host implementation, the [gesture kit](/docs/paged/plugin-sdk/the-gesture-kit), the fake editor for tests, version negotiation. |
+| the `paged-plugin` bin | tooling: `paged-plugin init <dir>` scaffolds a plugin; `paged-plugin validate <manifest.json>` checks a manifest against the schema and the namespace rule. |
 
-> **Status: incubating.** The SDK is at **API v0.2**, published to npm as
-> public **canaries** — `npm install @paged-media/plugin-api@canary
-> @paged-media/plugin-sdk@canary`, and the CLI runs via
-> `npx @paged-media/plugin-cli@canary`. It is being proven by Paged's own
-> first-party plugins (paged.draw and paged.web ship through it today) before
-> the v1 freeze. Expect breaking changes between 0.x minors — caret ranges
-> deliberately lock the minor during 0.x — and note the canaries are
-> `UNLICENSED` pending the licensing pass. This reference tracks the
+```bash
+npx -p @paged-media/plugin-sdk paged-plugin init my-plugin   # scaffold
+npm install -D @paged-media/plugin-sdk                       # in an existing plugin
+npx paged-plugin validate src/manifest.json                  # check the manifest
+```
+
+A bundle lists `@paged-media/plugin-sdk` as a **peer** dependency (and as a dev
+dependency for its own tests and types): the editor provides the one copy at
+run time.
+
+> **Status: incubating.** The contract is at **API v0.2**. It is being proven by
+> Paged's own built-in modules (paged.draw and paged.web ship through it today)
+> before the v1 freeze. Expect breaking changes between 0.x minors of the API —
+> caret ranges deliberately lock the minor during 0.x. This reference tracks the
 > implemented contract, not an aspiration.
 
 ## Dogfooding first

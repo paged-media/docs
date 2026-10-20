@@ -3,7 +3,7 @@
  * the package bytes a server component hands over, and turning a viewer
  * failure into the status the UI shows.
  */
-export type { Viewer } from '@paged-media/idml-viewer';
+export type { Viewer } from '@paged-media/viewer';
 
 export type PreviewStatus = 'loading' | 'ready' | 'no-webgpu' | 'unavailable' | 'error';
 

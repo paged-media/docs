@@ -4,7 +4,7 @@
 # paged-media/paged (../paged/engine/core).
 #
 # SUPERSEDED for the normal path: the live preview now consumes the PUBLISHED
-# `@paged-media/idml-viewer` package, whose bundled wasm `scripts/prepare-preview-wasm.mjs`
+# `@paged-media/viewer` package, whose bundled wasm `scripts/prepare-preview-wasm.mjs`
 # stages into public/preview (run by `pnpm build`). CI (pages.yml) uses that path —
 # no core checkout. This script is kept only as a build-from-core ESCAPE HATCH for
 # iterating on UNPUBLISHED engine changes before a release: run it to overwrite

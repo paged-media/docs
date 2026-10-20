@@ -1,11 +1,11 @@
-import type { ViewerSessionLike } from '@paged-media/idml-viewer';
+import type { ViewerSessionLike } from '@paged-media/viewer';
 
 /**
  * Process-wide singleton init for the WebGPU paged-sdk wasm that backs the
  * live preview.
  *
  * Decision-B path: the wasm-bindgen glue + binary ship inside the published
- * `@paged-media/idml-viewer` package and are staged into /public/preview by
+ * `@paged-media/viewer` package and are staged into /public/preview by
  * scripts/prepare-preview-wasm.mjs. We load the glue from that stable static
  * URL (NOT bundled into any page JS — the 7 MB wasm only travels when a preview
  * actually mounts) and pass an explicit wasm URL, so resolution never depends on
@@ -78,7 +78,7 @@ function loadFallback(): Promise<Uint8Array | null> {
 /**
  * Create a fresh `ViewerSession` (its own WebGPU device) over the shared,
  * once-initialized wasm. Suitable to hand straight to `createViewer({ session })`
- * from `@paged-media/idml-viewer`. Rejects without a WebGPU adapter.
+ * from `@paged-media/viewer`. Rejects without a WebGPU adapter.
  *
  * Open Sans is registered under its own family name, then `fonts` (for example
  * faces embedded in a dropped package), and Open Sans is also passed to every
