@@ -10,6 +10,11 @@
  * hand-maintain — when the engine changes, the registry changes, the badge
  * changes on the next build.
  *
+ * Lifecycle form: `<SupportBadge feature="…" lifecycle />` labels a capability
+ * that is not an IDML construct (a command, an export, a data lane) by its
+ * record lifecycle and test health instead of the parser/renderer split:
+ * "Shipped · verified", "Experimental · failing", "Planned", ….
+ *
  * Legacy form: `<SupportBadge status="supported" />` still renders (a static
  * chip with no live link) for the handful of documented constructs the registry
  * does not yet track at this granularity. `scripts/check-feature-refs.mjs`
@@ -61,16 +66,34 @@ function Chip({ label, color }: { label: string; color: string }) {
   );
 }
 
+const LIFECYCLE: Record<string, string> = { stable: 'Shipped', shipped: 'Shipped', beta: 'Shipped', experimental: 'Experimental', planned: 'Planned' };
+const HEALTH: Record<string, { label: string; tone: BadgeTone }> = {
+  healthy: { label: 'verified', tone: 'valid' },
+  broken: { label: 'failing', tone: 'warn' },
+  stale: { label: 're-test pending', tone: 'valid-muted' },
+};
+
+/** A lifecycle badge: the record's status, then what its tests say. */
+function lifecycleLabel(status: string | null | undefined, health: string | null | undefined): { label: string; color: string } {
+  const life = LIFECYCLE[status ?? ''] ?? status ?? 'Unknown';
+  if (life === 'Planned') return { label: life, color: TONE_COLOR.muted };
+  const h = HEALTH[health ?? ''] ?? { label: 'untested', tone: 'valid-muted' as BadgeTone };
+  const tone: BadgeTone = h.tone === 'warn' ? 'warn' : life === 'Shipped' ? h.tone : h.tone === 'valid' ? 'valid-muted' : 'muted';
+  return { label: `${life} · ${h.label}`, color: TONE_COLOR[tone] };
+}
+
 export function SupportBadge({
   feature,
   status,
   note,
   compact = false,
+  lifecycle = false,
 }: {
   feature?: string;
   status?: SupportStatus;
   note?: string;
   compact?: boolean;
+  lifecycle?: boolean;
 }) {
   let label: string;
   let color: string;
@@ -78,7 +101,10 @@ export function SupportBadge({
 
   if (feature) {
     const f = getSupportFeature(feature);
-    if (f) {
+    if (f && lifecycle) {
+      ({ label, color } = lifecycleLabel(f.status, f.health?.state));
+      href = `/docs/paged/state/matrix#${feature}`;
+    } else if (f) {
       label = f.badge.label;
       color = TONE_COLOR[f.badge.tone];
       href = `/docs/paged/state/matrix#${feature}`;

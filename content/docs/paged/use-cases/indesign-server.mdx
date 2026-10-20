@@ -1,0 +1,211 @@
+---
+title: "Coming from Adobe InDesign Server"
+description: Paged as an open alternative to Adobe InDesign Server — the server jobs mapped one by one, and a template plus CSV turned into PDF/X-4 from the command line.
+tier: intermediate
+diataxis: how-to
+status: published
+owner: paged-docs
+describes: [scripting, data, the-renderer, round-tripping, package-anatomy]
+reviewed: "2026-10-20"
+---
+
+**Can Paged do the jobs a team runs on Adobe InDesign Server?**
+
+**In short:** many of them, and in the open. Paged's engine runs without a desktop
+application: the `paged` command line and its HTTP engine service open IDML, run
+JavaScript against the document, merge records into a template and write PDF/X-4,
+IDML, `.paged` and PNG. It is one program you build or install, with no seat or
+licence server in the loop. Some jobs are not covered yet: it does not read `.indd`
+files, it does not run ExtendScript, and Data Merge from the command line needs a
+source checkout. The table below says which job is which, with each status read
+from the [capability record](/docs/paged/state/matrix).
+
+<SoftwareApplicationLd />
+
+## The jobs, one by one
+
+Each badge is the capability's live status in the record (shipped, experimental or
+planned, and whether its tests pass). A row without a badge is one the record does not
+track, and its status is said in words.
+
+| Job on InDesign Server | With Paged | Status |
+| --- | --- | --- |
+| Open a template without a desktop app | `paged` opens IDML and `.paged` headless; a `.paged` file is itself a valid IDML package | <SupportBadge feature="package-anatomy.core-import" compact lifecycle /> <SupportBadge feature="package-anatomy.paged-container" compact lifecycle /> |
+| Save back as IDML | `paged export --format idml`; an unchanged document re-serializes byte for byte | <SupportBadge feature="round-tripping.idml-reserialization" compact lifecycle /> |
+| Open native `.indd` files | Not supported: export IDML from InDesign once, then work from IDML | Not supported |
+| Scripted layout changes | JavaScript against the `paged.*` API: `paged script`, `paged set`, `paged invoke` | <SupportBadge feature="scripting.cli" compact lifecycle /> <SupportBadge feature="scripting.full-mutation-surface" compact lifecycle /> |
+| Run existing ExtendScript (`.jsx`) or UXP scripts | No compatibility layer: scripts are rewritten against `paged.*`, which has its own object model | Not supported |
+| A long-running engine process to send work to | `paged session` speaks NDJSON on stdin/stdout | <SupportBadge feature="scripting.headless-run" compact lifecycle /> |
+| An engine service to call over HTTP | `paged engine-serve` answers `POST /run`, one stateless call per job (see the worked example) | Early: not in the record yet |
+| Data Merge: template + CSV into a merged document | `paged-node merge` (single or multiple records per page, one document per record) | <SupportBadge feature="data.lower.merge-plan" compact lifecycle /> <SupportBadge feature="data.lower.merge-writer" compact lifecycle /> |
+| Catalogue and per-group batch runs | paged.data's batch plans and record flow; `paged-data-batch` emits the lowered pages, not finished files | <SupportBadge feature="data.automation.batch" compact lifecycle /> |
+| PDF and PDF/X-4 export | `paged export --standard pdfx4 --cmyk-profile …`, fonts subset and embedded | <SupportBadge feature="the-renderer.pdf-export" compact lifecycle /> <SupportBadge feature="the-renderer.pdf-font-embedding" compact lifecycle /> |
+| Printer's marks and bleed | `paged export --marks` | <SupportBadge feature="the-renderer.pdf-export-marks" compact lifecycle /> |
+| Tagged PDF and bookmarks | `paged export --tagged --bookmarks` | <SupportBadge feature="the-renderer.pdf-tagged" compact lifecycle /> |
+| Page images | `paged render` writes PNG at any resolution; there is no JPEG or EPS page export | <SupportBadge feature="the-renderer.snapshots" compact lifecycle /> |
+| Preflight before output | Export reports its findings on stderr | <SupportBadge feature="the-renderer.export-diagnostics" compact lifecycle /> |
+| Package for output (links and fonts) | `paged package` writes the package folder and its report | <SupportBadge feature="the-renderer.package-collect" compact lifecycle /> |
+| Fonts on the server | `--fonts <dir>` registers every face in a folder; the Rust CLI falls back to a bundled face | <SupportBadge feature="the-renderer.font-registry" compact lifecycle /> |
+| Snippets, InCopy files and books | Not yet | <SupportBadge feature="companion-formats.idms-icml" compact lifecycle /> <SupportBadge feature="companion-formats.book" compact lifecycle /> |
+| A hosted service with accounts and a queue | paged.server's headless lane runs `paged engine-serve` in a container; it is not deployed yet | In development |
+
+**Licensing.** The engine is <Fact id="license.engine" />. Running it on as many
+servers or cores as you need costs nothing under the open licence; the commercial
+licence is there when its terms do not fit.
+
+## Worked example: a template and a CSV to PDF/X-4
+
+The commands below were run against the engine built from the main branch. They
+make a three-field price card, merge three records into it and export print PDF.
+
+### 1. Build the tools
+
+```bash
+# The Rust command line, from a checkout of paged-media/paged
+cd engine/core && cargo build --release -p paged-cli   # → target/release/paged
+
+# Data Merge runs in the Node command line over the paged.data module
+bun install
+moon run data:wasm      # paged.data's engine
+moon run data:duckdb    # its query engine, DuckDB-WASM
+```
+
+In the steps below, `paged` is that binary and `paged-node` is
+`bun src/bin.ts` run in `apps/cli`, where the paged.data module resolves. The
+published [`@paged-media/paged`](/docs/paged/cli/npm) package carries the same Node
+command without paged.data, so it exports but does not merge.
+
+### 2. Make the template
+
+A template is any IDML whose text frames hold `<<field>>` placeholders, the form
+InDesign's Data Merge uses. This script makes one on a blank A4 page:
+
+```js title="make-template.js"
+const page = JSON.parse(paged.pages())[0].selfId;
+const fields = [
+  [[72, 72, 120, 400], '<<name>>'],
+  [[124, 72, 150, 400], 'SKU <<sku>>'],
+  [[154, 72, 180, 400], '<<price>> EUR'],
+];
+for (const [bounds, text] of fields) {
+  paged.insertTextFrame(page, bounds);
+  const stories = JSON.parse(paged.stories());
+  paged.insertText(stories[stories.length - 1].selfId, 0, text);
+}
+```
+
+```bash
+paged new --size a4 --format idml -o blank.idml
+paged script blank.idml make-template.js -o template.idml --render template.png
+```
+
+### 3. Merge the records
+
+```csv title="products.csv"
+name,sku,price
+Notebook A5 dotted,NB-105,9.90
+Fountain pen,FP-220,34.00
+Pencil set (12),PS-012,7.50
+```
+
+```bash
+paged-node merge template.idml --data products.csv --out out --format paged \
+  --plugins=@paged-media/data
+```
+
+```json
+{ "records": 3, "format": "paged",
+  "outputs": [{ "path": "out/template-merged.paged", "pages": 3, "records": 3, "overset": [] }] }
+```
+
+`--per-record` writes one document per record instead, and
+`--records-per-page multiple` lays several records on a page, rows or columns first.
+
+### 4. Export PDF/X-4
+
+PDF/X-4 needs an output intent, so give the press's CMYK profile:
+
+```bash
+paged export out/template-merged.paged --standard pdfx4 \
+  --cmyk-profile press.icc --output-condition "Your press condition" -o catalogue.pdf
+```
+
+The result is a three-page PDF/X-4 with the profile as its output intent and the
+text as real, embedded text.
+
+### The same job over HTTP
+
+`paged engine-serve` keeps no state: each call brings the document, an optional
+script, and asks for a rendered page and the exported `.paged` back. Here a script
+fills the template's three fields for one record:
+
+```js title="fill.js"
+const record = { name: 'Desk lamp', sku: 'DL-300', price: '49.00' };
+const lines = [record.name, 'SKU ' + record.sku, record.price + ' EUR'];
+JSON.parse(paged.stories()).forEach((story, i) => {
+  paged.deleteRange(story.selfId, 0, story.characterCount);
+  paged.insertText(story.selfId, 0, lines[i]);
+});
+console.log('filled', lines.length, 'fields');
+```
+
+```bash
+paged engine-serve --port 8787 &
+
+jq -n --rawfile script fill.js --arg file "$(base64 -i template.idml)" \
+  '{file: $file, script: $script, render: {page: 1, dpi: 72}, export: true}' > call.json
+curl -s -X POST localhost:8787/run -H 'content-type: application/json' \
+  --data-binary @call.json > reply.json
+
+jq '{output, error}' reply.json      # { "output": ["[log] filled 3 fields"], "error": null }
+jq -r .file reply.json | base64 -d > lamp.paged
+jq -r .png  reply.json | base64 -d > lamp.png
+paged export lamp.paged --standard pdfx4 --cmyk-profile press.icc -o lamp.pdf
+```
+
+The service answers one call at a time and returns `.paged` and PNG, not PDF, so
+the PDF step runs on the result. Run several instances behind a load balancer for
+throughput; any instance can answer any call.
+
+## What to check before you move a workflow
+
+- **Fonts.** Register your faces with `--fonts`. The Node command line has no
+  bundled face: without `--font` its text is not set and the PDF pages come out
+  blank.
+- **Linked images.** `paged` does not resolve `Links/…` files from the disk; put
+  pictures in with `paged place`, or name image fields in a merge
+  (`--image-field`, `--image-base`).
+- **Numbers in data.** The merge reads CSV columns as typed values, so `9.90`
+  arrives as `9.9`. Format prices in the data you export, or as text.
+- **Scripts.** Plan the port from ExtendScript as a rewrite; the
+  [scripting reference](/docs/paged/scripting) lists every function and path.
+
+## Related
+
+- [Command line (paged)](/docs/paged/cli) — every command and flag, including
+  `engine-serve`, `session` and `mcp`.
+- [Scripting with paged.\*](/docs/paged/scripting) — the API the scripts above use.
+- [paged.data](/docs/paged/plugins/data) — bindings, record flow and Data Merge.
+- [paged.server](/docs/paged/repos/editor-server) — the remote whose headless
+  lane runs the engine service.
+- [Automated & data-driven publishing](/docs/paged/use-cases/automated-publishing)
+  and [Paged vs Adobe InDesign](/docs/paged/compare/paged-vs-indesign).
+
+<Callout type="info">
+Adobe, InDesign and InDesign Server are trademarks of Adobe. Paged is independent
+and is not affiliated with or endorsed by Adobe; the names are used only to
+describe compatibility and the jobs compared.
+</Callout>
+
+## Frequently asked questions
+
+**Is Paged a drop-in replacement for InDesign Server?**
+No. It does the same kinds of job with its own command line, engine service and
+JavaScript API. Templates move as IDML; scripts are rewritten.
+
+**Does it run on Linux and in containers?**
+The engine is a Rust program with no desktop dependency. paged.server's headless
+lane defines a container for `paged engine-serve`; it is not built or deployed yet.
+
+**Can it open `.indd` files?**
+No. Paged reads and writes IDML, InDesign's open interchange format.
