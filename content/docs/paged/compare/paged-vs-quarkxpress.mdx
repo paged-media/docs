@@ -6,13 +6,13 @@ diataxis: explanation
 status: published
 owner: paged-docs
 describes: [scripting, plugin-platform, data]
-reviewed: "2026-10-12"
+reviewed: "2026-10-20"
 ---
 
 **How does Paged compare to QuarkXPress?**
 
-**In short:** QuarkXPress is a mature, proprietary layout application with a
-perpetual licence and a long history in long-document and enterprise publishing.
+**In short:** QuarkXPress is a mature, proprietary layout application, sold as
+a perpetual licence or a subscription, with a long history in long-document and enterprise publishing.
 Paged is open source and IDML-native, with scripting and a plugin platform aimed
 at structured, data-driven output. QuarkXPress is deeper on layout and print
 today; Paged's case is openness, IDML interchange, and automation. <CompareSnapshot only={["quark"]} />
@@ -22,7 +22,8 @@ today; Paged's case is openness, IDML interchange, and automation. <CompareSnaps
 ## Verdict
 
 - **Choose QuarkXPress** for mature long-document and structured/enterprise
-  publishing on a perpetual licence, with deep layout and print production.
+  publishing on a perpetual licence or a subscription, with deep layout and print
+  production.
 - **Choose Paged** for an open, IDML-native, scriptable foundation for data-driven
   publishing — accepting that layout and print depth are still emerging.
 
@@ -41,7 +42,7 @@ proprietary desktop format.
 ## Extensible & automatable
 
 QuarkXPress supports scripting (AppleScript/JavaScript) and XTensions, and Quark
-offers a separate publishing platform for enterprise automation. Paged's
+offers QuarkXPress Server for automated and variable-data output. Paged's
 [scripting](/docs/paged/scripting) and [plugin SDK](/docs/paged/plugin-sdk) are
 open and public, and the engine is built to run headlessly — see [automated
 publishing](/docs/paged/use-cases/automated-publishing).
@@ -56,8 +57,9 @@ automation-first work.
 ## Frequently asked questions
 
 **Can Paged open QuarkXPress files?**
-No — `.qxp` is proprietary. Paged works with IDML. If your content can move via
-IDML, Paged can read and write it.
+Not `.qxp`, which is proprietary. QuarkXPress can export print layouts as IDML,
+and Paged reads and writes IDML, so that is the way across (conversions between
+the two apps are not identical).
 
 **Does QuarkXPress use an open format?**
 No. QuarkXPress's native format is proprietary. Paged's `.paged` is an open IDML

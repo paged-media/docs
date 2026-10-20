@@ -6,7 +6,7 @@ diataxis: explanation
 status: published
 owner: paged-docs
 describes: [round-tripping, scripting, plugin-platform]
-reviewed: "2026-10-12"
+reviewed: "2026-10-20"
 ---
 
 **What open-source desktop publishing software is there, and how do you choose?**
@@ -25,7 +25,7 @@ for proven print output today, Scribus leads. <CompareSnapshot />
 
 - **[Scribus](/docs/paged/compare/paged-vs-scribus)** — the long-standing
   open-source (GPL) DTP application. Mature layout and excellent CMYK/spot color
-  and print production. Desktop-only; partial IDML import; no plugin platform.
+  and print production. Desktop-only; IDML import without export; no plugin platform.
 - **[Paged](/docs/paged/)** — open source (engine <Fact id="license.engine" />, editor and plugins <Fact id="license.editor" />), built on a valid
   IDML container, with a [scripting layer](/docs/paged/scripting) and a [plugin
   SDK](/docs/paged/plugin-sdk). Web/WebGPU and headless delivery. Layout and print
@@ -39,8 +39,8 @@ for proven print output today, Scribus leads. <CompareSnapshot />
 ## "Free" that isn't open
 
 - **[Affinity (by Canva)](/docs/paged/compare/paged-vs-affinity)** — free of
-  charge but proprietary: a closed `.af` format, no scripting, no plugins, and
-  IDML import without export. Free is not the same as open.
+  charge but proprietary: a closed `.af` format, no plugins, scripting only since
+  September 2026, and IDML import without export. Free is not the same as open.
 
 ## How to choose
 
@@ -49,7 +49,7 @@ for proven print output today, Scribus leads. <CompareSnapshot />
   plugins** and **automation**? Paged.
 - Want a **permissively licensed, InDesign-like desktop app** and can wait for
   it to mature? Watch DesignCraft.
-- Want a **free, polished single app** and don't need openness or scripting?
+- Want a **free, polished single app** and don't need openness or headless output?
   Affinity.
 
 See the full [comparison matrix](/docs/paged/compare) for the dimension-by-
@@ -71,4 +71,4 @@ proprietary.
 **Can open-source DTP tools read InDesign files?**
 Via IDML, InDesign's interchange format. Paged reads and writes IDML natively;
 DesignCraft imports and exports it (not yet measured on real InDesign files);
-Scribus support is partial.
+Scribus imports it but cannot export it.

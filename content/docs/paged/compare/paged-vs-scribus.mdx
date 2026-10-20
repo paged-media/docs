@@ -6,7 +6,7 @@ diataxis: explanation
 status: published
 owner: paged-docs
 describes: [round-tripping, plugin-platform, color-swatches]
-reviewed: "2026-10-12"
+reviewed: "2026-10-20"
 ---
 
 **How does Paged compare to Scribus?**
@@ -36,13 +36,14 @@ the more interchangeable and extensible platform. <CompareSnapshot only={["scrib
 Both Paged and Scribus are open source, so neither locks you in. They bet
 differently on *what openness should buy you*:
 
-- **Interchange.** Scribus's native `.sla` is open XML but application-specific,
-  and its IDML import is partial. Paged's `.paged` is always a valid IDML
+- **Interchange.** Scribus's native `.sla` is open XML but application-specific.
+  Scribus imports IDML and IDMS but cannot write them, so its IDML is one-way. Paged's `.paged` is always a valid IDML
   package, so files move between Paged and the InDesign ecosystem.
-- **Extensibility.** Scribus has Python scripting but no first-class third-party
-  plugin platform. Paged ships a public [plugin SDK](/docs/paged/plugin-sdk)
+- **Extensibility.** Scribus has Python scripting and a C++ plug-in interface,
+  but no first-class third-party plugin platform. Paged ships a public [plugin SDK](/docs/paged/plugin-sdk)
   alongside its [`paged.*` scripting](/docs/paged/scripting).
-- **Delivery.** Scribus is a desktop application. Paged renders with WebGPU and
+- **Delivery.** Scribus is a desktop application (Linux, the BSDs, macOS and
+  Windows; 1.6.6, April 2026, is the current stable release). Paged renders with WebGPU and
   runs in the browser and headless.
 
 ## When Scribus is the better choice
@@ -63,5 +64,6 @@ renderer; Scribus has its own `.sla` format and a long-standing desktop codebase
 Scribus, today. Its color and print production are mature; Paged's are emerging.
 
 **Can Scribus open IDML files?**
-Only partially. Paged reads and writes IDML natively, which is its main
+It can import them, but it cannot export IDML, so a document does not go back to
+InDesign that way. Paged reads and writes IDML natively, which is its main
 interchange advantage over Scribus.
