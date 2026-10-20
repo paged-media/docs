@@ -24,6 +24,8 @@ export interface Tool {
   note: string;
   /** When this competitor's scores were last researched (Paged has none: its evidence is live). */
   researched?: string;
+  /** Where that research came from (official pages first). */
+  sources?: string[];
 }
 /** What a Paged score rests on: registry chapters or features, and facts. */
 export interface PagedBacking {

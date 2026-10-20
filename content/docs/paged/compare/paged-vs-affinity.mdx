@@ -6,14 +6,15 @@ diataxis: explanation
 status: published
 owner: paged-docs
 describes: [round-tripping, scripting, plugin-platform]
-reviewed: "2026-10-12"
+reviewed: "2026-10-20"
 ---
 
 **How does Paged compare to Affinity Publisher (by Canva)?**
 
 **In short:** Affinity is a polished, free layout app — but it is *proprietary*,
-has *no scripting* and *no plugins*, and its `.af` format is closed; it can
-import IDML but cannot export it. Paged is open source, its `.paged` files are
+has *no plugins*, its scripting only arrived in September 2026, and its `.af`
+format is closed; it can import IDML (and, since September 2026, INDD) but cannot
+export IDML. Paged is open source, its `.paged` files are
 always valid IDML packages, and it ships a scripting layer and a plugin SDK. The
 honest crossover: for a one-off, hand-crafted layout today, Affinity is more
 polished; for an open, automatable, interchangeable foundation, Paged is built
@@ -24,8 +25,7 @@ for it. **Free is not the same as open.** <CompareSnapshot only={["affinity"]} /
 ## Verdict
 
 - **Choose Affinity** for a free, refined, single-app layout experience when you
-  do not need scripting, plugins, or IDML export, and a proprietary format is
-  acceptable.
+  do not need plugins or IDML export, and a proprietary format is acceptable.
 - **Choose Paged** when you need an open format, IDML round-tripping, scripting,
   or a plugin platform — and can accept that Paged's layout depth is still
   emerging.
@@ -37,29 +37,31 @@ for it. **Free is not the same as open.** <CompareSnapshot only={["affinity"]} /
 ## Open & interoperable
 
 Affinity by Canva is a single unified application with a proprietary `.af`
-format. It imports IDML but cannot export it, so files that enter the Affinity
-world don't come back out as IDML. Paged's `.paged` container is *always* a valid
+format. It imports IDML, and INDD natively since its September 2026 update, but
+cannot export IDML, so files that enter the Affinity world don't come back out as
+IDML. Paged's `.paged` container is *always* a valid
 IDML package — it round-trips with the InDesign ecosystem by construction, and
 the source is open (engine <Fact id="license.engine" />, editor and plugins <Fact id="license.editor" />). See [what is IDML](/docs/idml/foundations/what-is-idml)
 for why that matters.
 
 ## Extensible
 
-Affinity has no scripting and no third-party plugin platform — you get the
-features the vendor ships. Paged exposes a sandboxed [`paged.*` scripting
+Affinity added in-app scripting in its September 2026 update, but it has no
+third-party plugin platform — beyond scripts, you get the features the vendor
+ships. Paged exposes a sandboxed [`paged.*` scripting
 layer](/docs/paged/scripting) and a [plugin SDK](/docs/paged/plugin-sdk), so the
 tool is programmable and extensible rather than fixed.
 
 ## Automation-native
 
-Because Affinity has no scripting, automated or data-driven output is off the
-table within the app. Paged is designed to be scripted and run headlessly — see
+Affinity has Data Merge and, since September 2026, scripting, but both run inside
+the desktop app; there is no headless or server-side output. Paged is designed to be scripted and run headlessly — see
 [automated publishing](/docs/paged/use-cases/automated-publishing).
 
 ## When Affinity is the better choice
 
 If you want a free, mature, beautifully made desktop layout app for one-off work
-and you don't need openness, scripting, plugins, or IDML export, Affinity is an
+and you don't need openness, plugins, headless output or IDML export, Affinity is an
 excellent choice today and is more polished than an emerging platform. Paged's
 case is openness and automation, not layout-tool maturity.
 
@@ -70,8 +72,8 @@ No. Affinity can import IDML but cannot export it. Paged reads and writes IDML
 natively.
 
 **Does Affinity support scripting or plugins?**
-No — Affinity has neither a scripting interface nor a third-party plugin
-platform. Paged has both.
+Scripting, yes: in-app scripting arrived with the September 2026 update. Plugins,
+no: there is no third-party plugin platform. Paged has both.
 
 **Is Affinity open source?**
 No. Affinity is free to use but proprietary and vendor-governed (Canva). Paged

@@ -6,7 +6,7 @@ diataxis: explanation
 status: published
 owner: paged-docs
 describes: [round-tripping, package-anatomy, scripting, plugin-platform, data]
-reviewed: "2026-10-12"
+reviewed: "2026-10-20"
 ---
 
 **How does Paged compare to InDesign, QuarkXPress, Affinity, Scribus, and DesignCraft?**
@@ -38,8 +38,9 @@ real decision is made on the **differentiators**, and they cluster on two axes:
 how *open* the format is, and how *automatable* the tool is.
 
 InDesign is the most capable and the most closed and most expensive. Affinity is
-free but proprietary, with no scripting and no plugins. Scribus is open source but
-has no plugin platform and only partial IDML interchange. QuarkXPress is
+free but proprietary, with no plugins and scripting only since September 2026.
+Scribus is open source but has no plugin platform and imports IDML without
+exporting it. QuarkXPress is
 proprietary and desktop-bound. DesignCraft, from the ArtCraft suite, is open
 source and agent-drivable over MCP, but it is pre-alpha and has no plugin
 platform. **None of them is simultaneously open-format and
@@ -75,8 +76,8 @@ scripting layer for automation.
 
 **Can you edit IDML files without Adobe InDesign?**
 Yes. Paged reads and writes IDML natively, so you can open, edit, and re-export
-IDML packages without InDesign. Affinity can import IDML but cannot export it;
-Scribus support is partial.
+IDML packages without InDesign. QuarkXPress imports and exports IDML; Affinity
+and Scribus can import IDML but cannot export it.
 
 **What is the best DTP tool for automated, data-driven publishing?**
 For depth today, InDesign with InDesign Server plus EasyCatalog or priint. For an

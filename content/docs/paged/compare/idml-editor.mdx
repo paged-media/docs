@@ -6,7 +6,7 @@ diataxis: explanation
 status: published
 owner: paged-docs
 describes: [round-tripping, package-anatomy]
-reviewed: "2026-10-12"
+reviewed: "2026-10-20"
 ---
 
 **What is an IDML editor?**
@@ -34,7 +34,8 @@ That last part — writing valid IDML *back out* — is where tools differ sharp
   native format is the closed binary `.indd`).
 - **Affinity** can *import* IDML but cannot *export* it — so it is not a
   round-tripping IDML editor.
-- **Scribus** has partial IDML import.
+- **QuarkXPress** opens IDML and exports print layouts as IDML.
+- **Scribus** imports IDML (and IDMS snippets) but cannot export it.
 
 ## Why edit IDML without InDesign?
 
@@ -55,8 +56,8 @@ That last part — writing valid IDML *back out* — is where tools differ sharp
 
 **Can you edit IDML without Adobe InDesign?**
 Yes. Paged opens, edits, and re-exports IDML natively, so you don't need
-InDesign. Other tools vary: Affinity imports but can't export IDML; Scribus
-support is partial.
+InDesign. Other tools vary: QuarkXPress imports and exports IDML; Affinity and
+Scribus import it but can't export it.
 
 **Is IDML the same as INDD?**
 No. `.indd` is InDesign's closed native format; IDML is its open, XML-based
