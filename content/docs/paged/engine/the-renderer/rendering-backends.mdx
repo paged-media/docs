@@ -48,7 +48,7 @@ still draws.
 
 The Vello backend drives Vello via `wgpu`, targeting the browser's WebGPU API on the
 web and native GPUs elsewhere. This is the path that matters going forward: it's what
-the published `@paged-media/sdk` viewer surface uses to load an IDML package and
+the published `@paged-media/viewer` package uses to load an IDML package and
 present it to a canvas, and it's what renders the live preview on this site. Its
 output is held to the CPU lane's by a parity gate on every engine change.
 

@@ -1,6 +1,6 @@
 {
-  "$comment": "OFFLINE FALLBACK ONLY. The canonical catalog lives in core at web/idml-viewer/api-catalog.json and is pulled via sources.pin (sdk-catalog) → gen-sdk prefers it. This copy keeps the SDK reference working in a checkout that has not pulled sources yet; resync from core when the API changes.",
-  "package": "@paged-media/idml-viewer",
+  "$comment": "OFFLINE FALLBACK ONLY. The canonical catalog lives in paged-media/paged at engine/core/web/idml-viewer/api-catalog.json and is pulled via sources.pin (sdk-catalog) → gen-sdk prefers it. This copy keeps the SDK reference working in a checkout that has not pulled sources yet; resync from core when the API changes.",
+  "package": "@paged-media/viewer",
   "groups": [
     {
       "key": "lifecycle",
@@ -389,7 +389,7 @@
     },
     {
       "key": "session",
-      "title": "ViewerSession (low-level, @paged-media/sdk)",
+      "title": "ViewerSession (low-level, @paged-media/viewer/session)",
       "summary": "The wasm session `createViewer` wraps. Use it directly only when you need raw control — most apps use the Viewer wrapper above.",
       "members": [
         {
@@ -473,7 +473,7 @@
     },
     {
       "key": "inspect",
-      "title": "Inspector (read-only, @paged-media/introspect-wasm)",
+      "title": "Inspector (read-only, @paged-media/paged/introspect)",
       "summary": "Inspect a document's scene tree and properties, and render single pages, without a canvas — handy for tests and tooling.",
       "members": [
         {

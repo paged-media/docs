@@ -1,5 +1,5 @@
 /**
- * <SdkCatalog /> — the @paged-media/idml-viewer API surface (plus the underlying
+ * <SdkCatalog /> — the @paged-media/viewer API surface (plus the underlying
  * ViewerSession and Inspector), generated into `.generated/sdk-catalog.json` by
  * gen-sdk.mjs. Every exported function, method, property, event, and type is
  * listed with its signature and a one-line summary; nothing is hand-listed here.

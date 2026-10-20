@@ -1,0 +1,77 @@
+---
+title: The paged command from npm
+description: The `paged` command and its `paged mcp` server, installed from npm as @paged-media/paged — no Rust toolchain, Node 22 or later, or Bun.
+tier: intermediate
+diataxis: how-to
+status: published
+owner: paged-docs
+reviewed: "2026-10-20"
+---
+
+**In short:** `@paged-media/paged` on npm is the engine as wasm and a `paged`
+command over it. Run it with `npx`; it needs Node 22 or later, or Bun, and no
+Rust toolchain. `paged mcp` serves the engine to an MCP client over stdio.
+
+## Run it
+
+```bash
+npx @paged-media/paged --help
+npx @paged-media/paged get brochure.idml 'swatch[name=Black]'
+npx @paged-media/paged set brochure.idml page:#1 itemName Cover -o out.paged
+npx @paged-media/paged export brochure.idml -o brochure.pdf
+```
+
+Installed into a project (`npm install -D @paged-media/paged`), the bin is
+`npx paged`. Its verbs read and write any property the engine or an installed
+plugin bundle publishes, run `paged.*` scripts, and export `.paged`, `.idml` and
+`.pdf`. The engine it drives is the package's own wasm, the same one the editor
+runs. The [Rust command line](/docs/paged/cli) is a separate program over the
+same engine; its reference lists that binary's commands.
+
+## `paged mcp`: the engine for agents
+
+`paged mcp` is an MCP server over stdio (one JSON-RPC message per line). Add it to
+an MCP client's server list; nothing is deployed:
+
+```json
+{
+  "mcpServers": {
+    "paged": { "command": "npx", "args": ["-y", "@paged-media/paged", "mcp"] }
+  }
+}
+```
+
+It serves the same tools, with the same names and schemas, as the Rust
+`paged mcp`:
+
+- **A library of documents on disk** (`--library <dir>`, default
+  `$PAGED_LIBRARY`, else `~/.paged/library`), each a repository of versions and
+  branches: `list_documents`, `describe_document`, `read_part`, `history`,
+  `diff`, `create_branch`, `commit_parts`, `propose_change`, `list_changes`,
+  `download_link`.
+- **The engine:** `open_document`, `run_script` (`paged.*` scripts),
+  `render_page` (a PNG) and `save_document`.
+- **The capability catalog:** `lookup_api`.
+
+An agent's writes land on `agent/<run>/…` branches with provenance, for the
+library's owner to merge.
+
+## Plugins
+
+Plugin bundles are found where the command runs: `--plugins <a,b>` loads those;
+otherwise every installed dependency of the current directory's `package.json`
+that declares a paged manifest. The built-in modules (sheet, draw, image, data,
+…) are part of the editor and are not on npm, so commands that need one, such as
+`apply` and `merge` (paged.data), report that it is not loaded.
+
+## The package's other entries
+
+| Import | What it is |
+|---|---|
+| `@paged-media/paged` | the editing canvas: the wire types, the document model and WebGPU rendering. |
+| `@paged-media/paged/introspect` | read-only introspection (`Inspector`) and the static capability catalog. |
+| `@paged-media/paged/repo` | the document repository: versions, branches and releases. |
+
+To show a document read-only, the [Viewer SDK](/docs/paged/sdk)
+(`@paged-media/viewer`) is the small package. To write an extension, the
+[Plugin SDK](/docs/paged/plugin-sdk) (`@paged-media/plugin-sdk`).

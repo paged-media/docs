@@ -3,7 +3,7 @@
  *
  * Server side, it assembles the named example to bytes (the SAME bytes the CI
  * gate validates), exactly like <ExampleEmbed>'s live slot. Client side,
- * <SdkPlaygroundClient> boots the published @paged-media/idml-viewer over those
+ * <SdkPlaygroundClient> boots the published @paged-media/viewer over those
  * bytes and exposes the real camera/navigation/layout API as a toolbar plus a
  * live events log. So the SDK pages are operable, not just readable.
  *

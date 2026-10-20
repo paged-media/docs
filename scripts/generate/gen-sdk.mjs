@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * gen-sdk — projects the SDK API surface (@paged-media/idml-viewer + the
- * underlying paged-sdk ViewerSession and introspect-wasm Inspector) into
+ * gen-sdk — projects the SDK API surface (@paged-media/viewer + the
+ * underlying paged-sdk ViewerSession and @paged-media/paged/introspect Inspector) into
  * `.generated/sdk-catalog.json` for the <SdkCatalog> component.
  *
  * Source preference, in order:
@@ -41,7 +41,7 @@ mkdirSync(GEN, { recursive: true });
 
 if (!cat) {
   console.warn('gen-sdk: no SDK catalog source — writing empty stub.');
-  writeFileSync(join(GEN, 'sdk-catalog.json'), JSON.stringify({ generatedAt: new Date().toISOString(), sourceMode: 'none', package: '@paged-media/idml-viewer', memberCount: 0, groups: [] }, null, 2));
+  writeFileSync(join(GEN, 'sdk-catalog.json'), JSON.stringify({ generatedAt: new Date().toISOString(), sourceMode: 'none', package: '@paged-media/viewer', memberCount: 0, groups: [] }, null, 2));
   process.exit(0);
 }
 
@@ -53,7 +53,7 @@ writeFileSync(
       generatedAt: new Date().toISOString(),
       sourceMode,
       sourceCommit: lock?.sources?.['sdk-catalog']?.sha ?? null,
-      package: cat.package ?? '@paged-media/idml-viewer',
+      package: cat.package ?? '@paged-media/viewer',
       memberCount,
       groups: cat.groups ?? [],
     },

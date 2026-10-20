@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ViewerSessionLike } from '@paged-media/idml-viewer';
+import type { ViewerSessionLike } from '@paged-media/viewer';
 import { createPreviewSession } from './sdk-loader';
 import { base64ToBytes, statusFromError, type PreviewStatus, type Viewer } from './viewer-common';
 import { focusRect, inkBounds, scaleRect, type Rect } from './content-bounds';
@@ -9,7 +9,7 @@ import { focusRect, inkBounds, scaleRect, type Rect } from './content-bounds';
 /**
  * The WebGPU live preview (briefing §6.2.1).
  *
- * Decision-B path: powered by the PUBLISHED `@paged-media/idml-viewer` — its
+ * Decision-B path: powered by the PUBLISHED `@paged-media/viewer` — its
  * `createViewer` over the renderer-core `ViewerSession` (the wasm bundled with
  * that package, staged into /public/preview by prepare-preview-wasm.mjs and
  * loaded lazily, on mount, NOT in the page bundle). The package is consumed from
@@ -120,10 +120,10 @@ export function LivePreview({
     setStatus('loading');
     void (async () => {
       try {
-        // Lazy: pulls @paged-media/idml-viewer's createViewer into a separate
+        // Lazy: pulls @paged-media/viewer's createViewer into a separate
         // chunk, and createPreviewSession imports the wasm glue from /public —
         // so neither the viewer JS nor the ~9 MB wasm is in the page bundle.
-        const { createViewer } = await import('@paged-media/idml-viewer');
+        const { createViewer } = await import('@paged-media/viewer');
         if (cancelled) return;
 
         const canvas = canvasRef.current;

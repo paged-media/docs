@@ -77,8 +77,8 @@ question head-on. Read it if you want to:
 - or simply read the code: it's open, and these pages point you straight at it.
 
 The renderer is also what you're looking at on this very site. The live preview
-embedded in our examples wraps the same engine — shipped as the `@paged-media/sdk`
-WebGPU surface (`paged-sdk`) — so the page you see rendered next to a snippet is
+embedded in our examples wraps the same engine — shipped as the `@paged-media/viewer`
+package, whose WebGPU session (`paged-sdk`) is `@paged-media/viewer/session` — so the page you see rendered next to a snippet is
 produced by exactly the code described here.
 
 ## Frequently asked questions
@@ -99,6 +99,6 @@ only enters the picture on the testing side, where InDesign-exported PDFs serve 
 the reference images our fidelity harness diffs against.
 
 **Is this the same renderer as the live preview on this site?**
-Yes. The live preview wraps the engine's WebGPU surface (`@paged-media/sdk` /
+Yes. The live preview wraps the engine's WebGPU surface (`@paged-media/viewer/session` /
 `paged-sdk`), which loads an IDML package and presents it through the Vello/WebGPU
 backend. The pixels you see beside an example come from the engine documented here.

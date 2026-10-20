@@ -10,7 +10,7 @@ reviewed: "2026-06-23"
 
 **Mount a canvas, create a viewer, load a document — that's the whole embed.**
 
-**In short:** install `@paged-media/idml-viewer`, give it a `<canvas>`, call
+**In short:** install `@paged-media/viewer`, give it a `<canvas>`, call
 `createViewer({ canvas })`, then `await viewer.load(bytes)`. The viewer renders
 with **WebGPU only**, so gate on `navigator.gpu` and show a fallback when it is
 absent. The wasm is loaded lazily by the package; keep the viewer in a
@@ -19,13 +19,13 @@ client-only component so it never runs during SSR or static export.
 ## Install
 
 ```bash
-npm install @paged-media/idml-viewer
+npm install @paged-media/viewer
 ```
 
 ## Mount
 
 ```ts
-import { createViewer } from '@paged-media/idml-viewer';
+import { createViewer } from '@paged-media/viewer';
 
 const canvas = document.querySelector('canvas')!;
 if (!('gpu' in navigator)) {

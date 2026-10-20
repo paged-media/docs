@@ -2,7 +2,7 @@
 
 /**
  * <SdkPlaygroundClient> — the interactive SDK demo. It boots the PUBLISHED
- * @paged-media/idml-viewer over a canvas (same path as <LivePreview>) and wires a
+ * @paged-media/viewer over a canvas (same path as <LivePreview>) and wires a
  * toolbar to the REAL API: fit, zoom, page navigation, and layout mode. An events
  * log shows the viewer's own events firing as you drive it — so the SDK reference
  * is something you operate, not just read. WebGPU-only, with a graceful fallback.
@@ -80,7 +80,7 @@ export function SdkPlaygroundClient({ idmlBase64, height = 460 }: { idmlBase64?:
     setStatus('loading');
     void (async () => {
       try {
-        const { createViewer } = await import('@paged-media/idml-viewer');
+        const { createViewer } = await import('@paged-media/viewer');
         if (cancelled) return;
         const canvas = canvasRef.current;
         if (!canvas) return;

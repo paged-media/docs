@@ -69,7 +69,7 @@ viewer, plugin-*) are archived; `sources.pin` reads every product source from
 `paged` (locally the sibling `../paged`). `core.pin` tracks the latest
 engine RELEASE TAG — bump it per release, not to main (policy lives in the pin's
 header comment). The WebGPU live preview is WIRED: `ExampleEmbed`'s `live` slot
-renders the assembled package via the PUBLISHED `@paged-media/idml-viewer`
+renders the assembled package via the PUBLISHED `@paged-media/viewer`
 (`createViewer`); its bundled wasm is staged into `public/preview` by
 `scripts/prepare-preview-wasm.mjs` (run by `pnpm build`/`prepare:preview`), loaded
 lazily client-side with a no-WebGPU fallback. No core checkout for the preview.
