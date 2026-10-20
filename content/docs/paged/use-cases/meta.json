@@ -2,6 +2,7 @@
   "title": "Use cases",
   "icon": "story",
   "pages": [
-    "automated-publishing"
+    "automated-publishing",
+    "indesign-server"
   ]
 }

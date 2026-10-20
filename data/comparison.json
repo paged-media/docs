@@ -196,10 +196,15 @@
             "designcraft": 1
           },
           "pagedPlanned": true,
-          "note": "InDesign leans on InDesign Server + EasyCatalog/priint. Paged is automation-native and headless-friendly by design; parts of the batch pipeline are still landing. DesignCraft's headless CLI renders and drives documents; data merge is not documented.",
+          "note": "InDesign leans on InDesign Server + EasyCatalog/priint. Paged's command line and engine service open IDML, run scripts, merge records and export PDF/X-4 with no desktop app; Data Merge from the command line is experimental and the batch runner emits pages, not files. DesignCraft's headless CLI renders and drives documents; data merge is not documented.",
           "paged": {
-            "chapters": [
-              "data"
+            "features": [
+              "scripting.cli",
+              "scripting.headless-run",
+              "the-renderer.pdf-export",
+              "data.automation.batch",
+              "data.lower.merge-plan",
+              "data.lower.merge-writer"
             ]
           }
         }
