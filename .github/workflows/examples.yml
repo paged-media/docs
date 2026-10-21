@@ -9,6 +9,9 @@ on:
       - '.github/workflows/examples.yml'
   push:
     branches: [main]
+  # core-pin pushes the pin bump with the Actions token, which starts no
+  # push runs, and dispatches this workflow instead.
+  workflow_dispatch:
   schedule:
     # Weekly core-drift check: re-validate against core@main and surface breakage.
     - cron: '0 6 * * 1'

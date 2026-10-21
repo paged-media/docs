@@ -4,6 +4,9 @@ on:
   pull_request:
   push:
     branches: [main]
+  # core-pin pushes the pin bump with the Actions token, which starts no
+  # push runs, and dispatches this workflow instead.
+  workflow_dispatch:
 
 jobs:
   build:

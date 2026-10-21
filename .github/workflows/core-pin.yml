@@ -1,9 +1,10 @@
 name: core-pin
 # core.pin tracks the latest engine RELEASE tag (policy in its header). The
 # engine lives in the monorepo paged-media/paged (engine/core), whose v* tags are
-# the engine releases. Nightly, open a PR when a newer v* tag exists; the
-# examples gate on that PR validates every example against the new engine before
-# anyone merges it.
+# the engine releases. Nightly, when a newer v* tag exists, commit the bump
+# straight to main and run the gates (examples, scripting, build) and the deploy
+# on it: a push made with the Actions token starts no workflow by itself, so
+# they are dispatched. A red gate is fixed forward on main.
 on:
   schedule:
     - cron: "20 5 * * *"
@@ -11,7 +12,7 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
+  actions: write
 
 jobs:
   bump:
@@ -30,7 +31,7 @@ jobs:
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
           echo "current=$current" >> "$GITHUB_OUTPUT"
           echo "core.pin: $current; latest tag: $latest ($sha)"
-      - name: Open a pull request
+      - name: Commit the bump to main and run the gates on it
         if: steps.tag.outputs.latest != steps.tag.outputs.current
         env:
           GH_TOKEN: ${{ github.token }}
@@ -38,14 +39,14 @@ jobs:
           SHA: ${{ steps.tag.outputs.sha }}
           CURRENT: ${{ steps.tag.outputs.current }}
         run: |
-          branch="core-pin/$LATEST"
-          if git ls-remote --exit-code --heads origin "$branch" >/dev/null; then echo "PR branch exists"; exit 0; fi
           old=$(grep -v '^#' core.pin | grep -m1 .)
           sed -i "s/^$old\$/$SHA/" core.pin
           sed -i "s/^# Currently: $CURRENT (tag commit [0-9a-f]*)\./# Currently: $LATEST (tag commit ${SHA:0:7})./" core.pin
           git config user.name "core-pin[bot]"
           git config user.email "core-pin@users.noreply.github.com"
-          git checkout -b "$branch"
           git commit -qam "deps: core.pin → $LATEST (${SHA:0:7})"
-          git push -q -u origin "$branch"
-          gh pr create --title "core.pin → $LATEST" --body "The latest engine release (paged-media/paged) is $LATEST (${SHA:0:7}); core.pin is at $CURRENT. The examples gate on this PR validates every example against the new engine. Update the release summary in core.pin's header comment before merging."
+          git push -q origin HEAD:main
+          for wf in examples.yml scripting.yml build.yml cloudflare-pages.yml; do
+            gh workflow run "$wf" --ref main
+          done
+          echo "core.pin → $LATEST pushed to main; gates and deploy dispatched."

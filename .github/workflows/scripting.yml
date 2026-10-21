@@ -9,6 +9,9 @@ on:
       - '.github/workflows/scripting.yml'
   push:
     branches: [main]
+  # core-pin pushes the pin bump with the Actions token, which starts no
+  # push runs, and dispatches this workflow instead.
+  workflow_dispatch:
   schedule:
     # Weekly core-drift check: re-validate the example corpus against core@main.
     - cron: '0 6 * * 1'
