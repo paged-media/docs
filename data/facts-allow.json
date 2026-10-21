@@ -1,4 +1,13 @@
 {
   "$comment": "Lines check:facts may pass: a number that is not a platform fact (a fixture count, a grid size). Each entry names the file and a distinctive piece of the line.",
-  "allow": []
+  "allow": [
+    {
+      "file": "content/docs/paged/use-cases/indesign-server.mdx",
+      "text": "v0.74.2. They make a three-field price card"
+    },
+    {
+      "file": "content/docs/paged/use-cases/indesign-server.mdx",
+      "text": "were fixed on main after"
+    }
+  ]
 }
