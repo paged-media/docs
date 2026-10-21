@@ -6,7 +6,7 @@ diataxis: explanation
 status: draft
 owner: paged-docs
 describes: [data]
-reviewed: "2026-10-12"
+reviewed: "2026-10-21"
 ---
 
 **In short:** `paged.data` turns data into pages — a binding-expression DSL, a
@@ -25,10 +25,13 @@ publishes governed datasets that other plugins (e.g.
   and a sandboxed Boa scripting path.
 - A data-provider contract: register as a provider and publish a record set
   without knowing its consumers; governed extracts with column metadata.
-- In development: InDesign Data Merge (planning, merging and export as a Data
-  Merge template), a SQL query panel over DuckDB, local JSON, Parquet and XLSX
-  sources, row diffs and sync review, and binding any object property to data
-  (the universal binding round).
+- InDesign Data Merge: `<<field>>` templates are planned (shipped) and merged into
+  one document or one per record by `paged merge` in the Node command line with
+  this module installed
+  (experimental); see [Coming from Adobe InDesign Server](/docs/paged/use-cases/indesign-server).
+- In development: export as a Data Merge template, a SQL query panel over DuckDB,
+  local JSON, Parquet and XLSX sources, row diffs and sync review, and binding any
+  object property to data (the universal binding round).
 
 ## How it's built
 

@@ -6,7 +6,7 @@ diataxis: how-to
 status: published
 owner: paged-docs
 describes: [scripting, data, the-renderer, round-tripping, package-anatomy]
-reviewed: "2026-10-20"
+reviewed: "2026-10-21"
 ---
 
 **Can Paged do the jobs a team runs on Adobe InDesign Server?**
@@ -36,7 +36,7 @@ track, and its status is said in words.
 | Scripted layout changes | JavaScript against the `paged.*` API: `paged script`, `paged set`, `paged invoke` | <SupportBadge feature="scripting.cli" compact lifecycle /> <SupportBadge feature="scripting.full-mutation-surface" compact lifecycle /> |
 | Run existing ExtendScript (`.jsx`) or UXP scripts | No compatibility layer: scripts are rewritten against `paged.*`, which has its own object model | Not supported |
 | A long-running engine process to send work to | `paged session` speaks NDJSON on stdin/stdout | <SupportBadge feature="scripting.headless-run" compact lifecycle /> |
-| An engine service to call over HTTP | `paged engine-serve` answers `POST /run`, one stateless call per job (see the worked example) | Early: not in the record yet |
+| An engine service to call over HTTP | `paged engine-serve` answers `POST /run`, one stateless call per job, and exports PDF/X-4 in the call (see the worked example) | <SupportBadge feature="scripting.engine-serve" compact lifecycle /> |
 | Data Merge: template + CSV into a merged document | `paged-node merge` (single or multiple records per page, one document per record) | <SupportBadge feature="data.lower.merge-plan" compact lifecycle /> <SupportBadge feature="data.lower.merge-writer" compact lifecycle /> |
 | Catalogue and per-group batch runs | paged.data's batch plans and record flow; `paged-data-batch` emits the lowered pages, not finished files | <SupportBadge feature="data.automation.batch" compact lifecycle /> |
 | PDF and PDF/X-4 export | `paged export --standard pdfx4 --cmyk-profile …`, fonts subset and embedded | <SupportBadge feature="the-renderer.pdf-export" compact lifecycle /> <SupportBadge feature="the-renderer.pdf-font-embedding" compact lifecycle /> |
@@ -45,7 +45,7 @@ track, and its status is said in words.
 | Page images | `paged render` writes PNG at any resolution; there is no JPEG or EPS page export | <SupportBadge feature="the-renderer.snapshots" compact lifecycle /> |
 | Preflight before output | Export reports its findings on stderr | <SupportBadge feature="the-renderer.export-diagnostics" compact lifecycle /> |
 | Package for output (links and fonts) | `paged package` writes the package folder and its report | <SupportBadge feature="the-renderer.package-collect" compact lifecycle /> |
-| Fonts on the server | `--fonts <dir>` registers every face in a folder; the Rust CLI falls back to a bundled face | <SupportBadge feature="the-renderer.font-registry" compact lifecycle /> |
+| Fonts on the server | `--fonts <dir>` registers every face in a folder; both command lines fall back to a bundled face (Inter; in the npm package from 0.74.2), and `--no-default-font` turns that off | <SupportBadge feature="the-renderer.font-registry" compact lifecycle /> |
 | Snippets, InCopy files and books | Not yet | <SupportBadge feature="companion-formats.idms-icml" compact lifecycle /> <SupportBadge feature="companion-formats.book" compact lifecycle /> |
 | A hosted service with accounts and a queue | paged.server's headless lane runs `paged engine-serve` in a container; it is not deployed yet | In development |
 
@@ -55,8 +55,9 @@ licence is there when its terms do not fit.
 
 ## Worked example: a template and a CSV to PDF/X-4
 
-The commands below were run against the engine built from the main branch. They
-make a three-field price card, merge three records into it and export print PDF.
+The commands below were run against the engine built from the main branch after
+v0.74.2. They make a three-field price card, merge three records into it and export
+print PDF.
 
 ### 1. Build the tools
 
@@ -73,7 +74,8 @@ moon run data:duckdb    # its query engine, DuckDB-WASM
 In the steps below, `paged` is that binary and `paged-node` is
 `bun src/bin.ts` run in `apps/cli`, where the paged.data module resolves. The
 published [`@paged-media/paged`](/docs/paged/cli/npm) package carries the same Node
-command without paged.data, so it exports but does not merge.
+command without paged.data, so it exports (PDF/X-4 too, from 0.74.2:
+`--pdf-standard pdfx4 --cmyk-profile <file.icc>`) but does not merge.
 
 ### 2. Make the template
 
@@ -115,7 +117,8 @@ paged-node merge template.idml --data products.csv --out out --format paged \
 
 ```json
 { "records": 3, "format": "paged",
-  "outputs": [{ "path": "out/template-merged.paged", "pages": 3, "records": 3, "overset": [] }] }
+  "outputs": [{ "path": "out/template-merged.paged", "pages": 3, "records": 3, "overset": [],
+                 "bytes": 14953 }] }
 ```
 
 `--per-record` writes one document per record instead, and
@@ -136,8 +139,8 @@ text as real, embedded text.
 ### The same job over HTTP
 
 `paged engine-serve` keeps no state: each call brings the document, an optional
-script, and asks for a rendered page and the exported `.paged` back. Here a script
-fills the template's three fields for one record:
+script and the CMYK profile, and asks for a rendered page and the PDF/X-4 back.
+Here a script fills the template's three fields for one record:
 
 ```js title="fill.js"
 const record = { name: 'Desk lamp', sku: 'DL-300', price: '49.00' };
@@ -150,33 +153,48 @@ console.log('filled', lines.length, 'fields');
 ```
 
 ```bash
-paged engine-serve --port 8787 &
+paged engine-serve --port 8787 --workers 4 &
 
 jq -n --rawfile script fill.js --arg file "$(base64 -i template.idml)" \
-  '{file: $file, script: $script, render: {page: 1, dpi: 72}, export: true}' > call.json
+  --arg icc "$(base64 -i press.icc)" \
+  '{file: $file, script: $script, cmykProfile: $icc,
+    render: {page: 1, dpi: 72},
+    export: {format: "pdf", pdf: {standard: "pdfx4"}}}' > call.json
 curl -s -X POST localhost:8787/run -H 'content-type: application/json' \
   --data-binary @call.json > reply.json
 
 jq '{output, error}' reply.json      # { "output": ["[log] filled 3 fields"], "error": null }
-jq -r .file reply.json | base64 -d > lamp.paged
+jq -r .file reply.json | base64 -d > lamp.pdf
 jq -r .png  reply.json | base64 -d > lamp.png
-paged export lamp.paged --standard pdfx4 --cmyk-profile press.icc -o lamp.pdf
 ```
 
-The service answers one call at a time and returns `.paged` and PNG, not PDF, so
-the PDF step runs on the result. Run several instances behind a load balancer for
-throughput; any instance can answer any call.
+`export` also takes `true` (the `.paged`), a format name (`paged`, `pdf`, `idml`) or
+a list of these; a list answers `files: [{format, file}]` in order. A
+`cmykProfile` that is not an ICC CMYK profile is answered 400 with a JSON error,
+and a server started with such a `--cmyk-profile` refuses to start.
+
+Each call runs on an engine of its own. `--workers` calls run at once (default:
+the machine's parallelism), up to `--queue` more wait (default 64), and one more is
+answered 503 straight away. Any instance can answer any call, so more throughput
+is more instances behind a load balancer.
+
+<Callout type="info">
+Text a script adds to a document that had none, and the check on `cmykProfile`,
+were fixed on main after v0.74.2. Built from v0.74.2, such text comes back
+without a font and an empty profile gives a broken output intent.
+</Callout>
 
 ## What to check before you move a workflow
 
-- **Fonts.** Register your faces with `--fonts`. The Node command line has no
-  bundled face: without `--font` its text is not set and the PDF pages come out
-  blank.
+- **Fonts.** The bundled face is a fallback, so text in families you have not
+  registered is set in Inter. Register your real faces with `--fonts` (or bind
+  one with `--font-family`); `--no-default-font` shows what a document is missing.
 - **Linked images.** `paged` does not resolve `Links/…` files from the disk; put
   pictures in with `paged place`, or name image fields in a merge
   (`--image-field`, `--image-base`).
-- **Numbers in data.** The merge reads CSV columns as typed values, so `9.90`
-  arrives as `9.9`. Format prices in the data you export, or as text.
+- **Numbers in data.** Fields arrive as written, so `9.90` stays `9.90`. To sort
+  a merge numerically, cast in its query:
+  `--query 'SELECT * FROM "data" ORDER BY CAST(price AS DOUBLE)'`.
 - **Scripts.** Plan the port from ExtendScript as a rewrite; the
   [scripting reference](/docs/paged/scripting) lists every function and path.
 
