@@ -17,7 +17,7 @@
 # renderer accepts, never a main-only or pre-release one. The weekly core-drift job
 # may surface a newer green main, but the pin only moves when a release is cut.
 #
-# Currently: v0.74.1 (tag commit 9cad32a). Protocol 74, the first release from
+# Currently: v0.74.2 (tag commit ef8155a). Protocol 74, the first release from
 # the monorepo paged-media/paged (v0.74.0 was tagged and never published;
 # v0.74.1 supersedes it). The npm packages are renamed: `@paged-media/paged`
 # (the engine, with `./introspect`, `./repo` and the `paged` command with
@@ -259,4 +259,4 @@
 # The WebGPU live preview does not build from this commit — it consumes the
 # published npm `@paged-media/viewer` at the matching release (its bundled
 # wasm), so this pin governs the CI example/scripting gates only.
-9cad32ad5836e96d5a2f55bb5a0da840c5461a96
+ef8155adb2b93c6626107bd3dcaaf8435bf869f9
