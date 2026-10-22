@@ -1,0 +1,132 @@
+---
+title: The editor in an iframe
+description: Embed the paged editor from another origin with embed.html and connectEditor — the createEditor handle over messages, host actions answered by the host page.
+tier: pro
+diataxis: reference
+status: draft
+owner: paged-docs
+reviewed: "2026-10-23"
+---
+
+**The same handle, across a frame boundary.**
+
+**In short:** the editor's build has a second page, `embed.html`, which mounts
+the editor in an `<iframe>` and waits for its host. On the host page,
+`connectEditor(iframe, config)` resolves to the same handle
+[`createEditor`](/docs/paged/embedding/create-editor) gives, every method
+answering a promise. The editor's host actions (save, submit, close, back) become
+calls from the frame back to the host page. The host page must be
+cross-origin isolated, and only origins listed when the editor is deployed may
+frame it and drive it.
+
+<Callout type="warn">
+**Part of the editor's source.** `connectEditor` lives in
+`apps/editor/apps/canvas/src/embed/connect.ts` of
+[`paged-media/paged`](https://github.com/paged-media/paged); the npm package
+`@paged-media/editor`, which is to carry it, is in progress and not published.
+</Callout>
+
+## The host page
+
+```html
+<iframe id="editor" src="https://editor.example.com/embed.html"
+        allow="cross-origin-isolated" title="Editor"></iframe>
+```
+
+```ts
+import { connectEditor } from './embed/connect';   // the host's copy
+
+const iframe = document.getElementById('editor') as HTMLIFrameElement;
+const editor = await connectEditor(iframe, {
+  profile: {
+    extends: 'template-fill',
+    regions: { 'actions-bar': { items: [{ kind: 'spacer' }, 'paged.host.submit'] } },
+  },
+  locale: 'de',
+  actions: {
+    save: async ({ bytes, name }) => upload(name, bytes),
+    submit: async () => finish(await editor.getFieldValues()),
+  },
+});
+
+await editor.load({ bytes: templateBytes, name: 'card.paged' });
+await editor.setRole('filler');
+await editor.setFieldValues({ name: 'Mary Example' });
+editor.on((e) => { if (e.type === 'fieldChange') renderSummary(e.fields); });
+```
+
+### `ConnectConfig`
+
+Everything of `createEditor`'s [config](/docs/paged/embedding/create-editor#editorconfig)
+that is data — `profile`, `role`, `document`, `values`, `locale`, `messages`,
+`assetBase` — plus:
+
+| Field | Meaning |
+|---|---|
+| `actions` | The host actions, as functions on the host page. The frame learns only their names; when the user saves or presses submit, the frame asks the host page, which runs the function and answers. |
+| `origin` | The frame's origin; by default the origin of the iframe's `src`. |
+| `timeout` | How long to wait for the frame to become ready, in milliseconds (default 60 000). |
+
+### The remote handle
+
+Over the frame, the handle has the methods whose arguments and answers are data:
+`load`, `newDocument`, `save`, `exportPdf`, `fields`, `getFieldValues`,
+`setFieldValues`, `setRole` and `setTheme`, each returning a promise, and `on`
+and `dispose`. The members that are live objects in the frame — `features`,
+`hostSlot` and `client` — are not reachable from the host page. Bytes (a
+document, a saved `.paged`, a PDF) travel as transferred `ArrayBuffer`s, not
+copies.
+
+`dispose()` stops listening and rejects pending calls; removing the iframe
+releases the editor.
+
+## Cross-origin isolation
+
+The editor's engine needs a cross-origin-isolated page, and a frame is isolated
+only when its top page is. The host page sends:
+
+```text
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Embedder-Policy: credentialless
+```
+
+`credentialless`, unlike `require-corp`, asks nothing of the host page's other
+resources. The iframe needs `allow="cross-origin-isolated"`; `connectEditor`
+adds it when it is missing, which takes effect only if the frame has not loaded
+yet, so put it in the markup or call `connectEditor` before the iframe loads. A
+frame that is not isolated answers the host's first message with a failure that
+names these headers, and `connectEditor` rejects with it.
+
+## Who may frame the editor
+
+Which pages may embed `embed.html` is fixed when the editor is built and
+deployed:
+
+- `VITE_EMBED_ORIGINS` (comma-separated `https` origins) at build time lists
+  them, beside the editor's own origin;
+- the build writes the same list into `embed.html`'s
+  `Content-Security-Policy: frame-ancestors`, so a browser refuses to frame it
+  anywhere else;
+- the frame checks every message's origin against the list, and the first host
+  to initialise it fixes the origin every later message must come from. A
+  message from another origin is ignored.
+
+The [playground](https://play.paged.media)'s `embed.html` can be framed only by
+the playground itself (its own demos). To embed the editor in your product,
+build and serve it with your origins in `VITE_EMBED_ORIGINS`.
+
+## The messages
+
+The bridge is plain `postMessage`; `connectEditor` speaks it for you.
+
+| Message | Direction | Meaning |
+|---|---|---|
+| `paged:loaded` | frame → host | The frame listens; the host may initialise it. |
+| `paged:init` | host → frame | The config, with the names of the host's actions. |
+| `paged:ready` / `paged:failed` | frame → host | The editor is up, or why it is not. |
+| `paged:call` / `paged:reply` | host → frame → host | A handle method and its answer, by call id. |
+| `paged:event` | frame → host | A handle event (`ready`, `change`, `fieldChange`). |
+| `paged:action` / `paged:action-reply` | frame → host → frame | A host action the frame needs (save carries the bytes). |
+
+A live example is the iframe demo of the
+[demo gallery](https://play.paged.media/demos/).

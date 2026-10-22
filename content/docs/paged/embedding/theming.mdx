@@ -1,0 +1,66 @@
+---
+title: Theming
+description: Give the embedded paged editor the host's look — dark or light, and design tokens such as the primary colour — with setTheme and the editor's token contract.
+tier: intermediate
+diataxis: reference
+status: draft
+owner: paged-docs
+reviewed: "2026-10-23"
+---
+
+**The host's colours on the editor's chrome.**
+
+**In short:** `handle.setTheme({ mode, tokens })` switches the editor between its
+dark and light theme and overrides its design tokens — CSS custom properties such
+as `--paged-primary`. Which tokens a host may set is a contract file in the
+repository, `apps/editor/docs/theme-tokens.json`. It works the same through
+[`createEditor`](/docs/paged/embedding/create-editor) and through
+[the iframe](/docs/paged/embedding/iframe).
+
+```ts
+editor.setTheme({
+  mode: 'light',
+  tokens: {
+    '--paged-primary': '160 84% 30%',   // the brand accent
+    '--paged-ring': '160 84% 30%',
+  },
+});
+
+// Back to the editor's own accent:
+editor.setTheme({ tokens: { '--paged-primary': null, '--paged-ring': null } });
+```
+
+- `mode` is `'dark'` or `'light'`.
+- `tokens` maps a token name (it must start with `--`) to a value, or to `null`
+  to return that token to the editor's own value. A value takes the form the
+  token has in the contract: the `--paged-*` colour channels are HSL
+  components (`'160 84% 30%'`), others are colours, lengths or durations.
+- The tokens are set on the document's root element, not on the editor's
+  element, because the editor's menus, popovers and floating panels render
+  outside it and read the same tokens. `dispose()` removes the tokens the handle
+  set.
+
+## The token contract
+
+`apps/editor/docs/theme-tokens.json` in
+[`paged-media/paged`](https://github.com/paged-media/paged) lists every token
+with its group and its light and dark value. It is generated from the editor's
+theme stylesheet, so it changes only when the editor's tokens do. The groups:
+
+| Group | Examples |
+|---|---|
+| Paged semantic channels | `--paged-primary`, `--paged-bg`, `--paged-fg`, `--paged-accent`, `--paged-ring` |
+| Shared component variables | `--primary`, `--background`, `--border`, `--radius` (they read the `--paged-*` channels) |
+| Chrome neutrals | `--chrome-rail-bg`, `--chrome-panel-bg`, `--chrome-icon-active` |
+| Surfaces and interaction | `--pg-bg`, `--pg-primary`, `--pg-primary-hover` |
+| Status signals | `--status-ok`, `--status-warn`, `--status-error` |
+| Canvas overlays | `--overlay-selection`, `--overlay-guide`, `--overlay-snap` |
+| Type | `--font-sans`, `--font-logo` |
+| Rhythm, radii, elevation, motion | `--space-1` … `--space-8`, `--radius-sm`, `--shadow-1`, `--dur-fast` |
+
+Set a `--paged-*` channel to restyle everything that reads it; set a single
+component variable to change one use. Brand fonts are the host's to load; the
+editor's fonts are tokens (`--font-sans`) like the rest.
+
+The theme demo of the [demo gallery](https://play.paged.media/demos/) switches
+mode and accent live.

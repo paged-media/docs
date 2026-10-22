@@ -1,11 +1,11 @@
 ---
 title: Template fields
-description: The open parts of a template — text, textRun, variable, image, choice, visibility and data fields, their constraints, their values, and what can be set today.
+description: The open parts of a template — the engine's field kinds, the module field kinds of every built-in module, constraints, values, and what can be set today.
 tier: intermediate
 diataxis: reference
 status: draft
 owner: paged-docs
-reviewed: "2026-10-22"
+reviewed: "2026-10-23"
 ---
 
 **A field swaps content, not design.**
@@ -15,7 +15,9 @@ filling. It has a name, a kind, an optional label, help text, group and
 `required` flag, and constraints. Filling a field grants exactly what that takes
 — a text field `select` and `text.edit` on its frame, an image field `select`
 and `image.replace` — and nothing else. Today `text`, `variable`, `image` and
-`visibility` fields can be set; the other kinds are listed but not yet settable.
+`visibility` fields can be set, and every built-in module contributes **module
+fields** for its own content; `textRun`, `choice` and `data` are listed but not
+yet settable.
 
 ## Kinds
 
@@ -28,13 +30,83 @@ and `image.replace` — and nothing else. Today `text`, `variable`, `image` and
 | `choice` | a property, one of an allowed list | one of `allowed` | `select` | not yet |
 | `visibility` | an item shown or hidden | on or off | `select`, `item.visibility` | yes |
 | `data` | a `paged.data` binding | a record or a field of one | `select`, `text.edit`, `image.replace` | not yet |
+| `module` | a part of a module's content on the item (below) | what the module's kind takes | `select`, `document.metadata`, and the kind's grants | yes, through its module |
 
 The author may grant more on an item through its `allow` list (for example
 `text.style`, or `image.crop` on an image field) and take permissions away with
 `deny`.
 
-Field kinds owned by plugins — a range of a sheet, a block of a doc, a
-drawing's colour — are planned.
+## Module fields
+
+A template may open part of a module's content: a sheet's cell, a paragraph of a
+placed `.docx` document, a drawing's colour, an edited image's picture. Such a
+field has the kind `module`; its `module` names the module's field kind, the
+module's own definition (a cell reference, a paragraph anchor, a layer name) and
+the permissions filling it takes:
+
+```json
+{
+  "v": 1,
+  "data": {
+    "field": {
+      "name": "price",
+      "kind": "module",
+      "label": "Price",
+      "module": {
+        "kind": "media.paged.sheet.cell",
+        "def": { "ref": "Prices!B2", "type": "number", "min": 0 },
+        "grants": ["text.edit", "text.style"]
+      }
+    }
+  }
+}
+```
+
+The module that owns the kind reads and writes the value through its usual
+door, so the engine checks every write against the session's role as it checks
+its own: a module field is never a way around the policy. A refused value is
+answered in one sentence the form shows next to the field. The engine lists a
+module field in `templateFields` without a value and refuses it in
+`setTemplateFields` ("a module field is set through its module"); the editor's
+template form and [`paged template`](/docs/paged/cli/template) route it to its
+module instead.
+
+The form shows the control the kind declares: text (one line or several), a
+number, a choice, a toggle, a picture, or a table.
+
+| Module | Field kind | Definition | Form control | What a value does |
+|---|---|---|---|---|
+| sheet | `media.paged.sheet.cell` | `{ ref, type?, allowed?, min?, max? }` | text, number or choice | one cell's constant (`Sheet!A1` or a defined name); a formula is refused |
+| sheet | `media.paged.sheet.range` | `{ ref, columns?, rows? }` | table | a range's values; `rows: "fixed"` or `{ min?, max? }` |
+| sheet | `media.paged.sheet.chartSource` | `{ chart, allowed }` | choice | which of the author's series lists a chart draws |
+| doc | `media.paged.doc.blockText` | `{ anchor, frame? }` | text | a paragraph's text, keeping its look; the anchor is a bookmark, a style and occurrence, or a block index |
+| doc | `media.paged.doc.mergeField` | `{ name, frame? }` | text | every use of a `.docx` merge field |
+| doc | `media.paged.doc.listItems` | `{ anchor, frame? }` | table, one column | a list's items; new items copy the last item's look |
+| draw | `media.paged.draw.paint` | `{ channel, allowed?, target? }` | choice | the fill or stroke swatch |
+| draw | `media.paged.draw.graphicStyle` | `{ allowed?, targets? }` | choice | the graphic style |
+| draw | `media.paged.draw.textOnPath` | `{ path? }` | text | the text on a path |
+| draw | `media.paged.draw.symbolChoice` | `{ allowed? }` | choice | which one-piece symbol an instance shows |
+| image | `media.paged.image.picture` | `{ layer?, frame? }` | picture | replaces a layer's pixels; the adjustment layers above stay |
+| image | `media.paged.image.adjustmentPreset` | `{ allowed, layer?, frame? }` | choice | one of the author's adjustment presets |
+| image | `media.paged.image.layerVisibility` | `{ layer, frame? }` | toggle | a layer shown or hidden |
+| slide | `media.paged.slide.placeholderText` | `{ placeholder?, slide? }` | text | a placeholder's text, keeping its formatting |
+| slide | `media.paged.slide.visibility` | `{ slide? }` | toggle | a slide shown or hidden |
+| web | `media.paged.web.value` | `{ name }` | text | a web frame's `{{doc.<key>}}` value, as text |
+| web | `media.paged.web.source` | `{ lane }` | text, several lines | the frame's HTML (sanitised) or CSS |
+| web | `media.paged.web.cssVar` | `{ name, allowed? }` | choice, else text | a CSS custom property |
+| data | `media.paged.data.record` | `{ query, label? }` | choice | which record of a query fills the document |
+| data | `media.paged.data.bindingValue` | `{ binding }` | follows the bound property | a binding's value, pinned so a refresh keeps it |
+| data | `media.paged.data.dataSet` | `{ allowed? }` | choice | which captured data set the document shows |
+| data | `media.paged.data.variable` | `{ name }` | follows the variable | a property or visibility variable |
+
+`paged template kinds` lists the kinds the loaded modules offer. Some kinds need
+a permission granted document-wide in today's engine: a sheet field and a slide's
+visibility need `document.metadata`, text on a path needs `text.edit`, and a
+chart's source needs adding and deleting items; the field reports when it lacks
+one. The publish module (PDF) has no field kind yet: which page of a placed PDF
+a frame shows is planned. Each module's own documentation in the repository
+lists its limits (a table cell, a header or a picture in a `.docx` document cannot
+be a field yet, for example).
 
 ## The definition
 
@@ -74,7 +146,7 @@ Whether a text field's story is overset is reported with the field.
 
 ## Values
 
-Setting values is one message, `setTemplateFields`, used alike by the editor's
+Setting the engine's own kinds is one message, `setTemplateFields`, used alike by the editor's
 form, the [embedding handle](/docs/paged/embedding/create-editor)'s
 `setFieldValues` and the [`paged template fill`](/docs/paged/cli/template)
 command:

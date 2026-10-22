@@ -5,6 +5,9 @@
     "index",
     "profiles-and-presets",
     "features",
-    "create-editor"
+    "create-editor",
+    "iframe",
+    "theming",
+    "languages"
   ]
 }

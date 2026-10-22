@@ -5,7 +5,7 @@ tier: intermediate
 diataxis: explanation
 status: draft
 owner: paged-docs
-reviewed: "2026-10-22"
+reviewed: "2026-10-23"
 ---
 
 **One editor, many shapes, chosen by the product that embeds it.**
@@ -44,34 +44,49 @@ named profile; a host can extend one and adjust it entry by entry.
    surface. See [Permissions and roles](/docs/paged/templates/permissions-and-roles).
 
 A host mounts the editor and drives it through a handle:
-[mountEditor and createEditor](/docs/paged/embedding/create-editor).
+[mountEditor and createEditor](/docs/paged/embedding/create-editor), or, from
+another origin, [the editor in an iframe](/docs/paged/embedding/iframe) with
+`connectEditor`. The host also chooses the editor's look
+([Theming](/docs/paged/embedding/theming)) and its language
+([Languages](/docs/paged/embedding/languages)).
 
 ## What ships and what is planned
 
-Available in the editor today (in `apps/editor` of the public
+Available in the editor (in `apps/editor` of the public
 [`paged-media/paged`](https://github.com/paged-media/paged) repository):
 
 - editor profiles, the presets `full`, `solo:<name>`, `template-fill` and
   `viewer`, and `?profile=` / `?solo=` in the editor's URL;
-- every chrome region optional, region contents as ordered lists, open mode ids;
+- every chrome region optional, region contents as ordered lists, open mode ids,
+  and host slots (`{ kind: "host", id }`) the host renders its own component
+  into;
 - the feature store and the generated feature-id inventory;
-- the session role, the template form, field outlines on the canvas, and typed
-  refusals;
-- `mountEditor` with host actions (save, submit, close, back), and a
-  `createEditor` handle over it.
+- the session role, the template form (module fields included), field outlines
+  on the canvas, typed refusals, and the author's
+  [Template panel](/docs/paged/templates#making-a-template) with preview as
+  filler;
+- `mountEditor` with host actions (save, submit, close, back), and the
+  `createEditor` handle over it, with `setTheme` and a `locale`;
+- the iframe page (`embed.html`) and `connectEditor`, the same handle across an
+  `<iframe>`;
+- the editor's words in a string catalogue: English, and German for the whole
+  editor and every built-in module.
 
-Planned (no dates):
+In progress:
 
-- the published npm package `@paged-media/editor` — today the embedding API is
-  part of the editor's source, not a package you install;
-- the iframe bridge (`connectEditor`), the same API across an `<iframe>`;
-- a theming and locale API (tokens, a string catalogue, translations);
-- module field kinds — template fields owned by plugins (a sheet range, a doc
-  block, a drawing's colour).
+- the npm package `@paged-media/editor` — today the embedding API is part of
+  the editor's source, not a package you install;
+- two or more fully independent editors on one page.
+
+Planned (no dates): further host actions (export, upload, asset picking and
+resolving, validation), template preflight, and catalogues made from a template.
 
 ## Live demos
 
-Live demos of the composable editor — configured editors, template filling, a
-custom host around the editor — are being added to the editor playground,
-[play.paged.media](https://play.paged.media), under `/demos/`. Until they are
-there, the [existing live demos](/docs/paged/demos) show the editor itself.
+The demo gallery at [play.paged.media/demos/](https://play.paged.media/demos/)
+runs the composable editor through `createEditor` and `connectEditor`: the full
+editor, the focused module editors, a viewer, theme and language, a locked
+business card, a postcard filled from the host's own form, a custom host UI, a
+photobook, the iframe, and batch generation. Each demo is one page under
+`apps/editor/apps/canvas/demos/` in the repository. They need a browser with
+WebGPU. The [existing live demos](/docs/paged/demos) show the editor itself.
