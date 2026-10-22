@@ -6,6 +6,8 @@
     "engine",
     "---Developer reference---",
     "sdk",
+    "embedding",
+    "templates",
     "scripting",
     "cli",
     "plugin-sdk",

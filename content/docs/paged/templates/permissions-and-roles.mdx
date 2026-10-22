@@ -1,0 +1,109 @@
+---
+title: Permissions and roles
+description: What a template permits, how a filler's permissions are resolved, the three doors where the engine checks every edit, and the typed refusals notPermitted and locked.
+tier: pro
+diataxis: reference
+status: draft
+owner: paged-docs
+reviewed: "2026-10-22"
+---
+
+**Hiding a button does not protect a template; the engine does.**
+
+**In short:** every edit names the permissions it needs on its targets. The
+session has a role — `author`, `editor`, `filler` or `viewer` — and only a
+**filler** is bound by the document's policy. The engine checks each edit before
+it applies, at three doors, for every caller: the editor's UI, a script, a
+plugin, the automation surface, the command line. A refused edit changes
+nothing and answers with a typed refusal. Undo and redo are not checked.
+
+## Roles
+
+| Role | May | Bound by the policy |
+|---|---|---|
+| `author` | everything, including writing the template policy | no |
+| `editor` | everything except writing the template policy (the default) | no |
+| `filler` | what the document's policy permits, nothing else | **yes** |
+| `viewer` | nothing | no |
+
+The role is **session state**, set by the host — never stored in the document,
+not saved, not undoable. The engine keeps it across document loads. An engine
+that is never told a role is an `editor` and behaves as it always did, except
+that it will not rewrite a template's policy.
+
+A host sets the role with the `setSessionPolicy` message (answered by
+`sessionPolicyApplied`), the profile's `role`, or the
+[handle](/docs/paged/embedding/create-editor)'s `setRole`. With the message it
+may also give **overrides**, one decision per permission: `allow`, `deny` or
+`defer` (the document decides).
+
+## Permissions
+
+| Permission | Covers |
+|---|---|
+| `select` | selecting the item (a session that may not select an item does not hit it) |
+| `text.edit` | typing into, deleting from and replacing a story's text |
+| `text.style` | styling text |
+| `image.replace` | placing a different picture |
+| `image.crop` | moving or scaling the picture inside its frame |
+| `item.move`, `item.resize`, `item.rotate`, `item.flip` | geometry |
+| `item.delete`, `item.duplicate`, `item.restack` | removing, duplicating, changing the stacking order |
+| `item.visibility` | showing or hiding the item |
+| `appearance.fill`, `appearance.stroke`, `appearance.effects`, `appearance.opacity`, `appearance.other` | appearance |
+| `document.add-item` | adding items |
+| `document.pages` | pages, parent pages, sections, guides — and anything on a parent page |
+| `document.styles` | style, swatch, gradient, numbering and text-variable definitions; document defaults and colour settings |
+| `document.metadata` | document metadata |
+| `template.author` | writing the template's own label, and renaming an item that is a field |
+
+Every engine operation maps to its permissions by an exhaustive match: a new
+operation cannot be added to the engine until someone decides what it needs.
+
+## Resolution
+
+For a **filler**, the permissions on an item are:
+
+1. the role's defaults — nothing;
+2. plus the document policy's `defaults` (what a filler may do everywhere);
+3. plus what the item's field grants (see [Fields](/docs/paged/templates/fields));
+4. plus the item's `allow`;
+5. minus the item's `deny`;
+6. then the session's overrides, which are final.
+
+For the other roles the document does not matter: the role's defaults with the
+session's overrides applied.
+
+## Three doors
+
+1. **Operations.** Every edit that becomes an engine operation is checked before
+   it applies — the whole operation, every child of a batch included. A refused
+   batch never half-applies.
+2. **Text and settings writes.** Text insertion and deletion need `text.edit` on
+   the story's frame; document defaults, colour and ink settings need
+   `document.styles`. These are checked before they are routed. The soft-proof
+   setup is view state and stays free.
+3. **Gestures.** A drag is refused **at its beginning** when the session could
+   not commit it — `item.move` for a translate, `item.rotate`, `image.crop` for
+   the content gestures, `item.resize` otherwise — as a locked item already is.
+   Nothing moves on screen and snaps back.
+
+In addition, hit testing respects `select`: a filler's click passes through
+scenery to the field beneath it, and a viewer selects nothing. A UI built on the
+engine needs no filter of its own for this.
+
+**Undo is exempt.** Undo, redo and a batch's rollback are not checked: an
+inverse restores a state that was permitted when it was made, and the role may
+have changed since. An author's edit can be undone after the session becomes a
+filler.
+
+## Typed refusals
+
+| Refusal | Payload | When |
+|---|---|---|
+| `notPermitted` | `{ permission, target }` | the session's role and the policy do not permit the edit |
+| `locked` | `{ node, action }` | the item is locked |
+| gesture `notPermitted` | `{ id, permission }` | a gesture refused at its beginning |
+| `templateFieldsRefused` | `{ problems: [{ name, problem }] }` | a field value does not fit its field (nothing was set) |
+
+A batch's refusal is its refused child's. The editor says each refusal in
+words; the template form shows it under the field.

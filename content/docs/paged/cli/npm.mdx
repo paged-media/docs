@@ -56,6 +56,12 @@ It serves the same tools, with the same names and schemas, as the Rust
 An agent's writes land on `agent/<run>/…` branches with provenance, for the
 library's owner to merge.
 
+## Templates
+
+`paged template fields | fill | check` lists a template's fields, fills them as
+a filler and writes `.paged`, `.idml` or `.pdf`, and checks that a submitted
+document changed nothing outside its fields: [paged template](/docs/paged/cli/template).
+
 ## Plugins
 
 Plugin bundles are found where the command runs: `--plugins <a,b>` loads those;

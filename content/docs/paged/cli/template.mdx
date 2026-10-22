@@ -1,0 +1,90 @@
+---
+title: paged template
+description: The npm paged command lists a template's fields, fills them as a filler to .paged, .idml or PDF, and checks a filled document changed only its fields.
+tier: intermediate
+diataxis: reference
+status: draft
+owner: paged-docs
+reviewed: "2026-10-22"
+---
+
+**Fill and check templates on a server, with the engine the browser uses.**
+
+**In short:** `paged template` is a verb of the [`paged` command from
+npm](/docs/paged/cli/npm) (`@paged-media/paged`). It sends the same engine
+messages as the editor's template form, in a filler session, so a value the
+[template](/docs/paged/templates) does not permit is refused here as it is in the
+browser. It is on `main` and ships with the next `@paged-media/paged` release. The [Rust command line](/docs/paged/cli), whose reference is
+generated from its own parser, does not have it yet.
+
+Output is JSON; `--text` prints it for humans. Exit codes: `0` success, `1`
+refused or failed, `2` usage.
+
+## `paged template fields <doc>`
+
+Lists the template's fields in form order, each with its definition (name, kind,
+label, constraints), its target, and its current value.
+
+```bash
+npx @paged-media/paged template fields card.paged
+npx @paged-media/paged template fields card.idml --text
+```
+
+```text
+headline	text	{"kind":"text","text":"Your headline"}
+photo	image	{"kind":"image","uri":"https://example.com/placeholder.jpg"}
+showBadge	visibility	{"kind":"visible","visible":true}
+```
+
+## `paged template fill <template> --values <json|file> -o <out>`
+
+Sets the session to `filler`, fills the fields, and writes the result. The
+output format follows the extension of `-o`: `.paged`, `.idml` or `.pdf`.
+
+| Option | Meaning |
+|---|---|
+| `--values <json\|file>` | The values, inline JSON or a file holding it. **Required.** |
+| `-o, --out <file>` | Where to write the result. **Required.** |
+
+`--values` takes either form:
+
+```json
+[
+  { "name": "headline", "value": { "kind": "text", "text": "Grand opening" } },
+  { "name": "photo", "value": { "kind": "image", "uri": "https://example.com/shop.jpg" } }
+]
+```
+
+```json
+{ "headline": "Grand opening", "showBadge": true }
+```
+
+In the object form a string is a text value, a boolean a visibility value, and
+anything else is taken as a full value object.
+
+```bash
+npx @paged-media/paged template fill card.paged \
+  --values values.json -o card.pdf
+```
+
+All values are set as one batch. If any value does not fit its field
+(`required`, `maxLength`, the kind), nothing is written and the command exits
+`1` with the problems. If the template does not permit a write, it exits `1`
+with the refusal (`not permitted: <permission> on <target>`, or a locked item).
+Which kinds can be set today: [Template fields](/docs/paged/templates/fields).
+
+## `paged template check <template> <filled>`
+
+Answers "is `<filled>` the template with only its fields changed?". It reads
+the field values from the filled document, fills a fresh copy of the template
+with them in a filler session, and compares the two documents object by object —
+page items, stories and pages, every readable property including story
+content. The template, not the submission, is the authority.
+
+```bash
+npx @paged-media/paged template check card.paged submitted.paged
+```
+
+- Exit `0`: `ok: only the template's fields differ`.
+- Exit `1`: changed outside the template's fields, with the address of every
+  object that differs (`differences` in the JSON).

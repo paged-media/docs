@@ -1,0 +1,86 @@
+---
+title: Templates
+description: A paged template is an ordinary .paged or IDML document whose x-paged:template labels say which parts are fields and what a filler may change. The engine enforces it.
+tier: intermediate
+diataxis: explanation
+status: draft
+owner: paged-docs
+reviewed: "2026-10-22"
+---
+
+**A template is a document that knows which parts are open.**
+
+**In short:** a template is an ordinary `.paged` or `.idml` document. Its
+**policy** lives in labels with the key `x-paged:template`: one on the document
+(what a filler may do everywhere, the order of the form) and one on each item
+that is a **field** or has its own permissions. A session has a **role**; a
+*filler* may change only what the policy permits, and the engine — not the UI —
+refuses everything else, from any caller. Fill a template in the editor's
+`template-fill` preset, through the [embedding handle](/docs/paged/embedding/create-editor),
+or on a server with [`paged template`](/docs/paged/cli/template).
+
+## How a template is stored
+
+| Where | Label | Holds |
+|---|---|---|
+| the document (designmap) | `x-paged:template` | permissions a filler has on every item (none by default), the form order, text-variable fields |
+| a page item | `x-paged:template` | the item's field definition, and permissions granted or denied on it |
+
+Both values use the envelope every `x-paged:` label uses, `{ "v": 1, "data": … }`.
+An item's policy:
+
+```json
+{
+  "v": 1,
+  "data": {
+    "field": {
+      "name": "headline",
+      "kind": "text",
+      "label": "Headline",
+      "required": true,
+      "constraints": { "maxLength": 30 }
+    },
+    "allow": ["text.style"],
+    "deny": []
+  }
+}
+```
+
+Because the policy is document data in labels, it travels wherever labels do:
+`.paged` save and load, and IDML export and import. A label that cannot be read
+does not stop the document from opening: that item (or the document) then has no
+policy, which for a filler means nothing is permitted there.
+
+## The parts
+
+- **[Fields](/docs/paged/templates/fields)** — the open parts: kinds, constraints,
+  values, and which kinds can be set today.
+- **[Permissions and roles](/docs/paged/templates/permissions-and-roles)** — the
+  permission vocabulary, how a filler's permissions are resolved, the three
+  doors the engine checks, and the typed refusals.
+- **[Filling a template](/docs/paged/templates/filling)** — the form and field
+  outlines in the editor, the `template-fill` and `viewer` presets, and filling on
+  a server.
+
+## Making a template today
+
+The editor's Template panel for authors is planned. Today an author session
+writes the labels: set the role to `author` and write the `x-paged:template`
+label of an item with the `setPluginMetadata` mutation (for example
+through the [embedding handle](/docs/paged/embedding/create-editor)'s `client`). Only an author may write the policy; an editor or a filler is
+refused.
+
+## InDesign
+
+- **Names.** A field is addressed by its name. Give the item the same name in
+  InDesign's Layers panel and the field can be addressed by it from outside
+  (`frame[name="headline"]`); a name survives an InDesign save where an internal
+  id may not.
+- **Labels.** The policy is stored in IDML item labels, which paged writes on
+  export and reads on import.
+- **XML tags (planned).** Many InDesign template workflows mark the editable
+  parts of a layout with XML tags. Opening a tagged IDML file as a template —
+  a tagged text frame becoming a text field, a tagged graphic frame an image
+  field, the tag name the field name — is planned, as is writing XML tags from
+  paged's model on export. paged already imports a document's tags and keeps the
+  source package's XML parts on export.

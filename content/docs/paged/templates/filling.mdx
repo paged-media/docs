@@ -1,0 +1,78 @@
+---
+title: Filling a template
+description: Fill a template in the editor's template-fill preset with its form and field outlines, show it read-only in the viewer preset, embed it, or fill it on a server.
+tier: intermediate
+diataxis: how-to
+status: draft
+owner: paged-docs
+reviewed: "2026-10-22"
+---
+
+**Three ways to fill the same template: in the editor, embedded, on a server.**
+
+**In short:** open a template in the editor with `?profile=template-fill` and the
+session is a filler: a form lists the fields, outlines mark them on the canvas,
+and nothing else can change. Embedded, `createEditor` with the `template-fill`
+preset gives the same editor and a handle to read and set values. On a server,
+`paged template fill` fills a template from JSON and writes `.paged`, `.idml` or
+PDF, and `paged template check` verifies that a submitted document changed only
+its fields.
+
+## In the editor
+
+`?profile=template-fill` (see [Profiles and presets](/docs/paged/embedding/profiles-and-presets))
+starts a filler session with:
+
+- **The template form** (`paged.template.form`) as the inspector. It lists the
+  fields in the author's order and groups with a control per kind: a text input
+  that commits on Enter or blur, with a counter when the field has a maximum
+  length; a **Replace** button for a picture; a checkbox for a visibility field.
+  Kinds that cannot be set yet say so. A refusal or a constraint problem shows
+  under the field in words.
+- **Field outlines** on the canvas: every field dashed, with its label; a picture
+  field carries a **Replace** button. The label and button keep their size at
+  any zoom. Authors see the outlines too; an editor or a viewer sees the
+  document as it prints.
+- **A short tool rail** — select, type, hand, zoom — and Undo, Redo and Save in
+  the header. A filler can also type straight into a text field on the canvas
+  with the type tool.
+- No menu bar, context toolbar, panel rail, mode bar, command palette or canvas
+  context menu.
+
+Text and visibility values from the form are one undo step each and checked like
+any edit; a replaced picture keeps the frame's previous fit.
+
+**`?profile=viewer`** shows the template — or any document — read-only: the
+canvas and its page thumbnails with hand and zoom. The session is a viewer, so
+the engine changes nothing and nothing is selectable.
+
+## Embedded
+
+```ts
+const editor = await createEditor(el, {
+  profile: 'template-fill',
+  document: { bytes: templateBytes },
+  actions: { submit: async () => send(await editor.save()) },
+});
+
+await editor.setFieldValues({ headline: 'Grand opening', showBadge: true });
+```
+
+See [mountEditor and createEditor](/docs/paged/embedding/create-editor).
+
+## On a server
+
+The `paged` command from npm fills and checks templates with the same engine
+messages the form sends, in a filler session:
+
+```bash
+npx @paged-media/paged template fields card.paged
+npx @paged-media/paged template fill card.paged \
+  --values '{"headline":"Grand opening","showBadge":true}' -o card.pdf
+npx @paged-media/paged template check card.paged submitted.paged
+```
+
+`check` is the server's answer to "did the user change only the fields?": it
+refills the template with the submission's own field values and compares the two
+documents. The template, not the submission, is the authority. Reference:
+[paged template](/docs/paged/cli/template).

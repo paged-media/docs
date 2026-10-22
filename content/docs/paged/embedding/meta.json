@@ -1,0 +1,10 @@
+{
+  "title": "Embedding the editor",
+  "icon": "columns",
+  "pages": [
+    "index",
+    "profiles-and-presets",
+    "features",
+    "create-editor"
+  ]
+}

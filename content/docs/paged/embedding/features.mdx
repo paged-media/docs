@@ -1,0 +1,84 @@
+---
+title: Features
+description: Switch single commands, panels, tools, menu paths, keybindings and canvas furniture off and on while the editor runs — by surface id, glob or predicate.
+tier: intermediate
+diataxis: reference
+status: draft
+owner: paged-docs
+reviewed: "2026-10-22"
+---
+
+**A feature switch narrows a preset without rewriting it.**
+
+**In short:** the editor has a feature store. A feature id is a surface id —
+`<kind>:<id>` — and a rule is a boolean or a predicate. Everything is on until a
+rule says otherwise. A command switched off is not greyed but **absent**: from
+the menu bar, the command palette, the canvas context menu, region buttons and
+its keybinding, all at once. Features shape what the UI offers; they are **not
+security** — what must not happen to a document is a
+[permission](/docs/paged/templates/permissions-and-roles), checked by the engine.
+
+## Feature ids
+
+| Kind | Example | Gates |
+|---|---|---|
+| `command` | `command:paged.object.lock` | the command everywhere it is offered, and `invoke` |
+| `panel` | `panel:paged.template.form` | the panel on the rail and wherever a slot or tab hosts it |
+| `tool` | `tool:paged.tool.zoom` | the tool on the rail |
+| `menu` | `menu:Object/Lock` | a menu entry, by its path |
+| `keybinding` | `keybinding:alt+cmd+0→paged.view.fitSpread` | one key onto one command; when off, the key stays the page's |
+| `overlay` | `overlay:paged.template-fields` | a canvas overlay |
+| `chrome` | `chrome:rulers`, `chrome:title-bar`, `chrome:thumbnails`, `chrome:context-menu` | canvas furniture and chrome that is not a registry entry |
+
+The ids an editor build offers are published as a generated inventory,
+`apps/editor/apps/canvas/feature-ids.json` in
+[`paged-media/paged`](https://github.com/paged-media/paged/blob/main/apps/editor/apps/canvas/feature-ids.json):
+commands, panels, tools, menu paths and keybindings of the editor and every
+built-in bundle, and the `chrome:` ids. CI fails when it is stale. Overlay ids
+are not listed yet.
+
+## Rules
+
+```ts
+features.disable('command:paged.object.delete');
+features.disable(['panel:paged.layers', 'chrome:rulers']);
+features.disable('command:paged.object.*');           // a glob matches a family
+features.enable('command:paged.object.lock');
+
+// A predicate sees the editor state and the answer of the rules before it.
+features.set('command:paged.insert.newPage', ({ state, previous }) =>
+  previous && pageCount(state) < 4);
+
+features.isEnabled('command:paged.object.lock');       // → true
+features.onChange(() => rerenderHostUi());
+```
+
+- Rules apply **oldest first**, so the newest wins, and a predicate may defer by
+  returning `previous`.
+- `isEnabled` asks about one concrete id. A glob is for setting rules.
+- A predicate that throws offers nothing.
+- `reset(pattern)` removes every rule set for exactly that pattern.
+
+## From a profile
+
+A [profile](/docs/paged/embedding/profiles-and-presets)'s `features` field seeds
+the store before the first paint; its keys are ids or globs and its values
+booleans:
+
+```ts
+{
+  extends: 'full',
+  features: { 'command:paged.object.*': false, 'chrome:rulers': false },
+}
+```
+
+The `template-fill` and `viewer` presets switch off `chrome:context-menu` this
+way. While the editor runs, the [handle](/docs/paged/embedding/create-editor)'s
+`features` is the same store.
+
+## Not a security boundary
+
+A disabled command is still reachable from a script, a plugin or the
+automation surface. Use features to shape what a user is offered; use a
+[role and a template policy](/docs/paged/templates/permissions-and-roles) for
+what must not happen to the document.

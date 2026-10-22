@@ -1,0 +1,77 @@
+---
+title: Embedding the editor
+description: The composable editor — a product embeds paged and decides what its users get, from the whole editor to a one-module app, a template form or a viewer.
+tier: intermediate
+diataxis: explanation
+status: draft
+owner: paged-docs
+reviewed: "2026-10-22"
+---
+
+**One editor, many shapes, chosen by the product that embeds it.**
+
+**In short:** the paged editor can be composed. A product that embeds it — a
+web-to-print shop, a marketing tool, an asset manager, any app with a "design
+this" button — decides which bundles load, which parts of the chrome exist and
+what each holds (a **profile**), which single commands, panels and tools are
+offered (**features**), and who the session is (a **role**: author, editor,
+filler or viewer). Roles are enforced by the engine against the document's
+[template policy](/docs/paged/templates); profiles and features shape only the UI.
+
+## The shapes
+
+| Shape | What the end user sees | How |
+|---|---|---|
+| **Full** | The whole editor. | the `full` preset |
+| **Focused** | One module's application: a drawing program, a word processor, a sheet. | the `solo:<name>` presets |
+| **Fill in** | A template with its open fields and a form beside it; nothing else can change. | the `template-fill` preset, role `filler` |
+| **View** | The pages, with pan and zoom; nothing can change. | the `viewer` preset, role `viewer` |
+
+All four are the same application and the same document model. A preset is a
+named profile; a host can extend one and adjust it entry by entry.
+
+## The three layers
+
+1. **[Profiles and presets](/docs/paged/embedding/profiles-and-presets)** — what
+   the editor *registers*: bundles, host panels, modes, and the regions of the
+   chrome with their ordered contents. Data, resolved once at start.
+2. **[Features](/docs/paged/embedding/features)** — what the editor *offers* while
+   it runs: switch a command, panel, tool, menu path, keybinding or piece of
+   canvas furniture off and on, by id, glob or predicate. Not a security
+   boundary.
+3. **Roles and the template policy** — what may *happen to the document*.
+   Checked by the engine for every caller — UI, script, plugin or automation
+   surface. See [Permissions and roles](/docs/paged/templates/permissions-and-roles).
+
+A host mounts the editor and drives it through a handle:
+[mountEditor and createEditor](/docs/paged/embedding/create-editor).
+
+## What ships and what is planned
+
+Available in the editor today (in `apps/editor` of the public
+[`paged-media/paged`](https://github.com/paged-media/paged) repository):
+
+- editor profiles, the presets `full`, `solo:<name>`, `template-fill` and
+  `viewer`, and `?profile=` / `?solo=` in the editor's URL;
+- every chrome region optional, region contents as ordered lists, open mode ids;
+- the feature store and the generated feature-id inventory;
+- the session role, the template form, field outlines on the canvas, and typed
+  refusals;
+- `mountEditor` with host actions (save, submit, close, back), and a
+  `createEditor` handle over it.
+
+Planned (no dates):
+
+- the published npm package `@paged-media/editor` — today the embedding API is
+  part of the editor's source, not a package you install;
+- the iframe bridge (`connectEditor`), the same API across an `<iframe>`;
+- a theming and locale API (tokens, a string catalogue, translations);
+- module field kinds — template fields owned by plugins (a sheet range, a doc
+  block, a drawing's colour).
+
+## Live demos
+
+Live demos of the composable editor — configured editors, template filling, a
+custom host around the editor — are being added to the editor playground,
+[play.paged.media](https://play.paged.media), under `/demos/`. Until they are
+there, the [existing live demos](/docs/paged/demos) show the editor itself.
