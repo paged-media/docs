@@ -1,0 +1,84 @@
+---
+title: Languages
+description: Run the embedded paged editor in the host's language — English and German ship, a host can supply its own catalogue, and extensions translate through host.strings.
+tier: intermediate
+diataxis: how-to
+status: draft
+owner: paged-docs
+reviewed: "2026-10-23"
+---
+
+**The editor speaks the host's language.**
+
+**In short:** every word the editor and its built-in modules show comes from one
+string catalogue. English is the source; **German** ships for the whole editor
+and every built-in module. A host picks the language with
+`createEditor({ locale: 'de' })` (or `?locale=de` on the editor's own page), can
+supply a catalogue for any other language, and an extension's own words follow
+the same choice through `host.strings`.
+
+## Choosing the language
+
+```ts
+const editor = await createEditor(el, { profile: 'template-fill', locale: 'de' });
+```
+
+The editor finds the catalogue for `locale` in this order:
+
+1. `messages`, when the host passes them — a catalogue of message keys to text;
+2. English for `en` and `en-*`;
+3. a language the editor ships — German, `de` (and `de-AT`, `de-CH`, … fall back
+   to it) — unless the host gives an `assetBase`;
+4. `<assetBase>/locales/<locale>.json`, fetched.
+
+A key a catalogue lacks shows its English text, and a catalogue that cannot be
+found leaves the editor in English with a warning in the console; the editor
+never fails to start over a language. Through [the iframe](/docs/paged/embedding/iframe)
+the same `locale`, `messages` and `assetBase` go in `connectEditor`'s config.
+On the editor's own page, `?locale=de` does the same.
+
+## A catalogue of your own
+
+A catalogue is a JSON object from message keys to text:
+
+```json
+{
+  "hostAction.submit": "Envoyer",
+  "templateForm.empty": "Ce modèle n'a pas de champs."
+}
+```
+
+Messages take `{name}` parameters and one plural form
+(`{count, plural, one {# field} other {# fields}}`). The English source — every
+key with its text — is what a translation starts from; the editor's packages
+define it beside the code that shows it, and German is the reference for a
+complete translation (`platform/shared/strings` in
+[`paged-media/paged`](https://github.com/paged-media/paged)). Template field
+labels and help texts are the template author's words and are shown as written.
+
+## Extensions
+
+An extension's panels, commands and messages use `host.strings` (plugin contract,
+extensions ADR 333):
+
+```ts
+const M = host.strings.define({ empty: 'No notes yet', count: '{count, plural, one {# note} other {# notes}}' });
+host.strings.translate('de', { [M.empty]: 'Noch keine Notizen' });
+host.strings.t(M.count, { count: 3 });   // in the editor's language, else English
+```
+
+- `define` answers keys under the extension's id; `translate` registers a
+  translation and refuses keys outside that namespace, so no extension can
+  rewrite another's words or the editor's.
+- `t(key, params)` answers in the editor's language, else English; `locale`
+  names the language.
+- Read words when rendering or registering, not when the module loads, so they
+  follow the language the host chose.
+- Without an editor to back it (a headless host, the command line),
+  `host.strings` answers English and `supports("strings@1")` is false.
+
+`host.strings` is on `main` and ships with the next `@paged-media/plugin-sdk`
+release.
+
+The language demo of the [demo gallery](https://play.paged.media/demos/)
+switches the same template between English and German.

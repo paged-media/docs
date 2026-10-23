@@ -1,0 +1,10 @@
+{
+  "title": "Templates",
+  "icon": "margin",
+  "pages": [
+    "index",
+    "fields",
+    "permissions-and-roles",
+    "filling"
+  ]
+}

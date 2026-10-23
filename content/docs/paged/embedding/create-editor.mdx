@@ -1,0 +1,164 @@
+---
+title: mountEditor and createEditor
+description: Mount the paged editor into a host element, give it host actions, a language and a theme, and drive it through a handle — load, save, fields, role, features.
+tier: pro
+diataxis: reference
+status: draft
+owner: paged-docs
+reviewed: "2026-10-23"
+---
+
+**Mount an editor into your page and drive it from your code.**
+
+**In short:** `mountEditor(element, options)` mounts an editor, configured by a
+[profile](/docs/paged/embedding/profiles-and-presets) and the host's
+**actions**, into any element. `createEditor(element, config)` builds on it and
+resolves, once the shell, its bundles and the first document are up, to an
+**`EditorHandle`**: load and save documents, export a PDF, read and fill
+[template fields](/docs/paged/templates/fields), change the session's role and
+the [theme](/docs/paged/embedding/theming), switch
+[features](/docs/paged/embedding/features) and listen for changes. Every
+write goes through the same engine doors the editor's own UI uses, so a filler's
+handle can change only what the template permits.
+
+<Callout type="warn">
+**Not a package yet.** The embedding API lives in the editor's source
+(`apps/editor/apps/canvas/src/embed` in
+[`paged-media/paged`](https://github.com/paged-media/paged)); a host builds the
+editor from there. The npm package `@paged-media/editor` is in progress and not
+published. The editor renders with WebGPU and needs a cross-origin-isolated page
+(COOP and COEP headers), as the [playground](https://play.paged.media) does. A
+host on another origin uses [the iframe](/docs/paged/embedding/iframe) instead.
+</Callout>
+
+## createEditor
+
+```ts
+import { createEditor } from './embed';   // apps/editor/apps/canvas/src/embed
+
+const editor = await createEditor(document.getElementById('editor')!, {
+  profile: 'template-fill',               // a preset id or an EditorProfile
+  locale: 'de',                           // the editor's language; English by default
+  document: { bytes: templateBytes, name: 'card.paged' },
+  values: { headline: 'Grand opening', showBadge: true },
+  actions: {
+    save: async ({ bytes, name }) => upload(name, bytes),
+    submit: async () => finish(await editor.getFieldValues()),
+  },
+});
+
+editor.on((e) => {
+  if (e.type === 'fieldChange') renderSummary(e.fields);
+});
+```
+
+### `EditorConfig`
+
+| Field | Type | Meaning |
+|---|---|---|
+| `profile` | `string \| EditorProfile` | A preset id (`full`, `template-fill`, `viewer`, `solo:draw`, …) or a profile. Default `full`. |
+| `role` | `'author' \| 'editor' \| 'filler' \| 'viewer'` | The session's role; overrides the profile's. |
+| `document` | `{ bytes, name? }` | The document to open: `.paged`, `.idml`, or a template in either. |
+| `actions` | `HostActions` | What the host decides: save, submit, close, back (below). |
+| `values` | `Record<string, FieldValue \| string \| boolean>` | Field values to set once the document is open. |
+| `locale` | `string` | The editor's language (`de`); English by default. See [Languages](/docs/paged/embedding/languages). |
+| `messages` | `Record<string, string>` | The locale's catalogue, when the host supplies one. |
+| `assetBase` | `string` | Where the editor's files are served from; a locale the host does not supply is fetched from `<assetBase>/locales/<locale>.json`. |
+
+### `EditorHandle`
+
+| Member | What it does |
+|---|---|
+| `load({ bytes, name? })` | Open a document, replacing the open one. |
+| `newDocument(widthPt, heightPt)` | Start a blank one-page document of that size, in points. |
+| `save()` | The open document as `.paged` bytes (`Uint8Array`). |
+| `exportPdf(options?)` | The open document as PDF bytes. |
+| `fields()` | The template's fields in form order, each with its definition, target, value and overset state. |
+| `getFieldValues()` | The current values, by field name. |
+| `setFieldValues(values)` | Fill fields as **one undo step**, checked against the session's role. Resolves to `{ ok: true }` or `{ ok: false, problems }`; if any value does not fit, none is set. |
+| `setRole(role)` | Change the session's role, in the engine and the UI. |
+| `setTheme({ mode, tokens })` | Switch between the dark and light theme and override design tokens; a token set to `null` returns to the editor's own. See [Theming](/docs/paged/embedding/theming). |
+| `features` | The [feature store](/docs/paged/embedding/features): `enable`, `disable`, `set`, `isEnabled`, … |
+| `on(listener)` | Listen for `{ type: 'ready' }`, `{ type: 'change' }` (any document change, undo, redo or load) and `{ type: 'fieldChange', fields }`. Returns the unsubscribe. |
+| `hostSlot(id)` | The element a profile's `{ kind: "host", id }` region item leaves for the host to render its own component into; `null` until that region is rendered. |
+| `client` | The engine client, for what the handle does not cover. |
+| `dispose()` | Unmount the editor and release its worker. |
+
+A value in `values` and `setFieldValues` may be written short: a string is a
+text value, a boolean a visibility value. The full forms are
+`{ kind: 'text', text }`, `{ kind: 'image', uri }` and
+`{ kind: 'visible', visible }`. See [Fields](/docs/paged/templates/fields) for
+which kinds can be set today.
+
+`fields()` lists module fields too (a sheet's cell, a doc's block), but
+`setFieldValues` sets the engine's own kinds only: a module field's value goes
+through its module, which the editor's template form and
+[`paged template fill`](/docs/paged/cli/template) do. Through the handle, a
+module field is refused with "a module field is set through its module".
+
+## mountEditor
+
+`createEditor` is a convenience over `mountEditor`, which a host can also call
+directly:
+
+```ts
+const mounted = mountEditor(element, {
+  profile: 'viewer',          // a preset id or a profile; else read from `search`
+  search: location.search,    // ?profile= / ?solo=, when no profile is given
+  actions: {},                // host actions
+  library: false,             // start the local document library (browser storage)
+  onClient: (client) => {},   // the engine client exists
+  onShell: (shell) => {},     // the shell is mounted
+});
+
+mounted.dispose();
+```
+
+The editor's own page is one such host: it mounts one editor into `#root`,
+configured by the URL (`?profile=`, `?solo=`, `?locale=`). Mount one editor per
+page; making several editors on one page fully independent of each other is
+still in progress.
+
+## Host actions
+
+`HostActions` are optional callbacks the host supplies. Each one but `save`
+becomes a command, so a profile can place it in a region (the header or the
+actions bar) and a feature can switch it off:
+
+| Action | Command | Called when |
+|---|---|---|
+| `save({ bytes, name })` | — (replaces the editor's own save) | The user saves: the host receives the `.paged` bytes instead of a file write or a download. |
+| `submit()` | `paged.host.submit` | The user presses the submit button. |
+| `close()` | `paged.host.close` | The user leaves the editor. |
+| `back()` | `paged.host.back` | The user goes back in the host. |
+
+A command for an action exists only when the host supplies that action.
+Placing one in a region:
+
+```ts
+createEditor(el, {
+  profile: {
+    extends: 'template-fill',
+    adjust: [{ region: 'actions-bar', op: 'set',
+               items: ['paged.host.back', { kind: 'spacer' }, 'paged.host.submit'] }],
+  },
+  actions: { back: () => history.back(), submit: () => sendOrder() },
+});
+```
+
+Further actions from the concept — export, upload, asset picking and resolving,
+validation — are planned.
+
+## Roles
+
+The handle's `setRole` and the profile's `role` set the engine's session role:
+
+| Role | May |
+|---|---|
+| `author` | everything, including writing the template policy |
+| `editor` | everything except writing the template policy (the default) |
+| `filler` | only what the document's template policy permits |
+| `viewer` | nothing |
+
+The engine enforces the role for every caller, the handle included; see
+[Permissions and roles](/docs/paged/templates/permissions-and-roles).

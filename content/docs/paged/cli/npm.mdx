@@ -5,7 +5,7 @@ tier: intermediate
 diataxis: how-to
 status: published
 owner: paged-docs
-reviewed: "2026-10-20"
+reviewed: "2026-10-23"
 ---
 
 **In short:** `@paged-media/paged` on npm is the engine as wasm and a `paged`
@@ -55,6 +55,25 @@ It serves the same tools, with the same names and schemas, as the Rust
 
 An agent's writes land on `agent/<run>/…` branches with provenance, for the
 library's owner to merge.
+
+## Templates
+
+`paged template fields | kinds | fill | check` lists a template's fields and the
+module field kinds the loaded modules offer, fills the fields as a filler and
+writes `.paged`, `.idml` or `.pdf`, and checks that a submitted document changed
+nothing outside its fields: [paged template](/docs/paged/cli/template). It ships
+with the next release.
+
+## Bytes and other formats
+
+On `main`, for the next release:
+
+- `paged invoke <doc> <command> <args>` takes a `bytes` argument as `"@path"`,
+  `{ "$file": "path" }` or `{ "base64": "…" }`, and `--result-out <file>` writes
+  the bytes a command answers (an exported file).
+- A document that is not `.paged` or `.idml` opens through the importer of a
+  loaded module that claims its extension (`.docx`, `.pptx`, `.xlsx`, `.pdf`,
+  `.html`, …), onto a new blank document, as the editor's File ▸ Open does.
 
 ## Plugins
 
