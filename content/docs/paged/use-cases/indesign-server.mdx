@@ -6,7 +6,7 @@ diataxis: how-to
 status: published
 owner: paged-docs
 describes: [scripting, data, the-renderer, round-tripping, package-anatomy]
-reviewed: "2026-10-21"
+reviewed: "2026-10-23"
 ---
 
 **Can Paged do the jobs a team runs on Adobe InDesign Server?**
@@ -38,13 +38,13 @@ track, and its status is said in words.
 | A long-running engine process to send work to | `paged session` speaks NDJSON on stdin/stdout | <SupportBadge feature="scripting.headless-run" compact lifecycle /> |
 | An engine service to call over HTTP | `paged engine-serve` answers `POST /run`, one stateless call per job, and exports PDF/X-4 in the call (see the worked example) | <SupportBadge feature="scripting.engine-serve" compact lifecycle /> |
 | Data Merge: template + CSV into a merged document | `paged-node merge` (single or multiple records per page, one document per record) | <SupportBadge feature="data.lower.merge-plan" compact lifecycle /> <SupportBadge feature="data.lower.merge-writer" compact lifecycle /> |
-| Catalogue and per-group batch runs | paged.data's batch plans and record flow; `paged-data-batch` emits the lowered pages, not finished files | <SupportBadge feature="data.automation.batch" compact lifecycle /> |
+| Catalogue and per-group batch runs | `paged-node generate --per record\|group` writes one finished file per record or per group of records (on `main`, next release); paged.data's record flow lays out catalogues | <SupportBadge feature="data.automation.batch" compact lifecycle /> |
 | PDF and PDF/X-4 export | `paged export --standard pdfx4 --cmyk-profile …`, fonts subset and embedded | <SupportBadge feature="the-renderer.pdf-export" compact lifecycle /> <SupportBadge feature="the-renderer.pdf-font-embedding" compact lifecycle /> |
 | Printer's marks and bleed | `paged export --marks` | <SupportBadge feature="the-renderer.pdf-export-marks" compact lifecycle /> |
 | Tagged PDF and bookmarks | `paged export --tagged --bookmarks` | <SupportBadge feature="the-renderer.pdf-tagged" compact lifecycle /> |
 | Page images | `paged render` writes PNG at any resolution; there is no JPEG or EPS page export | <SupportBadge feature="the-renderer.snapshots" compact lifecycle /> |
-| Preflight before output | Export reports its findings on stderr | <SupportBadge feature="the-renderer.export-diagnostics" compact lifecycle /> |
-| Package for output (links and fonts) | `paged package` writes the package folder and its report | <SupportBadge feature="the-renderer.package-collect" compact lifecycle /> |
+| Preflight before output | Export reports its findings; `paged-node preflight` runs the exporter's checks on their own and exits 1 on an error (on `main`, next release) | <SupportBadge feature="the-renderer.export-diagnostics" compact lifecycle /> |
+| Package for output (links and fonts) | `paged package` writes the package folder and its report; on `main`, with the `.paged` beside the IDML, and as `paged-node package` from npm too | <SupportBadge feature="the-renderer.package-collect" compact lifecycle /> |
 | Fonts on the server | `--fonts <dir>` registers every face in a folder; both command lines fall back to a bundled face (Inter; in the npm package from 0.74.2), and `--no-default-font` turns that off | <SupportBadge feature="the-renderer.font-registry" compact lifecycle /> |
 | Snippets, InCopy files and books | Not yet | <SupportBadge feature="companion-formats.idms-icml" compact lifecycle /> <SupportBadge feature="companion-formats.book" compact lifecycle /> |
 | A hosted service with accounts and a queue | paged.server's headless lane runs `paged engine-serve` in a container; it is not deployed yet | In development |
@@ -123,6 +123,20 @@ paged-node merge template.idml --data products.csv --out out --format paged \
 
 `--per-record` writes one document per record instead, and
 `--records-per-page multiple` lays several records on a page, rows or columns first.
+
+On `main` (next release), `paged-node generate` is the batch verb: one finished
+file per record, or per group of records that share a field, each written
+straight to PDF through the editor's own exporter when paged.publish is loaded:
+
+```bash
+paged-node generate template.idml --data products.csv --out cards --format pdf \
+  --plugins=@paged-media/data,@paged-media/publish
+# cards/template-1.pdf, cards/template-2.pdf, cards/template-3.pdf
+```
+
+`--per group --by <field>` writes one file per group instead.
+
+See [paged generate](/docs/paged/cli/generate).
 
 ### 4. Export PDF/X-4
 
@@ -203,6 +217,9 @@ without a font and an empty profile gives a broken output intent.
 - [Command line (paged)](/docs/paged/cli) — every command and flag, including
   `engine-serve`, `session` and `mcp`.
 - [Scripting with paged.\*](/docs/paged/scripting) — the API the scripts above use.
+- [paged generate](/docs/paged/cli/generate) and
+  [preflight and package](/docs/paged/cli/preflight-and-package) — batches,
+  checks and print handoff from the Node command line.
 - [paged.data](/docs/paged/plugins/data) — bindings, record flow and Data Merge.
 - [paged.server](/docs/paged/repos/editor-server) — the remote whose headless
   lane runs the engine service.

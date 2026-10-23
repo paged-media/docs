@@ -1,0 +1,113 @@
+---
+title: paged.sheet commands
+description: paged.sheet's typed commands — place a range, a defined name or a print area with its view, paginate across a frame chain, delete a chart, import CSV, merge cells, borders and sizes.
+tier: intermediate
+diataxis: reference
+status: draft
+owner: paged-docs
+describes: [sheet]
+reviewed: "2026-10-23"
+---
+
+**Put a workbook on the page, and change it, without the grid.**
+
+**In short:** [paged.sheet](/docs/paged/plugins/sheets)'s typed commands have
+ids `media.paged.sheet.command.<name>`. The workbook is
+`plugin:media.paged.sheet/workbook/main`; one workbook is stored per document,
+and importing another replaces it. A range is written `Sheet!A1:B9` (quote a
+sheet name with spaces: `'My Sheet'!A1`). How to call them:
+[Module commands](/docs/paged/commands).
+
+## `place` — a range, a name or a print area on the page
+
+| Argument | Type | Meaning |
+|---|---|---|
+| `source` | `"range"` (default) \| `"name"` \| `"printArea"` | What `ref` names. |
+| `ref` | text, **required** | A range (`book!A1:B4`; without `Sheet!`, the first sheet), a defined name or table (kept by name, so it follows the name), or — for `printArea` — a sheet's name. |
+| `chain` | text, optional | A frame of a threaded chain (`textFrame:<id>`): the range paginates across the chain's frames. |
+| `repeatHeaderRows` | integer, default `0` | Rows repeated at the top of every frame of a chain. |
+| `sizing` | `"window"` (default) \| `"fixed"` \| `"fit"` | `window`: the frame is a window onto the sheet; `fixed`: a frame of the size `box` gives; `fit`: a fixed range, sized to fit. |
+| `box` | `{ width, height }` in pt, optional | The frame's size, with `sizing: "fixed"`. |
+| `view` | `{ topLeft?, lock = false }`, optional | The window's top-left cell (`A2`) and whether it stays there. |
+| `print` | `{ headings = false, gridlines = false }`, optional | Print the row and column headings and the gridlines. |
+
+The result is `{ frame, frames }`, each a `textFrame:<id>` address.
+
+- **One frame:** one table in a new frame, one undo step.
+- **A print area of several ranges** places one table per area, in order, each in
+  its own frame below the previous one (one undo step per area), and `frames`
+  lists them. With a `chain`, the areas paginate in sequence, each with its own
+  header rows.
+- **A chain** paginates the range across the chain's frames, repeating
+  `repeatHeaderRows`; resizing a frame of the chain re-paginates, and workbook
+  edits refresh the tables. The first pagination is one undo step.
+- A view, print options or a sizing other than `window` do not combine with a
+  `chain`; a view's `topLeft` does not combine with a print area of several
+  ranges; a defined name takes neither a view nor fixed sizing. Each is refused
+  before anything is written, with the reason (`invalidValue: …`).
+
+```bash
+# a window onto the sheet, fixed size, from A2, headings and gridlines printed
+paged-node invoke book.paged media.paged.sheet.command.place \
+  '{"ref":"book!A1:B4","sizing":"fixed","box":{"width":200,"height":60},"view":{"topLeft":"A2","lock":true},"print":{"headings":true,"gridlines":true}}' \
+  -o placed.paged --plugins=@paged-media/sheet
+
+# across a chain of linked frames, the header row repeated
+paged-node invoke book.paged media.paged.sheet.command.place \
+  '{"ref":"book!A1:B4","chain":"textFrame:u2a","repeatHeaderRows":1}' \
+  -o placed.paged --plugins=@paged-media/sheet
+```
+
+## `deleteChart`
+
+`deleteChart { chart }` removes chart number `chart` (0-based) from the workbook
+and every placed copy of it from the pages, as one undo step, and answers how
+many placed copies it removed. The chart's slot is kept, so the other charts
+keep their numbers. When the workbook was read from an `.xlsx`, the saved file
+loses only what the chart used — its drawing anchor, relationship, chart part and
+the parts only it reached — and every other part stays byte for byte. Undo
+brings the chart and its art back. A chart on a chartsheet stays in the saved
+file. `no chart <n>` is the refusal.
+
+## Workbook and cells
+
+| Command | Arguments | Result |
+|---|---|---|
+| `importCsv` | `text`, `name = "data.csv"` | The workbook address. One sheet, named after `name`; a `.tsv` name is tab-delimited, otherwise the delimiter is detected. |
+| `importXlsx` | `bytes`, `name = "workbook.xlsx"` | The workbook address. |
+| `importOds` | `bytes`, `name = "workbook.ods"` | The workbook address. |
+| `exportCsv` | `sheet?`, `range?`, `delimiter: "," \| ";" \| "tab"`, `formatted = true`, `bom = false` | The text. |
+| `mergeCells` | `range` | Keeps the top-left cell's content and clears the rest. |
+| `unmergeCells` | `range` | How many merges it removed. |
+| `setBorders` | `range`, `edges: "all" \| "outline" \| "top" \| "right" \| "bottom" \| "left"` (default `all`), `style = "thin"`, `color?` (`#RRGGBB`) | — |
+| `setColumnWidth` | `sheet`, `first`, `last?`, `size?` | — Width in characters. |
+| `setRowHeight` | `sheet`, `first`, `last?`, `size?` | — Height in points. |
+
+`setBorders`' `style` is an xlsx line style: `thin`, `medium`, `thick`,
+`dashed`, `dotted`, `double`, `hair`, `mediumDashed`, `dashDot`,
+`mediumDashDot`, `dashDotDot`, `mediumDashDotDot`, `slantDashDot`, or `none` to
+remove the edge. Column and row indices are **0-based** (`first: 1` is column B,
+`first: 0` row 1), `last` defaults to `first`, and leaving out `size` clears the
+custom size. Each write is one undo step; a write that changes nothing adds none.
+
+```bash
+paged-node invoke book.paged media.paged.sheet.command.importCsv \
+  '{"text":"name,qty\nApples,12\nPears,3\nFigs,7\n","name":"book.csv"}'
+paged-node invoke book.paged media.paged.sheet.command.setBorders \
+  '{"range":"book!A3:B4","edges":"bottom","style":"double"}'
+paged-node invoke book.paged media.paged.sheet.command.setColumnWidth \
+  '{"sheet":"book","first":1,"size":18}'
+```
+
+The sheet's other typed commands — `newWorkbook`, `addSheet`, inserting and
+deleting rows and columns, `fillDown`, `fillRight`, `clearCells`, `sortRange`,
+`findInSheet`, `findReplace`, `lowerToFrame`, `lowerChartToFrame`,
+`sheetFromDataset`, `publishDataset` — are listed with their schemas by
+`paged commands --owner media.paged.sheet`.
+
+## Limits
+
+A placed table does not follow the in-frame grid's scrolled window yet; a
+paginated chain is not found again after the document is reopened; formulas are
+written in the en-US dialect; and a version of paged from before chart deletes
+reads the charts after a deleted one one number lower.

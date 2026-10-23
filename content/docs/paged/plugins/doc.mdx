@@ -6,7 +6,7 @@ diataxis: explanation
 status: draft
 owner: paged-docs
 describes: [plugin-doc]
-reviewed: "2026-10-12"
+reviewed: "2026-10-23"
 ---
 
 **In short:** `paged.doc` brings Word documents into paged. A `.docx` is read into
@@ -24,8 +24,14 @@ did not touch stays exactly as Word wrote it.
 - Saves edits back as byte-level patches (text, paragraph properties, table rows
   and columns); edits it cannot write are listed in the Problems panel rather than
   dropped silently.
-- In development: opening a Word document on its own, a page per section, with
-  Word's own pagination (line spacing, breaks and keeps).
+- Opens a Word document on its own, a page per section — in the editor and
+  headless from the Node command line.
+- Paragraphs, list items, runs and merge fields — in table cells too — as
+  objects scripts and the command line write, saved back into the `.docx`;
+  edits typed into table cells on the canvas are saved back as well
+  ([paged.doc commands](/docs/paged/commands/doc)).
+- In development: formatting runs through the object model, and Word's own
+  pagination (line spacing, breaks and keeps) in every detail.
 
 ## How it's built
 

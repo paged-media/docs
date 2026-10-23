@@ -1,0 +1,124 @@
+---
+title: paged generate
+description: One document per record or per group of records — a Data Merge template and a data file turned into a folder of .paged, .idml or PDF files from the command line.
+tier: intermediate
+diataxis: reference
+status: draft
+owner: paged-docs
+describes: [data]
+reviewed: "2026-10-23"
+---
+
+**A batch: one finished file per record, or per group of records.**
+
+**In short:** `paged generate <template> --data <file> --out <dir>` is the batch
+verb of the Node command line (`paged-node` in a checkout, `paged` from
+[npm](/docs/paged/cli/npm)). paged.data's `planBatch` splits the records into
+units — one per record, or one per group of records that share the `--by`
+values — and each unit is a Data Merge of the template: merged, written to
+`--out`, and undone, so the next unit starts from the template again. It is on
+`main` and ships with the next release.
+
+`generate` needs the [paged.data](/docs/paged/plugins/data) module (and
+DuckDB-WASM, which reads the records). The built-in modules are not published on
+npm, so the npm `paged` reports that paged.data is not loaded; in a checkout of
+[`paged-media/paged`](https://github.com/paged-media/paged), build the module
+(`moon run data:wasm`, `moon run data:duckdb`) and run `paged-node` from
+`apps/cli` with `--plugins=@paged-media/data`, as the
+[worked example](/docs/paged/use-cases/indesign-server#worked-example-a-template-and-a-csv-to-pdfx-4)
+does for `merge`.
+
+## The template
+
+The template is the one `paged merge` takes: a document whose text frames hold
+`<<field>>` placeholders (the form InDesign's Data Merge uses), and optionally
+image placeholder rectangles named with `--image-field`. Every option of
+`merge`'s layout applies to each unit.
+
+## Per record
+
+```bash
+paged-node generate card.idml --data products.csv --out cards \
+  --plugins=@paged-media/data
+```
+
+```json
+{
+  "records": 3,
+  "per": "record",
+  "format": "paged",
+  "outputs": [
+    { "path": "cards/card-1.paged", "unit": "row-0", "records": [0], "pages": 1, "overset": [], "bytes": 15012 },
+    { "path": "cards/card-2.paged", "unit": "row-1", "records": [1], "pages": 1, "overset": [], "bytes": 15020 },
+    { "path": "cards/card-3.paged", "unit": "row-2", "records": [2], "pages": 1, "overset": [], "bytes": 15004 }
+  ]
+}
+```
+
+Files are named after the template and numbered from 1, zero-padded to the
+width of the count (`card-01` … `card-12`). `records` lists the 0-based records
+each file holds; `overset` the records whose text did not fit.
+
+## Per group
+
+`--per group --by <fields>` writes one document per distinct combination of the
+`--by` values, holding every record of that group:
+
+```csv title="products.csv"
+name,sku,price,cat
+Widget,A-1,9.90,x
+Gadget,B-2,19.99,y
+Doohickey,C-3,1234.50,x
+```
+
+```bash
+paged-node generate card.idml --data products.csv --per group --by cat \
+  --out by-category --format pdf --plugins=@paged-media/data,@paged-media/publish
+```
+
+Two files: the first (`unit: "x"`) holds records `[0, 2]`, the second
+(`unit: "y"`) record `[1]`. With `--records-per-page multiple` the records of a
+group share pages; with the default `single`, each record gets its own page in
+the group's document.
+
+## Options
+
+| Option | Meaning |
+|---|---|
+| `--data <file>` | The records: CSV, TSV, JSON, Parquet or XLSX, read by paged.data. **Required.** |
+| `--out <dir>` | The output directory. **Required.** |
+| `--format <pdf\|idml\|paged>` | The output format (default `paged`). |
+| `--per <record\|group>` | One document per record (default), or per group. |
+| `--by <a,b>` | With `--per group`: the fields that make a group. `--per group` without it, or `--by` without `--per group`, is a usage error. |
+| `--query <sql>` | Select and order the records (default `SELECT * FROM "data"`). |
+| `--records-per-page <single\|multiple>` | Data Merge's layout (default `single`). |
+| `--arrange <rows\|columns>` | Multiple records: fill rows or columns first. |
+| `--row-spacing <pt>`, `--column-spacing <pt>` | Multiple records: the gaps. |
+| `--remove-blank-lines` | Drop lines whose only content is an empty field. |
+| `--image-field <rectId=@field>` | An image placeholder rectangle and the field holding its file (repeatable). |
+| `--image-base <dir>` | Where relative image paths resolve (default: the data file's directory). |
+
+Plus the options every verb takes (`--plugins`, `--font`, `--cmyk-profile`, …).
+
+## PDF output
+
+`--format pdf` writes each file through paged.publish's typed `exportPdf` when
+that module is loaded — the PDF the editor's Export dialog makes — and through
+the engine's own PDF door otherwise. The same holds for every verb that writes
+a PDF: `export`, `merge --format pdf`, `template fill -o x.pdf`, `package --pdf`
+and `-o x.pdf` on a write. `export --core` keeps the engine's door.
+
+## Failures
+
+A run that would write nothing exits `1` and says why: a query that selects no
+records, or a merge that placed no record (the template's first page holds no
+`<<field>>` placeholder). A usage error exits `2`.
+
+## Related
+
+- [paged.data](/docs/paged/plugins/data) and its [typed commands](/docs/paged/commands/data)
+  — `planBatch`, `merge` and the rest, which `generate` calls.
+- [Coming from Adobe InDesign Server](/docs/paged/use-cases/indesign-server) — a
+  template and a CSV to PDF/X-4, step by step.
+- [paged template](/docs/paged/cli/template) — fill a template's *fields* (not
+  `<<field>>` placeholders) from JSON.

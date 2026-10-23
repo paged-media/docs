@@ -20,10 +20,11 @@ cross-origin isolated, and only origins listed when the editor is deployed may
 frame it and drive it.
 
 <Callout type="warn">
-**Part of the editor's source.** `connectEditor` lives in
+**A package with the next release.** `connectEditor` is
+`@paged-media/editor/iframe` on `main` (no React needed on the host page); until
+the package is published it lives in
 `apps/editor/apps/canvas/src/embed/connect.ts` of
-[`paged-media/paged`](https://github.com/paged-media/paged); the npm package
-`@paged-media/editor`, which is to carry it, is in progress and not published.
+[`paged-media/paged`](https://github.com/paged-media/paged).
 </Callout>
 
 ## The host page
@@ -127,6 +128,12 @@ The bridge is plain `postMessage`; `connectEditor` speaks it for you.
 | `paged:call` / `paged:reply` | host → frame → host | A handle method and its answer, by call id. |
 | `paged:event` | frame → host | A handle event (`ready`, `change`, `fieldChange`). |
 | `paged:action` / `paged:action-reply` | frame → host → frame | A host action the frame needs (save carries the bytes). |
+
+In development and demo builds of the editor, the handle `connectEditor`
+returns also has `runScript(source)`, which runs a
+[`paged.*` script](/docs/paged/scripting) in the frame and resolves to
+`{ output, error }`. A production build refuses it ("scripts run in dev and demo
+builds only"), and the in-page `createEditor` handle has no such method.
 
 A live example is the iframe demo of the
 [demo gallery](https://play.paged.media/demos/).

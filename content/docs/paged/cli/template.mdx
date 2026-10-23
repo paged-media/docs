@@ -1,6 +1,6 @@
 ---
 title: paged template
-description: The npm paged command lists a template's fields and the module field kinds, fills them as a filler to .paged, .idml or PDF, and checks a filled document changed only its fields.
+description: The npm paged command lists a template's fields and module field kinds, fills them to .paged, .idml or PDF, checks a submission, and makes a template from XML tags.
 tier: intermediate
 diataxis: reference
 status: draft
@@ -142,3 +142,33 @@ npx @paged-media/paged template check card.paged submitted.paged
 - Exit `0`: `ok: only the template's fields differ`.
 - Exit `1`: changed outside the template's fields, with the address of every
   object that differs (`differences` in the JSON).
+
+## `paged template ingest <doc> -o <out>`
+
+Makes a template out of a document's XML tags, as the editor's
+**File ▸ Open as template…** does: it takes the author role, derives the fields
+from the tags (a tagged text frame or story a text field, a tagged rectangle,
+oval or polygon an image field, a tagged text range a field for that text),
+writes them and saves to `-o`.
+
+```bash
+npx @paged-media/paged template ingest tagged.idml -o card.paged --text
+```
+
+```text
+wrote card.paged
+headline	text
+photo	image
+skipped footer: it is on a parent page
+```
+
+| Option | Meaning |
+|---|---|
+| `-o, --out <file>` | Where to write the template. **Required.** |
+| `--names` | Untagged items with a name become fields too. |
+| `--placeholders` | Plugin placeholders (Data Merge fields) become fields too. |
+
+The JSON output carries `fields` and `skipped` (each skipped tag with its
+reason). If nothing becomes a field, the command fails with "nothing in the
+document is a field". The Rust `paged template` has `fields`, `fill` and
+`check`, not `ingest`. See [Templates ▸ InDesign](/docs/paged/templates#indesign).

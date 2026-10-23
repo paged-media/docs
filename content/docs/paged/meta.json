@@ -9,6 +9,7 @@
     "embedding",
     "templates",
     "scripting",
+    "commands",
     "cli",
     "plugin-sdk",
     "api",

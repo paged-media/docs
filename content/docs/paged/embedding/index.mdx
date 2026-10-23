@@ -70,16 +70,15 @@ Available in the editor (in `apps/editor` of the public
 - the iframe page (`embed.html`) and `connectEditor`, the same handle across an
   `<iframe>`;
 - the editor's words in a string catalogue: English, and German for the whole
-  editor and every built-in module.
-
-In progress:
-
-- the npm package `@paged-media/editor` — today the embedding API is part of
-  the editor's source, not a package you install;
-- two or more fully independent editors on one page.
+  editor and every built-in module;
+- several independent editors on one page, each under its own root, with its
+  settings kept where the host says (`storage`);
+- the npm package `@paged-media/editor`, built on `main` and not yet published;
+- template preflight and catalogues made from a template (see
+  [Templates](/docs/paged/templates)).
 
 Planned (no dates): further host actions (export, upload, asset picking and
-resolving, validation), template preflight, and catalogues made from a template.
+resolving, validation).
 
 ## Live demos
 

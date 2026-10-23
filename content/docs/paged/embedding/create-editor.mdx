@@ -22,14 +22,29 @@ write goes through the same engine doors the editor's own UI uses, so a filler's
 handle can change only what the template permits.
 
 <Callout type="warn">
-**Not a package yet.** The embedding API lives in the editor's source
+**A package with the next release.** The embedding API is built on `main` as the
+npm package `@paged-media/editor` (`createEditor`, `mountEditor` and the types;
+`./iframe` for `connectEditor`; `./presets`; `./style.css`;
+`./feature-ids.json` and `./theme-tokens.json`), with React 19.3 or later as a
+peer and the engine, `@paged-media/paged`, as a dependency. It is not on npm
+yet; until it is, a host builds the editor from its source
 (`apps/editor/apps/canvas/src/embed` in
-[`paged-media/paged`](https://github.com/paged-media/paged)); a host builds the
-editor from there. The npm package `@paged-media/editor` is in progress and not
-published. The editor renders with WebGPU and needs a cross-origin-isolated page
-(COOP and COEP headers), as the [playground](https://play.paged.media) does. A
-host on another origin uses [the iframe](/docs/paged/embedding/iframe) instead.
+[`paged-media/paged`](https://github.com/paged-media/paged)). The editor renders
+with WebGPU and needs a cross-origin-isolated page (COOP `same-origin`, COEP
+`credentialless` or `require-corp`), as the [playground](https://play.paged.media)
+does. A host that cannot isolate its page uses [the iframe](/docs/paged/embedding/iframe).
 </Callout>
+
+Once published:
+
+```bash
+npm i @paged-media/editor react react-dom
+```
+
+```ts
+import { createEditor } from '@paged-media/editor';
+import '@paged-media/editor/style.css';
+```
 
 ## createEditor
 
@@ -63,6 +78,7 @@ editor.on((e) => {
 | `values` | `Record<string, FieldValue \| string \| boolean>` | Field values to set once the document is open. |
 | `locale` | `string` | The editor's language (`de`); English by default. See [Languages](/docs/paged/embedding/languages). |
 | `messages` | `Record<string, string>` | The locale's catalogue, when the host supplies one. |
+| `storage` | `'memory' \| 'local' \| 'none' \| EditorStorage` | Where the editor keeps its settings (theme, mode, panel layout, recent commands, export options). Default `'memory'`: for this editor's lifetime, so it never touches the host's origin storage unasked. `'local'` uses `localStorage` under the editor's own keys; an `EditorStorage` (`getItem`, `setItem`, `removeItem`) is the host's own store. |
 | `assetBase` | `string` | Where the editor's files are served from; a locale the host does not supply is fetched from `<assetBase>/locales/<locale>.json`. |
 
 ### `EditorHandle`
@@ -115,9 +131,14 @@ mounted.dispose();
 ```
 
 The editor's own page is one such host: it mounts one editor into `#root`,
-configured by the URL (`?profile=`, `?solo=`, `?locale=`). Mount one editor per
-page; making several editors on one page fully independent of each other is
-still in progress.
+configured by the URL (`?profile=`, `?solo=`, `?locale=`).
+
+Several editors can share a page, each with its own document, settings, keys and
+popovers: each mounts under its own root element (`[data-paged-editor]`), its
+styles are scoped to that root, and mounting leaves the page's `<html>` and
+`<body>` alone. Two limits remain: the string catalogue is one per page, so two
+editors on a page speak one language, and a modal dialog holds the page's focus
+and scroll while it is open.
 
 ## Host actions
 

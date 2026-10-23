@@ -64,24 +64,49 @@ writes `.paged`, `.idml` or `.pdf`, and checks that a submitted document changed
 nothing outside its fields: [paged template](/docs/paged/cli/template). It ships
 with the next release.
 
-## Bytes and other formats
+## Batches, preflight and packages
 
 On `main`, for the next release:
 
-- `paged invoke <doc> <command> <args>` takes a `bytes` argument as `"@path"`,
-  `{ "$file": "path" }` or `{ "base64": "…" }`, and `--result-out <file>` writes
-  the bytes a command answers (an exported file).
+- `paged generate <template> --data <file> --out <dir> --per record|group`
+  writes one document per record or per group of records:
+  [paged generate](/docs/paged/cli/generate).
+- `paged preflight <doc>` runs the PDF exporter's checks and exits `1` on an
+  error finding; `paged package <doc> -o <dir|x.zip>` collects the IDML, its
+  links, its fonts, a report and the `.paged` into one folder:
+  [preflight and package](/docs/paged/cli/preflight-and-package).
+- Every PDF the command writes (`export`, `template fill -o x.pdf`, `merge`,
+  `generate`, `package --pdf`) goes through paged.publish's typed `exportPdf`
+  when that module is loaded, so it is the PDF the editor's Export dialog makes;
+  `export --core` keeps the engine's own door, and `export --option key=value`
+  passes the exporter's other options (bookmarks, tagged PDF, …).
+
+## Typed commands, bytes and other formats
+
+On `main`, for the next release:
+
+- `paged commands [doc]` lists every typed command the engine and the loaded
+  modules offer, with its argument schema; `paged invoke <doc> <command> <args>`
+  runs one ([Module commands](/docs/paged/commands)).
+- A `bytes` argument is given as `"@path"`, `{ "$file": "path" }` or
+  `{ "base64": "…" }`, and `--result-out <file>` writes the bytes a command
+  answers (an exported file).
 - A document that is not `.paged` or `.idml` opens through the importer of a
-  loaded module that claims its extension (`.docx`, `.pptx`, `.xlsx`, `.pdf`,
-  `.html`, …), onto a new blank document, as the editor's File ▸ Open does.
+  loaded module that claims its extension (`.pptx`, `.xlsx`, `.pdf`, `.html`,
+  …), onto a new blank document, as the editor's File ▸ Open does. A `.docx`
+  opens as a document of its own, a page per section, as it does in the editor.
 
 ## Plugins
 
 Plugin bundles are found where the command runs: `--plugins <a,b>` loads those;
 otherwise every installed dependency of the current directory's `package.json`
 that declares a paged manifest. The built-in modules (sheet, draw, image, data,
-…) are part of the editor and are not on npm, so commands that need one, such as
-`apply` and `merge` (paged.data), report that it is not loaded.
+publish, …) are part of the editor and are not on npm, so commands that need one
+— `apply`, `merge` and `generate` (paged.data), `preflight` (paged.publish), a
+module's typed commands — report that it is not loaded. In a checkout of
+[`paged-media/paged`](https://github.com/paged-media/paged) the modules are
+workspace packages, and `--plugins` names them by package name or path.
+`package` needs no module.
 
 ## The package's other entries
 

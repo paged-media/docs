@@ -1,0 +1,103 @@
+---
+title: paged.draw commands
+description: paged.draw's typed commands — path operations, pathfinder, recipes, the Knife, Scissors and Shape Builder as data, the width profile, and recipes that follow their sources.
+tier: intermediate
+diataxis: reference
+status: draft
+owner: paged-docs
+describes: [plugin-draw]
+reviewed: "2026-10-23"
+---
+
+**Every drawing operation the menus offer, as a command with its arguments.**
+
+**In short:** nearly every command of [paged.draw](/docs/paged/plugins/draw) has
+a typed twin with the same id, `media.paged.draw.command.<name>` (the few left over
+only open a panel). A command acts on its `targets` — it selects them first
+and runs the menu's own code — and is one undo step. Lengths are numbers in points;
+points on the page are `[x, y]` in page points.
+How to call them: [Module commands](/docs/paged/commands).
+
+## The tools as data
+
+The Knife, Scissors and Shape Builder were tools only; their gesture is now an
+argument, so a script or the command line can cut.
+
+| Command | Arguments | What it does |
+|---|---|---|
+| `knife` | `targets`, `page`, `cut: [[x, y], …]` | Cuts the targets along the polyline `cut`, in the page's points. `page: ""` takes the page of the first target. |
+| `scissorsAt` | `targets`, `point: [x, y]`, `tolerance` | Splits the one target path at the point. |
+| `shapeBuild` | `targets`, `path: [[x, y], …]`, `mode: "keep" \| "remove"` | Merges (`keep`) or removes (`remove`) the regions the path crosses. Ovals are refused. |
+
+A cut that changes nothing fails with the reason (`failed: …`).
+
+## The width profile
+
+`widthProfile { targets, widths }` is the Width tool's bake with the profile as
+data. `widths` are full stroke widths at evenly spaced stops along the path, by
+arc length: one width is uniform, `[0, 8, 0]` swells in the middle and tapers to
+points. Each target that is a single-contour **open** path is replaced by its
+outline, in one batch and one undo step; closed and compound paths are skipped,
+and a call that outlines nothing fails with the reason. The result is
+`{ outlined: n }`.
+
+```bash
+paged-node invoke drawing.paged media.paged.draw.command.widthProfile \
+  '{"targets":["polygon:u1f"],"widths":[0,8,0]}' --plugins=@paged-media/draw
+```
+
+```json
+{ "command": "media.paged.draw.command.widthProfile", "applied": true, "result": { "outlined": 1 }, … }
+```
+
+In the editor, the Path Options panel's **Width profile** section types a
+three-stop profile.
+
+## Recipes follow their sources
+
+A pattern, repeat, blend, objects-on-path or live-paint group is a **recipe**:
+artwork made from source items. In the editor, an edit that changes a source —
+a mutation, a panel field, a drag of its handles — rebuilds the recipes it feeds
+**in the same undo step**: one undo restores the source and the old artwork, one
+redo replays both, and an undo or a redo never starts a rebuild. The bundle
+fingerprints each recipe's sources (anchors and properties) and rebuilds those
+whose fingerprint moved, once per commit, never per pointer move. It uses the
+SDK's [amended write](/docs/paged/plugin-sdk/the-bundle-host#a-follow-up-write-in-the-same-undo-step)
+and is on by default (the bundle's storage key `recipes.autoUpdate` set to
+`false` turns it off).
+
+A script or `paged invoke` that edits a source is not followed by a rebuild — its
+reply carries no step to join — so it calls the update itself:
+
+| Command | Arguments | Result |
+|---|---|---|
+| `updateLinkedRecipes` | `targets`, `all: bool` | The addresses of the recipes it rebuilt. |
+
+It runs, for every recipe whose sources are among `targets` (or every recipe,
+with `all: true`), the update its own panel runs: `updateRepeat`,
+`updateBlend`, `editPatternField`, `updateObjectsOnPath`, `regenerateLivePaint`.
+A document without recipes is refused with the reason. The menu row is
+**Draw ▸ Update linked recipes**.
+
+## The other commands
+
+All take `targets` (a list of frame addresses) unless noted.
+
+| Group | Commands |
+|---|---|
+| Stroke and fill presets | `strokeDashSolid`, `strokeDashDashed`, `strokeDashDotted`, `strokeDashDashDot`, `fillGradientLinear`, `fillGradientRadial` |
+| Live corners | `cornersRounded`, `cornersInverseRounded`, `cornersBevel`, `cornersFancy`, `cornersNone` |
+| Path operations | `outlineStroke { width, cap, join, miterLimit }`, `offsetPath { delta, join, miterLimit }`, `simplifyPath { tolerance }`, `joinEndpoints`, `closePath`, `averageEndpoints`, `reversePathDirection`, `createOutlines`, `transformAgain`, `reflectHorizontal { copy }`, `reflectVertical { copy }` |
+| Pathfinder | `pathfinderUnite`, `pathfinderSubtract`, `pathfinderIntersect`, `pathfinderExclude`, `pathfinderDivide`, `pathfinderTrim`, `pathfinderMerge`, `pathfinderCrop`, `pathfinderOutline`, `pathfinderMinusBack`, `makeCompoundPath`, `releaseCompoundPath` |
+| Appearance | `appearanceAddFill`, `appearanceAddStroke`, `appearanceClear`, `bakeAppearance`, `releaseAppearance`, `appearanceRemoveLayer { kind, index }`, `appearanceMoveLayer { kind, index, delta }` |
+| Graphic styles | `saveGraphicStyle { name }`, `applyGraphicStyle { style }`, `redefineGraphicStyle { style }`, `breakGraphicStyleLink`, `renameGraphicStyle { style, name }`, `deleteGraphicStyle { style }` |
+| Symbols | `defineSymbol { name, registration }`, `placeSymbolInstance { symbol, x, y }`, `redefineSymbol { symbol }`, `breakSymbolLink`, `resetSymbolTransform`, `renameSymbol`, `deleteSymbol` |
+| Live paint | `makeLivePaintGroup { name }`, `fillLivePaintFace { group, faces, fill }`, `regenerateLivePaint`, `selectLivePaintFaces`, `deleteLivePaintFace`, `releaseLivePaint` |
+| Masks and type on a path | `makeOpacityMask { maskType, invert }`, `releaseOpacityMask`, `attachTextToPath { story, pathTypeAlignment, flipPathEffect }`, `detachTextFromPath` |
+| Select same | `selectSameFill`, `selectSameStroke`, `selectSameStrokeWeight { tolerance }` — each answers the selection |
+| Shapes | `insertArc`, `insertSpiral`, `insertRectGrid`, `insertPolarGrid` — the generators' full parameters |
+| Patterns, repeats, blends, objects on a path | `makePatternFromSelection`, `makeRadialRepeat`, `makeGridRepeat`, `makeMirrorRepeat`, `blendSelected`, `makeObjectsOnPath`, and per recipe its update, select, expand and release |
+| Image trace | `imageTrace` with the tracer's full option set |
+
+`paged commands --owner media.paged.draw --text` lists each with its exact
+argument schema.

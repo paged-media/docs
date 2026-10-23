@@ -101,13 +101,64 @@ session (for example through the
   id may not.
 - **Labels.** The policy is stored in IDML item labels, which paged writes on
   export and reads on import.
-- **XML tags (in progress).** Many InDesign template workflows mark the editable
-  parts of a layout with XML tags. Opening a tagged IDML file as a template —
-  a tagged text frame becoming a text field, a tagged graphic frame an image
-  field, the tag name the field name — is in progress, as is writing XML tags
-  from paged's model on export. paged already imports a document's tags and
-  keeps the source package's XML parts on export.
+- **XML tags.** Many InDesign template workflows mark the editable parts of a
+  layout with XML tags. **File ▸ Open as template…** reads them: a tagged text
+  frame or story becomes a text field (on the first frame of its thread), a
+  tagged rectangle, oval or polygon an image field, and a tagged range of text a
+  field for that text in its story. The field takes the tag's name (`-2`, `-3`
+  for repeats), and the tag's `label`, `maxLength` and `required` attributes
+  become its label and constraints. The dialog lists every field it would make,
+  each with a checkbox, and every tag it skips with the reason ("it is on a
+  parent page", "a line or a group is no kind of field", …); on a document that
+  already has fields it marks each as new, already a field, or changed, and lists
+  the fields no tag names any more. Applying is one undo step.
+- **Writing tags.** **Make field** tags a text or image field's item with a tag
+  named after the field (with its `label`, `maxLength` and `required` as
+  attributes), and **Remove field** untags it. paged writes XML tags on IDML
+  export once the structure was edited, so the tags travel back to InDesign; an
+  unchanged import still exports byte for byte. A tagged range is not yet
+  enforced on its own — its field grants editing of its whole story — and
+  templates made in paged have not yet been checked by opening them in InDesign.
+- **On a server.** `paged template ingest <doc> -o <out>` (the
+  [Node command line](/docs/paged/cli/template)) does the same as Open as
+  template: `--names` makes untagged items with a name fields too, and
+  `--placeholders` turns plugin placeholders (Data Merge fields) into fields.
 
-Template preflight (fields without names, image fields that cannot be replaced,
-required fields inside hidden items) and catalogues built from a template are
-planned.
+## Template preflight
+
+The Template panel's **Problems** section, shown to an author, lists what would
+break the template before it reaches a filler, and the field outlines mark the
+fields concerned:
+
+| Code | Severity | Found when |
+|---|---|---|
+| `policyUnreadable` | error | A template label cannot be read. |
+| `fieldUnnamed` | error | A field has no name, so no form or data can address it. |
+| `fieldDuplicate` | error | Several fields share a name; a value would reach only one. |
+| `imageNotReplaceable` | error | A picture field sits on an item that holds no picture. |
+| `textHasNoStory` | error | A text field sits on an item that holds no text. |
+| `requiredHidden` | warning | A required field's item is hidden. |
+| `fieldOnParentPage` | warning | A field is on a parent page, where no filler reaches it. |
+| `linkMissing` | warning | A picture field shows a picture that is not in the package. |
+
+The findings are the engine's `templateFindings` collection. They are not the
+PDF exporter's checks, which [`paged preflight`](/docs/paged/cli/preflight-and-package)
+runs.
+
+## Catalogues
+
+A template's own text, picture and visibility fields can be bound to data with
+[paged.data](/docs/paged/plugins/data): in the Bindings panel's **Template
+fields** section, bind each field to an expression over a query, choose one page
+per record or one page per group, and **Make catalogue**. The template page is
+repeated once per record or group and each copy filled, checked against the
+fields' `required` and `maxLength` (one refused value refuses the whole run);
+running it again replaces the copies. Scripts and the command line reach it
+through paged.data's typed commands (`templateFieldTargets`,
+`bindTemplateField`, `runCatalogue`).
+
+The Template panel's **This page** section lets a filler copy the page and remove
+its copies — the pages of a catalogue — and nothing else; an author makes the
+first catalogue. Choice, text-run, data and module fields are not catalogue
+targets, and a page whose stories hold a table, an anchored object or a footnote
+cannot be repeated yet.

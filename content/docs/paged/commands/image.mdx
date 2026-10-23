@@ -1,0 +1,111 @@
+---
+title: paged.image commands
+description: paged.image's typed commands — filter a region of a layer through a polygon or alpha mask, headless on CPU twins of the GPU kernels; crop, canvas size, turns, flips and adjustment layers by name.
+tier: intermediate
+diataxis: reference
+status: draft
+owner: paged-docs
+describes: [image]
+reviewed: "2026-10-23"
+---
+
+**Filter part of a picture on a server, with the kernels the editor runs on the GPU.**
+
+**In short:** [paged.image](/docs/paged/plugins/image)'s typed commands have ids
+`media.paged.image.command.<name>`. They name the picture they act on, so they
+run headless as well as in the editor. An image is
+`plugin:media.paged.image/image/<frameId>` and a layer
+`plugin:media.paged.image/layer/<frameId>/<layerId>`; regions, crops, polygon
+points and sizes are in **image pixels**, whole numbers. Each command is one
+undo step. How to call them: [Module commands](/docs/paged/commands).
+
+## `filterRegion`
+
+Runs the adjustment chain on a rectangle of a pixel layer, optionally through a
+mask.
+
+| Argument | Type | Meaning |
+|---|---|---|
+| `layer` | layer address, **required** | A pixel layer. |
+| `params` | object, **required** | The adjustment, as adjustment paths and values (below). |
+| `region` | `[top, left, bottom, right]`, optional | The rectangle; the whole canvas when absent. |
+| `mask` | object, optional | `{ polygons?, ops?, fillRule?, alpha?, feather? }`, a selection given as data. |
+| `selection` | bool, optional | In the editor: filter within the frame's selection. |
+
+**Parameters.** The paths an adjustment layer has, for example
+`exposure.ev`, `brightnessContrast.brightness` and `.contrast`,
+`saturation.sat`, `vibrance.vibrance`, `whiteBalance.temp` and `.tint`,
+`levels.*`, `levelsRgb.*`, `curves.composite` and `curves.channels`,
+`colorBalance.*`, `hueRotate.degrees`, `hueSaturation.*`, `channelMixer.*`,
+`photoFilter.*`, `blackWhite.*`, `posterize.*`, `threshold.*`,
+`invert.enabled`, and the filters `gaussianBlur.sigma` (blur) and
+`unsharp.amount` (sharpen). An unknown path is refused with its name, and a call
+whose every parameter is at its default changes nothing and is refused.
+
+**The mask.**
+
+- `polygons` — `[[[x, y], …], …]`, each with at least three points, filled
+  anti-aliased. Without `fillRule` each polygon is filled on its own and the
+  results are joined.
+- `fillRule: "evenodd" | "nonzero"` — fills the polygons together as one path,
+  so an inner polygon cuts a hole (under `nonzero`, when wound the other way).
+- `ops` — one of `"add"`, `"subtract"`, `"intersect"` per polygon: the added
+  polygons make the shape, then each subtract cuts it and each intersect keeps
+  the overlap, in order.
+- `alpha` — an 8-bit coverage: width × height bytes, or an image of the
+  canvas's size (its luminance × alpha); intersected with the polygons.
+- `feather` — a Gaussian softening of the mask's edge, σ in pixels (0–250).
+
+The mask is clipped to `region`; partial coverage blends the filtered and the
+original pixels, and a pixel with no coverage is never written.
+
+```bash
+# invert a rectangle
+paged-node invoke photo.paged media.paged.image.command.filterRegion \
+  '{"layer":"plugin:media.paged.image/layer/urect/1","params":{"invert.enabled":true},"region":[1,2,4,6]}' \
+  -o filtered.paged --plugins=@paged-media/image
+
+# everything but an inner rectangle: the inner polygon cuts a hole
+paged-node invoke photo.paged media.paged.image.command.filterRegion \
+  '{"layer":"plugin:media.paged.image/layer/urect/1","params":{"invert.enabled":true},
+    "mask":{"polygons":[[[0,0],[8,0],[8,6],[0,6]],[[2,1],[6,1],[6,4],[2,4]]],"fillRule":"evenodd"}}' \
+  -o filtered.paged --plugins=@paged-media/image
+
+# a coverage mask from a file
+paged-node invoke photo.paged media.paged.image.command.filterRegion \
+  '{"layer":"plugin:media.paged.image/layer/urect/1","params":{"gaussianBlur.sigma":2},"mask":{"alpha":"@mask.bin"}}' \
+  -o filtered.paged --plugins=@paged-media/image
+```
+
+**Without a GPU.** In the editor the filter runs on the GPU. Headless — the Node
+command line, the SDK's headless host — it runs on CPU twins of the same
+kernels, which ship with the module and are held to each kernel's GPU
+tolerance; the two paths agree within one 8-bit level per channel, masked or
+not. Only `filterRegion` has this CPU path: adjustment previews, other filters,
+painting, resizing and composites of several layers still need a GPU, and a
+stack whose composite is not yet drawn is marked `pending` until an editor
+draws it.
+
+**Selections.** In the editor, `selection: true` filters within the frame's
+selection — the live one, or the one the session kept when that frame's image
+was closed — resampled when the canvas is the same image at another size. A
+selection on another crop of the image, or no selection at all, is refused with
+the reason, never taken as "everything"; headless there is no editor selection,
+so pass it as `mask`.
+
+**Refused:** an adjustment layer (no pixels), a smart object (filter its
+source), a locked layer, a 16-bit layer (filtered in the editor), and a region
+outside the canvas (`the region must lie inside the 8×6 canvas`).
+
+## Canvas and adjustments, by name
+
+| Command | Arguments | What it does |
+|---|---|---|
+| `cropImage` | `image`, `bounds: [top, left, bottom, right]` | Crops every layer and mask. |
+| `canvasSize` | `image`, `width`, `height`, `anchor` (`topLeft` … `bottomRight`, default `center`) | Grows or shrinks the canvas; added area is transparent. At most 30000 px each way. |
+| `rotateCw`, `rotateCcw`, `rotate180`, `flipHorizontal`, `flipVertical` | `image?` | With `image`, turns or flips every layer and mask headless; without, acts on the image open in the editor. |
+| `applyAdjustment` | `image`, `params`, `name?` | Adds one adjustment layer with those parameters. |
+
+A stack holding a smart object is turned, flipped or resized only in the editor.
+A command that acts on the editor's open image, run where none is open, is
+refused with `unmapped:` and the reason.

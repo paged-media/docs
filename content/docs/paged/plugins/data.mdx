@@ -6,7 +6,7 @@ diataxis: explanation
 status: draft
 owner: paged-docs
 describes: [data]
-reviewed: "2026-10-21"
+reviewed: "2026-10-23"
 ---
 
 **In short:** `paged.data` turns data into pages — a binding-expression DSL, a
@@ -29,6 +29,12 @@ publishes governed datasets that other plugins (e.g.
   one document or one per record by `paged merge` in the Node command line with
   this module installed
   (experimental); see [Coming from Adobe InDesign Server](/docs/paged/use-cases/indesign-server).
+- Typed commands for everything the command line's data verbs do — importing a
+  source, previewing a query, defining bindings (expression property bindings
+  included), applying, merging and planning a batch — plus read-only checks of
+  an expression, a refresh's changes and a record flow; `paged generate` writes
+  one document per record or per group from them
+  ([paged.data commands](/docs/paged/commands/data)).
 - In development: export as a Data Merge template, a SQL query panel over DuckDB,
   local JSON, Parquet and XLSX sources, row diffs and sync review, and binding any
   object property to data (the universal binding round).
