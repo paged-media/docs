@@ -76,6 +76,22 @@ same contract.
 - **Persist settings** in namespaced storage, **report diagnostics**, and
   **detect host capabilities** at runtime.
 
+## In the next release
+
+On `main` (in-tree `0.74.3-canary.N`), for the next release of
+`@paged-media/plugin-sdk`:
+
+- **`host.document.mutate(m, { amend })`** and
+  **`DocumentChangeEvent.appliedSeq`** — a write a change provokes joins that
+  change's undo step; flag `document.mutate.amend@1`
+  ([A follow-up write in the same undo step](/docs/paged/plugin-sdk/the-bundle-host#a-follow-up-write-in-the-same-undo-step)).
+- **The headless host's native-document door** — `createHeadlessHost` backs
+  `host.nativeDocument` with the engine, so `document.readNative@1` and
+  `document.openNative@1` are true headless and an importer opens its file as a
+  document of its own ([`host.nativeDocument`](/docs/paged/plugin-sdk/the-bundle-host#hostnativedocument)).
+- **Typed commands of the built-in modules** that a bundle reaches through
+  `host.objects.invoke` like a script does: [Module commands](/docs/paged/commands).
+
 ## The manifest
 
 Every bundle ships a `manifest.json`. Its fields, the **capability** vocabulary,

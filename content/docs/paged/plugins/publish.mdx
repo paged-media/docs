@@ -6,7 +6,7 @@ diataxis: explanation
 status: draft
 owner: paged-docs
 describes: [plugin-publish, plugin-pdf]
-reviewed: "2026-10-12"
+reviewed: "2026-10-23"
 ---
 
 **In short:** `paged.publish` is how foreign formats enter and leave paged. Its
@@ -19,6 +19,10 @@ development) text rebuilt into editable paragraphs.
 
 - IDML import through the engine's native-document door, and IDML export, as
   typed commands scripts can call.
+- PDF export and its preflight as typed commands, with every option of the
+  Export dialog — bookmarks and tagged PDF included; every PDF the Node command
+  line writes goes through it, and `paged preflight` runs its checks
+  ([paged.publish commands](/docs/paged/commands/publish)).
 - A corpus sweep that checks every package in the test corpus survives a round
   trip unchanged.
 - PDF reading with PDFium: vectors and colours become native shapes and

@@ -38,8 +38,8 @@ structural teardown. All return `Disposable`.
 Read broadly; write through one door.
 
 ```ts
-mutate(m: Mutation): Promise<MutationOutcome>
-//  → { applied: true, createdId, pageIds } | { applied: false, error }
+mutate(m: Mutation, options?: MutateOptions): Promise<MutationOutcome>
+//  → { applied: true, createdId, pageIds, appliedSeq? } | { applied: false, error }
 undo(): Promise<void>            redo(): Promise<void>
 collection<T>(name): Promise<readonly T[]>   // swatches, layers, styles, …
 meta(): Promise<DocumentMeta>                // pageCount, units, colorMode, …
@@ -50,7 +50,8 @@ tree(): Promise<SceneTreeNode[]>
 getMetadata(id): Promise<PluginMetadataEnvelope | null>
 setMetadata(id, envelope | null): Promise<MutationOutcome>
 onDidChange(l): Disposable
-//  fires { kind: "mutationApplied" | "undoApplied" | "redoApplied", pageIds }
+//  fires { kind: "mutationApplied" | "gestureCommitted" | "undoApplied" | "redoApplied" | …,
+//          pageIds, appliedSeq? }
 ```
 
 `mutate` is **the** write path. Every change lands on the editor's single
@@ -58,6 +59,49 @@ undoable Operation channel — plugin and native edits share one history. The
 typed `Mutation` union (path topology, properties, swatches, gradients,
 layers, pathfinder booleans, batches, …) is re-exported by
 `@paged-media/plugin-sdk/api`; batches apply atomically and undo as one step.
+
+### A follow-up write in the same undo step
+
+A bundle that keeps derived content in step with its sources — artwork rebuilt
+from a path, a table re-laid from its data — reacts to an edit only after the
+engine committed it. Written as an ordinary `mutate`, the rebuild would be an
+undo step of its own: it would clear the redo stack, and undoing the edit would
+leave the rebuilt content behind. `mutate(m, { amend })` applies the mutation
+**into** the undo step `amend` names, so one undo reverts the edit and the
+rebuild, and one redo replays both:
+
+```ts
+if (host.supports('document.mutate.amend@1')) {
+  host.document.onDidChange(async (e) => {
+    if (e.appliedSeq === undefined) return;      // an undo, a redo or a script run
+    let step = e.appliedSeq;
+    for (const m of rebuildFor(e)) {
+      const out = await host.document.mutate(m, { amend: step });
+      if (!out.applied) break;                   // notAmendable: the user moved on
+      step = out.appliedSeq ?? step;             // the next write amends this number
+    }
+  });
+}
+```
+
+- **`DocumentChangeEvent.appliedSeq`** is the engine's number of the step a
+  change committed. It is present on `mutationApplied` and `gestureCommitted`
+  and absent on an undo, a redo and a script run — so a listener that rebuilds
+  on edits leaves history moves alone; they already restored the derived
+  content with its sources.
+- **A refusal is an outcome, not a throw.** Once that step is no longer the last
+  in the history, or an undo or a redo ran since, nothing is applied and the
+  outcome is `applied: false` with `{ error: { kind: "notAmendable", details } }`.
+- **Each write answers the step's new number.** A rebuild of several writes
+  amends each with the `appliedSeq` the previous one answered.
+- **Probe first.** `document.mutate.amend@1` says the host supports the option.
+  An older host ignores it and would apply the mutation as a step of its own.
+  A write that is not an engine mutation (a container part) is outside every
+  undo step, an amended one included.
+
+paged.draw uses this to rebuild a pattern, repeat, blend, objects-on-path or
+live-paint group in the step of the edit that changed its sources. Both members
+are in the SDK on `main` and ship with the next release.
 
 Coordinate convention for `pathAnchors` and `hitTest`: anchor tables are in
 the element's local frame (apply the result's `itemTransform` to reach
@@ -152,6 +196,27 @@ onDidChange(l): Disposable
 
 Mirrored to the console in v0; the host's problems UI consumes the same store
 as it lands.
+
+## `host.nativeDocument`
+
+Capability-gated access to the document's core-owned parts, and the door an
+importer uses to open its file as the active document:
+
+```ts
+readModel(): Promise<Uint8Array | null>        // needs capabilities.document.readNative
+readComposition(): Promise<Uint8Array | null>
+listParts(prefix?): Promise<string[]>
+open(bytes: Uint8Array): Promise<void>         // needs capabilities.document.openNative
+```
+
+Always present: a host without a backend answers `null` and `[]`, rejects
+`open`, and `supports("document.readNative@1")` /
+`supports("document.openNative@1")` are false. The editor backs it, and on
+`main` (next release) so does the SDK's **headless host**
+(`createHeadlessHost`): by default it backs the door with the engine, so an
+importer opens its file standalone headless too — the Node command line opens a
+`.docx` as a document of its own this way. `HarnessOptions.nativeDocument`
+replaces the backend, or with `false` wires none, to test the host without it.
 
 ## `host.supports(feature)`
 

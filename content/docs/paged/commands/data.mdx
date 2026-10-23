@@ -1,0 +1,119 @@
+---
+title: paged.data commands
+description: paged.data's typed commands — import a source, query and preview records, define bindings, apply, merge, plan a batch, run a catalogue, and inspect expressions and changes.
+tier: intermediate
+diataxis: reference
+status: draft
+owner: paged-docs
+describes: [data]
+reviewed: "2026-10-23"
+---
+
+**Data publishing without the panels.**
+
+**In short:** [paged.data](/docs/paged/plugins/data)'s typed commands have ids
+`media.paged.data.<name>`. The Node command line's `apply`, `merge` and
+[`generate`](/docs/paged/cli/generate) call exactly these and nothing else, so a
+script or an extension can do what those verbs do. How to call them:
+[Module commands](/docs/paged/commands).
+
+paged.data reads records with DuckDB-WASM. Its objects are addressed
+`plugin:media.paged.data/<kind>/<id>`: a `source`, a `query`, a `binding`, a
+`dataSet`, a `variable`.
+
+## From a file to records
+
+| Command | Arguments | Result |
+|---|---|---|
+| `importSource` | `bytes`, `fileName` (**required**; the format comes from its extension: `.csv`, `.tsv`, `.json`, `.ndjson`, `.jsonl`, `.parquet`, `.xlsx`), `name?`, `sheet?` (xlsx) | `{ source, format, sheet? }` |
+| `previewQuery` | `sql`, `limit = 50` | `{ columns, rows, total?, problem? }` — a SQL problem is reported in `problem`, not thrown. |
+
+A query is an object, created through the object model rather than a command:
+
+```js
+await paged.batch([{ op: 'create', kind: 'plugin:media.paged.data/query', handle: 'q',
+  props: { sql: 'SELECT * FROM "products" ORDER BY CAST(price AS DOUBLE)', shape: 'recordStream' } }]);
+```
+
+```bash
+paged-node invoke card.paged media.paged.data.importSource \
+  '{"bytes":"@products.csv","fileName":"products.csv","name":"products"}' \
+  --plugins=@paged-media/data
+# result: { "source": "products", "format": "csv" }
+```
+
+## Bindings
+
+| Command | Arguments | Result |
+|---|---|---|
+| `defineBinding` | `id`, `query`, `kind: "variable" \| "image" \| "barcode" \| "visibility" \| "table" \| "rule"`, and per kind: `target` and `expr` (variable, image, visibility, barcode; `symbology: "ean13" \| "upca" \| "code128" \| "qr"`, default `code128`), `region` and `columns: [{ header?, expr }]` (table), `scope`, `when` and `apply` (rule) | `{ id, kind }` |
+| `defineProperty` | `id`, `selector`, `path`, `query`, `expr` | `{ ok, reason? }` — binds any property the object model can set to an expression |
+| `apply` | `record` | Refreshes, then applies the bindings: `0` lowers every binding, a higher number previews that record. |
+
+```json
+{ "id": "weight", "selector": "rectangle:urect", "path": "frameStrokeWeight", "query": "q", "expr": "MM(weight_mm)" }
+```
+
+A binding's create, change or delete is one undo step.
+
+## Merge and batches
+
+**`merge`** is InDesign-style Data Merge of `<<field>>` placeholders. Every
+argument is optional: `query` (default: the first), `mode: "single" | "multiple"`,
+`arrange: "rows" | "columns"`, `rowSpacingPt`, `columnSpacingPt`,
+`removeBlankLines`, `template: "keep" | "consume"` (keep the template page, or
+let it hold the first output page), `destination: "current" | "newDocument"`,
+`pageId`, `documentName`, `imageBase` (where relative image references resolve)
+and `imageFields` (rectangle id → field, `photo` or `@photo`). It answers
+`{ ok, records, pages, overset, oversetRecords, undoSteps, message, diagnostics }`;
+`undoSteps` is how many undos take the document back to the template.
+
+**`planBatch`** splits the records into the units of a batch:
+
+| Argument | Meaning |
+|---|---|
+| `mode` | `perRecord`, `perGroup` or `oneCatalog`. **Required.** |
+| `by` | The columns that make a group; required with `perGroup`. |
+| `query` | Default: the first query. |
+
+```js
+const plan = JSON.parse(await paged.invoke('media.paged.data.planBatch',
+  { query: 'q', mode: 'perGroup', by: ['category'] }));
+// { query: "q", mode: "perGroup", totalRecords: 3,
+//   units: [{ label: "x", records: [0, 2] }, { label: "y", records: [1] }] }
+```
+
+`paged generate` is this loop: plan, then for each unit merge its records,
+write the file and undo the merge's steps.
+
+**Catalogues** from a [template](/docs/paged/templates#catalogues):
+`templateFieldTargets` lists the fields that can be bound,
+`bindTemplateField { field, query, expr, invert? }` binds one, and
+`runCatalogue { query?, template?, mode?: "perRecord" | "perGroup", by? }`
+repeats the template page and fills each copy, answering
+`{ ok, instances, records, undoSteps, problems? }`. A value its field refuses
+refuses the whole run, with each problem listed.
+
+```bash
+paged-node invoke card.paged media.paged.data.runCatalogue '{}' -o catalogue.paged \
+  --plugins=@paged-media/data
+# result: { "ok": true, "instances": 3, "records": 3, "undoSteps": 2 }
+```
+
+## Inspection
+
+These change nothing:
+
+| Command | Arguments | Result |
+|---|---|---|
+| `checkExpression` | `expr`, `query?` | `{ ok, error?, fields, unknownFields }` |
+| `refreshDiff` | — | Per binding, `{ binding, change: "changed" \| "unchanged" \| "added" \| "removed", before?, after? }` |
+| `previewRecordFlow` | `binding` | `{ total, blocks }` for a record-flow binding |
+
+`paged commands --owner media.paged.data` lists the rest (data sets,
+variables and their libraries, `refresh`, `exportDataMergeTemplate`).
+
+## Limits
+
+Database and SQLite sources, Arrow IPC and raster barcodes are not built; an
+`interval` refresh is refused for a local file in the browser.

@@ -1,0 +1,111 @@
+---
+title: Module commands
+description: The typed commands the built-in modules offer — one id and one argument schema, run the same way from a script, an extension and the Node command line.
+tier: intermediate
+diataxis: reference
+status: draft
+owner: paged-docs
+reviewed: "2026-10-23"
+---
+
+**What the editor's panels do, as commands with typed arguments.**
+
+**In short:** every built-in module contributes **typed commands** — an id, an
+argument schema and a result — to the host's object model. The editor's own
+panels and menus run them, and so can three other callers, with the same checks
+and the same undo steps:
+
+| Caller | How |
+|---|---|
+| A [script](/docs/paged/scripting) | `JSON.parse(await paged.invoke(id, args))`; `paged.commands(owner?)` lists them. |
+| An [extension](/docs/paged/plugin-sdk) | `await host.objects.invoke(id, args)`; `host.objects.commands()` lists them. |
+| The [Node command line](/docs/paged/cli/npm) | `paged invoke <doc> <id> '<json>'`; `paged commands [doc] --owner <pluginId>` lists them. |
+
+The commands on these pages are on `main` and ship with the next release. A
+module's commands exist only where its bundle is loaded: the editor loads every
+built-in module; the Node command line loads the bundles named with `--plugins`
+(in a checkout of [`paged-media/paged`](https://github.com/paged-media/paged)
+the modules are workspace packages; they are not published on npm). The engine's
+Rust command line has no plugin host, so a module command is out of its reach,
+and a script run there (`paged script`) has no host for `paged.invoke`.
+
+## Ids and arguments
+
+A command id is the module's plugin id and the command's name:
+
+| Module | Ids |
+|---|---|
+| [paged.draw](/docs/paged/commands/draw) | `media.paged.draw.command.<name>` |
+| [paged.image](/docs/paged/commands/image) | `media.paged.image.command.<name>` |
+| [paged.sheet](/docs/paged/commands/sheet) | `media.paged.sheet.command.<name>` |
+| [paged.data](/docs/paged/commands/data) | `media.paged.data.<name>` |
+| [paged.doc](/docs/paged/commands/doc) | `media.paged.doc.command.<name>` |
+| [paged.slide](/docs/paged/commands/slide) | `media.paged.slide.<name>` |
+| [paged.publish](/docs/paged/commands/publish) | `media.paged.publish.<name>` |
+
+The engine's own operations are typed commands too (`core.<op>`), one per
+catalog operation. `paged commands --text` prints each command's arguments
+(`targets: list of ref to frame (JSON), widths: list of length …`); give lengths as numbers in points. A field with a default may
+be left out. Arguments are checked against the schema before the command runs,
+so a misspelled field or a wrong type is refused with the field's path.
+
+Objects are named by **address**, the same grammar `paged get` and `paged.set`
+take: `textFrame:u12`, `page:#1`, `plugin:media.paged.sheet/workbook/main`.
+
+## Bytes
+
+A file going in (an image, a workbook, a deck) is an argument of kind `bytes`.
+JSON cannot carry bytes, so the Node command line reads them from a file:
+
+```bash
+paged invoke book.paged media.paged.sheet.command.importXlsx '{"bytes":"@book.xlsx"}'
+paged invoke book.paged media.paged.sheet.command.importXlsx '{"bytes":{"$file":"book.xlsx"}}'
+paged invoke book.paged media.paged.sheet.command.importXlsx '{"bytes":{"base64":"UEsDB…"}}'
+```
+
+A command that answers bytes (an exported file) is written with
+`--result-out <file>`: the result itself, or its one `bytes` field. An extension
+passes and receives a `Uint8Array`.
+
+## Results, refusals and undo
+
+`paged invoke` prints `{ command, applied, result, saved, wrote }` and, unless
+`--no-save` or `-o` says otherwise, writes the document back. A refused command
+— its arguments do not fit, or what it acts on cannot take it — prints
+`{ applied: false, error }` and exits `1`; in a script or an extension the
+promise rejects with the message, which starts with a code such as
+`invalidValue:` or `failed:`.
+
+Each command that changes the document is **one undo step** unless its page
+says otherwise, and the [template policy](/docs/paged/templates/permissions-and-roles)
+applies: a filler session may run only what the template permits.
+
+## Example: the same command three ways
+
+```js title="In a script"
+const r = JSON.parse(await paged.invoke('media.paged.draw.command.widthProfile', {
+  targets: ['polygon:u1f'],
+  widths: [0, 8, 0],
+}));
+console.log(r.outlined);   // 1
+```
+
+```ts title="In an extension"
+await host.objects.invoke('media.paged.draw.command.widthProfile', {
+  targets: ['polygon:u1f'],
+  widths: [0, 8, 0],
+});
+```
+
+```bash title="From the command line"
+paged-node invoke drawing.paged media.paged.draw.command.widthProfile \
+  '{"targets":["polygon:u1f"],"widths":[0,8,0]}' --plugins=@paged-media/draw
+```
+
+## Related
+
+- [paged generate](/docs/paged/cli/generate) and
+  [preflight and package](/docs/paged/cli/preflight-and-package) — command-line
+  verbs built on these commands.
+- [Settable paths](/docs/paged/scripting/settable-paths) — properties a script
+  writes with `paged.set`, next to the commands here.

@@ -40,6 +40,19 @@ each record.
 - **Data plugins** — the [paged.data plugin](/docs/paged/plugins/data) targets
   database/PIM-fed record flows directly.
 
+## From the command line
+
+The Node command line (`paged-node` in a checkout, on `main` for the next
+release) turns a template and a data file into files:
+[`paged generate`](/docs/paged/cli/generate) writes one document per record or
+per group of records, as `.paged`, `.idml` or PDF;
+[`paged preflight`](/docs/paged/cli/preflight-and-package) checks a document
+against the PDF exporter and fails on an error; and
+[`paged package`](/docs/paged/cli/preflight-and-package) collects it with its
+links and fonts for the printer. The built-in modules' panels are reachable as
+[typed commands](/docs/paged/commands) from the same command line and from
+scripts.
+
 ## Honest maturity
 
 InDesign Server with EasyCatalog or priint is the established, battle-tested stack

@@ -1,0 +1,139 @@
+---
+title: paged preflight and paged package
+description: Check a document against the PDF exporter before output, and collect it with its links, fonts, a report and the lossless .paged into one folder or zip.
+tier: intermediate
+diataxis: reference
+status: draft
+owner: paged-docs
+describes: [the-renderer]
+reviewed: "2026-10-23"
+---
+
+**Before a document leaves: check it, then hand it over whole.**
+
+**In short:** `paged preflight <doc>` runs the PDF exporter's checks — the
+editor's Preflight panel — and exits `1` when a finding is an error.
+`paged package <doc> -o <dir|x.zip>` writes a package folder: the document as
+IDML with its links pointed into `Links/`, every linked file, the fonts it sets
+in, `Instructions.txt`, a report, and the document as `.paged` with the module
+content IDML cannot carry. Both are verbs of the Node command line (`paged-node`
+in a checkout, `paged` from [npm](/docs/paged/cli/npm)); they are on `main` and
+ship with the next release. The [Rust `paged package`](/docs/paged/cli) writes
+the same folder.
+
+## `paged preflight <doc>`
+
+```bash
+paged-node preflight brochure.paged --plugins=@paged-media/publish
+paged-node preflight brochure.paged --pages 1-4 --text --plugins=@paged-media/publish
+```
+
+```json
+{
+  "via": "media.paged.publish.preflight",
+  "options": {},
+  "ok": true,
+  "pageCount": 1,
+  "errors": 0,
+  "warnings": 0,
+  "findings": []
+}
+```
+
+Each finding is `{ severity, code, message, page }`, `severity` one of `error`,
+`warning`, `info`, and `page` 1-based (`0` for a document-wide finding). `--text`
+prints `ok: 0 error(s), 2 warning(s) on 4 page(s)` and one line per finding.
+
+| Option | Meaning |
+|---|---|
+| `--pdf-standard <pdf17\|pdfx4>` | Check against this standard (default `pdf17`). PDF/X-4 needs an output intent (`--option outputIntentProfile=<a registered profile name>`); without one the check is refused with the reason. |
+| `--pages <a-b>` | The pages to check (1-based, inclusive; default all). |
+| `--option <key=value>` | Any other option of the exporter, typed by its schema (repeatable). An unknown key is a usage error that lists the options. |
+
+Exit codes: `0` no error finding (warnings are not failures), `1` an error
+finding or a refused check, `2` usage — including a run without paged.publish
+loaded, since the checks are its typed `preflight`
+([paged.publish commands](/docs/paged/commands/publish)). The built-in modules
+are not published on npm, so from npm `preflight` reports that it is not
+loaded; in a checkout of `paged-media/paged` name the bundle with `--plugins`.
+
+## `paged package <doc> -o <dir|x.zip>`
+
+```bash
+npx @paged-media/paged package brochure.paged -o brochure-package --fonts ./fonts
+npx @paged-media/paged package brochure.paged -o brochure.zip --pdf
+```
+
+`package` needs no module, so it runs from the npm package. The folder:
+
+```text
+brochure-package/
+├── brochure.idml          the document, its links pointed into Links/
+├── brochure.paged         the whole document, module content included
+├── Links/                 every linked file
+├── Document fonts/        the faces it sets in, where their licence allows
+├── Instructions.txt
+└── brochure Report.txt
+```
+
+`-o` must be a new or empty folder, or a `.zip` that does not exist yet; a zip
+unpacks into `<name>/` beside it, and its links point there.
+
+| Option | Meaning |
+|---|---|
+| `-o, --out <dir\|x.zip>` | The package. **Required.** |
+| `--fonts <dir\|file>` | Font files to collect the document's faces from (repeatable). |
+| `--pdf` | Also write `<name>.pdf`, through the typed exporter when paged.publish is loaded. |
+| `--no-paged` | Leave out `<name>.paged`, for a printer who wants the IDML alone. |
+| `--instructions <text>` | The text of `Instructions.txt`, instead of the default note. |
+
+**Links.** Each link's file is the bytes the document holds, or else the file the
+link names, relative to the document. A link that resolves to neither is
+reported `missing`.
+
+**Fonts.** An IDML names its fonts but carries none of them, so a face is
+collected from the faces the engine holds for the family (ones the document or
+a module registered) and from the files `--fonts` names. A face whose licence
+restricts embedding (OS/2 `fsType` 2) is listed and **not copied**; a family no
+face answers for is reported `missing`. Whether a font's licence lets you hand
+it on otherwise is your question — the report lists what was copied.
+
+**The `.paged`.** It is written by default because a package is the
+document's archive: the IDML cannot carry a module's content (a sheet, a
+drawing, a web frame, data bindings), and the `.paged` keeps all of it. The
+report lists those parts, and says whether they are in the `.paged` or were left
+out with `--no-paged`.
+
+The JSON report:
+
+```json
+{
+  "package": "brochure-package",
+  "document": "brochure-package/brochure.idml",
+  "paged": "brochure-package/brochure.paged",
+  "moduleParts": ["paged/media.paged.sheet/…"],
+  "links": [{ "fileName": "photo.jpg", "sourceUri": "file:photo.jpg", "status": "copied", "from": "/work/photo.jpg" }],
+  "fonts": [{ "family": "Lora", "status": "copied", "files": [ … ] }],
+  "inks": [],
+  "lost": []
+}
+```
+
+`links[].status` is `written` (the engine's bytes), `copied` or `missing`;
+`fonts[].status` is `copied`, `restricted` or `missing`; `lost` lists what the
+IDML export could not carry.
+
+### The Rust `paged package`
+
+The engine's own command line writes the same folder, report and `.paged`, with
+the same `--no-paged`; its fonts come from `--fonts`, `--font-family` and
+`--font`. `--no-paged` is on `main` and is not yet in the generated reference,
+which follows the latest release.
+
+## Related
+
+- [The paged command from npm](/docs/paged/cli/npm) — installing and running it.
+- [paged.publish commands](/docs/paged/commands/publish) — `exportPdf` and
+  `preflight` as typed commands.
+- [Coming from Adobe InDesign Server](/docs/paged/use-cases/indesign-server) —
+  preflight and packaging among the other server jobs.

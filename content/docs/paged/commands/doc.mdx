@@ -1,0 +1,102 @@
+---
+title: paged.doc commands
+description: paged.doc's objects and typed commands — a Word document's blocks, table cells, runs and merge fields as writable objects, placing and exporting .docx, and a .docx opened on its own headless.
+tier: intermediate
+diataxis: reference
+status: draft
+owner: paged-docs
+describes: [plugin-doc]
+reviewed: "2026-10-23"
+---
+
+**Change a Word document's text, cell by cell, and save it back as Word.**
+
+**In short:** [paged.doc](/docs/paged/plugins/doc) exposes a Word document as
+objects a script, an extension or the command line reads and writes, and three
+typed commands, `media.paged.doc.command.<name>`. Every write changes the poured
+text on the page and is patched into the `.docx` on export, so what you did not
+touch stays as Word wrote it. How to call them:
+[Module commands](/docs/paged/commands).
+
+## Opening a `.docx` on its own
+
+The Node command line opens a `.docx` as a document of its own, a page per
+section, as the editor's File ▸ Open does: paged.doc's importer opens it through
+the SDK headless host's
+[native-document door](/docs/paged/plugin-sdk/the-bundle-host#hostnativedocument).
+Writing `-o x.docx` exports through the module, so the edits are in the Word file:
+
+```bash
+paged-node set price-table.docx plugin:media.paged.doc/block/docx_f0/b1/c2/p0 text Pears \
+  -o edited.docx --plugins=@paged-media/doc
+```
+
+## Addresses
+
+The document opened on its own has the frame `docx_f0`; a placed one, its frame's
+id.
+
+| Address | What |
+|---|---|
+| `plugin:media.paged.doc/docxDocument/<frame>` | The document. |
+| `…/block/<frame>/b<i>` | A paragraph or a table, by index. |
+| `…/block/<frame>/b<i>/c<k>/p<m>` | Paragraph `m` of cell `k` of table `b<i>`. |
+| `…/run/<frame>/b<i>/r<j>`, `…/run/<frame>/b<i>/c<k>/p<m>/r<j>` | A run, in the body or in a cell. |
+| `…/mergeField/<frame>/b<i>/f<o>` | The `o`-th merge field of a block. |
+
+## What is writable
+
+Each write is one undo step.
+
+| Property | Meaning |
+|---|---|
+| `block.text` | A paragraph's text, in the body or in a table cell. The first run takes the text and keeps its look; the other runs are emptied. |
+| `block.listItems` | A list's items as `text[]`: the first items take the new texts, the rest are removed, and extra items copy the last one. |
+| `run.text` | A run's text, in the body or in a cell. |
+| `mergeField.value` | A merge field's result, in the body or a cell; the field code stays, so the file still merges in Word. |
+
+Run formatting (character style, hyperlinks) is read-only. In the editor, edits
+typed on the canvas into a table cell — paragraphs added or removed included —
+are saved back on export too, and a placed document's tables are found again by
+their content after the text around them changed.
+
+## Typed commands
+
+| Command | Arguments | Result |
+|---|---|---|
+| `placeDoc` | `bytes` (a `.docx`), `fileName` | `{ document, frame, story }` — placed into a frame of the current document. |
+| `exportDocx` | `document` | `{ bytes, fileName }` — the `.docx` with every edit patched in. |
+| `fillMergeFields` | `document`, `values` (field name → text) | `{ filled, unknown }` — one undo step; `filled` counts field instances. |
+
+```bash
+paged-node invoke letter.docx media.paged.doc.command.fillMergeFields \
+  '{"document":"plugin:media.paged.doc/docxDocument/docx_f0","values":{"City":"London","OrderNo":"A-17"}}' \
+  -o letter-filled.docx --plugins=@paged-media/doc
+
+paged-node invoke letter.paged media.paged.doc.command.exportDocx \
+  '{"document":"plugin:media.paged.doc/docxDocument/docx_f0"}' \
+  --result-out letter.docx --no-save --plugins=@paged-media/doc
+```
+
+## Template fields
+
+paged.doc's [field kinds](/docs/paged/templates/fields#module-fields) —
+`media.paged.doc.blockText`, `media.paged.doc.listItems` and
+`media.paged.doc.mergeField` — find their paragraph by an **anchor**:
+
+```json
+{ "bookmark": "intro" }
+{ "style": "Heading1", "occurrence": 0 }
+{ "heading": 2, "occurrence": 0 }
+{ "block": 3 }
+{ "block": 1, "cell": 2, "paragraph": 0 }
+```
+
+`heading` is the n-th paragraph in Word's "heading n" style or one based on it;
+`occurrence` is 0-based. A bookmark or style anchor finds paragraphs inside table
+cells too, and `{ block, cell, paragraph }` names one directly.
+
+## Limits
+
+Headers, footers and footnotes are read but not placed on the page; tracked
+changes and floating images are reported, not placed.

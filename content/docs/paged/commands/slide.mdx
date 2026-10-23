@@ -1,0 +1,60 @@
+---
+title: paged.slide commands
+description: paged.slide's typed commands and objects — new and duplicated slides, reordering, notes and transitions, importing a deck and exporting it back to .pptx under the deck's own name.
+tier: intermediate
+diataxis: reference
+status: draft
+owner: paged-docs
+describes: [plugin-slide]
+reviewed: "2026-10-23"
+---
+
+**A deck's slides as objects, and its verbs as commands.**
+
+**In short:** [paged.slide](/docs/paged/plugins/slide)'s typed commands have ids
+`media.paged.slide.<name>`; its slides, layouts and placeholders are objects at
+`plugin:media.paged.slide/<kind>/<id>`. How to call them:
+[Module commands](/docs/paged/commands).
+
+## Typed commands
+
+| Command | Arguments | Result |
+|---|---|---|
+| `newSlide` | `after?` (a slide or page address; default: after the last slide), `layout?` (default: the `after` slide's layout) | `{ slide }` — a slide of that layout with its placeholders in place and empty, as the Slides panel makes it. One undo step. |
+| `duplicateSlide` | `slide` | `{ slide }` — the copy, right after the source. One undo step. |
+| `importPptx` | `bytes`, `name` | `{ slides, fonts, diagnostics }` |
+| `exportPptx` | — | `{ bytes, fileName, diagnostics }` |
+
+`exportPptx` writes the deck the document was opened from, with its slide order,
+duplicated and deleted slides, hidden flags, notes and sections; edited slide
+content is reported in `diagnostics` and not written yet. The file is named after
+the document (`<name>.pptx`), else the deck, else `presentation.pptx`. A document
+not opened from a deck is refused.
+
+```bash
+paged-node invoke pitch.pptx media.paged.slide.duplicateSlide \
+  '{"slide":"plugin:media.paged.slide/slide/<pageId>"}' -o pitch.paged --plugins=@paged-media/slide
+paged-node invoke pitch.paged media.paged.slide.exportPptx '{}' \
+  --result-out pitch.pptx --no-save --plugins=@paged-media/slide
+```
+
+## Slide properties
+
+| Property | Meaning |
+|---|---|
+| `index` | The slide's 1-based position; writing it moves the slide (past the end puts it last). |
+| `layout` | A layout or master address, or a master id. |
+| `hidden` | Skip the slide in a show. |
+| `notes` | Speaker notes; `\n` separates paragraphs. |
+| `transitionKind`, `transitionDirection`, `transitionSpeed`, `transitionDuration`, `advanceOnClick`, `advanceAfter` | The transition and advance settings PowerPoint keeps. |
+
+A placeholder's `content` is writable too. Slides are made with `newSlide`, not
+with `create`; `delete` removes one.
+
+## Palette commands and menus
+
+In the editor each verb is also a palette command with a menu entry, offered
+only where it applies, acting on the active slide: **File ▸ Open PowerPoint
+deck…** and **File ▸ Export PowerPoint deck…**, and **New slide**, **Duplicate
+slide**, **Delete slide**, **Move slide up** and **Move slide down** under
+**Plugins ▸ Slide**. An opened deck exports under the deck's own name.

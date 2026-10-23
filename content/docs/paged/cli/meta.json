@@ -1,4 +1,4 @@
 {
   "title": "Command line (paged)",
-  "pages": ["index", "npm", "template"]
+  "pages": ["index", "npm", "template", "generate", "preflight-and-package"]
 }

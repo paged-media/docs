@@ -6,7 +6,7 @@ diataxis: explanation
 status: draft
 owner: paged-docs
 describes: [sheet]
-reviewed: "2026-10-12"
+reviewed: "2026-10-23"
 ---
 
 **In short:** `paged.sheet` is a full spreadsheet engine in Rust/WASM that lives
@@ -27,9 +27,16 @@ lowers to native `<Table>` content and is editable in-frame.
 - Spreadsheet editing in the grid: range selection, the grid keys, find,
   formula-carrying copy and paste, the fill handle, a formula bar that completes
   function names from the engine, and host undo outside the edit session.
-- In development: cell styles, merged cells, row and column sizes, freeze panes,
-  defined names, CSV import, and the workbook as typed objects for scripts and
-  bindings (the object model).
+- Placing on the page as typed commands: a range, a defined name or a sheet's
+  print area (several ranges included), in one frame with its view (window,
+  fixed or fit sizing, top-left cell, printed headings and gridlines) or
+  paginated across a chain of frames; deleting a chart removes it and its placed
+  copies, and only its parts from the saved `.xlsx`
+  ([paged.sheet commands](/docs/paged/commands/sheet)).
+- Merging cells, borders, column widths and row heights, and CSV import, as
+  typed commands too.
+- In development: cell styles, freeze panes, and the rest of the workbook as
+  typed objects for scripts and bindings (the object model).
 
 ## How it's built
 

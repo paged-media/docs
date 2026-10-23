@@ -1,0 +1,5 @@
+{
+  "title": "Module commands",
+  "icon": "parser",
+  "pages": ["index", "draw", "image", "sheet", "data", "doc", "slide", "publish"]
+}

@@ -6,7 +6,7 @@ diataxis: explanation
 status: draft
 owner: paged-docs
 describes: [plugin-draw]
-reviewed: "2026-10-12"
+reviewed: "2026-10-23"
 ---
 
 **In short:** `paged.draw` brings Illustrator-class vector editing into paged — a
@@ -27,6 +27,11 @@ engine's vector scene-layer surface.
   Again; point snapping through the engine; Create Outlines from text.
 - Paths, appearance stacks, graphic styles, symbols and generator recipes as
   typed objects (the object model, partly built).
+- Typed commands for scripts, extensions and the Node command line: 102 of its
+  112 commands, the Knife, Scissors and Shape Builder with their gesture as data,
+  and a width profile (`widthProfile`). Patterns, repeats, blends, objects on a
+  path and live paint rebuild in the same undo step as the edit that changed
+  their sources ([paged.draw commands](/docs/paged/commands/draw)).
 
 ## How it's built
 

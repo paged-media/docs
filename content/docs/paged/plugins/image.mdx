@@ -6,7 +6,7 @@ diataxis: explanation
 status: draft
 owner: paged-docs
 describes: [image]
-reviewed: "2026-10-12"
+reviewed: "2026-10-23"
 ---
 
 **In short:** `paged.image` is a raster-processing subsystem in Rust/WASM —
@@ -17,12 +17,18 @@ the editor: place → ingest → GPU adjust → in-frame composite.
 ## What it does
 
 - <Fact id="image.kernels" /> GPU compute kernels (adjustments, transforms, blurs)
-  with scalar reference twins used only in tests.
+  with scalar reference twins; nineteen of those twins ship, so a region filter
+  runs without a GPU.
 - Two engines — a demand-driven streaming pipeline and a persistent tiled buffer.
 - PSD/PSB parsing + mutation + preservation-safe round-trip; hybrid color
   management.
 - In-editor ingest: placed-asset bytes → decode → GPU adjust → scene-layer
   composite → tiles.
+- Typed commands that name their picture, so they run headless too: crop,
+  canvas size, quarter turns and flips, adjustment layers, and `filterRegion`,
+  which filters a rectangle of a layer through a polygon or alpha mask — on the
+  GPU in the editor, and without one on shipped CPU twins of the same kernels
+  ([paged.image commands](/docs/paged/commands/image)).
 - In development: layered PSD import (groups, masks, smart objects, adjustment
   layers), retouching tools (spot heal, patch, dodge and burn, blur and sharpen
   brushes, mask painting, red eye), editable adjustment layers, and layers,

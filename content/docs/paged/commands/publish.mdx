@@ -1,0 +1,76 @@
+---
+title: paged.publish commands
+description: paged.publish's typed commands — the PDF exporter with every option, bookmarks and tagged PDF included, its preflight, and IDML import and export as bytes.
+tier: intermediate
+diataxis: reference
+status: draft
+owner: paged-docs
+describes: [plugin-publish]
+reviewed: "2026-10-23"
+---
+
+**The editor's Export dialog, as one command with typed options.**
+
+**In short:** [paged.publish](/docs/paged/plugins/publish)'s typed commands have
+ids `media.paged.publish.<name>`. `exportPdf` makes the PDF the editor's Export
+dialog makes, and every PDF the Node command line writes goes through it when
+the module is loaded (`export`, `merge`, `generate`, `template fill`,
+`package --pdf`). `preflight` runs the same exporter's checks without writing
+a file. How to call them: [Module commands](/docs/paged/commands).
+
+## `exportPdf`
+
+| Option | Type | Default |
+|---|---|---|
+| `standard` | `"pdf17"` \| `"pdfx4"` | `"pdf17"` |
+| `pages` | `"all"`, `"n"` or `"a-b"`, 1-based | every page |
+| `outputIntentProfile` | a registered profile name | the working CMYK space; **required** for `pdfx4` |
+| `outputCondition` | text | — |
+| `colorPolicy` | `"preserveNumbers"` \| `"convertToDestination"` | `"preserveNumbers"` |
+| `cropMarks`, `registrationMarks`, `colorBars`, `pageInfo` | bool | `false` |
+| `marksOffset` | pt, 0–72 | — |
+| `bleed` | `[top, inside, bottom, outside]` in pt, 0–432 each | the document's bleed |
+| `downsamplePpi` | 1–2400 | never resample |
+| `effectDpi` | 36–1200 | `150` |
+| `restrictedFontPolicy` | `"outline"` \| `"fail"` | `"outline"` |
+| `title` | text | — |
+| `bookmarks` | bool | `false` — the document's bookmarks as the PDF's outline |
+| `tagged` | bool | `false` — a tagged PDF, stories and paragraphs as its structure |
+
+The result is `{ bytes, fileName, mimeType, pageCount, diagnostics }`, each
+diagnostic `{ severity: "error" | "warning" | "info", code, message, page }`
+(`page` 1-based, `0` for the whole document). An option out of range is refused
+with `invalidValue:` and the range.
+
+```bash
+paged-node invoke brochure.paged media.paged.publish.exportPdf \
+  '{"bookmarks":true,"tagged":true,"title":"Brochure"}' \
+  --result-out brochure.pdf --no-save --plugins=@paged-media/publish
+
+# the same through the export verb: options by name, the rest at their defaults
+paged-node export brochure.paged -o brochure.pdf \
+  --option bookmarks=true --option tagged=true --plugins=@paged-media/publish
+```
+
+## `preflight`
+
+Takes the same options and answers
+`{ ok, pageCount, errors, warnings, findings }`, the findings in the diagnostic
+shape above; `ok` is true when no finding is an error. It is the editor's
+Preflight panel, and the [`paged preflight`](/docs/paged/cli/preflight-and-package)
+verb:
+
+```json
+{ "ok": true, "pageCount": 1, "errors": 0, "warnings": 1,
+  "findings": [{ "severity": "warning", "code": "font_substituted", "message": "…", "page": 1 }] }
+```
+
+## IDML as bytes
+
+`importIdml { bytes, name? }` opens an IDML package, and `exportIdml {}`
+answers the document as IDML bytes:
+
+```bash
+paged-node invoke brochure.paged media.paged.publish.exportIdml '{}' \
+  --result-out brochure.idml --no-save --plugins=@paged-media/publish
+```
