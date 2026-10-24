@@ -63,11 +63,14 @@ redo replays both, and an undo or a redo never starts a rebuild. The bundle
 fingerprints each recipe's sources (anchors and properties) and rebuilds those
 whose fingerprint moved, once per commit, never per pointer move. It uses the
 SDK's [amended write](/docs/paged/plugin-sdk/the-bundle-host#a-follow-up-write-in-the-same-undo-step)
-and is on by default (the bundle's storage key `recipes.autoUpdate` set to
-`false` turns it off).
+and is on by default; the Pattern, Repeat, Blend, Objects on path and Live paint
+panels each carry an **Update automatically when a source changes** checkbox
+(the bundle's storage key `recipes.autoUpdate`).
 
-A script or `paged invoke` that edits a source is not followed by a rebuild — its
-reply carries no step to join — so it calls the update itself:
+A script's edits are followed too: a script run is one undo step, and the
+rebuild joins it. A typed write to a recipe's own parameters (a repeat's count, a
+blend's steps) rebuilds its artwork in that write's step. Where the automatic
+update is off, or on a host without the amended write, update explicitly:
 
 | Command | Arguments | Result |
 |---|---|---|
