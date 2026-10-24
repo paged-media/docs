@@ -55,9 +55,12 @@ Each write is one undo step.
 | `run.text` | A run's text, in the body or in a cell. |
 | `mergeField.value` | A merge field's result, in the body or a cell; the field code stays, so the file still merges in Word. |
 
-Run formatting (character style, hyperlinks) is read-only. In the editor, edits
-typed on the canvas into a table cell — paragraphs added or removed included —
-are saved back on export too, and a placed document's tables are found again by
+Run formatting is not a writable property here. In the editor, formatting made on
+the canvas — a word made bold, a character style on part of a run, a size or
+colour from the document's swatches — is saved back on export: the Word run is
+split, the changed piece gets only the properties that changed, and runs nobody
+touched stay byte-identical. Edits typed into a table cell — paragraphs added or
+removed included — are saved back too, and a placed document's tables are found again by
 their content after the text around them changed.
 
 ## Typed commands

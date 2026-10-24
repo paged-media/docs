@@ -73,7 +73,7 @@ rebuild, and one redo replays both:
 ```ts
 if (host.supports('document.mutate.amend@1')) {
   host.document.onDidChange(async (e) => {
-    if (e.appliedSeq === undefined) return;      // an undo, a redo or a script run
+    if (e.appliedSeq === undefined) return;      // an undo or a redo
     let step = e.appliedSeq;
     for (const m of rebuildFor(e)) {
       const out = await host.document.mutate(m, { amend: step });
@@ -85,16 +85,24 @@ if (host.supports('document.mutate.amend@1')) {
 ```
 
 - **`DocumentChangeEvent.appliedSeq`** is the engine's number of the step a
-  change committed. It is present on `mutationApplied` and `gestureCommitted`
-  and absent on an undo, a redo and a script run — so a listener that rebuilds
-  on edits leaves history moves alone; they already restored the derived
-  content with its sources.
+  change committed. It is present on `mutationApplied` and `gestureCommitted`,
+  and on a `scriptResult` when the run was one step (a script run is one undo
+  step). It is absent on an undo and a redo — so a listener that rebuilds on
+  edits leaves history moves alone; they already restored the derived content
+  with its sources.
 - **A refusal is an outcome, not a throw.** Once that step is no longer the last
   in the history, or an undo or a redo ran since, nothing is applied and the
   outcome is `applied: false` with `{ error: { kind: "notAmendable", details } }`.
 - **Each write answers the step's new number.** A rebuild of several writes
   amends each with the `appliedSeq` the previous one answered.
-- **Probe first.** `document.mutate.amend@1` says the host supports the option.
+- **Bytes too.** `mutateWithBytes(m, bytes, { amend })` joins the step the same
+  way.
+- **Object writes can carry a follow-up.** An object model's write may return
+  `followUp(step)`: it runs after the registry committed the write, writes with
+  `mutate(…, { amend })`, and keeps the whole consequence in the write's undo
+  step (a recipe parameter and the artwork rebuilt from it).
+- **Probe first.** `document.mutate.amend@1` says the host supports the option;
+  `document.mutate.amend@2` adds bytes, scripts and object follow-ups.
   An older host ignores it and would apply the mutation as a step of its own.
   A write that is not an engine mutation (a container part) is outside every
   undo step, an amended one included.

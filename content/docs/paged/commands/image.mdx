@@ -88,7 +88,8 @@ draws it.
 
 **Selections.** In the editor, `selection: true` filters within the frame's
 selection — the live one, or the one the session kept when that frame's image
-was closed — resampled when the canvas is the same image at another size. A
+was closed (reopening the image restores it as the live selection) — resampled
+when the canvas is the same image at another size. A
 selection on another crop of the image, or no selection at all, is refused with
 the reason, never taken as "everything"; headless there is no editor selection,
 so pass it as `mask`.
