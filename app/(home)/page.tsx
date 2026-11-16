@@ -23,7 +23,7 @@ export const metadata: Metadata = {
  * shared. The masthead + WIP banner come from the layout; the colophon footer
  * follows via SiteFooter.
  */
-type Card = [icon: string, title: string, desc: ReactNode, href: string];
+type Card = [icon: string, title: string, desc: ReactNode, href: string, more?: { label: string; href: string }];
 
 interface HomeCopy {
   eyebrow: string;
@@ -58,10 +58,11 @@ const HOME: Record<typeof SITE_ID, HomeCopy> = {
           'What does this element mean?',
           // What the reference covers, said as the census measured it (data/facts.json).
           <>
-            Pages for <Fact id="idml.reference.elements" /> of the <Fact id="idml.census.elements" /> elements found in{' '}
-            <Fact id="idml.census.documents" /> real documents, with their attributes and counts.
+            <Fact id="idml.reference.elements" /> elements with an entry, from <Fact id="idml.census.elements" /> observed
+            across <Fact id="idml.census.documents" /> documents, with their attributes and counts.
           </>,
           '/docs/idml/reference',
+          { label: 'How the census counts', href: '/docs/idml/meta/census' },
         ],
         ['search', 'What is in my file?', 'Open an .idml file in the browser and walk its parts. Nothing is uploaded.', '/docs/idml/tools/inspector'],
       ],
@@ -178,25 +179,35 @@ export default function HomePage() {
             </h2>
           </div>
           <div className="start-grid">
-            {copy.questions.items.map(([icon, question, answer, href]) => (
-              <Link key={question} href={href} className="start-card">
-                <Pic name={icon} size={22} color="var(--color-ink-soft)" />
-                <h3
-                  style={{
-                    fontFamily: 'var(--font-text-serif)',
-                    fontWeight: 650,
-                    fontSize: 22,
-                    letterSpacing: '-0.02em',
-                    color: 'var(--color-ink)',
-                    margin: 'var(--space-3) 0 var(--space-2)',
-                  }}
-                >
-                  {question}
-                </h3>
-                <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14.5, lineHeight: 1.5, color: 'var(--color-ink-soft)', margin: 0 }}>
-                  {answer}
-                </p>
-              </Link>
+            {copy.questions.items.map(([icon, question, answer, href, more]) => (
+              <div key={question}>
+                <Link href={href} className="start-card">
+                  <Pic name={icon} size={22} color="var(--color-ink-soft)" />
+                  <h3
+                    style={{
+                      fontFamily: 'var(--font-text-serif)',
+                      fontWeight: 650,
+                      fontSize: 22,
+                      letterSpacing: '-0.02em',
+                      color: 'var(--color-ink)',
+                      margin: 'var(--space-3) 0 var(--space-2)',
+                    }}
+                  >
+                    {question}
+                  </h3>
+                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14.5, lineHeight: 1.5, color: 'var(--color-ink-soft)', margin: 0 }}>
+                    {answer}
+                  </p>
+                </Link>
+                {/* A second link sits beside the card, never inside it (a link in a link). */}
+                {more ? (
+                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13.5, margin: 'var(--space-2) 0 0' }}>
+                    <Link href={more.href} style={{ color: 'var(--color-link)', textUnderlineOffset: '0.2em' }}>
+                      {more.label}
+                    </Link>
+                  </p>
+                ) : null}
+              </div>
             ))}
           </div>
         </div>
