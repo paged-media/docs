@@ -92,7 +92,7 @@
         "package.json": "modules/data/package.json"
       },
       "dirs": {
-        "functions": "modules/data/registry/functions"
+        "functions": "engine/core/crates/paged-data-core/functions"
       }
     },
     "core-meta": {
