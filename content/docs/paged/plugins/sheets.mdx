@@ -6,7 +6,7 @@ diataxis: explanation
 status: draft
 owner: paged-docs
 describes: [sheet]
-reviewed: "2026-10-23"
+reviewed: "2026-11-16"
 ---
 
 **In short:** `paged.sheet` is a full spreadsheet engine in Rust/WASM that lives
@@ -17,13 +17,24 @@ lowers to native `<Table>` content and is editable in-frame.
 ## What it does
 
 - Calc engine (dependency graph, dirty recalc, Excel-compatible numerics) with
-  <Fact id="sheet.functions" /> registered functions and dynamic-array spill.
+  <Fact id="sheet.functions" /> registered functions and Excel 365's calculation
+  model: any array spills, `@` implicit intersection, 3D references, named
+  `LAMBDA`s, short-circuit `IF`/`IFS`/`IFERROR`/`CHOOSE`/`SWITCH`, the newer
+  error values, 15-digit comparisons, circular references that keep their last
+  value, and manual calculation — recorded against desktop Excel and replayed
+  in CI.
+- Typed cell entry as Excel stores it: `45%`, `$1,234.50`, `1/2`, `2024-01-15`
+  or `9:30 PM` becomes a value with its implied number format (one undo step),
+  and a leading quote keeps text; the CSV import types its fields the same way.
 - Structured tables, a chart engine (plotters → a custom drawing backend →
   frozen chart geometry), and number formatting with locales.
 - XLSX import/export with a byte-faithful preservation invariant.
 - Page-surface lowering to native tables, multi-frame pagination, and an in-frame
   grid with a modal edit session; consumes governed datasets from
-  [paged.data](/docs/paged/plugins/data).
+  [paged.data](/docs/paged/plugins/data), and (experimental, on `main`) opens a
+  table of the document's data as the workbook and writes edited cells back
+  through the data door — tables derived by queries or transforms open read
+  only.
 - Spreadsheet editing in the grid: range selection, the grid keys, find,
   formula-carrying copy and paste, the fill handle, a formula bar that completes
   function names from the engine, and host undo outside the edit session.
@@ -35,14 +46,17 @@ lowers to native `<Table>` content and is editable in-frame.
   ([paged.sheet commands](/docs/paged/commands/sheet)).
 - Merging cells, borders, column widths and row heights, and CSV import, as
   typed commands too.
-- In development: cell styles, freeze panes, and the rest of the workbook as
-  typed objects for scripts and bindings (the object model).
+- The workbook, its sheets, cells, ranges, names, tables and charts as typed
+  objects for scripts and bindings (the object model).
+- In development: cell formatting saved to the workbook's styles, and freezing
+  panes from the panel.
 
 ## How it's built
 
-A Cargo workspace (`sheet-core`, `sheet-parser`, `sheet-calc`, `sheet-fn`,
-`sheet-format`, `sheet-xlsx`, `sheet-lower`, `sheet-grid`, `sheet-chart`, `sheet-js`) plus a TS
-bundle; a coverage gate requires every function to have a test.
+Rust crates in the engine's Cargo workspace (`sheet-core`, `sheet-parser`,
+`sheet-calc`, `sheet-fn`, `sheet-format`, `sheet-xlsx`, `sheet-lower`,
+`sheet-grid`, `sheet-chart`, `sheet-js`) plus a TS bundle; a coverage gate
+requires every function to have a test.
 
 ## Capability state
 
