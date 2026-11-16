@@ -322,6 +322,7 @@ function Attributes({ el, book }: { el: RefElement; book: IdmlReference }) {
                 <a href={`#attr-${a.name}`} className={s.permalink} aria-label={`Link to ${a.name}`}>
                   #
                 </a>
+                {/* TODO(W4 shell): set the notes as margin notes with the shell's <Sidenote> once it lands; no local copy. */}
                 {a.explained?.description ? <div className={s.gloss}>{withCode(a.explained.description)}</div> : null}
                 {a.note ? <div className={s.gloss}>{withCode(a.note)}</div> : null}
               </td>
@@ -439,6 +440,7 @@ function Evidence({ el, book }: { el: RefElement; book: IdmlReference }) {
           ) : null}{' '}
           <Link href={CENSUS_HREF}>How the census counts</Link>
         </dd>
+        {/* TODO(W4 shell): the census caveats are margin notes; use <Sidenote> when the shell ships it. */}
         <dt>Counts are</dt>
         <dd>Documents, not occurrences. Values are published only for small closed sets; numbers only by kind.</dd>
         {checked.length ? (

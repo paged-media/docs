@@ -515,7 +515,8 @@
   .entry .support {
     padding: var(--space-3);
   }
-  .entry .stack .src {
+  .entry .stack .src,
+  .entry .stack code {
     white-space: normal;
     overflow-wrap: anywhere;
   }
