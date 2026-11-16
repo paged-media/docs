@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { firstSearchResult, openClean, phoneWidth, themes } from './common';
+import { crossSiteSearch, firstSearchResult, openClean, phoneWidth, recordStrip, themes } from './common';
 
 // idml.paged.media — run against `SITE=idml pnpm build` (playwright.config.ts).
 
@@ -64,5 +64,7 @@ test('inspector loads', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+recordStrip('https://docs.paged.media/state/');
+crossSiteSearch('https://docs.paged.media', 'Paged Docs', 'text frame');
 phoneWidth(['/', '/reference/', '/reference/text-frame/', '/typography/drop-caps-and-tabs/', '/tools/inspector/']);
 themes();

@@ -29,7 +29,7 @@ hop buys three things:
 
 - **One scene, many backends.** The list is the seam between *what to paint* and
   *how*. The WebGPU/Vello backend and the CPU (`vello_cpu`) backend consume the exact
-  same list, so the live preview and the CI fidelity render agree by construction.
+  same list, so the live preview and the CI fidelity render agree by construction.<Sidenote id="parity">Construction is checked too: a parity gate holds the GPU lane's pixels to the CPU lane's on every engine change, and `DisplayList::digest()` hashes a whole list, which is how two builds of a page are compared.</Sidenote>
   See [rendering backends](/docs/paged/engine/the-renderer/rendering-backends).
 - **Cheap re-painting.** A built page caches its display list. The interactive
   canvas can re-rasterize a page at a new zoom, or snapshot it at low resolution for

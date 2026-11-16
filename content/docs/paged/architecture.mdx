@@ -22,14 +22,17 @@ The engine ([core](/docs/paged/repos/core)) turns an IDML package into pixels
 through a fixed pipeline:
 
 ```
-parse → scene → text → compose → GPU
+IDML parse → scene → text layout → compose → GPU/CPU raster
 ```
 
 Parse reads the ZIP + XML into a model; scene resolves spreads, frames, and story
-threading; text lays out with an InDesign-calibrated Knuth–Plass composer;
-compose emits a display list; and the GPU layer rasterizes it. Forward rendering
-is **WebGPU** (Vello); a CPU backend on `vello_cpu`, from the same rendering model, is the path of record for headless fidelity
-testing. The [renderer reference](/docs/paged/engine/the-renderer) covers this in depth.
+threading; text layout sets the lines with an InDesign-calibrated Knuth–Plass
+composer; compose emits a display list; and the raster stage turns that list into
+pixels, on the CPU or on the GPU, from one rendering model. The CPU lane,
+`vello_cpu`, is the default: the command line, CPU snapshots and the fidelity gate
+draw with it. The GPU lane, Vello on **WebGPU**, draws the viewer and the live
+preview in the browser. The [renderer reference](/docs/paged/engine/the-renderer)
+covers this in depth.
 
 <RenderPipeline />
 

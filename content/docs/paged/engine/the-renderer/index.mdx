@@ -50,7 +50,7 @@ IDML package
    ▼
    │  compose    scene  →  DisplayList (a versioned command stream)
    ▼
-   │  rasterize  DisplayList  →  pixels (WebGPU/Vello, or CPU)
+   │  rasterize  DisplayList  →  pixels (CPU: vello_cpu, the default; GPU: Vello on WebGPU)
    ▼
 RGBA pixels
 ```
@@ -72,8 +72,8 @@ question head-on. Read it if you want to:
 - know what the [display list](/docs/paged/engine/the-renderer/the-display-list) is, why an
   intermediate representation exists, and what commands it carries;
 - understand the [rendering backends](/docs/paged/engine/the-renderer/rendering-backends) — why
-  WebGPU (via Vello) is the forward path while a CPU rasterizer stays around as the
-  fidelity yardstick;
+  the CPU rasterizer (`vello_cpu`) is the default and the fidelity yardstick, while
+  Vello on WebGPU draws the live view in the browser;
 - or simply read the code: it's open, and these pages point you straight at it.
 
 The renderer is also what you're looking at on this very site. The live preview

@@ -45,7 +45,8 @@ The policies are constants in `lib/freshness.mjs`, shared with the build gates a
 | `repo` | This repository's own files and stated values | The commit date of the build (or the build time) | The commit SHA, when known | null |
 
 A definition in `data/facts.json` may set `class` itself; otherwise `gen-facts` derives it from
-`from`.
+`from`. It may also set `evidence`, the public page a reader checks the value on, which then
+becomes its `evidence_url`.
 
 ## Example
 

@@ -40,7 +40,7 @@ export const SITES: Record<SiteId, SiteConfig> = {
     homeTitle: 'Paged Docs — the open-source engine, editor, SDK and plugins for IDML',
     description:
       'Documentation for Paged, the open-source system that reads, renders and edits IDML: ' +
-      'the WebGPU render engine, viewer SDK, paged.* scripting, CLI and plugin SDK.',
+      'the render engine, viewer SDK, paged.* scripting, CLI and plugin SDK.',
   },
 };
 

@@ -1,5 +1,5 @@
 {
-  "$comment": "Every number and licence the docs state about the platform, defined by where it comes from. scripts/generate/gen-facts.mjs evaluates them into .generated/facts.json and public/facts.json; pages render them with <Fact id=\"…\" />, and check:facts fails a page that types one of these numbers by hand. `from` is a file under .generated/sources (pulled by sources.pin) or under this repo (`repo:`). Extractors: pointer (a JSON value), length (a JSON array's length), regex (first capture), regexCount (matching lines), files (files with an extension, recursively), rows (YAML rows `- id:` in a file or folder, optionally only those whose `status:` matches), dirs (sub-folders of a repo folder, optionally only those containing `with`), cliLeaves (leaf commands of cli.json), dependsOn (which of the named packages a package.json depends on), keys (an object's key count), license (an SPDX expression, written for people). `class` (optional) names the fact's freshness class when it is not the one gen-facts derives from `from`; the classes, their stale-after policy and the provenance fields of the output are in scripts/generate/facts-schema.md.",
+  "$comment": "Every number and licence the docs state about the platform, defined by where it comes from. scripts/generate/gen-facts.mjs evaluates them into .generated/facts.json and public/facts.json; pages render them with <Fact id=\"…\" />, and check:facts fails a page that types one of these numbers by hand. `from` is a file under .generated/sources (pulled by sources.pin) or under this repo (`repo:`). Extractors: pointer (a JSON value), length (a JSON array's length), regex (first capture), regexCount (matching lines), files (files with an extension, recursively), rows (YAML rows `- id:` in a file or folder, optionally only those whose `status:` matches), dirs (sub-folders of a repo folder, optionally only those containing `with`), cliLeaves (leaf commands of cli.json), dependsOn (which of the named packages a package.json depends on), keys (an object's key count), license (an SPDX expression, written for people). `evidence` (optional) is the public page a reader checks the value on, when the generator's own link is not the best one. `class` (optional) names the fact's freshness class when it is not the one gen-facts derives from `from`; the classes, their stale-after policy and the provenance fields of the output are in scripts/generate/facts-schema.md.",
   "facts": {
     "engine.version": {
       "label": "engine release",
@@ -126,7 +126,8 @@
     },
     "license.docs": {
       "label": "documentation licence",
-      "value": "CC BY 4.0"
+      "value": "CC BY 4.0",
+      "evidence": "https://github.com/paged-media/docs/blob/main/LICENSE-CONTENT"
     },
     "editor.plugins": {
       "label": "plugin bundles the editor loads",
@@ -184,7 +185,8 @@
       "label": "IDML elements with a reference page",
       "from": "repo:.generated/idml-reference.json",
       "length": "/elements",
-      "class": "census"
+      "class": "census",
+      "evidence": "https://idml.paged.media/reference/"
     }
   }
 }

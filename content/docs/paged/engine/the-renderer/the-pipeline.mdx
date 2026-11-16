@@ -95,13 +95,15 @@ The last stage consumes the display list and produces actual pixels: an RGBA8 im
 one per page. It walks the command stream and asks a rasterizer to fill each path,
 stroke each outline, place each image, and composite each effect.
 
-There are two rasterizer implementations behind one `PathRasterizer` trait. The
-**WebGPU backend, built on Vello**, is the forward path — it's what drives the SDK,
-the viewer, and this site's live preview. A **CPU rasterizer (`vello_cpu`, Vello's CPU
-renderer)** is the always-available, deterministic backend of record, used by the command
-line, headless CI and the fidelity gate; both draw from one mapping of the display list. Which one runs is a backend choice made at the edge; the display list feeding
-them is identical. The [rendering-backends page](/docs/paged/engine/the-renderer/rendering-backends)
-covers the trade-offs.
+There are two rasterizer implementations behind one `PathRasterizer` trait<Sidenote id="paged-gpu-crate">Both live in the crate `paged-gpu`, named for the GPU lane it started with. Its default entry point, `paged_gpu::rasterize`, draws on the CPU.</Sidenote>,
+and both draw from one mapping of the display list. The **CPU rasterizer,
+`vello_cpu`** (Vello's CPU renderer), is the default: it needs no GPU, renders
+deterministically, and is what the command line, headless CI, CPU snapshots and the
+fidelity gate use. The **GPU rasterizer, Vello on WebGPU**, draws the viewer, the
+SDK and this site's live preview in the browser. Which one runs is a choice made at
+the edge; the display list feeding them is identical. The
+[rendering-backends page](/docs/paged/engine/the-renderer/rendering-backends) covers
+the trade-offs.
 
 ## The crate map
 
@@ -116,7 +118,7 @@ each crate owns.
     { attr: 'paged-text', type: 'layout', support: 'supported', note: 'Shaping (shape_run), paragraph composition, multi-font line layout. InDesign-calibrated Knuth–Plass line breaking, hyphenation, tab-stop alignment.' },
     { attr: 'paged-compose', type: 'compose', support: 'supported', note: 'Walks the laid-out scene and emits the versioned DisplayList (DisplayCommand stream). Owns the path buffer / glyph cache and the gradient + image pools.' },
     { attr: 'paged-gpu', type: 'rasterize', support: 'supported', note: 'Owns the PathRasterizer trait. WebGPU/Vello backend + vello_cpu CPU backend, one shared mapping. DisplayList → RGBA8 pixels.' },
-    { attr: 'paged-renderer', type: 'coordinate', support: 'supported', note: 'The top-level engine. build_document / render_document drive parse → … → raster; PipelineOptions carries the knobs. Re-exports Document, DisplayList, DisplayCommand so consumers depend on one crate.' },
+    { attr: 'paged-renderer', type: 'coordinate', support: 'supported', note: 'The top-level engine. build_document / render_document drive parse → … → GPU/CPU raster; PipelineOptions carries the knobs. Re-exports Document, DisplayList, DisplayCommand so consumers depend on one crate.' },
     { attr: 'paged-fidelity', type: 'verify', support: 'supported', note: 'Not in the render path. The diff harness (ΔE2000 + SSIM) that compares a render against an InDesign-exported reference PDF in CI.' },
   ]}
 />

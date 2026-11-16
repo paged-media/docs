@@ -1,4 +1,6 @@
+import type { ReactNode } from 'react';
 import Link from '@/components/site-link';
+import { Fact } from '@/components/mdx/fact';
 import { Pic } from '@/components/icons';
 import { Frontispiece } from '@/components/frontispiece';
 
@@ -21,7 +23,7 @@ export const metadata: Metadata = {
  * shared. The masthead + WIP banner come from the layout; the colophon footer
  * follows via SiteFooter.
  */
-type Card = [icon: string, title: string, desc: string, href: string];
+type Card = [icon: string, title: string, desc: ReactNode, href: string];
 
 interface HomeCopy {
   eyebrow: string;
@@ -51,7 +53,16 @@ const HOME: Record<typeof SITE_ID, HomeCopy> = {
         ['package', 'What’s inside a package?', 'The ZIP container, the design map, and the parts it names.', '/docs/idml/package-anatomy'],
         ['story', 'How is text stored?', 'Stories as style runs, paragraph marks, and the frames that show them.', '/docs/idml/stories-text/story-structure'],
         ['spread', 'Where do things sit on the page?', 'Spread coordinates, transforms, bounds and paths.', '/docs/idml/geometry-coordinates'],
-        ['xml', 'What does this element mean?', 'Every element and attribute, with counts from real documents.', '/docs/idml/reference'],
+        [
+          'xml',
+          'What does this element mean?',
+          // What the reference covers, said as the census measured it (data/facts.json).
+          <>
+            Pages for <Fact id="idml.reference.elements" /> of the <Fact id="idml.census.elements" /> elements found in{' '}
+            <Fact id="idml.census.documents" /> real documents, with their attributes and counts.
+          </>,
+          '/docs/idml/reference',
+        ],
         ['search', 'What is in my file?', 'Open an .idml file in the browser and walk its parts. Nothing is uploaded.', '/docs/idml/tools/inspector'],
       ],
     },
@@ -65,8 +76,9 @@ const HOME: Record<typeof SITE_ID, HomeCopy> = {
     eyebrow: 'Paged · open-source paged media',
     title: ['The Paged', 'documentation'],
     lede:
-      'Paged is the open-source system that reads, renders and edits IDML: a WebGPU render ' +
-      'engine, a viewer SDK, the paged.* scripting layer, a command line, and a plugin platform. ' +
+      'Paged is the open-source system that reads, renders and edits IDML: a render engine ' +
+      'that rasterises on the CPU or with WebGPU, a viewer SDK, the paged.* scripting layer, a ' +
+      'command line, and a plugin platform. ' +
       'This is how to build with it.',
     start: '/docs/paged/overview',
     browse: { label: 'See what works today', href: '/docs/paged/state' },

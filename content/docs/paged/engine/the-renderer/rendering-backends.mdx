@@ -20,10 +20,8 @@ deterministically, which makes it the path of record: the command line, the fide
 gates and the editor's CPU snapshots run it. Both lanes draw from one mapping of the
 display list into Vello's types, so a difference between them is a difference between
 Vello's CPU and GPU renderers, not between two implementations
-([ADR 189](https://github.com/paged-media/paged/blob/main/engine/core/docs/adr/189-one-rendering-model.md)).
-Releases up to <Fact id="engine.version" />, the one these pages' examples are validated
-against, still drew the CPU lane with tiny-skia. This page explains the split and is
-honest about where each backend's coverage ends.
+([ADR 189](https://github.com/paged-media/paged/blob/main/engine/core/docs/adr/189-one-rendering-model.md))<Sidenote id="tiny-skia">Earlier releases drew the CPU lane with tiny-skia, a second implementation of the same commands, so the two lanes could disagree in ways neither renderer's tests would show. ADR 189 retired it for `vello_cpu`.</Sidenote>.
+This page explains the split and is honest about where each backend's coverage ends.
 
 ## One trait, two implementations
 

@@ -1,14 +1,16 @@
 /**
  * <ActivityFeed /> — the interleaved cross-repo commit timeline, and
  * <RepoActivity repo="…" /> — one repo's recent commits. Generated from the
- * GitHub commit feed pulled at build time (`.generated/activity.json`). This is
- * the "what's happening across the system right now" view.
+ * GitHub commit feed pulled at build time (`.generated/activity.json`), so it
+ * shows the repositories as they stood at the last deploy, and says so: the
+ * pull date leads the feed.
  *
  *   <ActivityFeed />            cross-repo timeline (default 40)
  *   <ActivityFeed limit={20} />
  *   <RepoActivity repo="core" />
  */
 import Link from '@/components/site-link';
+import { formatDay } from '@/lib/evidence';
 import { getActivity, type Commit } from '@/lib/generated';
 
 const mono: React.CSSProperties = { fontFamily: 'var(--font-mono, monospace)', fontSize: 11 };
@@ -60,9 +62,21 @@ export function ActivityFeed({ limit = 40 }: { limit?: number }) {
   if (!timeline.length) return <Empty />;
   return (
     <div className="not-prose" style={{ margin: '1rem 0' }}>
-      <p style={{ fontSize: 11.5, color: 'var(--color-muted)', margin: '0 0 .25rem' }}>
-        Latest across {repoCount} repos{generatedAt ? ` · pulled ${generatedAt.slice(0, 10)}` : ''}.
-      </p>
+      <div className="paged-activity-pulled">
+        <p className="paged-activity-pulled-date">
+          {generatedAt ? (
+            <>
+              Pulled from GitHub on <time dateTime={generatedAt}>{formatDay(generatedAt)}</time>
+            </>
+          ) : (
+            'Pulled from GitHub when this site was built'
+          )}
+        </p>
+        <p className="paged-activity-pulled-note">
+          The latest commits across {repoCount} repositories, as they stood when this site was last built. The feed is
+          only as fresh as the last deploy: anything committed since then is not listed yet.
+        </p>
+      </div>
       <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
         {timeline.slice(0, limit).map((c) => (
           <Row key={`${c.repo}-${c.sha}`} c={c} showRepo />
@@ -73,11 +87,17 @@ export function ActivityFeed({ limit = 40 }: { limit?: number }) {
 }
 
 export function RepoActivity({ repo, limit = 8 }: { repo: string; limit?: number }) {
-  const { perRepo } = getActivity();
+  const { perRepo, generatedAt } = getActivity();
   const commits = perRepo[repo] ?? [];
   if (!commits.length) return <Empty />;
   return (
     <div className="not-prose" style={{ margin: '0.75rem 0' }}>
+      {generatedAt ? (
+        <p style={{ fontFamily: 'var(--font-sans)', fontSize: 12.5, color: 'var(--color-muted)', margin: '0 0 0.25rem' }}>
+          As pulled from GitHub on <time dateTime={generatedAt}>{formatDay(generatedAt)}</time>, when this site was
+          last built.
+        </p>
+      ) : null}
       <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
         {commits.slice(0, limit).map((c) => (
           <Row key={c.sha} c={{ ...c, repo }} showRepo={false} />

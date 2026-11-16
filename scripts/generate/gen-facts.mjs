@@ -253,7 +253,10 @@ for (const [id, d] of Object.entries(defs)) {
         : typeof value === 'number'
           ? value.toLocaleString('en-GB')
           : String(value);
-    out[id] = { value, display, label: d.label, from: d.from ?? null, ...provenanceOf(d) };
+    const prov = provenanceOf(d);
+    // A definition may name the page a reader checks the value on (`evidence`).
+    if (d.evidence) prov.evidence_url = d.evidence;
+    out[id] = { value, display, label: d.label, from: d.from ?? null, ...prov };
   } catch (e) {
     errors.push(`${id}: ${e.message}`);
   }

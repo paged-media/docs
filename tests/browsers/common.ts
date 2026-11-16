@@ -70,3 +70,65 @@ export function themes() {
     });
   });
 }
+
+/** The record strip names the engine release and the record's date, and links to the status page. */
+export function recordStrip(statusHref: string) {
+  test('record strip: engine release, record date and the status page', async ({ page }) => {
+    const errors = await openClean(page, '/');
+    const strip = page.getByRole('complementary', { name: 'Engine release and capability record' });
+    await expect(strip).toContainText(/v\d+\.\d+\.\d+/);
+    await expect(strip.locator('time')).toHaveAttribute('datetime', /^\d{4}-\d{2}-\d{2}T/);
+    await expect(strip.locator('a.paged-strip-link')).toHaveAttribute('href', statusHref);
+    expect(errors).toEqual([]);
+  });
+
+  test("record strip: in a reader's browser a month on, the record reads as not current", async ({ page }) => {
+    await page.clock.setFixedTime(new Date(Date.now() + 30 * 86_400_000));
+    await page.goto('/');
+    await expect(page.locator('.paged-strip-record')).toContainText(', not current');
+  });
+}
+
+/**
+ * Search across both sites. The other site's index is stood in for by this
+ * build's own (any index of the right shape will do), served from the other
+ * origin with the CORS header; the other test makes that origin unreachable.
+ */
+export function crossSiteSearch(otherOrigin: string, otherName: string, query: string) {
+  const index = `${otherOrigin}/api/search`;
+
+  test('search: both sites lists the other site, labelled and linked there', async ({ page }) => {
+    await page.route(index, async (route) => {
+      const res = await route.fetch({ url: new URL('/api/search', page.url()).toString() });
+      await route.fulfill({ response: res, headers: { ...res.headers(), 'access-control-allow-origin': '*' } });
+    });
+    await page.route(`${otherOrigin}/**/*`, (route) =>
+      route.request().url() === index ? route.fallback() : route.fulfill({ contentType: 'text/html', body: '<title>other site</title>' }),
+    );
+    const errors = await openClean(page, '/');
+    await page.locator('button[data-search-full]').first().click();
+    await page.keyboard.type(query, { delay: 20 });
+    await expect(page.locator('.paged-search-page').first()).toBeVisible({ timeout: 15_000 });
+    // Keyboard: from "This site", the arrow key moves the scope to "Both sites".
+    await page.getByRole('radio', { name: 'This site' }).focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(page.getByRole('radio', { name: 'Both sites' })).toBeChecked();
+    const peer = page.locator('.paged-search-page[data-peer]').first();
+    await expect(peer).toBeVisible({ timeout: 15_000 });
+    await expect(peer.locator('.paged-search-site')).toHaveText(otherName);
+    await peer.click();
+    await expect.poll(() => page.url()).toMatch(new RegExp(`^${otherOrigin.replace(/\./g, '\\.')}/`));
+    expect(errors).toEqual([]);
+  });
+
+  test("search: an unreachable other index leaves this site's results and says so", async ({ page }) => {
+    await page.route(index, (route) => route.abort());
+    await openClean(page, '/');
+    await page.locator('button[data-search-full]').first().click();
+    await page.keyboard.type(query, { delay: 20 });
+    await page.getByRole('radio', { name: 'Both sites' }).check();
+    await expect(page.locator('.paged-search-scope-status')).toContainText('could not be reached');
+    await expect(page.locator('.paged-search-page').first()).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('.paged-search-page[data-peer]')).toHaveCount(0);
+  });
+}

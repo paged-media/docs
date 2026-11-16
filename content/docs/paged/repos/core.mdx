@@ -1,6 +1,6 @@
 ---
 title: engine/core — the render engine
-description: The Rust render engine that parses and renders IDML — the parse→scene→text→compose→GPU pipeline, the wasm boundary, and the dual rasterization backends.
+description: The Rust render engine that parses and renders IDML — parse, scene, text layout, compose and GPU/CPU raster, the wasm boundary, and the two raster lanes.
 tier: intermediate
 diataxis: explanation
 status: draft
@@ -31,7 +31,8 @@ its wasm interface.
 ## How it's organized
 
 A multi-crate workspace following the pipeline: `idml-import` → `paged-scene` →
-`paged-text` → `paged-compose` → `paged-gpu`, with `idml-export` writing IDML back,
+`paged-text` → `paged-compose` → `paged-gpu` (the raster stage: `vello_cpu` by
+default, Vello on WebGPU in the browser), with `idml-export` writing IDML back,
 `paged-model` holding the document model, `paged-renderer` orchestrating
 and `paged-fidelity` running the ΔE2000/SSIM diff harness. The scripting surface
 lives in `paged-script` (Boa) + `paged-run` (headless NDJSON session), the `paged`

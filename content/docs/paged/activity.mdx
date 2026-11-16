@@ -1,6 +1,6 @@
 ---
 title: Recent activity
-description: A live, interleaved feed of the latest commits across every paged repository — pulled from GitHub at build time, refreshed nightly.
+description: The latest commits across every paged repository in one timeline, pulled from GitHub when this site is built; as fresh as the last deploy.
 tier: beginner
 diataxis: reference
 status: published
@@ -8,7 +8,8 @@ owner: paged-docs
 ---
 
 **In short:** the most recent commits across all paged repositories, interleaved
-into one timeline. Pulled from GitHub at build time and refreshed nightly, so it's
-a live pulse of where the system is moving — not a hand-kept changelog.
+into one timeline. It is pulled from GitHub when this site is built — nightly, when
+the deploy succeeds — so it shows where the system stood at the last deploy, and the
+date below says when that was. It is a record of commits, not a hand-kept changelog.
 
 <ActivityFeed limit={60} />

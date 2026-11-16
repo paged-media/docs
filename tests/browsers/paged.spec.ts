@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { firstSearchResult, openClean, phoneWidth, themes } from './common';
+import { crossSiteSearch, firstSearchResult, openClean, phoneWidth, recordStrip, themes } from './common';
 
 // docs.paged.media — run against `SITE=paged pnpm build` (playwright.config.ts).
 
@@ -29,5 +29,54 @@ for (const path of ['/state/', '/sdk/']) {
   });
 }
 
-phoneWidth(['/', '/scripting/your-first-script/', '/state/', '/sdk/']);
+test.describe('sidenote', () => {
+  const PAGE = '/engine/the-renderer/the-pipeline/';
+  const note = (page: import('@playwright/test').Page) => page.locator('#note-paged-gpu-crate');
+
+  test.describe('on a wide screen', () => {
+    test.use({ viewport: { width: 1440, height: 900 } });
+    test('sits in the outer margin, beside the reading measure', async ({ page }) => {
+      const errors = await openClean(page, PAGE);
+      const box = await note(page).boundingBox();
+      const para = await note(page).evaluate((el) => el.closest('p')!.getBoundingClientRect().right);
+      expect(box, 'note is laid out').not.toBeNull();
+      expect(box!.x).toBeGreaterThanOrEqual(para);
+      await expect(page.locator('.paged-sidenote-toggle').first()).toBeHidden();
+      expect(errors).toEqual([]);
+    });
+  });
+
+  test.describe('on a phone', () => {
+    test.use({ viewport: { width: 390, height: 844 } });
+    test('is a disclosure, and its permalink opens it', async ({ page }) => {
+      const errors = await openClean(page, PAGE);
+      const toggle = page.locator('.paged-sidenote-toggle').first();
+      await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+      await expect(note(page)).toBeHidden();
+      await toggle.click();
+      await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+      await expect(note(page)).toBeVisible();
+      await page.goto(`${PAGE}#note-paged-gpu-crate`);
+      await page.reload();
+      await expect(note(page)).toBeVisible();
+      expect(errors).toEqual([]);
+    });
+  });
+});
+
+test('a reviewed page says when, and against which engine release', async ({ page }) => {
+  const errors = await openClean(page, '/plugins/sheets/');
+  await expect(page.locator('.paged-review-line')).toContainText(/Reviewed \d{1,2} \w{3} \d{4} against engine v\d+\.\d+\.\d+/);
+  expect(errors).toEqual([]);
+});
+
+test('the status page lists every figure with its source', async ({ page }) => {
+  const errors = await openClean(page, '/state/');
+  await expect(page.locator('#fact-engine\\.version')).toContainText('engine release');
+  expect(errors).toEqual([]);
+});
+
+recordStrip('/state/');
+crossSiteSearch('https://idml.paged.media', 'IDML Reference', 'scripting');
+phoneWidth(['/', '/scripting/your-first-script/', '/state/', '/sdk/', '/engine/the-renderer/the-pipeline/']);
 themes();
