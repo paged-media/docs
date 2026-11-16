@@ -407,7 +407,7 @@ h1 {
   transition: background-color var(--dur-fast);
 }
 .paged-marginalia li:is(.is-hot, :focus-visible) {
-  background: color-mix(in srgb, var(--color-accent) 9%, transparent);
+  background: color-mix(in srgb, var(--color-link) 9%, transparent);
 }
 .paged-marginalia-ref {
   font-family: var(--font-mono);
@@ -651,7 +651,7 @@ a.paged-site-switch-item:hover {
   font-size: 14px;
 }
 .paged-index-filter input:focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-link);
   outline-offset: 1px;
 }
 .paged-index-jump {
@@ -670,7 +670,7 @@ a.paged-site-switch-item:hover {
   text-decoration: none;
 }
 .paged-index-jump a:hover {
-  color: var(--color-accent);
+  color: var(--color-link);
   border-color: var(--color-rule-strong);
 }
 .paged-index-jump a span {
@@ -690,7 +690,7 @@ a.paged-site-switch-item:hover {
   overflow-wrap: anywhere;
 }
 .paged-element-link:hover {
-  color: var(--color-accent);
+  color: var(--color-link);
   text-decoration-color: currentColor;
 }
 
