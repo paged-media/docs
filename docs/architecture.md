@@ -103,8 +103,9 @@ data, except facts: a fact that cannot be evaluated fails the build. See
 
 | Source in `sources.pin` | Stage | Output in `.generated/` | Read by |
 |---|---|---|---|
-| `cockpit` | `gen-matrix` | `matrix.json`, `support-map.json` (and `public/capabilities.json`) | `CapabilityMatrix`, `StatusHeadline`, `SupportBadge`, `StageRow`, `pagedEvidence` in the comparison |
-| `core-catalog`, `cli-surface`, `editor-catalog`, `core-meta`, `plugin-*`, this repo | `gen-facts` (with `data/facts.json`) | `facts.json` (and `public/facts.json`) | `Fact`, `SoftwareApplicationLd`, `resolveNote` |
+| `cockpit` | `gen-matrix` | `matrix.json`, `support-map.json` (and `public/capabilities.json`) | `CapabilityMatrix`, `StatusHeadline`, `SupportBadge`, `StageRow`, `pagedEvidence` in the comparison, `ReviewLine` |
+| `core-catalog`, `cli-surface`, `editor-catalog`, `core-meta`, `plugin-*`, this repo, the lock and the engine's release tags | `gen-facts` (with `data/facts.json`) | `facts.json` (and `public/facts.json`), each fact with its provenance (`scripts/generate/facts-schema.md`) | `Fact`, `FactLedger`, `RecordStrip`, `SoftwareApplicationLd`, `resolveNote` |
+| the engine's release tags (one GraphQL query; a warning when it fails) | — | `sources/engine-releases.json` | `gen-facts`, `ReviewLine` |
 | `core-catalog` | `gen-scripting`, `gen-idml-schema` | `scripting.json`, `idml-schema.json` | `ScriptingCatalog`, `FunctionPlayground`, `PathShowcase`, `PathReference`, `AttrTable` |
 | `sdk-catalog` | `gen-sdk` | `sdk-catalog.json` | `SdkCatalog` |
 | `cli-surface` | `gen-cli` | `cli.json` | `CliReference` |

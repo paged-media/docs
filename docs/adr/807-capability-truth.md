@@ -49,3 +49,24 @@ only pages that declared `describes:`, and its evidence came from the frozen sou
 - The freshness signal is only as good as the registry's links from features to code: on
   2026-10-12, 133 of 695 features carry a change date. Rows without `paths:` cannot go stale.
 - paged.media can build from the same two files.
+
+## Amendment, 2026-11-16: the evidence is shown to readers
+
+The gates stay as they are; what they decide is now also on the page.
+
+- **Every fact carries its provenance.** `facts.json` gains, per fact, `class`, `observed_at`,
+  `source` (`{ authority, revision }`), `evidence_url` and `stale_after`, from a per-class
+  policy: record and main-line facts 14 days after they were observed, engine facts at the
+  next release tag, census facts after 120 days. The additions are a public contract, additive
+  only (`scripts/generate/facts-schema.md`). `pull-sources` records each source commit's date
+  and the engine's release tags with theirs. `<Fact>` renders the source and date as its title
+  and as screen-reader text, and reads "as of" its date once past `stale_after`; the status
+  page lists every fact with its provenance (`<FactLedger />`).
+- **A record strip on every page of both sites** names the engine release `core.pin` names and
+  the capability record's date, and links to the status page. A record past the
+  `check:record-age` limit reads "not current", at build time and again in the reader's
+  browser.
+- **Reviewed pages say so.** A page with `reviewed:` shows when it was reviewed and the engine
+  release current that day; a page whose `describes:` moved after the review shows a
+  "may be out of date" note. The policy is one module, `lib/freshness.mjs`, imported by
+  `check:freshness`, `check:record-age` and the pages.

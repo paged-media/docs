@@ -72,6 +72,22 @@ is in [`architecture.md`](architecture.md).
   - *Theme.* Follows the reader's system setting; the switch offers light, dark and system.
   - *paged.media.* The docs deploy starts a build of `paged-website` through the Pages API
     (or calls `SITE_DEPLOY_HOOK` when set), so a new capability record reaches the site.
+- **Editorial shell and evidence (2026-11-16).** Both sites:
+  - *Tokens.* `app/brand.css` follows the brand tokens: muted and warn text pass AA, blueprint
+    (`--color-link`) is the link and interaction colour (Fumadocs' primary, the active nav,
+    focus), oxblood stays the editorial accent; the night-paper theme has its own link tones.
+  - *Record strip* on every page: the engine release `core.pin` names, the capability record's
+    date ("not current" past seven days, checked again in the reader's browser), the status
+    page (`components/record-strip.tsx`).
+  - *Review line.* A page with `reviewed:` shows when, against which engine release, and a
+    "may be out of date" note on the `check:freshness` policy (`components/review-line.tsx`,
+    `lib/freshness.mjs`).
+  - *Dated facts.* `facts.json` carries each fact's authority, revision, observed date,
+    evidence link and stale-after date (`scripts/generate/facts-schema.md`); the status page
+    lists them all.
+  - *Sidenotes* (`<Sidenote id>`): in the outer margin where the column has room, an inline
+    disclosure elsewhere, a permalink each.
+  - *Search* covers both sites on request ([ADR 808](adr/808-cross-site-search.md)).
 - **Checks.** Six workflows: the build with its manifest, reference and freshness checks,
   then the browser tests; the example gate; the script gate; the similarity check; the link check; the deploy.
 
