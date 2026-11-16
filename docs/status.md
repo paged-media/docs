@@ -88,6 +88,22 @@ is in [`architecture.md`](architecture.md).
   - *Sidenotes* (`<Sidenote id>`): in the outer margin where the column has room, an inline
     disclosure elsewhere, a permalink each.
   - *Search* covers both sites on request ([ADR 808](adr/808-cross-site-search.md)).
+- **Atlas pass (2026-11-16, [ADR 809](adr/809-neutral-reference-and-inspector-sync.md)).**
+  - *Element entries.* Every generated element page follows one outline: Definition,
+    Structure (Relationships, Attributes), Visualization (InDesign's page of a verified
+    example, 30 entries), Behavior (the examples), Evidence (the census and the InDesign
+    checks), then Paged support. Each section is a heading with an anchor; attribute rows
+    keep `#attr-<Name>`.
+  - *Neutral reference.* The attribute table and the element index carry format facts only.
+    Paged's parse, render, edit and write moved to a framed panel at the end of each entry,
+    with the importer and exporter source lines on GitHub, the capability record's features
+    (31 entries), and the records and dates it reflects.
+  - *The census.* `/meta/census/` states what the counts measure: 305 documents (34
+    generated, 267 template packs, 4 samples) on 2026-10-12, 281 elements observed, 195 with
+    an entry, and the rule that picks them.
+  - *Inspector.* The chosen part's element tree and its XML select each other through an
+    index of element ranges and `Self` ids; `Self` references open the part that defines
+    them; the tree is keyboard-operable.
 - **Checks.** Six workflows: the build with its manifest, reference and freshness checks,
   then the browser tests; the example gate; the script gate; the similarity check; the link check; the deploy.
 
@@ -122,6 +138,16 @@ is in [`architecture.md`](architecture.md).
 - **`ownership.yaml` is not read by anything here**, and its paths lack the `idml/` level.
   Every section and every page has the same owner, `paged-docs`.
 - **`pnpm check:seo`** exists as a script; no workflow runs it.
+
+- **Page and element are not linked in the Inspector** (checked 2026-11-16). The published
+  `@paged-media/viewer` 0.74.1, and its session on the monorepo's main, expose page geometry
+  (`page_layout`) and drawing, but no hit test and no element geometry. Linking needs two
+  session calls: one that returns the `Self` id of the topmost element at a point on a page
+  (the engine's `paged-canvas` hit test already resolves a point to an `ElementId`), and one
+  that returns an element's page and bounds by `Self`. The page pane says the link is
+  missing; the Inspector does not estimate positions from the XML.
+- **Visualization does not mark the element.** The specimen is InDesign's page as captured,
+  for the same reason.
 
 ## Not built
 

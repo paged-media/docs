@@ -16,17 +16,35 @@ export interface IndexRow {
   attributes: string[];
   docCount: number;
   share: number;
-  /** Attributes Paged's importer reads; null when coverage data is absent. */
-  reads: number | null;
 }
 
 const mono: CSSProperties = { fontFamily: 'var(--font-mono)', fontSize: 12.5, letterSpacing: '-0.01em' };
+// The format reference's own table chrome: sentence-case headers over an ink
+// rule, fine rules between rows. Paged's support is not a column here; each
+// entry carries it in its own panel (ADR 809).
+const th: CSSProperties = {
+  fontFamily: 'var(--font-sans)',
+  fontSize: 12.5,
+  fontWeight: 640,
+  textAlign: 'left',
+  borderBottom: '1px solid var(--color-ink)',
+  padding: '10px 8px 8px',
+  color: 'var(--color-ink)',
+  whiteSpace: 'nowrap',
+};
+const td: CSSProperties = {
+  borderBottom: '1px solid var(--color-rule)',
+  padding: '9px 8px',
+  verticalAlign: 'top',
+  fontFamily: 'var(--font-sans)',
+  fontSize: 13.5,
+  color: 'var(--color-ink-soft)',
+};
 const partId = (part: string) => `part-${part.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
 
-export function ElementIndexTable({ rows, th, td }: { rows: IndexRow[]; th: CSSProperties; td: CSSProperties }) {
+export function ElementIndexTable({ rows }: { rows: IndexRow[] }) {
   const [query, setQuery] = useState('');
   const q = useDeferredValue(query.trim().toLowerCase());
-  const showPaged = rows.some((r) => r.reads !== null);
 
   const groups = useMemo(() => {
     const byPart = new Map<string, { row: IndexRow; via: string | null }[]>();
@@ -86,21 +104,17 @@ export function ElementIndexTable({ rows, th, td }: { rows: IndexRow[]; th: CSSP
           <figure className="paged-ref-table-wrap" style={{ margin: 'var(--space-3) 0' }}>
             <table className="paged-ref-table" style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, tableLayout: 'fixed' }}>
               <colgroup>
-                <col style={{ width: showPaged ? '52%' : '64%' }} />
-                <col style={{ width: '16%' }} />
-                <col style={{ width: '16%' }} />
-                {showPaged ? <col style={{ width: '16%' }} /> : null}
+                <col style={{ width: '64%' }} />
+                <col style={{ width: '18%' }} />
+                <col style={{ width: '18%' }} />
               </colgroup>
               <thead>
                 <tr>
                   <th style={th}>Element</th>
                   <th style={th}>Attributes</th>
-                  <th style={th}>Seen in</th>
-                  {showPaged ? (
-                    <th style={th} className="paged-col-paged" title="How many of its attributes Paged's importer reads">
-                      Paged
-                    </th>
-                  ) : null}
+                  <th style={th} title="Share of the census's documents that contain the element">
+                    Seen in
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -117,12 +131,7 @@ export function ElementIndexTable({ rows, th, td }: { rows: IndexRow[]; th: CSSP
                       ) : null}
                     </td>
                     <td style={td}>{row.attributes.length}</td>
-                    <td style={td}>{row.share}%</td>
-                    {showPaged ? (
-                      <td style={td} className="paged-col-paged">
-                        {row.reads ? `reads ${row.reads}` : <span style={{ color: 'var(--color-muted)' }}>—</span>}
-                      </td>
-                    ) : null}
+                    <td style={{ ...td, fontVariantNumeric: 'tabular-nums' }}>{row.share}%</td>
                   </tr>
                 ))}
               </tbody>
@@ -132,7 +141,7 @@ export function ElementIndexTable({ rows, th, td }: { rows: IndexRow[]; th: CSSP
       ))}
       {q && count === 0 ? (
         <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--color-ink-soft)' }}>
-          No element or attribute in the survey has that name. Search the whole reference with ⌘K.
+          No element or attribute in the reference has that name. Search the whole reference with ⌘K.
         </p>
       ) : null}
     </div>

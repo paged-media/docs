@@ -25,6 +25,21 @@ test('element page: sticky header and attribute notes', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test('element page: the format reference is neutral, and Paged support is its own panel after the evidence', async ({ page }) => {
+  const errors = await openClean(page, '/reference/text-frame/');
+  const headers = await page.locator('.paged-ref-table thead th').allInnerTexts();
+  expect(headers.join(' ')).not.toMatch(/Paged|paged\.set/);
+  const panel = page.getByRole('region', { name: 'Paged support for TextFrame' });
+  await expect(panel).toBeVisible();
+  const order = await page.evaluate(() => {
+    const at = (el: Element | null) => (el ? [...document.querySelectorAll('h2, section[aria-label^="Paged support"]')].indexOf(el) : -1);
+    return { evidence: at(document.getElementById('evidence')), panel: at(document.querySelector('section[aria-label^="Paged support"]')) };
+  });
+  expect(order.evidence).toBeGreaterThanOrEqual(0);
+  expect(order.panel).toBeGreaterThan(order.evidence);
+  expect(errors).toEqual([]);
+});
+
 test.describe('example: drop cap', () => {
   const tab = (page: import('@playwright/test').Page, name: string) => page.getByRole('tab', { name, exact: true }).first();
 
@@ -66,5 +81,41 @@ test('inspector loads', async ({ page }) => {
 
 recordStrip('https://docs.paged.media/state/');
 crossSiteSearch('https://docs.paged.media', 'Paged Docs', 'text frame');
-phoneWidth(['/', '/reference/', '/reference/text-frame/', '/typography/drop-caps-and-tabs/', '/tools/inspector/']);
+// The sample is examples/two-page-spread; its first spread opens on its own.
+test('inspector: the element tree and the XML select each other', async ({ page }) => {
+  await page.goto('/tools/inspector/');
+  await page.getByRole('button', { name: 'No file at hand? Open a sample' }).click();
+  const tree = page.getByRole('tree', { name: 'Elements of Spreads/Spread_uspread.xml' });
+  const xml = page.getByRole('region', { name: 'XML of Spreads/Spread_uspread.xml' });
+  const marked = xml.locator('[data-selected]');
+  const chosen = tree.locator('[role="treeitem"][aria-selected="true"]');
+  await expect(tree).toBeVisible();
+
+  // tree → XML: the element's whole range is marked, and only it
+  await tree.getByRole('treeitem', { name: 'TextFrame uframeR' }).click();
+  await expect(marked).toContainText('Self="uframeR"');
+  await expect(marked).toContainText('</TextFrame>');
+  await expect(marked).not.toContainText('uframeL');
+
+  // XML → tree: a click on a tag chooses its element
+  await xml.locator('[data-o]', { hasText: 'Self="upageL"' }).first().click();
+  await expect(chosen).toHaveAttribute('aria-label', 'Page 2');
+  await expect(marked).toContainText('Self="upageL"');
+
+  // the keyboard walks the tree, and the XML follows
+  await chosen.click();
+  await expect(chosen).toBeFocused();
+  await page.keyboard.press('ArrowDown');
+  await expect(chosen).toHaveAttribute('aria-label', 'Page 3');
+  await expect(marked).toContainText('Self="upageR"');
+
+  // a Self reference opens the part that defines it, with that element chosen
+  await tree.getByRole('treeitem', { name: 'TextFrame uframeR' }).click();
+  await page.getByRole('button', { name: /ParentStory → ustoryR/ }).click();
+  const story = page.getByRole('tree', { name: 'Elements of Stories/Story_ustoryR.xml' });
+  await expect(story.locator('[role="treeitem"][aria-selected="true"]')).toHaveAttribute('aria-label', 'Story ustoryR');
+  await expect(page.getByRole('region', { name: 'XML of Stories/Story_ustoryR.xml' }).locator('[data-selected]')).toContainText('Self="ustoryR"');
+});
+
+phoneWidth(['/', '/reference/', '/reference/text-frame/', '/meta/census/', '/typography/drop-caps-and-tabs/', '/tools/inspector/']);
 themes();

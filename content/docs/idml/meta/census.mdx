@@ -1,0 +1,63 @@
+---
+title: How the census counts
+description: What the element reference's counts measure — which documents, when, what a count means — and the rule that decides which observed elements get an entry.
+tier: intermediate
+diataxis: explanation
+status: published
+owner: paged-docs
+---
+
+**The census is a count of which IDML elements and attributes appear in a fixed collection of
+real documents, taken on one date. Every frequency in the element reference comes from it.**
+
+**In short:** A count is a number of documents, never of occurrences. The census observes
+more elements than the reference has entries for; the rule below says which ones get an
+entry. Only aggregates are published: no document is named and no content is quoted. The
+collection is not a random sample of the world's IDML, so a share tells a common construct
+from a rare one inside this collection, and no more.
+
+<CensusMethod />
+
+## What a count means
+
+Each document counts once for each element and each attribute it contains, however many
+times it repeats them. An entry's frequency is the number of documents that hold the element
+at least once.
+
+On an entry, the attribute table measures against the documents that hold the element:
+*seen in* is the share of them that set the attribute at all, and *varies in* counts those
+whose value differs from the value most documents use. An attribute that is set everywhere
+and never varies is one a writer always emits with its usual value; one that varies is where
+documents differ.
+
+## What is published
+
+The census keeps aggregates only. An attribute's values are listed only when documents draw
+them from a small closed set, each value used by several documents and none of them long;
+the limits are in the table above. Numbers are recorded by kind and sign, never by value. A
+reference such as `AppliedParagraphStyle` is recorded by the kind of element it points to.
+
+## Which elements have an entry
+
+The census records every element it meets; the reference gives an entry to those a reader can
+learn something from. An element gets one when it appears outside `META-INF` (which holds the
+package's container files, not its content) and either it recurs, in enough documents and
+with attributes or children of its own, or Paged's importer reads it. The last condition
+keeps an element that a reader of Paged's output can meet even when the collection holds it
+rarely; the table above says how many entries are there for that reason alone.
+
+An element without an entry is still part of the format. It is rare in the collection, or it
+carries nothing but its name.
+
+## What the collection is
+
+The documents come from three groups. Template packs and sample files were exported by
+InDesign. The generated documents were written by test generators, so they over-represent
+what those generators write. Template packs are designed to show off layouts, so they are
+richer in styles and effects than an average working file.
+
+## When it was taken
+
+The census is re-run by hand, not on every build. Every count in the reference is shown with
+the date of the census it comes from, and the [element index](/docs/idml/reference) states
+how many of the observed elements have an entry.

@@ -1,0 +1,523 @@
+/*
+ * The element entry (components/mdx/element-reference.tsx): an atlas entry on
+ * editorial paper. Definition lists and tables are drawn with fine rules, not
+ * boxes; the specimen sits on paper stock; the Paged support panel is framed
+ * apart from the format reference (ADR 809). Brand tokens only (app/brand.css):
+ * blueprint marks what a reader can act on, oxblood marks an issue.
+ */
+
+/* ── Definition ─────────────────────────────────────────────────────────── */
+.entry .lede {
+  font-family: var(--font-text-serif);
+  font-size: 1.125rem;
+  line-height: 1.62;
+  color: var(--color-ink);
+  max-width: var(--reading-measure);
+  margin: 0 0 var(--space-4);
+}
+
+.entry .facts {
+  display: grid;
+  grid-template-columns: minmax(8.5rem, max-content) minmax(0, 1fr);
+  margin: var(--space-3) 0 var(--space-4);
+  border-top: 1px solid var(--color-rule-strong);
+  max-width: var(--wide-measure);
+}
+.entry .facts > dt,
+.entry .facts > dd {
+  margin: 0;
+  padding: 9px 0 10px;
+  border-bottom: 1px solid var(--color-rule);
+}
+.entry .facts > dt {
+  padding-right: var(--space-4);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: var(--weight-sans-strong);
+  line-height: 1.5;
+  color: var(--color-ink-soft);
+}
+.entry .facts > dd {
+  font-family: var(--font-text-serif);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--color-ink);
+}
+.entry .facts code {
+  font-size: 0.86em;
+}
+.entry .count {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-muted);
+}
+@media (max-width: 559px) {
+  .entry .facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .entry .facts > dt {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+  .entry .facts > dd {
+    padding-top: 2px;
+  }
+}
+
+/* ── Relationships: a plate, parents | element | children ─────────────────── */
+.entry .plate {
+  margin: var(--space-3) 0 var(--space-5);
+}
+.entry .plateGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0 var(--space-4);
+  padding: var(--space-4) var(--space-4);
+  background: var(--color-paper-soft);
+  border: 1px solid var(--color-rule);
+}
+.entry .plateCol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 2px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+.entry .plateCol li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+.entry .plateCol li > :first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.entry .plateIn {
+  text-align: right;
+}
+.entry .plateIn li {
+  justify-content: flex-end;
+}
+.entry .plateHead {
+  margin: 0 0 6px;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  line-height: 1.4;
+  font-weight: var(--weight-sans-strong);
+  color: var(--color-ink-soft);
+}
+.entry .plateWord {
+  position: relative;
+  padding: 10px 16px;
+  border: 1px solid var(--color-ink);
+  background: var(--color-paper);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 560;
+  color: var(--color-ink);
+  white-space: nowrap;
+}
+/* the fine rules that tie the element to its two columns */
+.entry .plateWord::before,
+.entry .plateWord::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: var(--space-4);
+  border-top: 1px solid var(--color-rule-strong);
+}
+.entry .plateWord::before {
+  right: 100%;
+}
+.entry .plateWord::after {
+  left: 100%;
+}
+.entry .plateWord.noIn::before,
+.entry .plateWord.noOut::after {
+  display: none;
+}
+.entry .plateMore {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--color-muted);
+}
+@media (max-width: 639px) {
+  .entry .plateGrid {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: start;
+    gap: var(--space-3);
+  }
+  .entry .plateIn,
+  .entry .plateIn li {
+    text-align: left;
+    justify-content: flex-start;
+  }
+  .entry .plateWord::before,
+  .entry .plateWord::after {
+    display: none;
+  }
+}
+
+.entry .caption {
+  margin: 8px 0 0;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--color-ink-soft);
+  max-width: var(--wide-measure);
+}
+
+/* ── Attribute table ───────────────────────────────────────────────────── */
+.entry .table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+}
+.entry .table th {
+  text-align: left;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: var(--weight-sans-strong);
+  color: var(--color-ink);
+  padding: 10px 10px 8px;
+  border-bottom: 1px solid var(--color-ink);
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+.entry .table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--color-rule);
+  vertical-align: top;
+  color: var(--color-ink-soft);
+}
+.entry .table th:first-child,
+.entry .table td:first-child {
+  padding-left: 0;
+}
+.entry .table tbody tr:target td {
+  background: var(--blueprint-soft);
+}
+.entry .name {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--code-tag);
+  min-width: 11rem;
+}
+.entry .name a.explained {
+  color: inherit;
+  text-decoration: underline dotted var(--color-rule-strong);
+  text-underline-offset: 3px;
+}
+.entry .gloss {
+  margin-top: 4px;
+  max-width: 44ch;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--color-ink-soft);
+}
+.entry .gloss code {
+  font-size: 11.5px;
+}
+.entry .permalink {
+  margin-left: 6px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--blueprint);
+  text-decoration: none;
+  opacity: 0;
+}
+.entry tr:hover .permalink,
+.entry .permalink:focus-visible {
+  opacity: 1;
+}
+@media (hover: none) {
+  .entry .permalink {
+    opacity: 0.6;
+  }
+}
+.entry .mono {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  letter-spacing: -0.01em;
+}
+.entry .value {
+  display: inline-block;
+  margin: 0 4px 4px 0;
+  padding: 0 6px;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-xs);
+  background: var(--color-paper-soft);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.7;
+  white-space: nowrap;
+}
+.entry .value .count {
+  margin-left: 4px;
+  font-size: 10.5px;
+}
+.entry .muted {
+  color: var(--color-muted);
+}
+.entry .num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── Visualization: the specimen on paper stock ────────────────────────── */
+.entry .specimen {
+  margin: var(--space-3) 0 var(--space-5);
+}
+.entry .stock {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-5) var(--space-4);
+  background: var(--color-paper-soft);
+  border: 1px solid var(--color-rule);
+}
+.entry .sheet {
+  display: block;
+  max-width: min(100%, 340px);
+  height: auto;
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgba(21, 20, 18, 0.06),
+    0 1px 2px rgba(21, 20, 18, 0.06),
+    0 6px 18px rgba(21, 20, 18, 0.07);
+}
+
+/* ── Behavior and evidence lists ───────────────────────────────────────── */
+.entry .entries {
+  margin: var(--space-3) 0 var(--space-4);
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-rule);
+  max-width: var(--wide-measure);
+}
+.entry .entries > li {
+  padding: 10px 0 11px;
+  border-bottom: 1px solid var(--color-rule);
+}
+.entry .entryTitle {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: var(--weight-sans-strong);
+  color: var(--color-ink);
+}
+.entry .entryText {
+  margin: 3px 0 0;
+  font-family: var(--font-text-serif);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--color-ink-soft);
+}
+.entry .stamp {
+  margin: 4px 0 0;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  color: var(--color-ink-soft);
+}
+
+/* ── Paged support: framed apart from the reference ────────────────────── */
+.entry .support {
+  margin: var(--space-3) 0 var(--space-5);
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  border: 1px solid var(--color-rule-strong);
+  border-top: 2px solid var(--color-ink);
+  background: var(--color-paper-soft);
+}
+.entry .supportIntro {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--color-ink);
+  max-width: var(--wide-measure);
+}
+.entry .record {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--color-ink-soft);
+  max-width: var(--wide-measure);
+}
+.entry .support .facts > dd {
+  font-family: var(--font-sans);
+  font-size: 14px;
+}
+.entry .support h3 {
+  margin: var(--space-5) 0 var(--space-2);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: var(--weight-sans-strong);
+}
+.entry .issue {
+  color: var(--color-accent);
+}
+.entry .mark {
+  display: inline-block;
+  padding: 0 5px;
+  border: 1px solid var(--color-rule-strong);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--color-ink-soft);
+  white-space: nowrap;
+}
+.entry .mark.none {
+  border-style: dashed;
+  border-color: var(--color-rule);
+  color: var(--color-muted);
+}
+.entry .mark.bad {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+.entry .src {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--blueprint);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.entry .src:hover {
+  text-decoration: underline;
+}
+.entry .wrap {
+  overflow-x: auto;
+  margin: var(--space-2) 0 var(--space-3);
+}
+.entry .support .table td,
+.entry .support .table th {
+  background: transparent;
+}
+.entry .plainList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+.entry .support .plainList {
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--color-ink-soft);
+}
+.entry .plainLink {
+  color: inherit;
+  text-decoration: none;
+}
+.entry .plainLink:hover {
+  text-decoration: underline;
+}
+
+/* Inside the entry the site's prose rules (.prose p, li, a, code) give way to
+   the entry's own scale. */
+.entry li {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+.entry code {
+  font-size: 0.9em;
+  border: 0;
+  background: none;
+  padding: 0;
+}
+.entry .plateCol li,
+.entry .plateCol code {
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+.entry .plateCol a {
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--color-rule-strong);
+  text-underline-offset: 3px;
+}
+.entry .plateCol a:hover {
+  color: var(--blueprint);
+  text-decoration-color: currentColor;
+}
+.entry .table code,
+.entry .value,
+.entry .name {
+  font-size: 12px;
+}
+.entry .src,
+.entry .plainLink {
+  color: var(--blueprint);
+}
+.entry .plainLink {
+  color: var(--code-tag);
+}
+.entry .plainList li {
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--color-ink-soft);
+}
+.entry .facts .plainList li {
+  font-family: var(--font-text-serif);
+  font-size: 15px;
+  color: var(--color-ink);
+}
+
+/* On a phone, each attribute's support is one block: the name across the top,
+   parse, edit and write side by side under it, each with its label. */
+@media (max-width: 559px) {
+  .entry .stack thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .entry .stack tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--color-rule);
+  }
+  .entry .stack td {
+    padding: 0;
+    border: 0;
+    min-width: 0;
+  }
+  .entry .stack td:first-child {
+    grid-column: 1 / -1;
+  }
+  .entry .stack td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 2px;
+    font-family: var(--font-sans);
+    font-size: 11.5px;
+    font-weight: var(--weight-sans-strong);
+    color: var(--color-ink-soft);
+  }
+  .entry .support {
+    padding: var(--space-3);
+  }
+  .entry .stack .src,
+  .entry .stack code {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}

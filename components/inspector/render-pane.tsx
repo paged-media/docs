@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { SessionDiagnostic, SessionPagesLayout, SessionRaster, Viewer, ViewerSessionLike } from '@paged-media/viewer';
 import { createPreviewSession, type SessionFont } from '@/components/mdx/sdk-loader';
 import { statusFromError, type PreviewStatus } from '@/components/mdx/viewer-common';
-import { btn, label, mono, muted, sheet, strip } from './styles';
+import { btn, mono, muted, sheet, strip } from './styles';
 
 /**
  * The live render of a dropped package: the published @paged-media/viewer
@@ -237,7 +237,7 @@ export function RenderPane({
   return (
     <section style={sheet} aria-label="Live render">
       <div style={{ ...strip, justifyContent: 'flex-start', gap: 8 }}>
-        <span style={{ ...label, marginRight: 4 }}>Render</span>
+        <span style={{ fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 640, color: 'var(--color-ink)', marginRight: 4 }}>Page</span>
         <button style={btn} disabled={disabled} onClick={act((v) => v.fit('page'))} title="Fit the page">Fit page</button>
         <button style={btn} disabled={disabled} onClick={act((v) => v.fit('width'))} title="Fit the width">Fit width</button>
         <span style={{ width: 1, height: 18, background: 'var(--color-rule)' }} />
@@ -342,6 +342,13 @@ export function RenderPane({
             ? `${unavailable.length === 1 ? 'One applied family is' : `${unavailable.length} applied families are`} not in the package (${unavailable.slice(0, 3).join(', ')}${unavailable.length > 3 ? ', …' : ''}); that text is drawn in Open Sans as a stand-in, so line breaks can differ.`
             : 'Every applied font family is available to the renderer.'}{' '}
           The renderer does not yet report substitutions itself.
+        </span>
+        {/* Page ↔ element linking needs the viewer to name the element under a
+            point and the bounds of an element; @paged-media/viewer 0.74.1 has
+            neither (docs/status.md, ADR 809). Say so rather than guess from the XML. */}
+        <span style={muted} data-page-link-note="">
+          Page and elements are not linked yet: the published viewer draws the page but does not report which element
+          lies under a point, or where an element lies on the page.
         </span>
       </div>
     </section>

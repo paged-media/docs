@@ -474,6 +474,9 @@ export interface RefAttribute {
     readParts?: string[] | null;
     /** Read, but from none of the parts documents keep it in. */
     misplaced?: boolean;
+    /** The first importer / exporter line (engine/core-relative) that reads / writes it. */
+    importSource?: RefSource | null;
+    exportSource?: RefSource | null;
   } | null;
   typed: RefTyped | null;
   note: string | null;
@@ -499,15 +502,60 @@ export interface RefElement {
   children: RefCount[];
   attributes: RefAttribute[];
   paged: { reads: boolean; attributesRead: number; attributesWritten: number; attributesMisplaced?: number } | null;
-  examples: { id: string; title: string }[];
+  examples: RefExample[];
+  /** Capability-record feature ids whose title names the element (Paged support only). */
+  features?: string[];
   pages: { href: string; title: string }[];
+}
+export interface RefSource {
+  file: string;
+  line: number;
+}
+export interface RefExample {
+  id: string;
+  title: string;
+  concept?: string | null;
+  /** The page section that embeds the example (site-neutral), and that page's title. */
+  href?: string | null;
+  page?: string | null;
+  /** The InDesign stamp, only while it matches the example's parts (ADR 806). */
+  verified?: {
+    status: string;
+    indesignVersion: string | null;
+    verifiedAt: string | null;
+    pages: number | null;
+    roundTrip: boolean;
+    fidelity: { meanDE: number; p99DE?: number; ssim: number; fontsMatched?: boolean } | null;
+  } | null;
+  /** InDesign's page 1, staged by stage-verified.mjs. */
+  raster?: { src: string; src3x: string | null; width: number; height: number } | null;
+}
+export interface IdmlCensus {
+  date: string;
+  schema: string;
+  documents: number;
+  byGroup: { generated: number; packs: number; samples: number };
+  xmlParts: number;
+  elementsObserved: number;
+  attributesObserved: number;
+  rules: Record<string, unknown> | null;
 }
 export interface IdmlReference {
   documents: number;
   censusSchema?: string;
   censusDate: string;
+  census?: IdmlCensus;
+  /** How the entries were chosen from what the census observed. */
+  selection?: { observed: number; selected: number; minDocs: number; metadataOnly: number; byImporterOnly: number };
   coverage: { rows: number } | null;
   typedLinks: number;
+  /** What the Paged support panels reflect (ADR 809). */
+  support?: {
+    engineVersion: string | null;
+    coverage: { sha: string | null; pulledAt: string | null; url: string; sourceBase: string } | null;
+    catalog: { sha: string | null } | null;
+    record: { generatedAt: string | null } | null;
+  };
   elements: RefElement[];
 }
 let _idmlReference: IdmlReference | undefined;
