@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import Link from '@/components/site-link';
 import { SupportBadge, type SupportStatus } from './support-badge';
 import { getIdmlElement, getRefElement, type RefAttribute } from '@/lib/generated';
+import { SITE_ID } from '@/lib/site';
 
 /**
  * A consistent element-reference table. Two modes:
@@ -115,8 +116,10 @@ function valuesOf(a: RefAttribute): string {
   return a.types.filter((x) => x !== 'nil' && x !== 'empty').join(' / ') || '—';
 }
 
-/** Rows from the element reference: what real documents use, typed, with
- *  Paged's support, linking to the element's full page. */
+/** Rows from the element reference: what real documents use, typed, linking to
+ *  the element's full page. On idml.paged.media the table states format facts
+ *  only and points to the entry's Paged support panel (ADR 809); the Paged docs
+ *  keep the Paged and paged.set columns, which are their subject. */
 function ReferenceAttrTable({
   element,
   slug,
@@ -131,7 +134,9 @@ function ReferenceAttrTable({
   attrs?: string[];
 }) {
   const shown = attrs ? attrs.map((n) => attributes.find((a) => a.name === n)).filter((a): a is RefAttribute => !!a) : attributes.slice(0, limit);
-  const showPaged = shown.some((a) => a.paged);
+  const neutral = SITE_ID === 'idml';
+  const showPaged = !neutral && shown.some((a) => a.paged);
+  const docs = getRefElement(element)?.docCount ?? 0;
   return (
     <figure className="not-prose" style={{ margin: 'var(--space-5) 0', overflowX: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-sans)' }}>
@@ -142,7 +147,7 @@ function ReferenceAttrTable({
             </th>
             <th style={th}>Values</th>
             {showPaged ? <th style={th}>Paged</th> : null}
-            <th style={th}>paged.set</th>
+            {neutral ? <th style={th}>Seen in</th> : <th style={th}>paged.set</th>}
           </tr>
         </thead>
         <tbody>
@@ -158,20 +163,31 @@ function ReferenceAttrTable({
                   {a.paged ? [a.paged.imported && 'read', a.paged.exported && 'written'].filter(Boolean).join(' · ') || 'not read' : '—'}
                 </td>
               ) : null}
-              <td style={td}>
-                {a.typed?.path ? (
-                  <Link href="/docs/paged/scripting/settable-paths" style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
-                    {a.typed.path}
-                  </Link>
-                ) : null}
-              </td>
+              {neutral ? (
+                <td style={{ ...td, fontVariantNumeric: 'tabular-nums' }}>{docs ? `${Math.round((a.docCount / docs) * 100)}%` : '—'}</td>
+              ) : (
+                <td style={td}>
+                  {a.typed?.path ? (
+                    <Link href="/docs/paged/scripting/settable-paths" style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                      {a.typed.path}
+                    </Link>
+                  ) : null}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
       </table>
       <figcaption style={{ fontSize: 12.5, color: 'var(--color-muted)', marginTop: 6 }}>
-        {attrs ? 'Selected attributes.' : `The ${shown.length} attributes real documents use most.`}{' '}
-        <Link href={`/docs/idml/reference/${slug}`}>All {attributes.length} attributes of {element} →</Link>
+        {attrs ? 'Selected attributes.' : `The ${shown.length} attributes real documents use most.`}
+        {neutral ? ` Seen in: the share of documents with a ${element} that set it.` : ''}{' '}
+        <Link href={`/docs/idml/reference/${slug}`}>All {attributes.length} attributes of {element}</Link>
+        {neutral ? (
+          <>
+            ; what Paged reads, edits and writes is in its{' '}
+            <Link href={`/docs/idml/reference/${slug}#paged-support`}>Paged support</Link> panel.
+          </>
+        ) : null}
       </figcaption>
     </figure>
   );

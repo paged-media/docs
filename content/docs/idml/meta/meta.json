@@ -3,6 +3,7 @@
   "icon": "book",
   "pages": [
     "style-guide",
+    "census",
     "clean-room-protocol"
   ]
 }

@@ -64,5 +64,41 @@ test('inspector loads', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+// The sample is examples/two-page-spread; its first spread opens on its own.
+test('inspector: the element tree and the XML select each other', async ({ page }) => {
+  await page.goto('/tools/inspector/');
+  await page.getByRole('button', { name: 'No file at hand? Open a sample' }).click();
+  const tree = page.getByRole('tree', { name: 'Elements of Spreads/Spread_uspread.xml' });
+  const xml = page.getByRole('region', { name: 'XML of Spreads/Spread_uspread.xml' });
+  const marked = xml.locator('[data-selected]');
+  const chosen = tree.locator('[role="treeitem"][aria-selected="true"]');
+  await expect(tree).toBeVisible();
+
+  // tree → XML: the element's whole range is marked, and only it
+  await tree.getByRole('treeitem', { name: 'TextFrame uframeR' }).click();
+  await expect(marked).toContainText('Self="uframeR"');
+  await expect(marked).toContainText('</TextFrame>');
+  await expect(marked).not.toContainText('uframeL');
+
+  // XML → tree: a click on a tag chooses its element
+  await xml.locator('[data-o]', { hasText: 'Self="upageL"' }).first().click();
+  await expect(chosen).toHaveAttribute('aria-label', 'Page 2');
+  await expect(marked).toContainText('Self="upageL"');
+
+  // the keyboard walks the tree, and the XML follows
+  await chosen.click();
+  await expect(chosen).toBeFocused();
+  await page.keyboard.press('ArrowDown');
+  await expect(chosen).toHaveAttribute('aria-label', 'Page 3');
+  await expect(marked).toContainText('Self="upageR"');
+
+  // a Self reference opens the part that defines it, with that element chosen
+  await tree.getByRole('treeitem', { name: 'TextFrame uframeR' }).click();
+  await page.getByRole('button', { name: /ParentStory → ustoryR/ }).click();
+  const story = page.getByRole('tree', { name: 'Elements of Stories/Story_ustoryR.xml' });
+  await expect(story.locator('[role="treeitem"][aria-selected="true"]')).toHaveAttribute('aria-label', 'Story ustoryR');
+  await expect(page.getByRole('region', { name: 'XML of Stories/Story_ustoryR.xml' }).locator('[data-selected]')).toContainText('Self="ustoryR"');
+});
+
 phoneWidth(['/', '/reference/', '/reference/text-frame/', '/typography/drop-caps-and-tabs/', '/tools/inspector/']);
 themes();

@@ -19,14 +19,21 @@ full: true
    `Resources/Fonts.xml` declares, how often the styles and stories apply it, and whether the
    package ships the face. Links lists the placed files the document points to and the state it
    last saw them in.
-2. **Render.** Paged's WebGPU viewer draws the pages. Use the toolbar to fit, zoom and move
+2. **Package.** Every entry in the archive, with its unpacked size. Choose one to open it in the
+   panes beside it. The first spread opens on its own.
+3. **Page.** Paged's WebGPU viewer draws the pages. Use the toolbar to fit, zoom and move
    between pages, or drag and scroll on the canvas.
-3. **Package.** Every entry in the archive, with its unpacked size. Choose one to read it:
-   - **Linked**, the view a part opens in, links every element name to its page in the
-     [element reference](/docs/idml/reference). Those pages show where the element appears and
-     which attributes real documents use.
-   - **Raw** shows the part's source with line numbers.
-   - **Tree** shows its element structure. Open an element to see its children.
+4. **Elements and XML.** The chosen part's element tree sits beside its source, and the two
+   follow each other:
+   - Choose an element in the tree and its whole range is marked in the XML and scrolled into
+     view. Click anywhere in the XML and the tree opens to the innermost element there.
+   - The strip above them shows the element's path from the part's root, each step selectable,
+     and links the element's name to its entry in the [element reference](/docs/idml/reference).
+   - A value underlined in blue is the `Self` id of another element in the package, such as a
+     frame's `ParentStory` or a range's `AppliedParagraphStyle`. Click it, or its button in the
+     strip, to open the part that defines it with that element chosen.
+   - The tree works from the keyboard: the arrow keys move and open, Home and End jump, and
+     the XML follows each move.
 
 New to the format? [Read one by hand](/docs/idml/foundations/read-one-by-hand) walks a
 package part by part, and [package anatomy](/docs/idml/package-anatomy) explains how the parts
@@ -49,3 +56,7 @@ renderer's code and its fallback font, both from this site. Close the tab and th
   pauses briefly while a large document loads. The inspector opens packages up to 300 MB.
 - **No WebGPU.** Browsers without WebGPU still show the summary, the package and every part,
   but not the render.
+- **Page and elements are not linked.** The viewer that draws the page does not report which
+  element lies under a point, or where an element lies on the page. Until it does, choosing an
+  element does not mark it on the page, and clicking the page does not choose an element.
+  Working the position out from the XML alone would be a guess, so the inspector does not.

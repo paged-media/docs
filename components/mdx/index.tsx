@@ -30,7 +30,7 @@ import { RestApiReference } from './rest-api-reference';
 import { ActivityFeed, RepoActivity } from './activity-feed';
 import { LiveDemo } from './live-demo';
 import { AttrTable } from './attr-table';
-import { ElementReference, ElementIndex } from './element-reference';
+import { ElementReference, ElementIndex, CensusMethod } from './element-reference';
 import { Callout, Note } from './callout';
 import { GutenbergAside } from './gutenberg-aside';
 import { RelatedAcrossPillars } from './related-across-pillars';
@@ -84,6 +84,7 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     AttrTable,
     ElementReference,
     ElementIndex,
+    CensusMethod,
     // Brand Note replaces the Fumadocs Callout (and is also exposed as <Note>).
     Callout,
     Note,

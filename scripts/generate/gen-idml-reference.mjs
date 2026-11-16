@@ -18,14 +18,25 @@
  *   data/idml-reference-overrides.json  reviewed notes: `Element@Attribute` for one
  *                                  element, `*@Attribute` shared by all (optional)
  *
+ * and, for the separate Paged support panel only (ADR 809): the capability
+ * record (cockpit public.json; a feature is linked when its title names the
+ * element), the importer and exporter source lines idml-coverage records, the
+ * engine release in core.pin, and the commits sources.lock.json resolved.
+ *
  * Writes .generated/idml-reference.json, and one stub page per element under
  * content/docs/idml/reference/ (gitignored; regenerated before every build), so
  * the pages get search, the sidebar, llms.txt and the sitemap like any other.
- * Element pages link back to the chapter pages that discuss the element and to
- * the examples that show it, both found by scanning the content and manifests.
+ * A stub is the entry's outline: one heading per section, in the order a reader
+ * needs them (definition, structure, visualization, behavior, evidence, then
+ * Paged support), so each section has an anchor and a place in the page's
+ * contents. Element pages link back to the chapter pages that discuss the
+ * element and to the examples that show it, both found by scanning the content
+ * and manifests; an example's InDesign stamp counts only while its parts hash
+ * still matches (ADR 806).
  */
+import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { dirname, join, relative, resolve } from 'node:path';
+import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -46,6 +57,16 @@ const census = readJSON(join(ROOT, 'data', 'idml-census.json'));
 const coverage = readJSON(join(GEN, 'sources', 'idml-coverage', 'idml-coverage.json'));
 const catalog = readJSON(join(GEN, 'sources', 'core-catalog', 'catalog.json'));
 const overrides = readJSON(join(ROOT, 'data', 'idml-reference-overrides.json')) ?? {};
+const record = readJSON(join(GEN, 'sources', 'cockpit', 'public.json'));
+const lock = readJSON(join(GEN, 'sources.lock.json'));
+const enginePin = (() => {
+  try {
+    return readFileSync(join(ROOT, 'core.pin'), 'utf8').match(/Currently: (v[0-9.]+)/)?.[1] ?? null;
+  } catch {
+    return null;
+  }
+})();
+const ORG_REPO = 'https://github.com/paged-media/paged';
 
 /**
  * An attribute's note: the element's own (`Element@Attribute`), else the one
@@ -81,16 +102,25 @@ export function slugOf(name) {
     .toLowerCase();
 }
 
-// ── Paged's reader and writer: (element, attribute) → {imported, exported, readParts} ──
+// ── Paged's reader and writer: (element, attribute) → {imported, exported, readParts, sources} ──
 // `readParts` (the package parts the importer reads it from) comes with newer
-// coverage files; null when the file predates it.
+// coverage files; null when the file predates it. `importSource` and
+// `exportSource` are the first line (engine/core-relative) that reads or
+// writes it, as idml-coverage found them.
+const srcOf = (s) => (s && typeof s.file === 'string' && Number.isInteger(s.line) ? { file: s.file, line: s.line } : null);
 const pagedAttr = new Map();
 const pagedElements = new Set();
 for (const row of coverage?.rows ?? []) {
   const key = `${row.element}@${row.attribute}`;
-  const prev = pagedAttr.get(key) ?? { imported: false, exported: false, readParts: null };
+  const prev = pagedAttr.get(key) ?? { imported: false, exported: false, readParts: null, importSource: null, exportSource: null };
   const readParts = Array.isArray(row.importParts) ? [...new Set([...(prev.readParts ?? []), ...row.importParts])].sort() : prev.readParts;
-  pagedAttr.set(key, { imported: prev.imported || !!row.imported, exported: prev.exported || !!row.exported, readParts });
+  pagedAttr.set(key, {
+    imported: prev.imported || !!row.imported,
+    exported: prev.exported || !!row.exported,
+    readParts,
+    importSource: prev.importSource ?? (row.imported ? srcOf(row.source) : null),
+    exportSource: prev.exportSource ?? (row.exported ? srcOf(row.exportSource) : null),
+  });
   if (row.imported) pagedElements.add(row.element);
 }
 /** Read, but from none of the parts the census finds it in. */
@@ -197,13 +227,109 @@ function pagesMentioning(name) {
 }
 
 // ── Examples that declare the element ──
-const examplesFor = new Map();
-for (const id of existsSync(EXAMPLES) ? readdirSync(EXAMPLES) : []) {
-  const m = readJSON(join(EXAMPLES, id, 'example.json'));
-  for (const el of m?.elements ?? []) {
-    if (!examplesFor.has(el)) examplesFor.set(el, []);
-    examplesFor.get(el).push({ id, title: m.title });
+// Each with its concept, the page section that embeds it, and — while the
+// InDesign stamp still matches the parts (ADR 806) — the stamp and InDesign's
+// page 1 raster (staged to /examples/<id>/ by stage-verified.mjs).
+
+/** sha256 over the sorted `<path>\0<sha256>\n` lines of a package's parts (lib/parts-hash.ts). */
+function partsHash(dir) {
+  const files = [];
+  const walkParts = (d) => {
+    for (const name of readdirSync(d)) {
+      const p = join(d, name);
+      if (statSync(p).isDirectory()) walkParts(p);
+      else if (name !== '.DS_Store') files.push(relative(dir, p).split(sep).join('/'));
+    }
+  };
+  walkParts(dir);
+  const lines = files.sort().map((rel) => `${rel}\0${createHash('sha256').update(readFileSync(join(dir, rel))).digest('hex')}\n`);
+  return `sha256:${createHash('sha256').update(lines.join('')).digest('hex')}`;
+}
+
+/** A WebP's pixel size from its header (VP8, VP8L or VP8X), or null. */
+function webpSize(file) {
+  try {
+    const b = readFileSync(file);
+    if (b.toString('ascii', 0, 4) !== 'RIFF' || b.toString('ascii', 8, 12) !== 'WEBP') return null;
+    const chunk = b.toString('ascii', 12, 16);
+    if (chunk === 'VP8 ') return { width: b.readUInt16LE(26) & 0x3fff, height: b.readUInt16LE(28) & 0x3fff };
+    if (chunk === 'VP8L') {
+      const bits = b.readUInt32LE(21);
+      return { width: (bits & 0x3fff) + 1, height: ((bits >> 14) & 0x3fff) + 1 };
+    }
+    if (chunk === 'VP8X') return { width: 1 + b.readUIntLE(24, 3), height: 1 + b.readUIntLE(27, 3) };
+  } catch {
+    /* no raster */
   }
+  return null;
+}
+
+/** The first page section that embeds an example: `{ href, page }`, or null. */
+function embedOf(id) {
+  const re = new RegExp(`<ExampleEmbed[^>]*\\bexample=["']${escRe(id)}["']`);
+  for (const p of pageInfo) {
+    const m = p.src.match(re);
+    if (!m) continue;
+    const before = p.src.slice(0, m.index).replace(/^---[\s\S]*?---/, '');
+    let fence = false;
+    let heading = null;
+    for (const line of before.split('\n')) {
+      if (/^\s*```/.test(line)) fence = !fence;
+      const h = !fence && line.match(/^#{2,3}\s+(.*)$/);
+      if (h) heading = h[1].trim();
+    }
+    return { href: `${p.href}${heading ? `#${slugify(plainText(heading))}` : ''}`, page: p.title };
+  }
+  return null;
+}
+
+const examplesFor = new Map();
+for (const id of existsSync(EXAMPLES) ? readdirSync(EXAMPLES).sort() : []) {
+  const m = readJSON(join(EXAMPLES, id, 'example.json'));
+  if (!m) continue;
+  const v = m.verified;
+  const current = v?.status === 'verified' && existsSync(join(EXAMPLES, id, m.packageDir ?? 'package')) && v.partsHash === partsHash(join(EXAMPLES, id, m.packageDir ?? 'package'));
+  const size = current ? webpSize(join(EXAMPLES, id, '_verified', 'p1.webp')) : null;
+  const embed = embedOf(id);
+  const entry = {
+    id,
+    title: m.title,
+    concept: m.concept ?? null,
+    href: embed?.href ?? null,
+    page: embed?.page ?? null,
+    verified: current
+      ? {
+          status: v.status,
+          indesignVersion: v.indesignVersion ?? null,
+          verifiedAt: v.verifiedAt ?? null,
+          pages: v.pages ?? null,
+          roundTrip: !!v.roundTrip,
+          fidelity: v.fidelity ?? null,
+        }
+      : null,
+    raster: size
+      ? {
+          src: `/examples/${id}/p1.webp`,
+          src3x: existsSync(join(EXAMPLES, id, '_verified', 'p1@3x.webp')) ? `/examples/${id}/p1@3x.webp` : null,
+          ...size,
+        }
+      : null,
+  };
+  for (const el of m.elements ?? []) {
+    if (!examplesFor.has(el)) examplesFor.set(el, []);
+    examplesFor.get(el).push(entry);
+  }
+}
+
+// ── Capability record features that name the element in their title ──
+// Only features of the record's format chapters (group `format`): an editor
+// panel or a spreadsheet feature may say "Cell" or "Image" about something else.
+// `TextFrame AutoSizing` names TextFrame; `Page-item kinds` does not name Page.
+const formatChapters = new Set((record?.chapters ?? []).filter((c) => c.group === 'format').map((c) => c.id));
+const recordFeatures = (Array.isArray(record?.features) ? record.features : []).filter((f) => formatChapters.has(f.chapter));
+function featuresNaming(name) {
+  const re = new RegExp(`(?<![\\w-])${escRe(name)}(?![\\w-])`);
+  return recordFeatures.filter((f) => typeof f.title === 'string' && re.test(f.title)).map((f) => f.id);
 }
 
 // ── Where an attribute is explained: a section of our own prose ──
@@ -270,14 +396,21 @@ function describe(block, attr) {
 }
 
 // ── Selection: elements with something to say ──
+// The census observes every element; an entry needs one that appears outside
+// META-INF and either recurs (MIN_DOCS documents, with attributes or children
+// of its own) or is read by Paged's importer. CensusMethod states this rule.
+const MIN_DOCS = 3;
 const metadataOnly = (e) => Object.keys(e.parts).every((p) => p === 'META-INF');
-const selected = census.elements.filter((e) => {
-  if (metadataOnly(e)) return false;
-  if (pagedElements.has(e.element)) return true;
-  const hasContent = Object.keys(e.attributes).length > 0 || Object.keys(e.children ?? {}).length > 0;
-  return e.docCount >= 3 && hasContent;
-});
+const recurs = (e) => e.docCount >= MIN_DOCS && (Object.keys(e.attributes).length > 0 || Object.keys(e.children ?? {}).length > 0);
+const selected = census.elements.filter((e) => !metadataOnly(e) && (pagedElements.has(e.element) || recurs(e)));
 const selectedNames = new Set(selected.map((e) => e.element));
+const selection = {
+  observed: census.elements.length,
+  selected: selected.length,
+  minDocs: MIN_DOCS,
+  metadataOnly: census.elements.filter(metadataOnly).length,
+  byImporterOnly: selected.filter((e) => !recurs(e)).length,
+};
 
 const pct = (n) => Math.round((n / DOCS) * 1000) / 10;
 
@@ -313,6 +446,8 @@ const elements = selected
                 exported: !!paged?.exported,
                 readParts: paged?.readParts ?? null,
                 misplaced: misplacedRead(paged, parts),
+                importSource: paged?.importSource ?? null,
+                exportSource: paged?.exportSource ?? null,
               }
             : null,
           typed: typed.get(key) ?? null,
@@ -348,10 +483,28 @@ const elements = selected
           }
         : null,
       examples: examplesFor.get(e.element) ?? [],
+      features: featuresNaming(e.element),
       pages,
     };
   })
   .sort((a, b) => a.name.localeCompare(b.name));
+
+// What the Paged support panel reflects, so it can say so (ADR 809).
+const lockOf = (name) => lock?.sources?.[name] ?? null;
+const coverageSha = lockOf('idml-coverage')?.sha ?? null;
+const support = {
+  engineVersion: enginePin,
+  coverage: coverage
+    ? {
+        sha: coverageSha,
+        pulledAt: lock?.generatedAt ? lock.generatedAt.slice(0, 10) : null,
+        url: `${ORG_REPO}/blob/${coverageSha ?? 'main'}/engine/core/docs/reference/idml-coverage.json`,
+        sourceBase: `${ORG_REPO}/blob/${coverageSha ?? 'main'}/engine/core/`,
+      }
+    : null,
+  catalog: catalog ? { sha: lockOf('core-catalog')?.sha ?? null } : null,
+  record: record ? { generatedAt: typeof record.generated_at === 'string' ? record.generated_at.slice(0, 10) : null } : null,
+};
 
 mkdirSync(GEN, { recursive: true });
 writeFileSync(
@@ -361,8 +514,20 @@ writeFileSync(
       documents: DOCS,
       censusSchema: census.schema,
       censusDate: census.generatedAt,
+      census: {
+        date: census.generatedAt,
+        schema: census.schema,
+        documents: DOCS,
+        byGroup: census.totals.byGroup ?? null,
+        xmlParts: census.totals.xmlParts ?? null,
+        elementsObserved: census.totals.elements ?? census.elements.length,
+        attributesObserved: census.totals.attributes ?? null,
+        rules: census.rules ?? null,
+      },
+      selection,
       coverage: coverage ? { rows: coverage.rows?.length ?? 0 } : null,
       typedLinks: typed.size,
+      support,
       elements,
     },
     null,
@@ -375,17 +540,32 @@ rmSync(PAGES, { recursive: true, force: true });
 mkdirSync(PAGES, { recursive: true });
 const yaml = (s) => JSON.stringify(s);
 const partWord = (e) => e.parts[0]?.part ?? 'the package';
+/**
+ * An entry's outline. The headings are written here, not by the component, so
+ * each section gets the site's heading anchor, a permalink and a line in the
+ * page's contents. A section with nothing to show for this element is left out.
+ */
+function entryOf(el) {
+  const call = (section) => `<ElementReference name=${yaml(el.name)} section="${section}" />`;
+  const out = ['## Definition', call('definition'), '## Structure'];
+  if (el.parents.length || el.children.length) out.push('### Relationships', call('relationships'));
+  out.push('### Attributes', call('attributes'));
+  if (el.examples.some((x) => x.raster)) out.push('## Visualization', call('visualization'));
+  if (el.examples.length) out.push('## Behavior', call('behavior'));
+  out.push('## Evidence', call('evidence'), '## Paged support', call('support'));
+  return out.join('\n\n');
+}
 for (const el of elements) {
   const n = el.attributes.length;
   const description = `The ${el.name} element in IDML: where it appears (${partWord(el)}), its ${n} attribute${n === 1 ? '' : 's'}, their values, and how real documents use them.`.slice(0, 160);
   writeFileSync(
     join(PAGES, `${el.slug}.mdx`),
-    `---\ntitle: ${yaml(el.name)}\ndescription: ${yaml(description)}\ntier: pro\ndiataxis: reference\nstatus: published\nowner: paged-docs\n---\n\n<ElementReference name=${yaml(el.name)} />\n`,
+    `---\ntitle: ${yaml(el.name)}\ndescription: ${yaml(description)}\ntier: pro\ndiataxis: reference\nstatus: published\nowner: paged-docs\n---\n\n${entryOf(el)}\n`,
   );
 }
 writeFileSync(
   join(PAGES, 'index.mdx'),
-  `---\ntitle: "Element reference"\ndescription: ${yaml(`Every IDML element found in ${DOCS} real documents: where it lives in the package, its attributes and values, and what Paged reads and writes.`)}\ntier: pro\ndiataxis: reference\nstatus: published\nowner: paged-docs\n---\n\n<ElementIndex />\n`,
+  `---\ntitle: "Element reference"\ndescription: ${yaml(`${elements.length} of the ${census.elements.length} IDML elements a census of ${DOCS} documents observed: where each lives in the package, its attributes and values.`)}\ntier: pro\ndiataxis: reference\nstatus: published\nowner: paged-docs\n---\n\n<ElementIndex />\n`,
 );
 writeFileSync(
   join(PAGES, 'meta.json'),
@@ -393,8 +573,11 @@ writeFileSync(
 );
 
 const misplacedCount = elements.reduce((n, e) => n + (e.paged?.attributesMisplaced ?? 0), 0);
+const withFeatures = elements.filter((e) => e.features.length).length;
+const withRaster = elements.filter((e) => e.examples.some((x) => x.raster)).length;
 console.log(
   `gen-idml-reference: ${elements.length} element pages (of ${census.elements.length} in the census, ${census.schema})` +
-    `, coverage ${coverage ? 'yes' : 'no'}, ${typed.size} typed links` +
+    `, coverage ${coverage ? `yes (${coverageSha?.slice(0, 7) ?? 'unpinned'})` : 'no'}, ${typed.size} typed links` +
+    `, ${withFeatures} with capability features, ${withRaster} with an InDesign specimen` +
     (misplacedCount ? `, ${misplacedCount} attributes read from the wrong part` : ''),
 );
