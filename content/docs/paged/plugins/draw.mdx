@@ -1,45 +1,59 @@
 ---
 title: paged.draw — vector
-description: The vector drawing plugin — pen and path tools, pathfinder booleans, live corners, stroke/fill, and SVG import/export, rendered on-canvas through the engine's vector scene layer.
+description: The vector drawing plugin — path tools, brushes, recipes, Liquify, Puppet Warp and perspective, SVG and DXF interchange, drawn by the engine's vector scene layer.
 tier: intermediate
 diataxis: explanation
 status: draft
 owner: paged-docs
 describes: [plugin-draw]
-reviewed: "2026-10-23"
+reviewed: "2026-11-16"
 ---
 
-**In short:** `paged.draw` brings Illustrator-class vector editing into paged — a
-pen tool with anchor editing, curvature/pencil tools, a shape builder, pathfinder
-booleans, live corners, and SVG round-trip — all rendered on-canvas via the
-engine's vector scene-layer surface.
+**In short:** `paged.draw` brings Illustrator-class vector editing into paged —
+anchor editing, curvature and brush tools, a shape builder, brushes, recipes
+(patterns, repeats, blends), distortion tools, and SVG and DXF interchange — all
+rendered on-canvas via the engine's vector scene-layer surface. Generic vector
+verbs (the Pathfinder, corners, the appearance stack) are the editor's own.
 
 ## What it does
 
-- Pen / anchor editing (add/delete/convert), curvature and pencil tools, shape
-  builder, select-same.
-- Stroke / fill panels, dash presets, path ops, live corners, gradient
-  annotation.
+- Anchor editing (add/delete/convert), Curvature, Paintbrush, Blob Brush and
+  Eraser, Shape Builder, select-same and Global Edit.
+- Path ops, live paint, patterns, repeats, blends, objects on a path, symbols,
+  graphic styles and brushes (art, scatter, pattern and bristle).
 - A `vectorGraphic` edit context (double-click into a focused anchor toolset).
-- SVG import + export (the interchange round-trip).
+- Interchange through the engine's own doors: SVG in and out, DXF in and out,
+  Illustrator `.ai` files placed as vectors and EPS landed as editable paths.
 - Direct Selection over anchors, handles and segments; the pen continues,
-  closes and joins existing paths; knife and scissors; reflect and Transform
-  Again; point snapping through the engine; Create Outlines from text.
+  closes and joins existing paths; knife and scissors; the Reshape, Shaper,
+  Path Eraser and Join tools; point snapping through the engine; Create Outlines
+  from text.
+- The distortion tools (experimental): seven Liquify tools (Warp, Twirl, Pucker,
+  Bloat, Scallop, Crystallize, Wrinkle), Puppet Warp on vector artwork and a
+  one-, two- or three-point Perspective Grid with Perspective Selection. Their
+  bends come from the engine's warp crate, the same solve paged.image's Puppet
+  Warp uses on pixels; grid edits are a view setting and take no undo step.
 - Paths, appearance stacks, graphic styles, symbols and generator recipes as
   typed objects (the object model, partly built).
 - Typed commands for scripts, extensions and the Node command line: nearly
-  every command, the Knife, Scissors and Shape Builder with their gesture as data,
-  and a width profile (`widthProfile`). Patterns, repeats, blends, objects on a
-  path and live paint rebuild in the same undo step as the edit that changed
-  their sources ([paged.draw commands](/docs/paged/commands/draw)).
+  every command, the Knife, Scissors, Shape Builder and the scrub tools with
+  their gesture as data, Liquify, Puppet Warp and the perspective grid, and a
+  width profile (`widthProfile`). Patterns, repeats, blends, objects on a path
+  and live paint rebuild in the same undo step as the edit that changed their
+  sources ([paged.draw commands](/docs/paged/commands/draw)).
+- Moved to the editor itself, one implementation each: the Pencil, the Star,
+  the stroke and dash editing, corner presets, the gradient annotator, the
+  Pathfinder, the appearance stack's editing, Reflect and Transform Again, and
+  opacity masks.
 
 ## How it's built
 
-A host-agnostic core (`draw-geometry` pure math, `draw-tools` state machines)
-plus a `draw-bundle` (manifest + `activate` + React panel) and a Rust image tracer
-(`draw-trace`, with its wasm binding `trace-js`) — the
-incubate-then-extract pattern. Tested as unit suites and an end-to-end editor
-journey.
+A `draw-bundle` (manifest + `activate` + panels) over two internal packages it
+shares with the editor's own tools, `vector-geometry` (pure path maths) and
+`vector-tools` (host-agnostic state machines), and Rust crates in the engine's
+Cargo workspace: the image tracer (`draw-trace`, with its wasm binding
+`trace-js`) and DXF interchange (`draw-dxf`); the warp maths is the engine's
+`paged-warp`. Tested as unit suites and an end-to-end editor journey.
 
 ## Capability state
 

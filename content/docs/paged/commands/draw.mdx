@@ -1,12 +1,12 @@
 ---
 title: paged.draw commands
-description: paged.draw's typed commands — path operations, pathfinder, recipes, the Knife, Scissors and Shape Builder as data, the width profile, and recipes that follow their sources.
+description: paged.draw's typed commands — path operations, recipes, the Knife, Shape Builder and other tools as data, Liquify, Puppet Warp, the perspective grid, width profiles.
 tier: intermediate
 diataxis: reference
 status: draft
 owner: paged-docs
 describes: [plugin-draw]
-reviewed: "2026-10-23"
+reviewed: "2026-11-16"
 ---
 
 **Every drawing operation the menus offer, as a command with its arguments.**
@@ -20,16 +20,39 @@ How to call them: [Module commands](/docs/paged/commands).
 
 ## The tools as data
 
-The Knife, Scissors and Shape Builder were tools only; their gesture is now an
-argument, so a script or the command line can cut.
+The Knife, Scissors, Shape Builder and the scrub tools were tools only; their
+gesture is now an argument, so a script or the command line can cut.
 
 | Command | Arguments | What it does |
 |---|---|---|
 | `knife` | `targets`, `page`, `cut: [[x, y], …]` | Cuts the targets along the polyline `cut`, in the page's points. `page: ""` takes the page of the first target. |
 | `scissorsAt` | `targets`, `point: [x, y]`, `tolerance` | Splits the one target path at the point. |
 | `shapeBuild` | `targets`, `path: [[x, y], …]`, `mode: "keep" \| "remove"` | Merges (`keep`) or removes (`remove`) the regions the path crosses. Ovals are refused. |
+| `joinScrub` | `targets`, `page`, `path`, `tolerance` | The Join tool: a scrub over a gap joins two open ends, over one path's ends closes it. |
+| `pathErase` | `targets`, `page`, `path`, `width` | The Path Eraser: removes the part of a stroke the scrub covers. |
+| `reshapeAt` | `targets`, `point`, `to`, `radius`, `tolerance` | The Reshape tool: drags the contour at `point` to `to`, with a falloff of `radius`. |
+| `shaperStroke` | `targets`, `page`, `path` | The Shaper: a freehand line, rectangle, ellipse, triangle or polygon drawn clean; a scribble over shapes merges or punches out regions. |
 
 A cut that changes nothing fails with the reason (`failed: …`).
+
+## Liquify, Puppet Warp and the perspective grid
+
+The distortion tools as data, each artwork change one undo step:
+
+| Command | Arguments | What it does |
+|---|---|---|
+| `liquifyStroke` | `targets`, `page`, `kind: "warp" \| "twirl" \| "pucker" \| "bloat" \| "scallop" \| "crystallize" \| "wrinkle"`, `path: [[x, y], …]`, and the tool's options (`width`, `height`, `angle`, `intensity`, `detail`, `simplify`, `twirlRate`, `complexity`, `horizontal`, `vertical`, `affectAnchors`, `affectIn`, `affectOut`, `seed`) | A press at the first point of `path`, a move per point, a release at the last, over the targets (every path on the page with none). The changed paths are re-fitted and written in one batch. |
+| `puppetWarp` | `targets`, `holds: [[x, y], …]`, `from`, `to`, `autoPins` | Meshes the targets' outline, places `autoPins` automatic pins and a pin at each `holds` point, and drags the pin at `from` to `to`. |
+| `perspectiveShowGrid`, `perspectiveHideGrid`, `perspectiveLockGrid`, `perspectiveUnlockGrid` | `page` | The page's perspective grid. |
+| `perspectiveOnePoint`, `perspectiveTwoPoint`, `perspectiveThreePoint` | `page` | The grid presets. |
+| `perspectiveSetPlane` | `page`, `plane: "left" \| "right" \| "floor" \| "none"` | The active plane. |
+| `attachToPerspective`, `releaseFromPerspective` | `targets` | Puts artwork on the active plane, or takes it off. |
+| `moveOnPerspective` | `targets`, `from`, `to` | Moves attached artwork along its plane. |
+| `drawOnPerspective` | `page`, `shape: "rectangle" \| "ellipse"`, `from`, `to` | Draws a shape on the active plane. |
+
+The grid is a view setting: its edits take no undo step, and artwork attached to
+it does not follow a later grid edit. A Puppet Warp's pins do not outlast the
+command.
 
 ## The width profile
 
@@ -88,19 +111,29 @@ All take `targets` (a list of frame addresses) unless noted.
 
 | Group | Commands |
 |---|---|
-| Stroke and fill presets | `strokeDashSolid`, `strokeDashDashed`, `strokeDashDotted`, `strokeDashDashDot`, `fillGradientLinear`, `fillGradientRadial` |
-| Live corners | `cornersRounded`, `cornersInverseRounded`, `cornersBevel`, `cornersFancy`, `cornersNone` |
-| Path operations | `outlineStroke { width, cap, join, miterLimit }`, `offsetPath { delta, join, miterLimit }`, `simplifyPath { tolerance }`, `joinEndpoints`, `closePath`, `averageEndpoints`, `reversePathDirection`, `createOutlines`, `transformAgain`, `reflectHorizontal { copy }`, `reflectVertical { copy }` |
-| Pathfinder | `pathfinderUnite`, `pathfinderSubtract`, `pathfinderIntersect`, `pathfinderExclude`, `pathfinderDivide`, `pathfinderTrim`, `pathfinderMerge`, `pathfinderCrop`, `pathfinderOutline`, `pathfinderMinusBack`, `makeCompoundPath`, `releaseCompoundPath` |
-| Appearance | `appearanceAddFill`, `appearanceAddStroke`, `appearanceClear`, `bakeAppearance`, `releaseAppearance`, `appearanceRemoveLayer { kind, index }`, `appearanceMoveLayer { kind, index, delta }` |
-| Graphic styles | `saveGraphicStyle { name }`, `applyGraphicStyle { style }`, `redefineGraphicStyle { style }`, `breakGraphicStyleLink`, `renameGraphicStyle { style, name }`, `deleteGraphicStyle { style }` |
-| Symbols | `defineSymbol { name, registration }`, `placeSymbolInstance { symbol, x, y }`, `redefineSymbol { symbol }`, `breakSymbolLink`, `resetSymbolTransform`, `renameSymbol`, `deleteSymbol` |
+| Gradient presets | `fillGradientLinear`, `fillGradientRadial` |
+| Path operations | `outlineStroke { width, cap, join, miterLimit }`, `offsetPath { delta, join, miterLimit }`, `simplifyPath { tolerance }`, `joinEndpoints`, `closePath`, `averageEndpoints`, `reversePathDirection`, `createOutlines`, `makeCompoundPath`, `releaseCompoundPath` |
+| Brushes | `applyBrush { brush }`, `removeBrush`, `brushOptions { scalePct, spacingPct, … }`, `newBrush { type, name }`, `applyWidthProfile { profile, points }` |
+| Envelopes | `envelopeMakeWithWarp { style, horizontal, bendPct, distortHPct, distortVPct }`, `envelopeMakeWithMesh { rows, columns }`, `envelopeMakeWithTopObject`, `envelopeEditContents`, `envelopeExpand`, `expandAppearance` |
+| Graphic styles | `saveGraphicStyle { name }`, `applyGraphicStyle { style }`, `redefineGraphicStyle { style }`, `breakGraphicStyleLink`, `renameGraphicStyle { style, name }`, `deleteGraphicStyle { style }`, `importGraphicStyles { json }`, `exportGraphicStyles { styles, save }`, `mergeGraphicStyles { styles, name }` |
+| Symbols | `defineSymbol { name, registration }`, `placeSymbolInstance { symbol, x, y }`, `redefineSymbol { symbol }`, `replaceSymbol { symbol }`, `symbolOptions { symbol, name, nineSlice }`, `breakSymbolLink`, `resetSymbolTransform`, `renameSymbol`, `deleteSymbol` |
 | Live paint | `makeLivePaintGroup { name }`, `fillLivePaintFace { group, faces, fill }`, `regenerateLivePaint`, `selectLivePaintFaces`, `deleteLivePaintFace`, `releaseLivePaint` |
-| Masks and type on a path | `makeOpacityMask { maskType, invert }`, `releaseOpacityMask`, `attachTextToPath { story, pathTypeAlignment, flipPathEffect }`, `detachTextFromPath` |
-| Select same | `selectSameFill`, `selectSameStroke`, `selectSameStrokeWeight { tolerance }` — each answers the selection |
-| Shapes | `insertArc`, `insertSpiral`, `insertRectGrid`, `insertPolarGrid` — the generators' full parameters |
-| Patterns, repeats, blends, objects on a path | `makePatternFromSelection`, `makeRadialRepeat`, `makeGridRepeat`, `makeMirrorRepeat`, `blendSelected`, `makeObjectsOnPath`, and per recipe its update, select, expand and release |
-| Image trace | `imageTrace` with the tracer's full option set |
+| Type on a path | `attachTextToPath { story, pathTypeAlignment, flipPathEffect }`, `detachTextFromPath` |
+| Select same | `selectSameFill`, `selectSameStroke`, `selectSameStrokeWeight { tolerance }`, `selectSameOpacity`, `selectSameBlendMode`, `selectSameAppearance`, `selectSameGraphicStyle`, `selectSameSymbolInstance`, `selectSameShapeKind`, `globalEdit { tolerance, anySize }` — each answers the selection |
+| Shapes | `insertArc`, `insertSpiral`, `insertRectGrid`, `insertPolarGrid`, `insertFlare` — the generators' full parameters |
+| Patterns, repeats, blends, objects on a path | `makePatternFromSelection`, `savePatternSwatch { pattern, name }`, `makeRadialRepeat`, `makeGridRepeat`, `makeMirrorRepeat`, `blendSelected`, `makeObjectsOnPath`, and per recipe its update, select, expand and release |
+| Color | `recolorArtwork { mode, rule, … }` |
+| Image trace and rasterize | `imageTrace` with the tracer's full option set, `retraceImage`, `rasterize { ppi, background }` |
+| Generate | `textToVector { prompt, route }`, `generativeRecolor { prompt }` — through the host's AI and image-model doors; no model ships with the module |
 
 `paged commands --owner media.paged.draw --text` lists each with its exact
 argument schema.
+
+**Moved to the editor.** The Pathfinder, the dash and corner presets, the
+appearance stack's add, clear, remove and move, Reflect and Transform Again and
+the opacity mask left paged.draw: each now has one implementation in the editor
+(`paged.pathfinder.*`, `paged.stroke.*`, `paged.corners.*`,
+`paged.appearance.*`, `paged.transform.*`, the Transparency panel), and the
+`media.paged.draw.command.*` ids of those verbs are gone. A script reaches the
+same results through the engine's own operations, such as
+`core.pathfinderBoolean` and `core.applyOpacityMask`.
