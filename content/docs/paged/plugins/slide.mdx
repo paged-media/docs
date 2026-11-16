@@ -6,7 +6,7 @@ diataxis: explanation
 status: draft
 owner: paged-docs
 describes: [plugin-slide]
-reviewed: "2026-10-23"
+reviewed: "2026-11-16"
 ---
 
 **In short:** `paged.slide` makes presentations a document type. A PowerPoint
@@ -24,29 +24,46 @@ still in development.
   table styles) and SmartArt drawings.
 - Resolves PowerPoint's inheritance (theme, master, layout, slide) and writes the
   deck as a native document, a page per slide.
-- A slide sorter (reorder, duplicate, delete, hide) and a speaker-notes panel; a
-  new slide from a layout. Slides, layouts and placeholders are objects that
-  scripts and panels read and write (notes, the hidden flag, the transition).
+- A slide sorter (reorder, duplicate, delete, hide, sections) and a
+  speaker-notes panel; a new slide from a layout. Slides, layouts and
+  placeholders are objects that scripts and panels read and write (notes, the
+  hidden flag, the transition).
 - Fonts the deck embeds are used when their licence allows installing or
   editing them; restricted and preview-only faces are named, not used.
-- Export back to `.pptx` from the original deck: the page order, duplicated and
-  deleted slides, hidden flags, speaker notes and sections, checked by
-  PowerPoint opening the written deck without a repair prompt. An unedited
-  document exports the original bytes.
-- New, duplicated, deleted and reordered slides, import and export as typed
-  commands for scripts and the command line, and as palette commands with menu
-  entries; an opened deck exports under its own name
+- Export back to `.pptx` from the original deck and the edited document: a
+  slide the document did not change keeps its bytes, an edited slide is its
+  original XML with only the edited shapes rewritten, and shapes and slides made
+  in the editor are written whole. What cannot round-trip yet (effect changes,
+  edits inside SmartArt, added table rows, and others) is listed one line per
+  shape and written as the deck had it. Checked by PowerPoint opening the written
+  deck without a repair prompt; an unedited document exports the original bytes.
+- A slide show (from the beginning or the current slide) and a presenter view,
+  with PowerPoint's transitions drawn as WebGPU shaders.
+- Animations (experimental): a slide's PowerPoint timeline is read, played in
+  the show, previewed on the canvas, edited in the Animations pane (add, remove,
+  timing, order, the Animation Painter, motion paths) and written back.
+- Output (experimental): **File ▸ Export…** writes a PDF of the slides, of
+  handouts or of notes pages, the outline as RTF or text, and an MP4 video with
+  the transitions and animations playing; **Save as template** writes `.potx`;
+  custom shows and sections are defined and kept in the deck. Every output runs
+  headless too, except the video, which needs a browser's video encoder.
+- Typed commands for scripts and the command line — slides, import and export,
+  animations, every output, custom shows, sections, layouts and themes — and
+  palette commands with menu entries; an opened deck exports under its own name
   ([paged.slide commands](/docs/paged/commands/slide)).
-- In development: writing edited slide content into the exported deck, and a
-  slideshow with a presenter view.
+- In development: exporting what the native model cannot say yet (listed
+  above), new masters and layouts, vector handouts and notes pages (they are
+  150 dpi images today).
 
 ## How it's built
 
-A Cargo workspace (`pptx-core`, `pptx-import`, `pptx-export`, `pptx-fonts`,
-`slide-resolve`, `slide-geom`, `slide-chart`, `slide-native`, `slide-js`) over the
-shared OOXML package layer (`paged-ooxml`, in `platform/shared/ooxml`),
-plus a TS bundle (`@paged-media/slide`). Scripts drive PowerPoint to record the
-answers the tests compare against.
+Rust crates in the engine's Cargo workspace (`pptx-core`, `pptx-import`,
+`pptx-export`, `slide-resolve`, `slide-chart`, `slide-native`, `slide-anim`,
+`slide-output`, `slide-shaders`, `slide-sheet`, `slide-js`) over the shared
+OOXML layers in `platform/shared` (`paged-ooxml` for the package, `dml-geom` for
+preset geometry, `dml-chart` and `dml-native`), plus a TS bundle
+(`@paged-media/slide`). Scripts drive PowerPoint to record the answers the tests
+compare against.
 
 ## Capability state
 

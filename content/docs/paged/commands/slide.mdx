@@ -1,12 +1,12 @@
 ---
 title: paged.slide commands
-description: paged.slide's typed commands and objects — new and duplicated slides, reordering, notes and transitions, importing a deck and exporting it back to .pptx under the deck's own name.
+description: paged.slide's typed commands and objects — slides, notes and transitions, animations, PDF, outline and video output, custom shows, sections, and .pptx in and out.
 tier: intermediate
 diataxis: reference
 status: draft
 owner: paged-docs
 describes: [plugin-slide]
-reviewed: "2026-10-23"
+reviewed: "2026-11-16"
 ---
 
 **A deck's slides as objects, and its verbs as commands.**
@@ -22,14 +22,21 @@ reviewed: "2026-10-23"
 |---|---|---|
 | `newSlide` | `after?` (a slide or page address; default: after the last slide), `layout?` (default: the `after` slide's layout) | `{ slide }` — a slide of that layout with its placeholders in place and empty, as the Slides panel makes it. One undo step. |
 | `duplicateSlide` | `slide` | `{ slide }` — the copy, right after the source. One undo step. |
+| `changeLayout` | `slide?`, `layout` | Puts the slide on another layout. |
+| `insertShape` | `slide`, `prst` (a PowerPoint preset name), `x?`, `y?`, `w?`, `h?` | A live preset shape on the slide. |
 | `importPptx` | `bytes`, `name` | `{ slides, fonts, diagnostics }` |
-| `exportPptx` | — | `{ bytes, fileName, diagnostics }` |
+| `exportPptx` | — | `{ bytes, fileName, diagnostics, notExported }` |
 
-`exportPptx` writes the deck the document was opened from, with its slide order,
-duplicated and deleted slides, hidden flags, notes and sections; edited slide
-content is reported in `diagnostics` and not written yet. The file is named after
-the document (`<name>.pptx`), else the deck, else `presentation.pptx`. A document
-not opened from a deck is refused.
+`exportPptx` writes the deck the document was opened from together with the
+document's edits: slide order, duplicated and deleted slides, hidden flags,
+notes, sections and custom shows, and the slides' content. A slide the document
+did not change keeps its bytes; an edited slide keeps its original XML except
+the shapes that changed; shapes and slides made in the editor are written whole.
+What cannot round-trip yet (an effect change, an edit inside SmartArt, an added
+table row, and others) is listed in `notExported`, one line per shape, and that
+shape is written as the deck had it. The file is named after the document
+(`<name>.pptx`), else the deck, else `presentation.pptx`. A document not opened
+from a deck is refused.
 
 ```bash
 paged-node invoke pitch.pptx media.paged.slide.duplicateSlide \
@@ -37,6 +44,46 @@ paged-node invoke pitch.pptx media.paged.slide.duplicateSlide \
 paged-node invoke pitch.paged media.paged.slide.exportPptx '{}' \
   --result-out pitch.pptx --no-save --plugins=@paged-media/slide
 ```
+
+## Animations
+
+A slide's animations are its PowerPoint timeline. `slide` defaults to the active
+slide; an effect is addressed by its `index` in the slide's list.
+
+| Command | Arguments | Result |
+|---|---|---|
+| `listAnimations` | `slide?` | `{ clicks, effects }` — each effect's index, name, class, shape, start, delay and duration. |
+| `addAnimation` | `slide?`, `shape`, `effect?` or `presetClass?` and `presetId?`, `direction?`, `start?`, `durationMs?`, `delayMs?`, `byParagraph?` | Adds one effect. |
+| `setAnimationTiming` | `slide?`, `index`, `start?`, `durationMs?`, `delayMs?`, `repeat?`, `rewind?`, `trigger?` | Retimes one effect. |
+| `moveAnimation` | `slide?`, `from`, `to` | Reorders the effects. |
+| `removeAnimation` | `slide?`, `index` | Removes one effect. |
+| `previewAnimations` | `slide?` | Plays the slide's animations over the canvas, in the editor. |
+
+Each change is one undo step and is written back to the deck's timing on export.
+
+## Output, custom shows and sections
+
+| Command | Arguments | Result |
+|---|---|---|
+| `exportPdf` | `layout: "slides" \| "handouts" \| "notes"`, `perPage?` (handouts: 1, 2, 3, 4, 6 or 9), `paper?: "letter" \| "a4"`, `dpi?`, `includeHidden?`, `slides?` | `{ bytes, fileName, pages, replaced }` — `replaced` counts notes characters the PDF's standard font could not draw. |
+| `exportOutline` | `format: "rtf" \| "txt"` | `{ bytes, fileName }` — titles and body text by outline level. |
+| `exportVideo` | `height?`, `fps?`, `secondsPerSlide?`, `useTimings?`, `codec?: "auto" \| "avc" \| "vp9"`, `slides?` | An MP4 with the transitions and animations playing. Needs a browser's video encoder, so it does not run headless. |
+| `command.saveAsTemplate` | — | The deck as a `.potx`. |
+| `setCustomShow` | `name`, `slides` (1-based, in play order) | Adds the show, or replaces the one of that name. |
+| `deleteCustomShow`, `playCustomShow` | `name` | — |
+| `sections` | — | `{ sections: [{ id, name, slides }] }` |
+| `command.addSection` | `name?`, `slide?` (1-based; default the active slide) | Starts a section at that slide. |
+| `renameSection` | `name`, `to` | — |
+| `moveSection` | `name`, `by: "up" \| "down"` | Moves the section with its slides. |
+| `deleteSection` | `name`, `withSlides?` | Removes the section; its slides join the one before, or with `withSlides` are deleted too. |
+
+The slide PDFs are images of the slides at `dpi` (150 by default), laid out one
+to a page, as handouts or as notes pages; the host's own PDF export stays the
+vector one for slides one to a page. Masters, layouts and themes have commands
+too (`layouts`, `renameLayout`, `setPreserve`, `deleteLayout`,
+`insertPlaceholder`, `setPlaceholderStyle`, `themes`, `applyTheme`), and so do
+comments and SmartArt text; `paged commands --owner media.paged.slide` lists
+them all with their schemas.
 
 ## Slide properties
 
@@ -55,6 +102,9 @@ with `create`; `delete` removes one.
 
 In the editor each verb is also a palette command with a menu entry, offered
 only where it applies, acting on the active slide: **File ▸ Open PowerPoint
-deck…** and **File ▸ Export PowerPoint deck…**, and **New slide**, **Duplicate
-slide**, **Delete slide**, **Move slide up** and **Move slide down** under
-**Plugins ▸ Slide**. An opened deck exports under the deck's own name.
+deck…**, **File ▸ Export PowerPoint deck…**, **File ▸ Export…** (the Export view
+for PDF, outline and video) and **File ▸ Save as template…**; **Slide Show ▸
+Custom Shows…**; and **New slide**, **Duplicate slide**, **Delete slide**, **Move
+slide up**, **Move slide down**, **Add Section**, **Previous slide**, **Next
+slide** and **New comment** under **Plugins ▸ Slide**. An opened deck exports
+under the deck's own name.
