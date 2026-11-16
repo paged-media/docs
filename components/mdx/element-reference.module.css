@@ -477,3 +477,46 @@
   font-size: 15px;
   color: var(--color-ink);
 }
+
+/* On a phone, each attribute's support is one block: the name across the top,
+   parse, edit and write side by side under it, each with its label. */
+@media (max-width: 559px) {
+  .entry .stack thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .entry .stack tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--color-rule);
+  }
+  .entry .stack td {
+    padding: 0;
+    border: 0;
+    min-width: 0;
+  }
+  .entry .stack td:first-child {
+    grid-column: 1 / -1;
+  }
+  .entry .stack td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 2px;
+    font-family: var(--font-sans);
+    font-size: 11.5px;
+    font-weight: var(--weight-sans-strong);
+    color: var(--color-ink-soft);
+  }
+  .entry .support {
+    padding: var(--space-3);
+  }
+  .entry .stack .src {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}

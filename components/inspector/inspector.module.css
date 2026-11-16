@@ -12,72 +12,72 @@
   container: atlas-inspector / inline-size;
 }
 
-.workspace {
+.root .workspace {
   display: grid;
   gap: var(--space-3);
   align-items: start;
-  grid-template-columns: minmax(176px, 216px) minmax(0, 0.85fr) minmax(0, 1.15fr);
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 0.9fr) minmax(0, 1.25fr);
   grid-template-areas:
-    'files page page'
-    'files card card'
-    'files tree xml';
+    'files files files'
+    'card card card'
+    'page tree xml';
 }
-.files {
+.root .files {
   grid-area: files;
-  position: sticky;
-  top: var(--space-3);
 }
-.page {
+.root .page {
   grid-area: page;
   min-width: 0;
 }
-.card {
+.root .card {
   grid-area: card;
   min-width: 0;
 }
-.treePane {
+.root .treePane {
   grid-area: tree;
   min-width: 0;
 }
-.xmlPane {
+.root .xmlPane {
   grid-area: xml;
   min-width: 0;
 }
 /* a part that is not XML takes the tree's and the XML's room */
-.wide {
+.root .wide {
   grid-column: tree-start / xml-end;
   grid-row: tree-start / tree-end;
   min-width: 0;
 }
-@container atlas-inspector (max-width: 960px) {
-  .workspace {
+/* The package reads as a contents list: folders flow in columns. */
+.root .filesScroll nav > ul {
+  column-width: 200px;
+  column-gap: var(--space-5);
+}
+.root .filesScroll nav > ul > li button {
+  break-inside: avoid;
+}
+@container atlas-inspector (max-width: 1000px) {
+  .root .workspace {
     grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
     grid-template-areas:
-      'page page'
       'files files'
+      'page page'
       'card card'
       'tree xml';
   }
-  .files {
-    position: static;
-  }
-  .filesScroll {
-    max-height: 240px;
-  }
 }
 @container atlas-inspector (max-width: 620px) {
-  .workspace {
+  .root .workspace {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: 'page' 'files' 'card' 'tree' 'xml';
+    grid-template-areas: 'files' 'page' 'card' 'tree' 'xml';
   }
-  .scroll,
-  .treeScroll {
+  .root .scroll,
+  .root .treeScroll {
     max-height: 56vh;
   }
 }
 
 /* ── panes ──────────────────────────────────────────────────────────────── */
-.pane {
+.root .pane {
   background: var(--color-paper-soft);
   border: 1px solid var(--color-rule);
   border-radius: var(--radius-xs);
@@ -85,7 +85,7 @@
   overflow: hidden;
   min-width: 0;
 }
-.head {
+.root .head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -95,13 +95,13 @@
   padding: 9px var(--space-3) 7px;
   border-bottom: 1px solid var(--color-rule);
 }
-.title {
+.root .title {
   font-family: var(--font-sans);
   font-size: 13px;
   font-weight: var(--weight-sans-strong);
   color: var(--color-ink);
 }
-.sub {
+.root .sub {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--color-muted);
@@ -110,25 +110,21 @@
   white-space: nowrap;
   min-width: 0;
 }
-.filesScroll {
-  max-height: 72vh;
-  overflow: auto;
-}
-.scroll,
-.treeScroll {
+.root .scroll,
+.root .treeScroll {
   position: relative;
   max-height: 64vh;
   overflow: auto;
   overscroll-behavior: contain;
 }
-.scroll:focus-visible,
-.treeScroll:focus-visible {
+.root .scroll:focus-visible,
+.root .treeScroll:focus-visible {
   outline: 2px solid var(--blueprint);
   outline-offset: -2px;
 }
 
 /* ── the element tree ────────────────────────────────────────────────────── */
-.treeList {
+.root .treeList {
   list-style: none;
   margin: 0;
   padding: 8px 0;
@@ -136,7 +132,7 @@
   font-size: 12px;
   line-height: 1.7;
 }
-.row {
+.root .row {
   display: flex;
   align-items: baseline;
   gap: 6px;
@@ -145,42 +141,42 @@
   cursor: pointer;
   color: var(--code-punctuation);
 }
-.row:hover {
+.root .row:hover {
   background: color-mix(in srgb, var(--blueprint-soft) 55%, transparent);
 }
-.row[aria-selected='true'] {
+.root .row[aria-selected='true'] {
   background: var(--blueprint-soft);
   box-shadow: inset 2px 0 0 var(--blueprint);
 }
-.row:focus-visible {
+.root .row:focus-visible {
   outline: 2px solid var(--blueprint);
   outline-offset: -2px;
 }
-.twisty {
+.root .twisty {
   flex: none;
   width: 10px;
   color: var(--color-muted);
   text-align: center;
 }
-.tag {
+.root .tag {
   color: var(--code-tag);
 }
-.hint {
+.root .hint {
   color: var(--code-string);
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.kids {
+.root .kids {
   font-family: var(--font-sans);
   font-size: 11px;
   color: var(--color-muted);
 }
-.more {
+.root .more {
   padding: 4px 10px;
 }
 
 /* ── the XML ─────────────────────────────────────────────────────────────── */
-.source {
+.root .source {
   margin: 0;
   padding: 14px 16px 18px;
   font-family: var(--font-mono);
@@ -192,49 +188,48 @@
   color: var(--code-text);
   cursor: default;
 }
-.sel {
+.root .sel {
   color: inherit;
   background: var(--blueprint-soft);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--blueprint) 35%, transparent);
   border-radius: 1px;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
-.xTag {
+.root .xTag {
   color: var(--code-tag);
 }
-.xLink {
+.root .xLink {
   text-decoration: underline;
   text-decoration-color: var(--color-rule-strong);
   text-underline-offset: 2px;
 }
-.xAttr {
+.root .xAttr {
   color: var(--code-attr);
 }
-.xStr {
+.root .xStr {
   color: var(--code-string);
 }
-.xPunct {
+.root .xPunct {
   color: var(--code-punctuation);
 }
-.xComment {
+.root .xComment {
   color: var(--code-comment);
   font-style: italic;
 }
-.xRef {
+.root .xRef {
   cursor: pointer;
   text-decoration: underline dotted var(--blueprint);
   text-underline-offset: 2px;
 }
-.xRef:hover {
+.root .xRef:hover {
   color: var(--blueprint);
 }
-.moreSource {
+.root .moreSource {
   padding: 0 16px 16px;
 }
 
 /* ── the selection strip ─────────────────────────────────────────────────── */
-.cardBody {
+.root .cardBody {
   display: grid;
   gap: 6px;
   padding: 10px var(--space-3) 11px;
@@ -243,7 +238,7 @@
   line-height: 1.5;
   color: var(--color-ink-soft);
 }
-.crumbs {
+.root .crumbs {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -254,12 +249,12 @@
   font-family: var(--font-mono);
   font-size: 12px;
 }
-.crumbs li + li::before {
+.root .crumbs li + li::before {
   content: '/';
   margin-right: 4px;
   color: var(--color-rule-strong);
 }
-.crumb {
+.root .crumb {
   padding: 0 2px;
   border: 0;
   background: none;
@@ -267,11 +262,11 @@
   color: var(--code-tag);
   cursor: pointer;
 }
-.crumb[aria-current='true'] {
+.root .crumb[aria-current='true'] {
   color: var(--color-ink);
   font-weight: 600;
 }
-.refs {
+.root .refs {
   display: flex;
   flex-wrap: wrap;
   gap: 4px 6px;
@@ -279,7 +274,7 @@
   padding: 0;
   list-style: none;
 }
-.refBtn {
+.root .refBtn {
   padding: 1px 7px;
   border: 1px solid color-mix(in srgb, var(--blueprint) 40%, var(--color-rule));
   border-radius: var(--radius-xs);
@@ -289,17 +284,17 @@
   color: var(--blueprint);
   cursor: pointer;
 }
-.refBtn:hover {
+.root .refBtn:hover {
   background: var(--blueprint-soft);
 }
-.note {
+.root .note {
   margin: 0;
   font-size: 12.5px;
   color: var(--color-ink-soft);
 }
 
 /* ── shared ─────────────────────────────────────────────────────────────── */
-.btn {
+.root .btn {
   font-family: var(--font-sans);
   font-size: 12.5px;
   padding: 3px 9px;
@@ -309,16 +304,41 @@
   color: var(--color-ink);
   cursor: pointer;
 }
-.btn:focus-visible,
-.crumb:focus-visible,
-.refBtn:focus-visible {
+.root .btn:focus-visible,
+.root .crumb:focus-visible,
+.root .refBtn:focus-visible {
   outline: 2px solid var(--blueprint);
   outline-offset: 1px;
 }
-.empty {
+.root .empty {
   margin: 0;
   padding: 16px;
   font-family: var(--font-sans);
   font-size: 13.5px;
   color: var(--color-ink-soft);
+}
+
+/* The site's prose rules (.prose li, p, a) give way inside the Inspector. */
+.root .treeList li,
+.root .crumbs li,
+.root .refs li {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  margin: 0;
+}
+.root .note,
+.root .cardBody p {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-ink-soft);
+  margin: 0;
+}
+.root .note code {
+  font-size: 12px;
+}
+.root .note a {
+  color: var(--blueprint);
 }

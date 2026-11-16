@@ -405,7 +405,7 @@ function stampText(x: RefExample): string | null {
   const v = x.verified;
   if (!v || v.status !== 'verified') return null;
   const pages = v.pages ? `${v.pages} page${v.pages === 1 ? '' : 's'}` : null;
-  return `Opened, saved back as IDML${v.roundTrip ? ' (reopened unchanged)' : ''} and exported by InDesign ${v.indesignVersion} on ${v.verifiedAt}${pages ? `, ${pages}` : ''}.`;
+  return `Opened by InDesign ${v.indesignVersion} with no missing font or link${v.roundTrip ? ', saved back as IDML' : ''} and exported to PDF${pages ? ` (${pages})` : ''}, ${v.verifiedAt}.`;
 }
 
 function Evidence({ el, book }: { el: RefElement; book: IdmlReference }) {
@@ -524,7 +524,7 @@ function PagedSupport({ el, book }: { el: RefElement; book: IdmlReference }) {
         <dt>Render</dt>
         <dd>
           {features.length
-            ? `${features.length} feature${features.length === 1 ? '' : 's'} of the capability record name this element (below)`
+            ? `${features.length === 1 ? 'One feature' : `${features.length} features`} of the capability record ${features.length === 1 ? 'names' : 'name'} this element (below)`
             : 'No feature of the capability record names this element'}
           {fidelity.length ? '; examples compared with InDesign below' : ''}
         </dd>
@@ -551,7 +551,7 @@ function PagedSupport({ el, book }: { el: RefElement; book: IdmlReference }) {
         <>
           <h3 id="paged-attributes">By attribute</h3>
           <div className={s.wrap}>
-            <table className={s.table}>
+            <table className={`${s.table} ${s.stack}`}>
               <thead>
                 <tr>
                   <th scope="col">Attribute</th>
@@ -568,7 +568,7 @@ function PagedSupport({ el, book }: { el: RefElement; book: IdmlReference }) {
                         {a.name}
                       </a>
                     </td>
-                    <td>
+                    <td data-label="Parse">
                       {a.paged?.imported ? (
                         a.paged.misplaced ? (
                           <>
@@ -586,7 +586,7 @@ function PagedSupport({ el, book }: { el: RefElement; book: IdmlReference }) {
                       )}
                       <Src src={a.paged?.importSource} base={base} label="Importer source" />
                     </td>
-                    <td>
+                    <td data-label="Edit">
                       {a.typed?.path ? (
                         <>
                           <code className={s.mono}>{a.typed.path}</code>
@@ -596,7 +596,7 @@ function PagedSupport({ el, book }: { el: RefElement; book: IdmlReference }) {
                         <span className={s.muted}>&mdash;</span>
                       )}
                     </td>
-                    <td>
+                    <td data-label="Write">
                       {a.paged?.exported ? <span className={s.mark}>writes</span> : <span className={`${s.mark} ${s.none}`}>not written</span>}
                       <Src src={a.paged?.exportSource} base={base} label="Exporter source" />
                     </td>

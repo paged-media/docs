@@ -25,6 +25,21 @@ test('element page: sticky header and attribute notes', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test('element page: the format reference is neutral, and Paged support is its own panel after the evidence', async ({ page }) => {
+  const errors = await openClean(page, '/reference/text-frame/');
+  const headers = await page.locator('.paged-ref-table thead th').allInnerTexts();
+  expect(headers.join(' ')).not.toMatch(/Paged|paged\.set/);
+  const panel = page.getByRole('region', { name: 'Paged support for TextFrame' });
+  await expect(panel).toBeVisible();
+  const order = await page.evaluate(() => {
+    const at = (el: Element | null) => (el ? [...document.querySelectorAll('h2, section[aria-label^="Paged support"]')].indexOf(el) : -1);
+    return { evidence: at(document.getElementById('evidence')), panel: at(document.querySelector('section[aria-label^="Paged support"]')) };
+  });
+  expect(order.evidence).toBeGreaterThanOrEqual(0);
+  expect(order.panel).toBeGreaterThan(order.evidence);
+  expect(errors).toEqual([]);
+});
+
 test.describe('example: drop cap', () => {
   const tab = (page: import('@playwright/test').Page, name: string) => page.getByRole('tab', { name, exact: true }).first();
 
@@ -100,5 +115,5 @@ test('inspector: the element tree and the XML select each other', async ({ page 
   await expect(page.getByRole('region', { name: 'XML of Stories/Story_ustoryR.xml' }).locator('[data-selected]')).toContainText('Self="ustoryR"');
 });
 
-phoneWidth(['/', '/reference/', '/reference/text-frame/', '/typography/drop-caps-and-tabs/', '/tools/inspector/']);
+phoneWidth(['/', '/reference/', '/reference/text-frame/', '/meta/census/', '/typography/drop-caps-and-tabs/', '/tools/inspector/']);
 themes();

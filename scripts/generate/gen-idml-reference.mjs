@@ -315,11 +315,22 @@ for (const id of existsSync(EXAMPLES) ? readdirSync(EXAMPLES).sort() : []) {
         }
       : null,
   };
-  for (const el of m.elements ?? []) {
+  const declared = m.elements ?? [];
+  declared.forEach((el, pos) => {
     if (!examplesFor.has(el)) examplesFor.set(el, []);
-    examplesFor.get(el).push(entry);
-  }
+    examplesFor.get(el).push({ entry, pos, of: declared.length });
+  });
 }
+/**
+ * An element's examples, the most focused first: those that declare it earlier
+ * in their `elements`, then those about fewer elements. The first with an
+ * InDesign raster is the entry's specimen.
+ */
+const examplesOf = (name) =>
+  (examplesFor.get(name) ?? [])
+    .slice()
+    .sort((a, b) => a.pos - b.pos || a.of - b.of || a.entry.id.localeCompare(b.entry.id))
+    .map((x) => x.entry);
 
 // ── Capability record features that name the element in their title ──
 // Only features of the record's format chapters (group `format`): an editor
@@ -482,7 +493,7 @@ const elements = selected
             attributesMisplaced: attributes.filter((a) => a.paged?.misplaced).length,
           }
         : null,
-      examples: examplesFor.get(e.element) ?? [],
+      examples: examplesOf(e.element),
       features: featuresNaming(e.element),
       pages,
     };
