@@ -150,23 +150,35 @@ a.paged-strip-value:hover,
   white-space: nowrap;
 }
 
-/* The ledger of every fact on the status page (components/mdx/fact-ledger.tsx). */
-.paged-ledger td {
+/* The ledger of every fact on the status page (components/mdx/fact-ledger.tsx):
+   compact, and it scrolls sideways on a phone rather than squeezing a column.
+   (`.prose` rules in global.css come later; these match them and add a class.) */
+.paged-ledger-wrap {
+  overflow-x: auto;
+  margin: var(--space-4) 0;
+}
+.prose table.paged-ledger {
+  min-width: 640px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.prose table.paged-ledger :is(th, td) {
+  padding: 6px 10px;
   vertical-align: baseline;
 }
-.paged-ledger .paged-ledger-value {
+.prose table.paged-ledger .paged-ledger-value {
   font-family: var(--font-mono);
-  font-size: 0.86rem;
-  white-space: nowrap;
-}
-.paged-ledger .paged-ledger-meta {
-  color: var(--color-ink-soft);
-}
-.paged-ledger .paged-ledger-meta code {
-  font-size: 0.82rem;
+  font-size: 12px;
   overflow-wrap: anywhere;
 }
-.paged-ledger .is-stale {
+.prose table.paged-ledger .paged-ledger-meta {
+  color: var(--color-ink-soft);
+}
+.prose table.paged-ledger .paged-ledger-meta code {
+  font-size: 11.5px;
+}
+.prose table.paged-ledger .is-stale {
   color: var(--warn);
   font-weight: 600;
 }
@@ -175,7 +187,10 @@ a.paged-strip-value:hover,
    Sidenotes (components/mdx/sidenote.tsx). Numbered per page by a counter.
    Narrow: the marker is a button and the note opens inline. Wide (the article
    column has room beside the reading measure): the note floats into the outer
-   margin, level with its marker, and the marker is a plain numeral.
+   margin, level with its marker, and the marker is a plain numeral. "Wide" is
+   the article's own width, not the window's: the 66ch measure (~600px) plus a
+   12rem note and its gap needs 820px, which the three-pane layout gives from
+   about 1440px (and the two-pane one from 1200px).
    -------------------------------------------------------------------------- */
 #nd-page .prose {
   container: paged-article / inline-size;
@@ -189,8 +204,8 @@ a.paged-strip-value:hover,
   font-family: var(--font-sans);
   font-size: 0.68em;
   font-weight: 640;
-  line-height: 0;
-  vertical-align: super;
+  line-height: 1;
+  vertical-align: 0.55em;
 }
 .paged-sidenote-mark {
   display: none;
@@ -205,7 +220,7 @@ a.paged-strip-value:hover,
   display: none;
   appearance: none;
   margin: 0 0 0 1px;
-  padding: 0 3px;
+  padding: 1px 4px;
   border: 0;
   border-radius: 2px;
   background: var(--color-link-soft);
@@ -237,10 +252,14 @@ a.paged-strip-value:hover,
 .paged-sidenote[data-ready]:not([data-open]) .paged-sidenote-body {
   display: none;
 }
-.paged-sidenote-body code {
-  font-size: 0.86em;
+/* Code in a note is set plain: a bordered chip breaks badly in a narrow column. */
+.paged-sidenote .paged-sidenote-body code {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 0.92em;
 }
-.paged-sidenote-link {
+.paged-sidenote .paged-sidenote-link {
   margin-right: 6px;
   font-weight: 640;
   color: var(--color-accent);
@@ -249,13 +268,13 @@ a.paged-strip-value:hover,
 .paged-sidenote-link::before {
   content: counter(sidenote);
 }
-.paged-sidenote-link:hover {
+.paged-sidenote .paged-sidenote-link:hover {
   color: var(--color-link);
 }
 .paged-sidenote-body:target {
   background: var(--color-link-soft);
 }
-@container paged-article (min-width: 860px) {
+@container paged-article (min-width: 820px) {
   .paged-sidenote-mark {
     display: inline;
   }
@@ -268,8 +287,8 @@ a.paged-strip-value:hover,
     float: right;
     clear: right;
     position: relative;
-    width: 13.5rem;
-    margin: 0.35em -15.75rem 0.75rem 0;
+    width: 12rem;
+    margin: 0.35em -13.75rem 0.75rem 0;
     padding: 0 0 0 12px;
     border-left: 1px solid var(--color-rule-strong);
     background: none;
@@ -364,7 +383,7 @@ a.paged-strip-value:hover,
   border-top: 2px solid var(--color-ink);
   border-bottom: 1px solid var(--color-rule);
 }
-.paged-activity-pulled-date {
+.paged-activity-pulled .paged-activity-pulled-date {
   margin: 0;
   font-family: var(--font-display-serif);
   font-size: clamp(22px, 2.4vw, 30px);
@@ -373,7 +392,7 @@ a.paged-strip-value:hover,
   letter-spacing: -0.02em;
   color: var(--color-ink);
 }
-.paged-activity-pulled-note {
+.paged-activity-pulled .paged-activity-pulled-note {
   margin: var(--space-2) 0 0;
   max-width: var(--reading-measure);
   font-family: var(--font-sans);
