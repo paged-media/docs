@@ -6,7 +6,7 @@ diataxis: reference
 status: draft
 owner: paged-docs
 describes: [data]
-reviewed: "2026-10-23"
+reviewed: "2026-11-16"
 ---
 
 **Data publishing without the panels.**
@@ -17,7 +17,8 @@ reviewed: "2026-10-23"
 script or an extension can do what those verbs do. How to call them:
 [Module commands](/docs/paged/commands).
 
-paged.data reads records with DuckDB-WASM. Its objects are addressed
+paged.data reads records into the SQL store inside its engine (Turso, so a query
+is SQLite's dialect). Its objects are addressed
 `plugin:media.paged.data/<kind>/<id>`: a `source`, a `query`, a `binding`, a
 `dataSet`, a `variable`.
 
@@ -27,6 +28,13 @@ paged.data reads records with DuckDB-WASM. Its objects are addressed
 |---|---|---|
 | `importSource` | `bytes`, `fileName` (**required**; the format comes from its extension: `.csv`, `.tsv`, `.json`, `.ndjson`, `.jsonl`, `.parquet`, `.xlsx`), `name?`, `sheet?` (xlsx) | `{ source, format, sheet? }` |
 | `previewQuery` | `sql`, `limit = 50` | `{ columns, rows, total?, problem? }` — a SQL problem is reported in `problem`, not thrown. |
+
+A CSV or TSV column is typed when it is imported: integer, decimal (keeping its
+scale, `1234.50`), real, boolean, date, timestamp, else text; a leading zero or a
+`+` keeps a column text. A query is one read-only statement; a write, a `PRAGMA` or a
+second statement is refused before it runs. A Data Merge (`merge`,
+`generate`) reads a CSV's fields as the file writes them, so `9.90` stays
+`9.90` there.
 
 A query is an object, created through the object model rather than a command:
 
@@ -112,6 +120,11 @@ These change nothing:
 
 `paged commands --owner media.paged.data` lists the rest (data sets,
 variables and their libraries, `refresh`, `exportDataMergeTemplate`).
+
+Record status, data issues, picture columns and transforms are not typed
+commands: other modules and extensions reach them through the plugin SDK's data
+door (`data@1`), and the editor through the Data panel
+([paged.data](/docs/paged/plugins/data)).
 
 ## Limits
 

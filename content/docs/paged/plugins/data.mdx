@@ -1,19 +1,19 @@
 ---
 title: paged.data — database publishing
-description: The database-publishing plugin — a binding DSL, a sync engine, record-flow pagination, and batch automation over DuckDB-WASM, publishing datasets other plugins can consume.
+description: The database-publishing plugin — a binding DSL, a sync engine, record-flow pagination and batch automation over an in-engine SQL store, and datasets to share.
 tier: intermediate
 diataxis: explanation
 status: draft
 owner: paged-docs
 describes: [data]
-reviewed: "2026-10-23"
+reviewed: "2026-11-16"
 ---
 
 **In short:** `paged.data` turns data into pages — a binding-expression DSL, a
 resolution/sync engine, record-flow lowering with grouping and per-group footers,
-and end-to-end print automation, all over a vendored DuckDB-WASM. It also
-publishes governed datasets that other plugins (e.g.
-[paged.sheet](/docs/paged/plugins/sheets)) consume.
+and end-to-end print automation, over a SQL store inside its own engine (Turso, an
+in-memory Rust implementation of SQLite). It also publishes governed datasets that
+other plugins (e.g. [paged.sheet](/docs/paged/plugins/sheets)) consume.
 
 ## What it does
 
@@ -35,15 +35,40 @@ publishes governed datasets that other plugins (e.g.
   an expression, a refresh's changes and a record flow; `paged generate` writes
   one document per record or per group from them
   ([paged.data commands](/docs/paged/commands/data)).
-- In development: export as a Data Merge template, a SQL query panel over DuckDB,
-  local JSON, Parquet and XLSX sources, row diffs and sync review, and binding any
-  object property to data (the universal binding round).
+- Sources read in Rust into the store: CSV and TSV (the delimiter sniffed, each
+  column typed — integer, decimal, real, boolean, date, timestamp, else text — and
+  the file also kept as written for Data Merge), JSON, Parquet and XLSX. A query is
+  SQLite's dialect: one guarded, read-only statement over the document's tables.
+- New on `main`, experimental:
+  - **Transforms** — JavaScript functions over tables, saved with the document and
+    run in a sandboxed interpreter after the sources and before the queries; their
+    rows are a derived, read-only table that queries and bindings read.
+  - **Picture columns** — a field of image URLs or paths placed as pictures:
+    fetched only from origins the user consented to, kept by content hash, run
+    through a chain of image actions (resize, fit, crop and others from
+    [paged.image](/docs/paged/plugins/image)), and saved inside the `.paged`.
+  - **Record status** — which records are new, changed or gone since the
+    document was made from the data, and where each record is placed.
+  - **Data issues** — text that does not fit its frame (a table cell by row and
+    column), a missing picture or one under 150 ppi in its frame, an empty value,
+    a failed binding, records a flow left out: listed in the Problems panel and
+    marked on the canvas, before print.
+  - **The data door** (`data@1` in the plugin SDK) — other modules and extensions
+    read the document's tables and records through it, and write rows of an
+    imported table; [paged.sheet](/docs/paged/plugins/sheets) edits a table this
+    way.
+- In development: export as a Data Merge template, the SQL query panel, row diffs
+  and sync review, and binding any object property to data (the universal binding
+  round).
 
 ## How it's built
 
-A Cargo workspace (`data-core`, `data-expr`, `data-sources`, `data-query`,
-`data-bind`, `data-lower`, automation crates, `data-js`) plus a TS bundle, with
-DuckDB-WASM vendored behind an Arrow seam.
+Rust crates in the engine's Cargo workspace (`paged-data-core`, `-expr`,
+`-sources`, `-query`, `-store`, `-xlsx`, `-bind`, `-lower`, `-dataset`,
+`-barcode`, `-automation`, `-session`) compiled into one wasm by `data-js`, plus
+a TS bundle (`@paged-media/data`). The SQL store is Turso inside that wasm;
+transforms run on the engine's action interpreter, with no host functions and a
+step budget.
 
 ## Capability state
 
