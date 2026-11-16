@@ -6,7 +6,7 @@ diataxis: explanation
 status: draft
 owner: paged-docs
 describes: [image]
-reviewed: "2026-10-23"
+reviewed: "2026-11-16"
 ---
 
 **In short:** `paged.image` is a raster-processing subsystem in Rust/WASM —
@@ -17,8 +17,8 @@ the editor: place → ingest → GPU adjust → in-frame composite.
 ## What it does
 
 - <Fact id="image.kernels" /> GPU compute kernels (adjustments, transforms, blurs)
-  with scalar reference twins; nineteen of those twins ship, so a region filter
-  runs without a GPU.
+  with scalar reference twins; the twins of the adjustment chain's nineteen
+  kernels ship, so a region filter runs without a GPU.
 - Two engines — a demand-driven streaming pipeline and a persistent tiled buffer.
 - PSD/PSB parsing + mutation + preservation-safe round-trip; hybrid color
   management.
@@ -28,17 +28,31 @@ the editor: place → ingest → GPU adjust → in-frame composite.
   canvas size, quarter turns and flips, adjustment layers, and `filterRegion`,
   which filters a rectangle of a layer through a polygon or alpha mask — on the
   GPU in the editor, and without one on shipped CPU twins of the same kernels
-  ([paged.image commands](/docs/paged/commands/image)).
+  ([paged.image commands](/docs/paged/commands/image)). Layers, masks,
+  adjustments and smart objects are typed objects (the object model).
+- Image actions other modules run on a picture's bytes, alone or chained —
+  `info`, `convert`, `crop`, `resize`, `fit`, `adjust`, `greyscale`, `sharpen`,
+  `remove-background` — through the plugin SDK's actions door (on `main`).
+  Resize, fit and a straightened crop use a CPU resampler in every realm, so an
+  action gives the same pixels in the editor and headless; paged.data's picture
+  columns chain them.
 - In development: layered PSD import (groups, masks, smart objects, adjustment
   layers), retouching tools (spot heal, patch, dodge and burn, blur and sharpen
-  brushes, mask painting, red eye), editable adjustment layers, and layers,
-  masks and adjustments as typed objects (the object model).
+  brushes, mask painting, red eye), editable adjustment layers, and, on `main`,
+  a Photoshop-parity round: the brush engine and `.abr` brushes, layer styles,
+  type layers, smart objects in full, transform and warp on pixels, 16- and
+  32-bit and CMYK, Lab and other color modes, and machine-learning features
+  (Select Subject, Remove, generative fill) through models the host provides;
+  none ships with the module.
 
 ## How it's built
 
-A Cargo workspace (`image-core`, `image-kernels`, `image-gpu`, `image-pipeline`,
-`image-graph`, `image-psd`, `image-cms`, `image-codecs`, `image-js`) plus a TS bundle. A
-registry-driven coverage gate requires every kernel to have a test.
+Rust crates in the engine's Cargo workspace: the module's own (`image-kernels`,
+`image-gpu`, `image-pipeline`, `image-graph`, `image-cms`, `image-codecs`,
+`image-js`) over engine crates it shares with the renderer (`paged-pixel`,
+`paged-psd`, `paged-kernels`, `paged-raster`, `paged-resample`, `paged-warp` and
+others), plus a TS bundle. A registry-driven coverage gate requires every kernel
+to have a test.
 
 ## Capability state
 

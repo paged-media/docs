@@ -6,7 +6,7 @@ diataxis: reference
 status: draft
 owner: paged-docs
 describes: [sheet]
-reviewed: "2026-10-23"
+reviewed: "2026-11-16"
 ---
 
 **Put a workbook on the page, and change it, without the grid.**
@@ -73,7 +73,7 @@ file. `no chart <n>` is the refusal.
 
 | Command | Arguments | Result |
 |---|---|---|
-| `importCsv` | `text`, `name = "data.csv"` | The workbook address. One sheet, named after `name`; a `.tsv` name is tab-delimited, otherwise the delimiter is detected. |
+| `importCsv` | `text`, `name = "data.csv"` | The workbook address. One sheet, named after `name`; a `.tsv` name is tab-delimited, otherwise the delimiter is detected. Each field is typed as Excel types a cell entry in the host's locale (in English, `45%`, `$1,234.50` and `2024-01-15` become numbers with their number format). |
 | `importXlsx` | `bytes`, `name = "workbook.xlsx"` | The workbook address. |
 | `importOds` | `bytes`, `name = "workbook.ods"` | The workbook address. |
 | `exportCsv` | `sheet?`, `range?`, `delimiter: "," \| ";" \| "tab"`, `formatted = true`, `bom = false` | The text. |

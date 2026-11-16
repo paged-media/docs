@@ -6,7 +6,7 @@ diataxis: how-to
 status: published
 owner: paged-docs
 describes: [scripting, data, the-renderer, round-tripping, package-anatomy]
-reviewed: "2026-10-23"
+reviewed: "2026-11-16"
 ---
 
 **Can Paged do the jobs a team runs on Adobe InDesign Server?**
@@ -67,8 +67,7 @@ cd engine/core && cargo build --release -p paged-cli   # → target/release/page
 
 # Data Merge runs in the Node command line over the paged.data module
 bun install
-moon run data:wasm      # paged.data's engine
-moon run data:duckdb    # its query engine, DuckDB-WASM
+moon run data:wasm      # paged.data's engine, its SQL store included
 ```
 
 In the steps below, `paged` is that binary and `paged-node` is
@@ -206,9 +205,13 @@ without a font and an empty profile gives a broken output intent.
 - **Linked images.** `paged` does not resolve `Links/…` files from the disk; put
   pictures in with `paged place`, or name image fields in a merge
   (`--image-field`, `--image-base`).
-- **Numbers in data.** Fields arrive as written, so `9.90` stays `9.90`. To sort
-  a merge numerically, cast in its query:
+- **Numbers in data.** A merge reads CSV fields as written, so `9.90` stays
+  `9.90`. To sort a merge numerically, cast in its query (SQLite's dialect):
   `--query 'SELECT * FROM "data" ORDER BY CAST(price AS DOUBLE)'`.
+- **Text that does not fit.** A merge's `overset` lists the records whose text
+  overflowed. In the editor, paged.data also lists overset text, missing or
+  low-resolution pictures and empty values in the Problems panel (on `main`,
+  experimental).
 - **Scripts.** Plan the port from ExtendScript as a rewrite; the
   [scripting reference](/docs/paged/scripting) lists every function and path.
 

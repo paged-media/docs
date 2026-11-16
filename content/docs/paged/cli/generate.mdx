@@ -6,7 +6,7 @@ diataxis: reference
 status: draft
 owner: paged-docs
 describes: [data]
-reviewed: "2026-10-23"
+reviewed: "2026-11-16"
 ---
 
 **A batch: one finished file per record, or per group of records.**
@@ -19,11 +19,11 @@ values — and each unit is a Data Merge of the template: merged, written to
 `--out`, and undone, so the next unit starts from the template again. It is on
 `main` and ships with the next release.
 
-`generate` needs the [paged.data](/docs/paged/plugins/data) module (and
-DuckDB-WASM, which reads the records). The built-in modules are not published on
-npm, so the npm `paged` reports that paged.data is not loaded; in a checkout of
-[`paged-media/paged`](https://github.com/paged-media/paged), build the module
-(`moon run data:wasm`, `moon run data:duckdb`) and run `paged-node` from
+`generate` needs the [paged.data](/docs/paged/plugins/data) module, whose
+engine reads the records into its SQL store. The built-in modules are not
+published on npm, so the npm `paged` reports that paged.data is not loaded; in a
+checkout of [`paged-media/paged`](https://github.com/paged-media/paged), build
+the module's engine (`moon run data:wasm`) and run `paged-node` from
 `apps/cli` with `--plugins=@paged-media/data`, as the
 [worked example](/docs/paged/use-cases/indesign-server#worked-example-a-template-and-a-csv-to-pdfx-4)
 does for `merge`.
@@ -90,7 +90,7 @@ the group's document.
 | `--format <pdf\|idml\|paged>` | The output format (default `paged`). |
 | `--per <record\|group>` | One document per record (default), or per group. |
 | `--by <a,b>` | With `--per group`: the fields that make a group. `--per group` without it, or `--by` without `--per group`, is a usage error. |
-| `--query <sql>` | Select and order the records (default `SELECT * FROM "data"`). |
+| `--query <sql>` | Select and order the records, in SQLite's dialect (default `SELECT * FROM "data"`). |
 | `--records-per-page <single\|multiple>` | Data Merge's layout (default `single`). |
 | `--arrange <rows\|columns>` | Multiple records: fill rows or columns first. |
 | `--row-spacing <pt>`, `--column-spacing <pt>` | Multiple records: the gaps. |

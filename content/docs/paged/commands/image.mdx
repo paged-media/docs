@@ -6,7 +6,7 @@ diataxis: reference
 status: draft
 owner: paged-docs
 describes: [image]
-reviewed: "2026-10-23"
+reviewed: "2026-11-16"
 ---
 
 **Filter part of a picture on a server, with the kernels the editor runs on the GPU.**
@@ -81,18 +81,23 @@ paged-node invoke photo.paged media.paged.image.command.filterRegion \
 command line, the SDK's headless host — it runs on CPU twins of the same
 kernels, which ship with the module and are held to each kernel's GPU
 tolerance; the two paths agree within one 8-bit level per channel, masked or
-not. Only `filterRegion` has this CPU path: adjustment previews, other filters,
-painting, resizing and composites of several layers still need a GPU, and a
-stack whose composite is not yet drawn is marked `pending` until an editor
-draws it.
+not. Among these commands only `filterRegion` has this CPU path: adjustment
+previews, other filters, painting and composites of several layers still need a
+GPU, and a stack whose composite is not yet drawn is marked `pending` until an
+editor draws it. The module's image actions, which other modules chain (such as
+paged.data's picture columns), resize, fit and straighten-crop on a CPU
+resampler in every realm, so they give the same pixels in the editor and
+headless.
 
 **Selections.** In the editor, `selection: true` filters within the frame's
 selection — the live one, or the one the session kept when that frame's image
 was closed (reopening the image restores it as the live selection) — resampled
-when the canvas is the same image at another size. A
-selection on another crop of the image, or no selection at all, is refused with
-the reason, never taken as "everything"; headless there is no editor selection,
-so pass it as `mask`.
+when the canvas is the same image at another size. A kept
+selection follows a quarter turn or flip made through these commands; a crop or
+a canvas resize drops it. A selection on another crop of the image, one made
+before the image changed, or no selection at all, is refused with the reason,
+never taken as "everything". A selection is never saved with the document;
+headless there is no editor selection, so pass it as `mask`.
 
 **Refused:** an adjustment layer (no pixels), a smart object (filter its
 source), a locked layer, a 16-bit layer (filtered in the editor), and a region
