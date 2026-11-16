@@ -63,12 +63,13 @@ function sh(cmd, args) {
   return execFileSync(cmd, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: MAX_BUFFER }).trim();
 }
 
-/** Resolve a git ref to a commit SHA on GitHub (or null if unreachable). */
-function resolveSha(repo, ref) {
+/** Resolve a git ref to a commit on GitHub: its SHA and date (nulls if unreachable). */
+function resolveCommit(repo, ref) {
   try {
-    return sh('gh', ['api', `repos/${ORG}/${repo}/commits/${ref}`, '--jq', '.sha']);
+    const [sha, date] = sh('gh', ['api', `repos/${ORG}/${repo}/commits/${ref}`, '--jq', '.sha + " " + .commit.committer.date']).split(' ');
+    return { sha, date: date ?? null };
   } catch {
-    return null;
+    return { sha: null, date: null };
   }
 }
 
@@ -105,12 +106,13 @@ function showLocal(repoDir, sha, path) {
   });
 }
 
-/** Local sibling commit SHA for provenance (best-effort). */
-function localSha(repoDir) {
+/** A local clone's commit (HEAD, or `rev`) and its date, for provenance (best-effort). */
+function localCommit(repoDir, rev = 'HEAD') {
   try {
-    return sh('git', ['-C', repoDir, 'rev-parse', 'HEAD']);
+    const [sha, date] = sh('git', ['-C', repoDir, 'log', '-1', '--format=%H %cI', rev]).split(' ');
+    return { sha, date: date ?? null };
   } catch {
-    return null;
+    return { sha: null, date: null };
   }
 }
 
@@ -146,7 +148,7 @@ for (const [key, src] of Object.entries(PIN.sources)) {
   const ref = pinned ?? src.ref;
   const keyDir = join(OUT, key);
   ensureDir(keyDir);
-  const entry = { repo: src.repo, ref, mode: useLocal ? 'local' : 'remote', sha: null, files: {} };
+  const entry = { repo: src.repo, ref, mode: useLocal ? 'local' : 'remote', sha: null, date: null, files: {} };
 
   for (const [outName, relPath] of Object.entries(src.files)) {
     const dest = join(keyDir, outName);
@@ -190,9 +192,42 @@ for (const [key, src] of Object.entries(PIN.sources)) {
       warn(`${key}/${outName}/: ${e.message.split('\n')[0]}`);
     }
   }
-  entry.sha = pinned ?? (useLocal ? localSha(repoDir) : resolveSha(src.repo, ref));
+  // The commit read and its date: gen-facts dates the facts read from it.
+  const commit = useLocal ? localCommit(repoDir, pinned ?? 'HEAD') : resolveCommit(src.repo, ref);
+  entry.sha = pinned ?? commit.sha;
+  entry.date = commit.date;
   lock.sources[key] = entry;
 }
+
+// ── engine releases ─────────────────────────────────────────────────────────
+// The engine's release channel is its tags (and npm), not GitHub Releases. One
+// query lists the tags of the monorepo with their dates: gen-facts dates the
+// engine facts by the tag core.pin names and finds the next one, and a page's
+// review line names the release current on its review date. Like the activity
+// feed this is a warning when it fails, never a stop: the facts then carry no
+// engine dates.
+const ENGINE_REPO = 'paged';
+const RELEASES_QUERY =
+  'query($owner: String!, $name: String!) { repository(owner: $owner, name: $name) { ' +
+  'refs(refPrefix: "refs/tags/", first: 100, orderBy: { field: TAG_COMMIT_DATE, direction: DESC }) { nodes { name ' +
+  'target { __typename oid ... on Commit { committedDate } ... on Tag { tagger { date } target { oid ... on Commit { committedDate } } } } } } } }';
+let releases = [];
+try {
+  const json = JSON.parse(
+    sh('gh', ['api', 'graphql', '-f', `query=${RELEASES_QUERY}`, '-f', `owner=${ORG}`, '-f', `name=${ENGINE_REPO}`]),
+  );
+  releases = json.data.repository.refs.nodes
+    .filter((n) => /^v\d+\.\d+\.\d+$/.test(n.name))
+    .map((n) => {
+      const commit = n.target.__typename === 'Tag' ? n.target.target : n.target;
+      return { tag: n.name, sha: commit.oid, date: new Date(n.target.tagger?.date ?? commit.committedDate).toISOString() };
+    })
+    .sort((a, b) => (a.date < b.date ? -1 : 1));
+  console.log(`  ✓ engine-releases (${releases.length} tags, newest ${releases.at(-1)?.tag ?? 'none'})`);
+} catch (e) {
+  console.warn(`  ! engine-releases: ${e.message.split('\n')[0]}`);
+}
+writeFileSync(join(OUT, 'engine-releases.json'), JSON.stringify({ repo: `${ORG}/${ENGINE_REPO}`, releases }, null, 2));
 
 // ── cross-repo activity feed ────────────────────────────────────────────────
 const act = PIN.activity || { repos: [], perRepo: 10 };

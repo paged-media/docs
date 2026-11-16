@@ -6,6 +6,7 @@ import { source } from '@/lib/source';
 import { getMDXComponents } from '@/components/mdx';
 import { DifficultyLabel } from '@/components/mdx/difficulty-label';
 import { RelatedAcrossPillars } from '@/components/mdx/related-across-pillars';
+import { ReviewLine } from '@/components/review-line';
 import { JsonLd } from '@/components/json-ld';
 import { pageRobots, canonicalPath, OG_IMAGE } from '@/lib/metadata';
 import { buildJsonLd, parseFaq, type BreadcrumbCrumb } from '@/lib/structured-data';
@@ -60,6 +61,8 @@ export default async function Page(props: PageProps) {
       <DocsDescription>{page.data.description}</DocsDescription>
       {/* Auto-rendered from frontmatter so the label can never disagree with it. */}
       <DifficultyLabel tier={page.data.tier as Tier} mode={page.data.diataxis as Diataxis} status={page.data.status as Status} />
+      {/* When the prose was last checked, and a visible note when what it describes moved since (lib/freshness.mjs). */}
+      <ReviewLine reviewed={page.data.reviewed} describes={page.data.describes} />
       <DocsBody>
         <MDX components={getMDXComponents()} />
         {autoCrossLink(params.slug)}

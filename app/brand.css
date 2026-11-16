@@ -48,12 +48,35 @@
   --color-paper-soft:   #fbf7ef;  /* panels, code blocks, specimen sheets, callouts */
   --color-ink:          #151412;  /* primary text */
   --color-ink-soft:     #3e3a35;  /* secondary text */
-  --color-muted:        #7c756b;  /* metadata, captions, notes */
+  --color-muted:        #6c665d;  /* metadata, captions, notes (5.0:1 on paper; was #7c756b, 4.0:1) */
   --color-rule:         #d6ccbd;  /* thin borders & dividers */
   --color-rule-strong:  #a99d8c;  /* stronger editorial rules */
-  --color-accent:       #8f1d1f;  /* oxblood — links, labels, issue marks, active */
+  --color-accent:       #8f1d1f;  /* oxblood — kickers, labels, issue marks, proof marks */
   --color-accent-press: #74181a;  /* hover / pressed accent */
   --color-accent-soft:  #efe0dc;  /* faint accent tint fill */
+
+  /* Link and interaction: blueprint (7.3:1 on paper). Links, focus, interactive
+     controls, diagram relationships. Oxblood stays the editorial accent:
+     kickers, issue marks, proof marks, the active state of a section. */
+  --color-link:         #2c507d;
+  --color-link-press:   #25446a;
+  --color-link-soft:    #e7ecf3;
+  --focus-ring:         2px solid var(--color-link);
+  --focus-offset:       3px;
+
+  /* MATERIAL STATES (three, by function):
+     1 editorial paper — the tokens above; no texture behind text.
+     2 physical stock  — only real document objects (pages, spreads, covers).
+     3 digital instrument — real product captures, code, the machine. */
+  --stock-face:         #fffdf8;  /* a printed sheet, lighter than the page it lies on */
+  --stock-edge:         #e4dccd;  /* page-stack edges */
+  --stock-shadow:       0 1px 0 rgba(21,20,18,0.06), 0 10px 24px -12px rgba(21,20,18,0.28);  /* contact shadow */
+  --color-instrument:        #1a1917;  /* the machine is dark */
+  --color-instrument-soft:   #24221f;
+  --color-instrument-rule:   #3a3732;
+  --color-instrument-ink:    #ece6da;  /* 14.1:1 */
+  --color-instrument-muted:  #b9b1a3;  /*  8.3:1 */
+  --color-instrument-link:   #9db6e0;  /*  8.5:1 */
 
   /* COLOR — back-compat palette aliases (used by website/viewer kits) */
   --paper-0: var(--color-paper-soft);  /* lightest / panels */
@@ -74,13 +97,13 @@
   --signal-soft:  var(--color-accent-soft);
   --signal-ink:   var(--color-paper-soft);
   --accent:       var(--color-accent);
-  --link:         var(--color-accent);
+  --link:         var(--color-link);
 
-  /* Secondary / application-only colors (viewer app status — NOT core brand) */
-  --blueprint:      #2c507d;   /* technical blue — app metadata only */
+  /* Status colors (render OK, missing font, parse error). Blueprint is also the link color. */
+  --blueprint:      var(--color-link);
   --blueprint-soft: #e7ecf3;
   --valid:      #3c6e4e;       --valid-soft: #e3ede5;   /* render success */
-  --warn:       #9a6a1c;       --warn-soft:  #f1e7d4;   /* missing font / proof note */
+  --warn:       #895e19;       --warn-soft:  #f1e7d4;   /* missing font / proof note (5.0:1 on paper) */
   --error:      var(--color-accent);
 
   /* Semantic aliases */
@@ -134,6 +157,14 @@
   --ease-out: cubic-bezier(0.2, 0.6, 0.2, 1);
   --ease-in-out: cubic-bezier(0.5, 0, 0.2, 1);
   --dur-fast: 120ms; --dur-base: 200ms; --dur-slow: 320ms;
+  /* Editorial motion (starting values; tune against real devices):
+     paper settles, type presses. Gestures follow the pointer; these only
+     finish what the reader started. No continuous loops, no scroll hijack. */
+  --ease-paper: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-press: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-micro: 180ms;   /* underline, hover, press */
+  --dur-reveal: 380ms;  /* a section or annotation appearing */
+  --dur-spatial: 640ms; /* a page turning, a layer lifting */
 
   /* tracking helpers */
   --tracking-tight: -0.02em; --tracking-wide: 0.14em;
@@ -264,7 +295,8 @@ a, .paged-link {
   text-decoration-thickness: 1px;
   text-underline-offset: 0.14em;
 }
-a:hover, .paged-link:hover { color: var(--color-accent); }
+a:hover, .paged-link:hover { color: var(--color-link); }
+:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
 
 /* =============================================================================
    BRAND / PUBLISHING MOTIF UTILITIES

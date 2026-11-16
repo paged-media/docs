@@ -11,6 +11,8 @@ import { ExampleEmbed } from './example-embed';
 import { SupportBadge } from './support-badge';
 import { StageRow } from './stage-row';
 import { Fact } from './fact';
+import { FactLedger } from './fact-ledger';
+import { Sidenote } from './sidenote';
 import { CapabilityMatrix } from './capability-matrix';
 import { ConformanceTable } from './conformance-table';
 import { StatusHeadline } from './status-headline';
@@ -62,6 +64,8 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     SupportBadge,
     StageRow,
     Fact,
+    FactLedger,
+    Sidenote,
     CapabilityMatrix,
     ConformanceTable,
     StatusHeadline,

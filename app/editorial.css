@@ -1,0 +1,383 @@
+/* =============================================================================
+   EDITORIAL SHELL AND EVIDENCE LAYER — the record strip, the review line,
+   facts with their provenance, sidenotes and the search scope. Tokens only
+   (app/brand.css): blueprint (--color-link) for what a reader can act on,
+   oxblood (--color-accent) for editorial marks, warn for a dated claim.
+   ========================================================================== */
+
+/* -----------------------------------------------------------------------------
+   Record strip (components/record-strip.tsx): one line above the masthead.
+   Rules between the items, as in the site switch; on a phone the items wrap
+   and the rules give way to spacing.
+   -------------------------------------------------------------------------- */
+.paged-strip {
+  background: var(--color-paper-soft);
+  border-bottom: 1px solid var(--color-rule);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--color-ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.paged-strip-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 14px;
+  padding: 6px 16px;
+}
+.paged-strip-label {
+  color: var(--color-muted);
+}
+.paged-strip-value {
+  color: var(--color-ink);
+  font-weight: 560;
+}
+a.paged-strip-value,
+.paged-strip-link {
+  text-decoration: underline;
+  text-decoration-color: var(--color-rule-strong);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  transition: color var(--dur-micro) var(--ease-paper), text-decoration-color var(--dur-micro) var(--ease-paper);
+}
+.paged-strip-link {
+  color: var(--color-link);
+  font-weight: 520;
+}
+a.paged-strip-value:hover,
+.paged-strip-link:hover {
+  color: var(--color-link-press);
+  text-decoration-color: currentColor;
+}
+.paged-strip-stale {
+  color: var(--warn);
+  font-weight: 600;
+}
+.paged-strip-note {
+  margin-left: auto;
+  font-family: var(--font-text-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+.paged-strip-short {
+  display: none;
+}
+@media (min-width: 720px) {
+  .paged-strip-inner {
+    gap: 0;
+    padding: 6px 24px;
+  }
+  .paged-strip-item + .paged-strip-item {
+    margin-left: 12px;
+    padding-left: 12px;
+    border-left: 1px solid var(--color-rule-strong);
+  }
+}
+@media (max-width: 719px) {
+  .paged-strip {
+    font-size: 12px;
+  }
+  .paged-strip-long,
+  .paged-strip-note {
+    display: none;
+  }
+  .paged-strip-short {
+    display: inline;
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   Review line (components/review-line.tsx): quiet under the title; the
+   "may be out of date" note is the one place it raises its voice.
+   -------------------------------------------------------------------------- */
+.paged-review {
+  margin: 0 0 var(--space-2);
+}
+.paged-review-line {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}
+.paged-review-line time {
+  color: var(--color-ink-soft);
+}
+.paged-review-line a {
+  color: var(--color-link);
+  text-underline-offset: 0.2em;
+}
+.paged-review-stale {
+  margin-top: var(--space-3);
+  padding: 10px 14px;
+  border-left: 2px solid var(--warn);
+  background: var(--warn-soft);
+}
+.paged-review-stale p {
+  margin: 0;
+  max-width: var(--reading-measure);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-ink);
+}
+.paged-review-stale strong {
+  color: var(--warn);
+  font-weight: 640;
+}
+.paged-review-stale a {
+  color: var(--color-link);
+  text-underline-offset: 0.2em;
+}
+
+/* -----------------------------------------------------------------------------
+   Facts (components/mdx/fact.tsx): a figure carries its source and date as a
+   title and as text for screen readers; the dotted rule says there is more.
+   A fact past its stale_after date says when it was true.
+   -------------------------------------------------------------------------- */
+.paged-fact {
+  text-decoration: underline dotted;
+  text-decoration-color: var(--color-rule-strong);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+}
+.paged-fact-asof {
+  color: var(--warn);
+  font-size: 0.86em;
+  white-space: nowrap;
+}
+
+/* The ledger of every fact on the status page (components/mdx/fact-ledger.tsx). */
+.paged-ledger td {
+  vertical-align: baseline;
+}
+.paged-ledger .paged-ledger-value {
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+  white-space: nowrap;
+}
+.paged-ledger .paged-ledger-meta {
+  color: var(--color-ink-soft);
+}
+.paged-ledger .paged-ledger-meta code {
+  font-size: 0.82rem;
+  overflow-wrap: anywhere;
+}
+.paged-ledger .is-stale {
+  color: var(--warn);
+  font-weight: 600;
+}
+
+/* -----------------------------------------------------------------------------
+   Sidenotes (components/mdx/sidenote.tsx). Numbered per page by a counter.
+   Narrow: the marker is a button and the note opens inline. Wide (the article
+   column has room beside the reading measure): the note floats into the outer
+   margin, level with its marker, and the marker is a plain numeral.
+   -------------------------------------------------------------------------- */
+#nd-page .prose {
+  container: paged-article / inline-size;
+  counter-reset: sidenote;
+}
+.paged-sidenote {
+  counter-increment: sidenote;
+}
+.paged-sidenote-mark,
+.paged-sidenote-toggle {
+  font-family: var(--font-sans);
+  font-size: 0.68em;
+  font-weight: 640;
+  line-height: 0;
+  vertical-align: super;
+}
+.paged-sidenote-mark {
+  display: none;
+  margin-left: 1px;
+  color: var(--color-accent);
+}
+.paged-sidenote-mark::after,
+.paged-sidenote-toggle::after {
+  content: counter(sidenote);
+}
+.paged-sidenote-toggle {
+  display: none;
+  appearance: none;
+  margin: 0 0 0 1px;
+  padding: 0 3px;
+  border: 0;
+  border-radius: 2px;
+  background: var(--color-link-soft);
+  color: var(--color-link);
+  cursor: pointer;
+  transition: background-color var(--dur-micro) var(--ease-paper);
+}
+.paged-sidenote-toggle:hover,
+.paged-sidenote[data-open] .paged-sidenote-toggle {
+  background: var(--color-link);
+  color: var(--color-paper-soft);
+}
+.paged-sidenote[data-ready] .paged-sidenote-toggle {
+  display: inline;
+}
+.paged-sidenote-body {
+  display: block;
+  margin: var(--space-2) 0;
+  padding: 8px 12px;
+  border-left: 2px solid var(--color-link);
+  background: var(--color-paper-soft);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: 0;
+  color: var(--color-ink-soft);
+  scroll-margin-top: 6rem;
+}
+.paged-sidenote[data-ready]:not([data-open]) .paged-sidenote-body {
+  display: none;
+}
+.paged-sidenote-body code {
+  font-size: 0.86em;
+}
+.paged-sidenote-link {
+  margin-right: 6px;
+  font-weight: 640;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+.paged-sidenote-link::before {
+  content: counter(sidenote);
+}
+.paged-sidenote-link:hover {
+  color: var(--color-link);
+}
+.paged-sidenote-body:target {
+  background: var(--color-link-soft);
+}
+@container paged-article (min-width: 860px) {
+  .paged-sidenote-mark {
+    display: inline;
+  }
+  .paged-sidenote[data-ready] .paged-sidenote-toggle {
+    display: none;
+  }
+  .paged-sidenote .paged-sidenote-body,
+  .paged-sidenote[data-ready]:not([data-open]) .paged-sidenote-body {
+    display: block;
+    float: right;
+    clear: right;
+    position: relative;
+    width: 13.5rem;
+    margin: 0.35em -15.75rem 0.75rem 0;
+    padding: 0 0 0 12px;
+    border-left: 1px solid var(--color-rule-strong);
+    background: none;
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+  .paged-sidenote-body:target {
+    border-left-color: var(--color-link);
+    box-shadow: -1px 0 0 var(--color-link);
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   Search scope (components/search-dialog.tsx): this site or both, as two
+   radios set like the site switch; the other site's state beside them.
+   -------------------------------------------------------------------------- */
+.paged-search-scope {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  padding: 8px 12px;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  line-height: 1.3;
+}
+.paged-search-scope fieldset {
+  display: inline-flex;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--color-rule);
+  border-radius: 2px;
+  background: var(--color-paper);
+}
+.paged-search-scope legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.paged-search-scope label {
+  position: relative;
+  padding: 5px 10px;
+  color: var(--color-muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.paged-search-scope label + label {
+  border-left: 1px solid var(--color-rule);
+}
+.paged-search-scope input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.paged-search-scope label:hover {
+  color: var(--color-link);
+}
+.paged-search-scope label:has(input:checked) {
+  color: var(--color-ink);
+  font-weight: 640;
+  box-shadow: inset 0 -2px 0 var(--color-link);
+}
+.paged-search-scope label:has(input:focus-visible) {
+  outline: var(--focus-ring);
+  outline-offset: 1px;
+}
+.paged-search-scope-status {
+  color: var(--color-muted);
+}
+.paged-search-scope-status[data-state='failed'] {
+  color: var(--warn);
+}
+.paged-search-site {
+  color: var(--color-ink-soft);
+  font-weight: 560;
+}
+.paged-search-page[data-peer] .paged-search-site {
+  color: var(--color-link);
+}
+
+/* -----------------------------------------------------------------------------
+   Activity (components/mdx/activity-feed.tsx): the pull date leads.
+   -------------------------------------------------------------------------- */
+.paged-activity-pulled {
+  margin: var(--space-4) 0 var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 2px solid var(--color-ink);
+  border-bottom: 1px solid var(--color-rule);
+}
+.paged-activity-pulled-date {
+  margin: 0;
+  font-family: var(--font-display-serif);
+  font-size: clamp(22px, 2.4vw, 30px);
+  font-weight: var(--weight-display-strong);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+}
+.paged-activity-pulled-note {
+  margin: var(--space-2) 0 0;
+  max-width: var(--reading-measure);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-ink-soft);
+}

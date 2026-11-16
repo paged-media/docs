@@ -8,9 +8,11 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { RECORD_MAX_DAYS as MAX_DAYS } from '../lib/freshness.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const MAX_DAYS = 7;
+// The same limit the record strip at the top of every page applies
+// (components/record-strip.tsx): past it, the pages call the record not current.
 let record;
 try {
   record = JSON.parse(readFileSync(join(ROOT, '.generated', 'sources', 'cockpit', 'public.json'), 'utf8'));

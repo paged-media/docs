@@ -9,10 +9,10 @@ import {
   Cormorant_Garamond,
 } from 'next/font/google';
 import { RootProvider } from 'fumadocs-ui/provider/next';
-import { WipBanner } from '@/components/wip-banner';
+import { RecordStrip } from '@/components/record-strip';
 import PagedSearchDialog from '@/components/search-dialog';
 import { Analytics, GoogleAnalytics } from '@/components/analytics';
-import { site, SITE_ID } from '@/lib/site';
+import { site } from '@/lib/site';
 import { OG_IMAGE } from '@/lib/metadata';
 
 // The brand four-role type system, self-hosted by next/font (no CDN @import):
@@ -86,8 +86,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={fontVars} suppressHydrationWarning>
       <body className="flex min-h-screen flex-col">
-        {/* The IDML reference is a finished reference, not a build log: no banner there. */}
-        {SITE_ID !== 'idml' && <WipBanner />}
+        {/* Both sites: the engine release, the capability record's date (marked
+            "not current" past its age) and the way to the status page. */}
+        <RecordStrip />
         {/* The reader's system setting picks paper or night paper (the `.dark`
             tokens in app/global.css); the theme switch overrides it. */}
         <RootProvider

@@ -29,6 +29,7 @@
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { featuresByChapter, reviewState } from '../lib/freshness.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CONTENT = join(ROOT, 'content', 'docs');
@@ -81,11 +82,9 @@ function listField(fm, name) {
 }
 
 const REQUIRED = ['content/docs/paged/plugins/', 'content/docs/paged/compare/'];
-const byChapter = new Map();
-for (const f of Object.values(support)) {
-  if (!byChapter.has(f.chapter)) byChapter.set(f.chapter, []);
-  byChapter.get(f.chapter).push(f);
-}
+// The policy itself is lib/freshness.mjs, which the pages use to tell readers
+// the same verdict (components/review-line.tsx).
+const byChapter = featuresByChapter(support);
 const missingDescribes = [];
 const stale = [];
 const missingReviewed = [];
@@ -106,18 +105,12 @@ for (const file of existsSync(CONTENT) ? walk(CONTENT) : []) {
     continue;
   }
   checked++;
-  for (const id of describes) {
-    const feats = support[id] ? [support[id]] : (byChapter.get(id) ?? []);
-    if (!feats.length) {
-      info.push(`${rel}: describes "${id}" (neither a registry feature nor a chapter — not freshness-checked)`);
-      continue;
-    }
-    // `reviewed` is a day: a change later that same day does not make the page
-    // stale, so compare calendar days (ISO dates sort as strings).
-    const newest = feats.filter((f) => f.updatedAt).sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1))[0];
-    if (newest && newest.updatedAt.slice(0, 10) > reviewed.slice(0, 10)) {
-      stale.push(`${rel}: "${id}" changed ${newest.updatedAt.slice(0, 10)} (${newest.id}) > reviewed ${reviewed} — re-review and bump \`reviewed\``);
-    }
+  const verdict = reviewState(describes, reviewed, support, byChapter);
+  for (const id of verdict.unknown) {
+    info.push(`${rel}: describes "${id}" (neither a registry feature nor a chapter — not freshness-checked)`);
+  }
+  for (const s of verdict.stale) {
+    stale.push(`${rel}: "${s.entry}" changed ${s.changed} (${s.featureId}) > reviewed ${reviewed} — re-review and bump \`reviewed\``);
   }
 }
 

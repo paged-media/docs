@@ -30,6 +30,13 @@ https://:project.pages.dev/*
 https://:version.:project.pages.dev/*
   X-Robots-Tag: noindex
 
+# The static search index is read by the other site's search dialog ("Both
+# sites", docs/adr/808-cross-site-search.md): a public, credential-less read
+# from the sibling origin, which COEP credentialless allows with CORS.
+/api/search
+  Access-Control-Allow-Origin: *
+  Cross-Origin-Resource-Policy: cross-origin
+
 # Generated, hashed assets never change under the same name.
 /_next/static/*
   Cache-Control: public, max-age=31536000, immutable

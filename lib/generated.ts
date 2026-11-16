@@ -524,16 +524,27 @@ export function getRefElement(name: string): RefElement | undefined {
   return getIdmlReference().elements.find((e) => e.name === name);
 }
 
-// ── facts (gen-facts.mjs) ─────────────────────────────────────────────────────
+// ── facts (gen-facts.mjs; the public contract is scripts/generate/facts-schema.md) ─
 export interface Fact {
-  value: string | number;
+  value: string | number | string[];
   display: string;
   label: string;
   from: string | null;
+  /** Freshness class: record, engine, source, census or repo. */
+  class?: string;
+  /** When the authority produced the value. */
+  observed_at?: string | null;
+  /** Who stated the value, and at which revision. */
+  source?: { authority: string; revision: string | null };
+  evidence_url?: string | null;
+  /** After this, the value is not to be shown as current; null: no date yet (engine) or this build (repo). */
+  stale_after?: string | null;
 }
 export interface Facts {
+  schema?: string;
   generatedAt: string | null;
   count: number;
+  policy?: { record_days: number; census_days: number; engine: string };
   facts: Record<string, Fact>;
 }
 export function getFacts(): Facts {
