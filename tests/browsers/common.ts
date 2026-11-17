@@ -132,3 +132,89 @@ export function crossSiteSearch(otherOrigin: string, otherName: string, query: s
     await expect(page.locator('.paged-search-page[data-peer]')).toHaveCount(0);
   });
 }
+
+/**
+ * The masthead all three sites share (lib/masthead-nav.ts, mirroring the
+ * website's nav.ts): its sections and tools in order, with their addresses —
+ * this site's own home as a root path — and this site marked current.
+ */
+export function masthead(current: 'Docs' | 'IDML Reference') {
+  const own = current === 'Docs' ? 'https://docs.paged.media/' : 'https://idml.paged.media/';
+  const local = (href: string) => (href === own ? '/' : href);
+  const SECTIONS = [
+    ['Product', 'https://paged.media/product/'],
+    ['Solutions', 'https://paged.media/designers/'],
+    ['Editions', 'https://paged.media/editions/'],
+    ['Docs', 'https://docs.paged.media/'],
+    ['IDML Reference', 'https://idml.paged.media/'],
+  ].map(([label, href]) => [label, local(href)]);
+  const TOOLS = [
+    ['Library', 'https://paged.media/library/'],
+    ['Studio', 'https://paged.media/studio/'],
+    ['Site atlas', 'https://paged.media/site-atlas/'],
+    ['Open editor', 'https://play.paged.media/'],
+  ];
+
+  test('masthead: the shared sections and tools, this site marked current', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const errors = await openClean(page, '/');
+    const header = page.locator('header[data-masthead]');
+    await expect(header).toBeVisible();
+    await expect(header.locator('.paged-masthead-mark')).toHaveAttribute('href', 'https://paged.media/');
+    const links = header.locator('[data-masthead-nav] a');
+    const got = await links.evaluateAll((as) => as.map((a) => [a.textContent?.trim() ?? '', a.getAttribute('href') ?? '']));
+    expect(got).toEqual(SECTIONS);
+    const tools = await header
+      .locator('.paged-masthead-tool, .paged-masthead-action')
+      .evaluateAll((as) => as.map((a) => [a.textContent?.trim() ?? '', a.getAttribute('href') ?? '']));
+    expect(tools).toEqual(TOOLS);
+    await expect(header.locator('[data-masthead-nav] a[aria-current]')).toHaveCount(1);
+    await expect(header.locator('[data-masthead-nav] a[aria-current]')).toHaveText(current);
+    await expect(header.locator('button[data-search-full]')).toBeVisible();
+    await expect(header.locator('[data-theme-toggle]').first()).toBeVisible();
+    // Sticky over the page: still there after a scroll.
+    await page.mouse.wheel(0, 1600);
+    await expect(header).toBeInViewport();
+    expect(errors).toEqual([]);
+  });
+
+  test.describe('masthead on a phone', () => {
+    test.use({ viewport: { width: 390, height: 844 } });
+    test('the wordmark, search and a menu that opens without script', async ({ page }) => {
+      await page.goto('/');
+      const header = page.locator('header[data-masthead]');
+      await expect(header.locator('[data-masthead-nav]')).toBeHidden();
+      await expect(header.locator('button[data-search-full]')).toBeVisible();
+      const menu = header.locator('.paged-masthead-menu');
+      await menu.locator('summary').click();
+      await expect(menu.getByRole('link', { name: current, exact: true })).toBeVisible();
+      await expect(menu.getByRole('link', { name: current, exact: true })).toHaveAttribute('aria-current', 'true');
+    });
+  });
+}
+
+/**
+ * /search-index.json: every page of this site for paged.media's search
+ * (docs/adr/810), readable from any origin.
+ */
+export function searchIndex(site: 'paged' | 'idml', origin: string, kinds: string[]) {
+  test('search-index.json: the schema, at least 50 pages, absolute URLs, kinds, CORS', async ({ request }) => {
+    const res = await request.get('/search-index.json');
+    expect(res.status()).toBe(200);
+    expect(res.headers()['access-control-allow-origin']).toBe('*');
+    const body = await res.json();
+    expect(body.schema).toBe('paged.search.index/1');
+    expect(body.site).toBe(site);
+    expect(body.origin).toBe(origin);
+    expect(Number.isNaN(Date.parse(body.generatedAt))).toBe(false);
+    expect(body.pages.length).toBeGreaterThanOrEqual(50);
+    for (const p of body.pages) {
+      expect(typeof p.title).toBe('string');
+      expect(p.title.length).toBeGreaterThan(0);
+      expect(p.url).toMatch(new RegExp(`^${origin.replace(/\./g, '\\.')}/(.+/)?$`));
+      expect(kinds).toContain(p.kind);
+      expect(typeof p.description).toBe('string');
+    }
+    expect(new Set(body.pages.map((p: { url: string }) => p.url)).size).toBe(body.pages.length);
+  });
+}

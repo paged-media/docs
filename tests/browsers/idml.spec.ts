@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { crossSiteSearch, firstSearchResult, openClean, phoneWidth, recordStrip, themes } from './common';
+import { crossSiteSearch, firstSearchResult, masthead, openClean, phoneWidth, recordStrip, searchIndex, themes } from './common';
 
 // idml.paged.media — run against `SITE=idml pnpm build` (playwright.config.ts).
 
@@ -117,5 +117,50 @@ test('inspector: the element tree and the XML select each other', async ({ page 
   await expect(page.getByRole('region', { name: 'XML of Stories/Story_ustoryR.xml' }).locator('[data-selected]')).toContainText('Self="ustoryR"');
 });
 
-phoneWidth(['/', '/reference/', '/reference/text-frame/', '/meta/census/', '/typography/drop-caps-and-tabs/', '/tools/inspector/']);
+test.describe('field guide', () => {
+  const PAGE = '/field-guide/';
+  const KEYS = ['package', 'spread', 'frame', 'story', 'style'];
+
+  test('a hotspot chooses its card: B, the story', async ({ page }) => {
+    const errors = await openClean(page, PAGE);
+    const guide = page.locator('[data-guide]');
+    await expect(guide).toHaveAttribute('data-js', '');
+    // The text frame is chosen first; every other card waits.
+    await expect(page.locator('#guide-frame')).toBeVisible();
+    await expect(page.locator('#guide-story')).toBeHidden();
+    const b = guide.locator('.paged-guide-hotspot', { hasText: 'B' });
+    await expect(b).toHaveAttribute('href', '#guide-story');
+    await b.click();
+    await expect(page.locator('#guide-story')).toBeVisible();
+    await expect(page.locator('#guide-story')).toHaveAttribute('data-active', '');
+    await expect(page.locator('#guide-frame')).toBeHidden();
+    await expect(b).toHaveAttribute('aria-current', 'true');
+    await expect(guide.locator('.paged-guide-stop[data-guide-key="story"]')).toHaveAttribute('aria-current', 'true');
+    // The card names the story's attributes from the example's XML and links to its entry.
+    await expect(page.locator('#guide-story code').first()).toHaveText('Self');
+    await expect(page.locator('#guide-story .paged-guide-read')).toHaveAttribute('href', '/reference/story/');
+    expect(errors).toEqual([]);
+  });
+
+  test('a stop links to its element entry', async ({ page }) => {
+    await page.goto(PAGE);
+    const entries = await page.locator('.paged-guide-entry').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
+    expect(entries).toEqual(['/reference/document/', '/reference/spread/', '/reference/text-frame/', '/reference/story/', '/reference/paragraph-style/']);
+  });
+
+  test.describe('without JavaScript', () => {
+    test.use({ javaScriptEnabled: false });
+    test('every card is in the page, and the hotspots are links to them', async ({ page }) => {
+      await page.goto(PAGE);
+      for (const key of KEYS) await expect(page.locator(`#guide-${key}`)).toBeVisible();
+      const hrefs = await page.locator('.paged-guide-hotspot').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
+      expect(hrefs).toEqual(['#guide-frame', '#guide-story', '#guide-style']);
+      await expect(page.locator('.paged-guide-sheet img')).toHaveAttribute('src', /\/examples\/based-on-chain\/p1\.webp$/);
+    });
+  });
+});
+
+masthead('IDML Reference');
+searchIndex('idml', 'https://idml.paged.media', ['Guide', 'Element', 'Cookbook', 'Glossary', 'Tool']);
+phoneWidth(['/', '/reference/', '/reference/text-frame/', '/meta/census/', '/typography/drop-caps-and-tabs/', '/tools/inspector/', '/field-guide/']);
 themes();

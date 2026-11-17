@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { crossSiteSearch, firstSearchResult, openClean, phoneWidth, recordStrip, themes } from './common';
+import { crossSiteSearch, firstSearchResult, masthead, openClean, phoneWidth, recordStrip, searchIndex, themes } from './common';
 
 // docs.paged.media — run against `SITE=paged pnpm build` (playwright.config.ts).
 
@@ -78,5 +78,17 @@ test('the status page lists every figure with its source', async ({ page }) => {
 
 recordStrip('/state/');
 crossSiteSearch('https://idml.paged.media', 'IDML Reference', 'scripting');
-phoneWidth(['/', '/scripting/your-first-script/', '/state/', '/sdk/', '/engine/the-renderer/the-pipeline/']);
+test('example lab: the views are tabs, and Live is the engine\'s own render', async ({ page }) => {
+  const errors = await openClean(page, '/engine/test-corpus/the-docs-examples-loop/');
+  const lab = page.locator('.paged-lab').first();
+  await expect(lab.getByRole('tab', { name: 'Raw', exact: true })).toHaveAttribute('aria-selected', 'true');
+  await lab.getByRole('tab', { name: 'Live', exact: true }).click();
+  await expect(lab.locator('.paged-lab-heading')).toContainText(/Paged engine/i);
+  await expect(lab.locator('canvas')).toBeAttached();
+  expect(errors).toEqual([]);
+});
+
+masthead('Docs');
+searchIndex('paged', 'https://docs.paged.media', ['Guide', 'API', 'Plugin', 'Engine', 'Project']);
+phoneWidth(['/', '/scripting/your-first-script/', '/state/', '/sdk/', '/engine/the-renderer/the-pipeline/', '/engine/test-corpus/the-docs-examples-loop/']);
 themes();
