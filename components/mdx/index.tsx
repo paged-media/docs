@@ -33,6 +33,7 @@ import { ActivityFeed, RepoActivity } from './activity-feed';
 import { LiveDemo } from './live-demo';
 import { AttrTable } from './attr-table';
 import { ElementReference, ElementIndex, CensusMethod } from './element-reference';
+import { FieldGuide } from './field-guide';
 import { Callout, Note } from './callout';
 import { GutenbergAside } from './gutenberg-aside';
 import { RelatedAcrossPillars } from './related-across-pillars';
@@ -89,6 +90,7 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     ElementReference,
     ElementIndex,
     CensusMethod,
+    FieldGuide,
     // Brand Note replaces the Fumadocs Callout (and is also exposed as <Note>).
     Callout,
     Note,

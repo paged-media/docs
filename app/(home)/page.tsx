@@ -65,6 +65,7 @@ const HOME: Record<typeof SITE_ID, HomeCopy> = {
           href: '/docs/idml/reference',
           more: { label: 'How the census counts', href: '/docs/idml/meta/census' },
         },
+        { question: 'How do the parts relate?', answer: 'One verified page, followed from its package to a frame, its story and its style.', href: '/docs/idml/field-guide' },
         { question: 'What is in my file?', answer: 'Open an .idml file in the browser and walk its parts. Nothing is uploaded.', href: '/docs/idml/tools/inspector' },
       ],
     },

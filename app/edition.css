@@ -528,3 +528,310 @@
   background: var(--stock-face);
   border-color: #b7bcb8;
 }
+
+/* -----------------------------------------------------------------------------
+   The field guide (components/mdx/field-guide.tsx), V5's illustrated field
+   guide: a night workspace; the plate on paper stock, lifted on a hard
+   offset; hotspots as red discs; the five stops as serif rows on hairlines;
+   the chosen stop's card on paper. Without JavaScript every card shows and
+   the one in the address is outlined; with it ([data-js]) only the chosen
+   one shows.
+   -------------------------------------------------------------------------- */
+.paged-guide {
+  --color-focus: var(--color-focus-night);
+  --focus-ring: 3px solid var(--color-focus-night);
+  container: guide / inline-size;
+  margin: var(--space-5) 0 var(--space-6);
+  padding: clamp(28px, 5vw, 72px) clamp(18px, 4vw, 56px);
+  background: #2a312f;
+  color: #f7f2e8;
+}
+.paged-guide-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: clamp(32px, 6cqi, 80px);
+  align-items: start;
+}
+.paged-guide-figure {
+  margin: 0;
+}
+.paged-guide-sheet {
+  position: relative;
+  width: min(100%, 560px);
+  background: #fff;
+  box-shadow:
+    22px 22px 0 #1c201e,
+    28px 28px 38px rgba(0, 0, 0, 0.27);
+}
+.paged-guide-sheet img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.paged-guide-frame {
+  position: absolute;
+  border: 1px solid var(--color-accent);
+  pointer-events: none;
+}
+.paged-guide-frame::before,
+.paged-guide-frame::after {
+  content: '';
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--color-accent);
+  background: #fff;
+}
+.paged-guide-frame::before {
+  top: -5px;
+  left: -5px;
+}
+.paged-guide-frame::after {
+  bottom: -5px;
+  right: -5px;
+}
+/* A hotspot is a pin: a red disc with its letter, on a stem, over the point
+   it marks (the dot), so the disc never covers what it points at. */
+.paged-guide-hotspot {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin: -62px 0 0 -17px;
+  border: 1px solid #fff;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: var(--weight-sans-strong);
+  text-decoration: none;
+  box-shadow: 0 0 0 5px rgba(181, 31, 25, 0.2);
+  transition:
+    background-color var(--dur-micro) var(--ease-flow),
+    box-shadow var(--dur-micro) var(--ease-flow);
+}
+.paged-guide-hotspot::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 1px;
+  height: 28px;
+  background: var(--color-accent);
+}
+.paged-guide-hotspot::before {
+  content: '';
+  position: absolute;
+  top: calc(100% + 28px);
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 0 2px #fff;
+}
+.paged-guide-hotspot:hover,
+.paged-guide-hotspot[aria-current] {
+  background: #20292b;
+  color: #fff;
+  box-shadow: 0 0 0 7px rgba(181, 31, 25, 0.3);
+}
+.paged-guide-hotspot:is(:hover, [aria-current])::after,
+.paged-guide-hotspot:is(:hover, [aria-current])::before {
+  background: #20292b;
+}
+.paged-guide-caption {
+  display: grid;
+  gap: 10px;
+  max-width: 560px;
+  margin-top: 48px;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #c9cec8;
+}
+.paged-guide-caption .paged-kicker {
+  color: #c9b7aa;
+}
+.paged-guide-caption b {
+  font-weight: var(--weight-sans-strong);
+  color: #f7f2e8;
+}
+.paged-guide-caption a {
+  color: #f0bdb1;
+  text-underline-offset: 0.2em;
+}
+.paged-guide-caption code,
+.paged-guide-answer code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  color: inherit;
+  background: none;
+  padding: 0;
+  border: 0;
+}
+.paged-guide-control > .paged-kicker {
+  margin: 0;
+  color: #f0bdb1;
+}
+.paged-guide-list {
+  margin: 22px 0 40px;
+  padding: 0;
+  list-style: none;
+}
+.paged-guide-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 40px;
+  border-bottom: 1px solid #6c7770;
+}
+.paged-guide-stop {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px;
+  padding: 18px 6px;
+  color: #eaeee8;
+  font-family: var(--font-display-serif);
+  font-size: clamp(20px, 2cqi + 8px, 24px);
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  transition:
+    background-color var(--dur-micro) var(--ease-flow),
+    padding var(--dur-micro) var(--ease-flow),
+    color var(--dur-micro) var(--ease-flow);
+}
+.paged-guide-stop b {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: var(--weight-label);
+  color: #d2a9a0;
+}
+.paged-guide-stop i {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: var(--weight-sans-strong);
+}
+.paged-guide-stop:hover,
+.paged-guide-stop[aria-current] {
+  background: #e9e6db;
+  color: #202320;
+  padding-left: 15px;
+}
+.paged-guide-stop:hover b,
+.paged-guide-stop[aria-current] b {
+  color: #9e2420;
+}
+.paged-guide-entry {
+  display: grid;
+  place-items: center;
+  color: #eaeee8;
+}
+.paged-guide-entry:hover {
+  color: #f0bdb1;
+}
+.paged-guide-ne {
+  width: 13px;
+  height: 13px;
+}
+.paged-guide-answers {
+  display: grid;
+  gap: 18px;
+}
+.paged-guide-answer {
+  background: #f0eee7;
+  color: #1c2220;
+  padding: clamp(22px, 3cqi, 32px);
+  scroll-margin-top: calc(var(--paged-masthead-height) + 24px);
+  /* paper inside night: the day focus blue */
+  --focus-ring: 3px solid #2d57d5;
+}
+.paged-guide-answer:target {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+}
+.paged-guide-answer .paged-kicker {
+  margin: 0;
+  color: #9e2420;
+  overflow-wrap: anywhere;
+}
+.paged-guide-answer h3 {
+  margin: 16px 0 14px;
+  font-family: var(--font-display-serif);
+  font-size: clamp(36px, 4cqi + 14px, 57px);
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+  font-weight: var(--weight-display);
+  color: #1c2220;
+}
+.paged-guide-text {
+  margin: 0;
+  font-family: var(--font-text-serif);
+  font-size: 17px;
+  line-height: 1.5;
+  color: #1c2220;
+}
+.paged-guide-attrs {
+  margin: 16px 0 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.7;
+  color: #8b2c25;
+  overflow-wrap: anywhere;
+}
+.paged-guide-attrs code {
+  color: #8b2c25;
+}
+.paged-guide-holds {
+  margin: 6px 0 0;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #4a4f4c;
+  overflow-wrap: anywhere;
+}
+.paged-guide-holds code {
+  color: #1c2220;
+}
+.paged-guide-read {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 4px 0;
+  border-bottom: 1px solid currentColor;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: var(--weight-sans-strong);
+  color: #1c2220;
+  text-decoration: none;
+}
+.paged-guide-read:hover {
+  color: #9e2420;
+}
+/* Enhanced: one card at a time, the chosen one. */
+.paged-guide[data-js] .paged-guide-answer:not([data-active]) {
+  display: none;
+}
+.paged-guide[data-js] .paged-guide-answer:target {
+  outline: 0;
+}
+@container guide (max-width: 760px) {
+  .paged-guide-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .paged-guide-sheet {
+    width: calc(100% - 22px);
+  }
+}

@@ -598,3 +598,50 @@ export interface Facts {
 export function getFacts(): Facts {
   return load<Facts>('facts.json', { generatedAt: null, count: 0, facts: {} });
 }
+
+// ── field guide (scripts/generate/gen-field-guide.mjs) ────────────────────────
+
+export type FieldGuideKey = 'package' | 'spread' | 'frame' | 'story' | 'style';
+export interface FieldGuideEntry {
+  key: FieldGuideKey;
+  title: string;
+  /** The IDML element this stop is, with its reference entry. */
+  element: string;
+  /** The package part it lives in. */
+  part: string;
+  /** Its attribute names, as the example's XML spells them. */
+  attributes: string[];
+  /** The elements it holds (`Properties/…` for typed properties). */
+  children: string[];
+  text: string;
+}
+export interface FieldGuideHotspot {
+  key: FieldGuideKey;
+  label: string;
+  /** Percent of the page's width and height. */
+  x: number;
+  y: number;
+  /** Where on the object it sits, in words. */
+  at: string;
+}
+export interface FieldGuide {
+  schema: string;
+  example: {
+    id: string;
+    title: string;
+    commit: string | null;
+    commitDate: string | null;
+    indesignVersion: string;
+    verifiedAt: string;
+    raster: { src: string | null; src3x: string | null; width: number; height: number };
+  };
+  page: { width: number; height: number };
+  /** The text frame's bounds, in percent of the page. */
+  frame: { x: number; y: number; w: number; h: number };
+  hotspots: FieldGuideHotspot[];
+  entries: FieldGuideEntry[];
+}
+
+export function getFieldGuide(): FieldGuide | null {
+  return load<FieldGuide | null>('field-guide.json', null);
+}
