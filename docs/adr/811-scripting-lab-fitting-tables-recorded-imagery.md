@@ -57,7 +57,7 @@
    is replaced by a note. `<LiveDemo>` takes the same form: the lab panel, a recorded frame
    (`public/demos/<id>.webp`) or the same honest empty stage, and the same note.
 5. **No table is wider than its column.** In `#nd-page`, words and code in a cell wrap at their
-   spaces, and a cell holding a run of 14 characters or more without one breaks it anywhere
+   spaces, and a cell holding a run of 12 characters or more without one breaks it anywhere
    (`rehypeTableMeta` marks it). Short words and names are never split: breaking every token
    anywhere lets the browser squeeze a column of short names to a letter a line. Markdown
    tables are wrapped by `<ProseTable>`; generated catalogs (scripting, path reference,

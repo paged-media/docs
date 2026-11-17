@@ -285,7 +285,7 @@ body::before {
    No table is wider than its column (tests/browsers/tables.spec.ts walks every
    page at 1440 and 390). Words and code in a cell wrap at their spaces; in a
    cell that holds a long word or name (`.paged-cell-break`, which
-   rehypeTableMeta gives a cell with a run of 14 characters or more), it breaks
+   rehypeTableMeta gives a cell with a run of 12 characters or more), it breaks
    anywhere. Short words and names are never split: breaking every token
    anywhere would let the table squeeze a column of short names down to a
    letter a line. A table that still cannot fit, because

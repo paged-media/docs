@@ -1,14 +1,15 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { expect, test, type Frame, type Page } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { collectErrors } from './common';
 
 /**
  * The scripting lab (components/mdx/scripting-lab*.tsx) against a stand-in
  * editor: every play.paged.media address is answered with editor-stub.html,
- * which speaks both of the lab's protocols and records what it is asked. CI
- * needs no editor and no WebGPU; `navigator.gpu` is stood in for, or taken away.
+ * which speaks both of the lab's protocols and reports what it is asked to the
+ * page (`stub:calls`). CI needs no editor and no WebGPU; `navigator.gpu` is
+ * stood in for, or taken away.
  */
 const PLAY = 'https://play.paged.media';
 const STUB = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'editor-stub.html'), 'utf8');
@@ -32,15 +33,18 @@ async function standIn(page: Page, { gpu = true } = {}): Promise<string[]> {
   );
   await page.addInitScript((on: boolean) => {
     Object.defineProperty(Navigator.prototype, 'gpu', { configurable: true, get: () => (on ? {} : undefined) });
+    addEventListener('message', (e) => {
+      if (e.data?.type === 'stub:calls') (window as unknown as { stubCalls: unknown[][] }).stubCalls = e.data.calls;
+    });
   }, gpu);
   return requests;
 }
 
-async function editorFrame(page: Page): Promise<Frame> {
-  await expect.poll(() => page.frames().some((f) => f.url().startsWith(PLAY)), { timeout: 15_000 }).toBe(true);
-  return page.frames().find((f) => f.url().startsWith(PLAY))!;
+/** What the stand-in editor has been asked, as it last reported (after its latest boot). */
+async function callsOf(page: Page): Promise<unknown[][]> {
+  await expect.poll(() => page.evaluate(() => !!(window as unknown as { stubCalls?: unknown }).stubCalls), { timeout: 15_000 }).toBe(true);
+  return page.evaluate(() => (window as unknown as { stubCalls: unknown[][] }).stubCalls);
 }
-const callsOf = (frame: Frame) => frame.evaluate(() => (window as unknown as { calls: unknown[][] }).calls);
 
 const lab = (page: Page) => page.locator('.paged-script-lab').first();
 const tabs = (page: Page) => page.getByRole('tablist', { name: 'Path themes' }).getByRole('tab');
@@ -105,8 +109,7 @@ test.describe('scripting lab', () => {
       const log = consoleOf(lab(page));
       await expect(log).toContainText('stub ran: const [el] = JSON.parse(paged.selection());');
       expect(requests[0]).toBe(mode === 'connect' ? `${PLAY}/embed.html` : `${PLAY}/?embed=script&seed=one-text-frame-selected`);
-      const frame = await editorFrame(page);
-      const ran = await callsOf(frame);
+      const ran = await callsOf(page);
       if (mode === 'connect') {
         expect(ran[0]).toEqual(['init', expect.objectContaining({ profile: 'viewer', role: 'editor', seed: 'one-text-frame-selected' })]);
         expect(ran.map((c) => c[0])).toEqual(['init', 'newDocument', 'runScript', 'runScript', 'fitSelection']);
@@ -121,7 +124,7 @@ test.describe('scripting lab', () => {
       await expect(log).toContainText('stub ran: const story = JSON.parse(paged.stories())[0].selfId;');
       await expect(page.locator('.paged-stage-frame iframe')).toHaveCount(1);
       if (mode === 'connect') {
-        const later = await callsOf(await editorFrame(page));
+        const later = await callsOf(page);
         expect(later.slice(-4).map((c) => c[0])).toEqual(['newDocument', 'runScript', 'runScript', 'fitSelection']);
       }
     });
@@ -133,8 +136,7 @@ test.describe('scripting lab', () => {
     const panel = lab(page);
     await panel.getByRole('button', { name: 'Run', exact: true }).click();
     await expect(consoleOf(panel)).toContainText('stub ran:');
-    const frame = await editorFrame(page);
-    const before = (await callsOf(frame)).length;
+    const before = (await callsOf(page)).length;
 
     const after = panel.getByRole('button', { name: 'After' });
     const beforeButton = panel.getByRole('button', { name: 'Before' });
@@ -142,7 +144,7 @@ test.describe('scripting lab', () => {
     await beforeButton.click();
     await expect(beforeButton).toHaveAttribute('aria-pressed', 'true');
     await expect(consoleOf(panel)).toContainText('The stage shows the starter document');
-    let ran = (await callsOf(frame)).slice(before);
+    let ran = (await callsOf(page)).slice(before);
     expect(ran.map((c) => c[0])).toEqual(['newDocument', 'runScript', 'fitSelection']);
 
     await after.click();
@@ -155,11 +157,11 @@ test.describe('scripting lab', () => {
     await page.keyboard.press('ControlOrMeta+a');
     await page.keyboard.insertText('//edited_by_the_test');
     await expect(lines).toContainText('//edited_by_the_test');
-    const count = (await callsOf(frame)).length;
+    const count = (await callsOf(page)).length;
     await panel.getByRole('button', { name: 'Reset' }).click();
     await expect(beforeButton).toHaveAttribute('aria-pressed', 'true');
     await expect(lines).not.toContainText('//edited_by_the_test');
-    ran = (await callsOf(frame)).slice(count);
+    ran = (await callsOf(page)).slice(count);
     expect(ran.map((c) => c[0])).toEqual(['newDocument', 'runScript', 'fitSelection']);
     expect(String(ran[1][1])).toContain('insertTextFrame'); // the seed's prelude, not the theme's script
   });
@@ -195,7 +197,7 @@ test.describe('scripting lab', () => {
     await expect
       .poll(async () => Math.abs(((await page.locator('.paged-stage-frame').boundingBox())?.y ?? 0) - (slot?.y ?? -1)))
       .toBeLessThan(2);
-    const ran = await callsOf(await editorFrame(page));
+    const ran = await callsOf(page);
     expect(ran.filter((c) => c[0] === 'init')).toHaveLength(1);
   });
 

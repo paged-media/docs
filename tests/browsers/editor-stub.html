@@ -14,8 +14,11 @@
       // (tests/browsers/lab.spec.ts serves it for every play.paged.media
       // address). It answers both protocols the scripting lab speaks, the
       // embedding API of embed.html and the legacy `?embed=script` page, as the
-      // editor would, and keeps every call in `window.calls` for the test.
-      const calls = (window.calls = []);
+      // editor would, and reports every call to the page (`stub:calls`), which
+      // the test reads there: a cross-origin frame is not open to every browser's
+      // automation.
+      const calls = [];
+      const report = () => parent.postMessage({ type: 'stub:calls', calls: JSON.parse(JSON.stringify(calls)) }, '*');
       const state = document.getElementById('state');
       const params = new URLSearchParams(location.search);
       // One console line per script, naming its first line of code.
@@ -26,10 +29,12 @@
       if (params.get('embed') === 'script') {
         // legacy: paged:ready once "seeded", then paged:run → paged:result
         calls.push(['boot', params.get('seed')]);
+        report();
         addEventListener('message', (e) => {
           const d = e.data;
           if (!d || d.type !== 'paged:run') return;
           calls.push(['run', d.source, d.reseed]);
+          report();
           state.textContent = 'ran ' + calls.length;
           e.source.postMessage({ type: 'paged:result', id: d.id, ...ran(String(d.source || '')) }, e.origin);
         });
@@ -43,10 +48,12 @@
           if (d.type === 'paged:init') {
             host = e.origin;
             calls.push(['init', d.config]);
+            report();
             state.textContent = 'ready';
             setTimeout(() => parent.postMessage({ type: 'paged:ready' }, host), 30);
           } else if (d.type === 'paged:call') {
             calls.push([d.method, ...(d.args || [])]);
+            report();
             state.textContent = d.method;
             const value = d.method === 'runScript' ? ran(String((d.args || [])[0] || '')) : undefined;
             parent.postMessage({ type: 'paged:reply', id: d.id, ok: true, value }, host);
