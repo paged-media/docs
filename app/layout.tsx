@@ -1,13 +1,7 @@
 import './global.css';
 import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
-import {
-  Newsreader,
-  Source_Serif_4,
-  IBM_Plex_Sans,
-  IBM_Plex_Mono,
-  Cormorant_Garamond,
-} from 'next/font/google';
+import localFont from 'next/font/local';
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import { RecordStrip } from '@/components/record-strip';
 import PagedSearchDialog from '@/components/search-dialog';
@@ -15,49 +9,28 @@ import { Analytics, GoogleAnalytics } from '@/components/analytics';
 import { site } from '@/lib/site';
 import { OG_IMAGE } from '@/lib/metadata';
 
-// The brand four-role type system, self-hosted by next/font (no CDN @import):
-// Newsreader (display serif) · Source Serif 4 (reading serif) · IBM Plex Sans
-// (UI) · IBM Plex Mono (code) · Cormorant Garamond (the `paged.` wordmark).
-// Each exposes a CSS variable that app/brand.css points the --font-* tokens at.
-const newsreader = Newsreader({
-  subsets: ['latin'],
-  style: ['normal', 'italic'],
+// The brand's two faces, self-hosted from app/fonts/ (README there: source,
+// version, licence). Each exposes a CSS variable that app/brand.css puts first
+// in its font roles; the mono is the brand's system stack. No font is fetched
+// from a CDN at build or run time.
+const newsreader = localFont({
+  src: [
+    { path: './fonts/newsreader-latin-opsz-wght-normal.woff2', style: 'normal', weight: '200 800' },
+    { path: './fonts/newsreader-latin-opsz-wght-italic.woff2', style: 'italic', weight: '200 800' },
+  ],
   display: 'swap',
   variable: '--font-newsreader',
+  fallback: ['Georgia', 'Times New Roman', 'serif'],
 });
-const sourceSerif = Source_Serif_4({
-  subsets: ['latin'],
-  style: ['normal', 'italic'],
+const dmSans = localFont({
+  src: [
+    { path: './fonts/dm-sans-latin-opsz-wght-normal.woff2', style: 'normal', weight: '100 1000' },
+    { path: './fonts/dm-sans-latin-opsz-wght-italic.woff2', style: 'italic', weight: '100 1000' },
+  ],
   display: 'swap',
-  variable: '--font-source-serif',
+  variable: '--font-dm-sans',
+  fallback: ['Arial', 'Helvetica', 'sans-serif'],
 });
-const plexSans = IBM_Plex_Sans({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  display: 'swap',
-  variable: '--font-ibm-plex-sans',
-});
-const plexMono = IBM_Plex_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  style: ['normal', 'italic'],
-  display: 'swap',
-  variable: '--font-ibm-plex-mono',
-});
-const cormorant = Cormorant_Garamond({
-  subsets: ['latin'],
-  weight: ['500', '600', '700'],
-  display: 'swap',
-  variable: '--font-cormorant',
-});
-
-const fontVars = [
-  newsreader.variable,
-  sourceSerif.variable,
-  plexSans.variable,
-  plexMono.variable,
-  cormorant.variable,
-].join(' ');
 
 export const metadata: Metadata = {
   title: {
@@ -84,19 +57,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={fontVars} suppressHydrationWarning>
+    <html lang="en" className={`${newsreader.variable} ${dmSans.variable}`} suppressHydrationWarning>
       <body className="flex min-h-screen flex-col">
-        {/* Both sites: the engine release, the capability record's date (marked
-            "not current" past its age) and the way to the status page. */}
-        <RecordStrip />
-        {/* The reader's system setting picks paper or night paper (the `.dark`
-            tokens in app/global.css); the theme switch overrides it. */}
+        {/* The reader's system setting picks paper or night (the `.dark` tokens
+            in app/global.css); the theme switch overrides it. */}
         <RootProvider
           theme={{ defaultTheme: 'system', enableSystem: true }}
           // Our dialog (components/search-dialog.tsx): one row per page, kind
           // labels and filters, exact title matches first; static index.
           search={{ SearchDialog: PagedSearchDialog }}
         >
+          {/* The record strip: the engine release, the capability record's
+              date (marked "not current" past its age) and the status page. */}
+          <RecordStrip />
           {children}
         </RootProvider>
         <Analytics />

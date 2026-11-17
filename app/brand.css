@@ -1,109 +1,116 @@
 /* =============================================================================
-   PAGED — Design System Foundations
-   A typographic publishing reference system.
-   "The invisible architecture of reading, made visible."
+   PAGED — Design System Foundations: The Next Edition
+   Vendored from brand acea435 (docs/colors_and_type.css): its :root, the
+   global typography settings, the type classes and the motif utilities.
 
-   This file encodes the Paged Documentation Styleguide. It exposes the
-   styleguide's canonical tokens (--color-*, --font-*-serif, weights, measures,
-   --rule-thin/medium…) AND back-compat aliases (--signal, --paper-N, --ink-N)
-   used by the website/viewer UI kits, repointed to the same values.
-
-   NOTE: Fonts load from Google Fonts CDN below. For production, self-host into
-   /fonts and swap @import for @font-face. (Flagged to user.)
+   This file is a copy. Change the brand file and copy it here again;
+   `pnpm check:tokens` (scripts/check-tokens.mjs) fails on a token that is
+   missing, differs, is extra or is declared twice. The one allowed difference:
+   the serif and sans roles name the next/font variable first
+   (app/layout.tsx: --font-newsreader, --font-dm-sans), then the brand's stack.
+   The brand's Google Fonts @import is left out: the fonts are self-hosted
+   (app/fonts/). The mono is the system stack.
    ========================================================================== */
-
-/* Fonts are self-hosted via next/font (app/layout.tsx), which exposes each
-   family as a CSS variable (--font-newsreader, --font-source-serif,
-   --font-ibm-plex-sans, --font-ibm-plex-mono, --font-cormorant). The brand
-   four-role tokens below point at those — no CDN @import ships. */
 
 :root {
   /* ---------------------------------------------------------------------------
-     TYPE — families (4-role system)
+     TYPE — families. One serif for display and reading, one sans, system mono.
      --------------------------------------------------------------------------- */
-  --font-text-serif:    var(--font-source-serif), "Source Serif 4", Georgia, serif;        /* long-form reading */
-  --font-display-serif: var(--font-newsreader), "Newsreader", Georgia, serif;              /* hero / titles / specimens */
-  --font-sans:          var(--font-ibm-plex-sans), "Helvetica Neue", Arial, sans-serif;    /* UI, labels, captions, decks */
-  --font-mono:          var(--font-ibm-plex-mono), "SFMono-Regular", ui-monospace, Consolas, monospace; /* XML, paths */
+  --font-text-serif:    var(--font-newsreader), "Newsreader", Georgia, "Times New Roman", serif;   /* essays, leads, decks */
+  --font-display-serif: var(--font-newsreader), "Newsreader", Georgia, "Times New Roman", serif;   /* headlines, titles */
+  --font-sans:          var(--font-dm-sans), "DM Sans", Arial, Helvetica, sans-serif;          /* UI, nav, buttons, captions, body */
+  --font-mono:          ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; /* kickers, XML, paths, measures */
   --font-serif:         var(--font-display-serif);  /* back-compat alias */
-  --font-logo:          var(--font-cormorant), "Cormorant Garamond", Georgia, serif;  /* the paged. wordmark */
+  --font-logo:          var(--font-display-serif);  /* the "Paged." wordmark */
 
-  /* TYPE — weights (intentional, restrained). IBM Plex Sans caps at 700. */
+  /* TYPE — weights. Display is set light; italics lighter still. */
   --weight-text: 400;
-  --weight-text-strong: 620;
-  --weight-display-light: 360;
-  --weight-display: 520;
-  --weight-display-strong: 680;
-  --weight-display-heavy: 760;
+  --weight-text-strong: 600;
+  --weight-display-light: 300;
+  --weight-display: 400;
+  --weight-display-strong: 500;
+  --weight-display-heavy: 600;
   --weight-sans: 400;
-  --weight-sans-medium: 520;
-  --weight-sans-strong: 640;
+  --weight-sans-medium: 500;
+  --weight-sans-strong: 700;
   --weight-label: 700;
-  --weight-mono: 450;
+  --weight-mono: 400;
 
   /* ---------------------------------------------------------------------------
-     COLOR — canonical styleguide tokens (archival, editorial, paper-based)
+     COLOR — paper and ink
      --------------------------------------------------------------------------- */
-  --color-paper:        #f6f0e6;  /* main page background */
-  --color-paper-soft:   #fbf7ef;  /* panels, code blocks, specimen sheets, callouts */
-  --color-ink:          #151412;  /* primary text */
-  --color-ink-soft:     #3e3a35;  /* secondary text */
-  --color-muted:        #6c665d;  /* metadata, captions, notes (5.0:1 on paper; was #7c756b, 4.0:1) */
-  --color-rule:         #d6ccbd;  /* thin borders & dividers */
-  --color-rule-strong:  #a99d8c;  /* stronger editorial rules */
-  --color-accent:       #8f1d1f;  /* oxblood — kickers, labels, issue marks, proof marks */
-  --color-accent-press: #74181a;  /* hover / pressed accent */
-  --color-accent-soft:  #efe0dc;  /* faint accent tint fill */
+  --color-paper:        #f3f0e8;  /* the page */
+  --color-paper-soft:   #f8f5eb;  /* panels, code blocks, specimen sheets */
+  --color-ink:          #171815;  /* primary text, strong rules */
+  --color-ink-soft:     #383a36;  /* body copy */
+  --color-muted:        #63645d;  /* captions, ribbon, meta: the lightest grey at 4.5:1 on every paper (study: #74756e, 4.1:1) */
+  --color-rule:         #bebbb2;  /* hairlines */
+  --color-rule-strong:  #a8a59b;  /* stronger hairlines; section rules use ink */
 
-  /* Link and interaction: blueprint (7.3:1 on paper). Links, focus, interactive
-     controls, diagram relationships. Oxblood stays the editorial accent:
-     kickers, issue marks, proof marks, the active state of a section. */
-  --color-link:         #2c507d;
-  --color-link-press:   #25446a;
-  --color-link-soft:    #e7ecf3;
-  --focus-ring:         2px solid var(--color-link);
+  /* The accent: one red. Kickers, the full stop, the italic second line of a
+     headline, primary buttons, links, the reading progress, statement bands. */
+  --color-accent:       #b51f19;
+  --color-accent-press: #870e0b;
+  --color-accent-soft:  #f0ddd8;
+  --color-on-accent:    #ffffff;  /* text on a red fill */
+  --color-link:         var(--color-accent);
+  --color-link-press:   var(--color-accent-press);
+  --color-link-soft:    var(--color-accent-soft);
+
+  /* Focus is blue, everywhere, so it is never mistaken for the accent. */
+  --color-focus:        #2d57d5;
+  --color-focus-night:  #8eaaf5;
+  --focus-ring:         3px solid var(--color-focus);
   --focus-offset:       3px;
 
-  /* MATERIAL STATES (three, by function):
-     1 editorial paper — the tokens above; no texture behind text.
-     2 physical stock  — only real document objects (pages, spreads, covers).
-     3 digital instrument — real product captures, code, the machine. */
-  --stock-face:         #fffdf8;  /* a printed sheet, lighter than the page it lies on */
-  --stock-edge:         #e4dccd;  /* page-stack edges */
-  --stock-shadow:       0 1px 0 rgba(21,20,18,0.06), 0 10px 24px -12px rgba(21,20,18,0.28);  /* contact shadow */
-  --color-instrument:        #1a1917;  /* the machine is dark */
-  --color-instrument-soft:   #24221f;
-  --color-instrument-rule:   #3a3732;
-  --color-instrument-ink:    #ece6da;  /* 14.1:1 */
-  --color-instrument-muted:  #b9b1a3;  /*  8.3:1 */
-  --color-instrument-link:   #9db6e0;  /*  8.5:1 */
+  /* MATERIALS
+     1 paper — the reading surface, with a fine grain (--paper-grain).
+     2 stock — printed objects: pages, spreads, covers. They rise off the paper
+       on a stack shadow and may tilt a few degrees.
+     3 night — the machine, code, the editor, the dossier: dark sections. */
+  --stock-face:         #fffdf6;
+  --stock-edge:         #d1c8b6;
+  --stock-shadow:       0 20px 35px rgba(0, 0, 0, 0.14);
+  --stock-stack:        20px 25px 0 var(--stock-edge), 22px 45px 50px rgba(0, 0, 0, 0.25);
+  --paper-grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.12'/%3E%3C/svg%3E");
+  --paper-grain-opacity: 0.08;
 
-  /* COLOR — back-compat palette aliases (used by website/viewer kits) */
-  --paper-0: var(--color-paper-soft);  /* lightest / panels */
-  --paper-1: var(--color-paper);       /* main page bg */
-  --paper-2: #efe7d7;                   /* hover fill */
-  --paper-3: #e6dcc8;                   /* active fill */
-  --ink-0: #100f0d;                     /* darkest */
-  --ink-1: var(--color-ink);            /* primary text */
-  --ink-2: var(--color-ink-soft);       /* secondary */
-  --ink-3: var(--color-muted);          /* tertiary / captions */
-  --ink-4: var(--color-rule-strong);    /* faint / placeholder */
+  --color-instrument:        #191d1c;  /* night */
+  --color-instrument-soft:   #29302e;  /* night, raised */
+  --color-slate:             #222a2c;  /* the blue-grey night of labs and the dossier */
+  --color-instrument-rule:   #505d57;
+  --color-instrument-ink:    #e9eae3;
+  --color-instrument-muted:  #9ca49d;
+  --color-instrument-link:   var(--color-accent-night);
+  --color-accent-night:      #e68c7d;  /* the accent on night (#b51f19 is 2.6:1 there) */
+
+  /* COLOR — back-compat palette aliases */
+  --paper-0: var(--color-paper-soft);
+  --paper-1: var(--color-paper);
+  --paper-2: #eae6db;                   /* tinted sections, hover */
+  --paper-3: #e6e0d5;                   /* bridges, active */
+  --ink-0: #0f100e;
+  --ink-1: var(--color-ink);
+  --ink-2: var(--color-ink-soft);
+  --ink-3: var(--color-muted);
+  --ink-4: var(--color-rule-strong);
   --rule: var(--color-rule);
-  --rule-strong: var(--color-rule-strong);  /* (COLOR alias — see border shorthands below) */
+  --rule-strong: var(--color-rule-strong);
 
-  /* Accent state aliases (the kits call the accent "signal") */
   --signal:       var(--color-accent);
   --signal-press: var(--color-accent-press);
   --signal-soft:  var(--color-accent-soft);
-  --signal-ink:   var(--color-paper-soft);
+  --signal-ink:   var(--color-on-accent);
   --accent:       var(--color-accent);
   --link:         var(--color-link);
+  --night:        var(--color-instrument);
+  --night-2:      var(--color-instrument-soft);
 
-  /* Status colors (render OK, missing font, parse error). Blueprint is also the link color. */
-  --blueprint:      var(--color-link);
-  --blueprint-soft: #e7ecf3;
-  --valid:      #3c6e4e;       --valid-soft: #e3ede5;   /* render success */
-  --warn:       #895e19;       --warn-soft:  #f1e7d4;   /* missing font / proof note (5.0:1 on paper) */
+  /* Status (render OK, missing font, parse error) */
+  --blueprint:      var(--color-focus);
+  --blueprint-soft: #e3e9f8;
+  --valid:      #3c6e4e;       --valid-soft: #e3ede5;
+  --warn:       #85590f;       --warn-soft:  #f1e7d4;
   --error:      var(--color-accent);
 
   /* Semantic aliases */
@@ -115,7 +122,7 @@
   --border:    var(--color-rule);
 
   /* ---------------------------------------------------------------------------
-     RHYTHM — 8px baseline; styleguide spacing scale
+     RHYTHM AND LAYOUT
      --------------------------------------------------------------------------- */
   --baseline: 8px;
   --space-1: 4px;
@@ -128,55 +135,55 @@
   --space-8: 96px;
   --space-9: 128px;
 
-  /* LAYOUT */
-  --container: 1440px;
-  --gutter: 24px;
+  --container: 1640px;
+  --pad: clamp(20px, 3.2vw, 56px);       /* page side padding */
+  --gutter: 36px;
+  --section-space: clamp(78px, 8.3vw, 150px);
   --reading-measure: 66ch;
   --narrow-measure: 54ch;
   --wide-measure: 76ch;
 
-  /* RULES — borders replace shadows.
-     NB: styleguide names the 2px ink border "--rule-strong"; that name is taken
-     here by the COLOR alias, so the 2px ink border is exposed as --rule-heavy. */
+  /* RULES. The 2px ink rule opens a major section. */
   --rule-thin:   1px solid var(--color-rule);
-  --rule-medium: 1px solid var(--color-rule-strong);
+  --rule-medium: 1px solid var(--color-ink);
   --rule-heavy:  2px solid var(--color-ink);
 
-  /* ICONS — limited size scale (line SVG, currentColor, 1.6 stroke) */
   --icon-xs: 14px; --icon-sm: 16px; --icon-md: 20px; --icon-lg: 24px; --icon-xl: 32px; --icon-display: 48px;
 
-  /* RADII — print-crisp; chrome stays sharp. (Docs favors square corners.) */
-  --radius-xs: 2px; --radius-sm: 4px; --radius-md: 6px; --radius-lg: 10px; --radius-full: 999px;
+  /* RADII — chrome is square. */
+  --radius-xs: 0px; --radius-sm: 2px; --radius-md: 4px; --radius-lg: 8px; --radius-full: 999px;
 
-  /* SHADOWS — paper does not float. Prefer rules. Reserve shadow-3 for overlays. */
-  --shadow-1: 0 1px 2px rgba(21, 20, 18, 0.05);
-  --shadow-2: 0 2px 6px rgba(21, 20, 18, 0.07), 0 1px 2px rgba(21, 20, 18, 0.05);
-  --shadow-3: 0 8px 28px rgba(21, 20, 18, 0.12), 0 2px 6px rgba(21, 20, 18, 0.06);
+  /* SHADOWS — menus and dialogs float; stock has its own shadows above. */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.25);
+  --shadow-3: 0 24px 45px rgba(0, 0, 0, 0.12);
+  --shadow-dialog: 0 30px 100px rgba(0, 0, 0, 0.4);
 
-  /* MOTION — restrained, meaningful. No bounce on chrome. */
-  --ease-out: cubic-bezier(0.2, 0.6, 0.2, 1);
+  /* MOTION — one curve. Paper settles; nothing bounces; no loops. */
+  --ease-flow: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out: var(--ease-flow);
   --ease-in-out: cubic-bezier(0.5, 0, 0.2, 1);
-  --dur-fast: 120ms; --dur-base: 200ms; --dur-slow: 320ms;
-  /* Editorial motion (starting values; tune against real devices):
-     paper settles, type presses. Gestures follow the pointer; these only
-     finish what the reader started. No continuous loops, no scroll hijack. */
-  --ease-paper: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-paper: var(--ease-flow);
   --ease-press: cubic-bezier(0.16, 1, 0.3, 1);
-  --dur-micro: 180ms;   /* underline, hover, press */
-  --dur-reveal: 380ms;  /* a section or annotation appearing */
-  --dur-spatial: 640ms; /* a page turning, a layer lifting */
+  --dur-fast: 120ms; --dur-base: 200ms; --dur-slow: 320ms;
+  --dur-micro: 200ms;    /* hover, underline, the arrow gap */
+  --dur-reveal: 650ms;   /* a section rising into view */
+  --dur-fade: 850ms;     /* a statement band fading in */
+  --dur-spatial: 700ms;  /* a page turning */
 
-  /* tracking helpers */
-  --tracking-tight: -0.02em; --tracking-wide: 0.14em;
+  --tracking-display: -0.072em;
+  --tracking-title: -0.048em;
+  --tracking-tight: -0.025em;
+  --tracking-wide: 0.13em;
 
-  /* CODE — restrained, editorial XML syntax tokens (never neon IDE) */
+  /* CODE */
   --code-text:        var(--color-ink);
   --code-muted:       var(--color-muted);
   --code-tag:         #1f3f5b;
   --code-attr:        #7a3e12;
   --code-string:      #3e5637;
-  --code-comment:     #6d665d;
-  --code-punctuation: #5f5a53;
+  --code-comment:     #5f6059;
+  --code-punctuation: #55574f;
 }
 
 /* =============================================================================
@@ -188,98 +195,107 @@ html {
   -webkit-font-smoothing: antialiased;
   font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
 }
+::selection { background: var(--color-accent); color: var(--color-on-accent); }
 
 /* =============================================================================
-   TYPE SCALE — styleguide classes
+   TYPE SCALE — the study's classes
    ========================================================================== */
 .hero-title {
   font-family: var(--font-display-serif);
-  font-size: clamp(64px, 13vw, 180px);
-  line-height: 0.84;
-  letter-spacing: -0.055em;
-  font-weight: var(--weight-display-strong);
+  font-size: clamp(70px, 7.1vw, 125px);
+  line-height: 0.85;
+  letter-spacing: -0.076em;
+  font-weight: var(--weight-display);
   color: var(--color-ink);
 }
 .docs-title, h1, .paged-h1 {
   font-family: var(--font-display-serif);
-  font-size: clamp(42px, 6vw, 92px);
-  line-height: 0.94;
-  letter-spacing: -0.045em;
-  font-weight: var(--weight-display-strong);
+  font-size: clamp(64px, 8vw, 145px);
+  line-height: 0.85;
+  letter-spacing: var(--tracking-display);
+  font-weight: var(--weight-display);
   color: var(--color-ink);
 }
 .concept-title {
   font-family: var(--font-display-serif);
-  font-size: clamp(48px, 8vw, 120px);
-  line-height: 0.88;
-  letter-spacing: -0.055em;
+  font-size: clamp(80px, 10vw, 190px);
+  line-height: 0.83;
+  letter-spacing: -0.075em;
   font-weight: var(--weight-display);
   color: var(--color-ink);
 }
+/* The second line of a headline: italic, light, in the accent. */
+.hero-title em, .docs-title em, h1 em, .concept-title em, .section-title em, h2 em {
+  font-style: italic;
+  font-weight: var(--weight-display-light);
+  color: var(--color-accent);
+}
 .section-title, h2, .paged-h2 {
   font-family: var(--font-display-serif);
-  font-size: clamp(30px, 4vw, 56px);
-  line-height: 0.98;
-  letter-spacing: -0.035em;
-  font-weight: var(--weight-display-strong);
+  font-size: clamp(44px, 6vw, 100px);
+  line-height: 0.97;
+  letter-spacing: -0.065em;
+  font-weight: var(--weight-display);
   color: var(--color-ink);
 }
 .card-title, h3, .paged-h3 {
-  font-family: var(--font-text-serif);
-  font-size: clamp(22px, 2.4vw, 34px);
-  line-height: 1.06;
-  letter-spacing: -0.022em;
-  font-weight: 650;
+  font-family: var(--font-display-serif);
+  font-size: clamp(30px, 3.3vw, 53px);
+  line-height: 1.01;
+  letter-spacing: var(--tracking-title);
+  font-weight: var(--weight-display);
   color: var(--color-ink);
 }
 h4, .paged-h4 {
-  font-family: var(--font-sans);
-  font-weight: var(--weight-sans-strong);
-  font-size: 19px; line-height: 1.3; color: var(--color-ink);
+  font-family: var(--font-display-serif);
+  font-weight: var(--weight-display-strong);
+  font-size: clamp(19px, 1.7vw, 28px); line-height: 1.05; letter-spacing: -0.03em; color: var(--color-ink);
 }
 
 .article-body, .paged-prose-serif {
   font-family: var(--font-text-serif);
-  font-size: clamp(18px, 1.3vw, 20px);
-  line-height: 1.6;
-  letter-spacing: -0.004em;
+  font-size: clamp(19px, 1.65vw, 24px);
+  line-height: 1.48;
   color: var(--color-ink);
   max-width: var(--reading-measure);
   text-wrap: pretty;
 }
 .article-body p { margin: 0; }
-.article-body p + p { margin-top: 1.15em; }
+.article-body p + p { margin-top: 1.1em; }
 
-.article-deck {
-  font-family: var(--font-sans);
-  font-size: clamp(18px, 2vw, 24px);
-  line-height: 1.42;
-  letter-spacing: -0.015em;
-  font-weight: var(--weight-sans);
-  color: var(--color-ink-soft);
+/* The lead: the serif sentence under a headline. */
+.article-deck, .paged-lead {
+  font-family: var(--font-text-serif);
+  font-size: clamp(20px, 2vw, 30px);
+  line-height: 1.28;
+  letter-spacing: var(--tracking-tight);
+  font-weight: var(--weight-text);
+  color: var(--color-ink);
 }
 
-p, .paged-body { font-family: var(--font-sans); font-size: 16px; line-height: 1.55; color: var(--color-ink-soft); }
-.paged-small  { font-family: var(--font-sans); font-size: 14px; line-height: 1.45; color: var(--color-ink-soft); }
+p, .paged-body { font-family: var(--font-sans); font-size: 15px; line-height: 1.8; color: var(--color-ink-soft); }
+.paged-small  { font-family: var(--font-sans); font-size: 13px; line-height: 1.6; color: var(--color-ink-soft); }
 
+/* The kicker: a red mono path, e.g. PAGED / THE EDITORIAL LIBRARY / 2026 */
 .section-label, .paged-kicker {
-  font-family: var(--font-sans);
-  font-size: 11px;
-  line-height: 1;
-  letter-spacing: 0.14em;
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.5;
+  letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
   font-weight: var(--weight-label);
-  color: var(--color-muted);
+  color: var(--color-accent);
 }
 .meta {
   font-family: var(--font-sans);
-  font-size: 13px; line-height: 1.4;
+  font-size: 11px; line-height: 1.4; letter-spacing: 0.11em; text-transform: uppercase;
   font-weight: var(--weight-sans-medium);
   color: var(--color-muted);
 }
 .type-meta, .paged-measure {
   font-family: var(--font-mono);
-  font-size: 11px; line-height: 1.4; letter-spacing: 0.01em;
+  font-size: 11px; line-height: 1.4; letter-spacing: 0.02em;
   font-weight: var(--weight-mono);
   color: var(--color-muted);
   font-variant-numeric: tabular-nums;
@@ -293,15 +309,25 @@ code, .paged-mono {
 a, .paged-link {
   color: inherit;
   text-decoration-thickness: 1px;
-  text-underline-offset: 0.14em;
+  text-underline-offset: 0.16em;
 }
-a:hover, .paged-link:hover { color: var(--color-link); }
+a:hover, .paged-link:hover { color: var(--color-accent); }
 :focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; scroll-behavior: auto !important; }
+}
 
 /* =============================================================================
    BRAND / PUBLISHING MOTIF UTILITIES
    ========================================================================== */
 .paged-rule { border: 0; border-top: var(--rule-thin); height: 0; }
+
+/* Paper grain, laid over a whole surface; it never takes pointer events. */
+.paged-grain { position: relative; }
+.paged-grain::before {
+  content: ""; position: fixed; inset: 0; z-index: 40; pointer-events: none;
+  opacity: var(--paper-grain-opacity); background-image: var(--paper-grain);
+}
 
 /* Crop-mark corners — frame a block like a print bleed */
 .paged-cropmarks { position: relative; }
@@ -312,20 +338,21 @@ a:hover, .paged-link:hover { color: var(--color-link); }
 /* Baseline grid specimen overlay (8px) */
 .baseline-specimen {
   background-color: var(--color-paper-soft);
-  background-image: linear-gradient(to bottom, rgba(21,20,18,0.08) 1px, transparent 1px);
+  background-image: linear-gradient(to bottom, rgba(23, 24, 21, 0.08) 1px, transparent 1px);
   background-size: 100% 8px;
 }
 
 /* =============================================================================
-   LOGO — the "paged." wordmark
+   LOGO — the "Paged." wordmark: Newsreader 600, tight, a red full stop
    ========================================================================== */
 .paged-wordmark {
   font-family: var(--font-logo);
-  font-weight: 700;
-  letter-spacing: -0.005em;
+  font-weight: var(--weight-display-heavy);
+  letter-spacing: -0.07em;
   line-height: 1;
   color: var(--color-ink);
   display: inline-flex;
   align-items: baseline;
   white-space: nowrap;
 }
+.paged-wordmark b, .paged-wordmark .paged-wordmark__dot { color: var(--color-accent); font-weight: inherit; }

@@ -50,6 +50,8 @@ jobs:
         run: pnpm check:record-age
       - name: no hand-typed platform numbers (use <Fact>)
         run: pnpm check:facts
+      - name: app/brand.css matches the brand tokens (skips without a brand checkout)
+        run: pnpm check:tokens
       - name: comparison scores rest on verified capabilities; competitor research is recent
         if: env.DOCS_SOURCES_STRICT == 'true'
         run: pnpm check:comparison

@@ -2,21 +2,21 @@ import type { ThemeRegistration } from 'shiki';
 
 /**
  * Editorial XML syntax theme — the brand's restrained, paper-based code
- * palette (colors_and_type.css §CODE), never a neon IDE. `pagedEditorialDark`
- * is the same palette lifted for the night-paper theme (global.css `.dark`
- * --code-* tokens).
+ * palette (app/brand.css --code-*, vendored from the brand), never a neon IDE.
+ * `pagedEditorialDark` is the same palette lifted for night (global.css
+ * `.dark` --code-* tokens), which the example lab also uses on its slate.
  * Token colors: tag #1f3f5b · attribute #7a3e12 · string #3e5637 ·
- * comment #8a8176 · punctuation #5f5a53 · text/ink #151412.
+ * comment #5f6059 · punctuation #55574f · text/ink #171815 on #f8f5eb.
  */
 export const pagedEditorial: ThemeRegistration = {
   name: 'paged-editorial',
   type: 'light',
   colors: {
-    'editor.foreground': '#151412',
-    'editor.background': '#fbf7ef',
+    'editor.foreground': '#171815',
+    'editor.background': '#f8f5eb',
   },
   settings: [
-    { scope: ['comment', 'punctuation.definition.comment'], settings: { foreground: '#8a8176', fontStyle: 'italic' } },
+    { scope: ['comment', 'punctuation.definition.comment'], settings: { foreground: '#5f6059', fontStyle: 'italic' } },
     {
       scope: [
         'entity.name.tag',
@@ -60,19 +60,19 @@ export const pagedEditorial: ThemeRegistration = {
         'punctuation.definition.string',
         'meta.tag.preprocessor.xml',
       ],
-      settings: { foreground: '#5f5a53' },
+      settings: { foreground: '#55574f' },
     },
   ],
 };
 
 const DARK: Record<string, string> = {
-  '#151412': '#ece5d8', // ink
-  '#fbf7ef': '#1e1b18', // panel
-  '#8a8176': '#8f8679', // comment
+  '#171815': '#e9eae3', // ink → night ink
+  '#f8f5eb': '#29302e', // panel → night, raised
+  '#5f6059': '#9ca49d', // comment → night muted
   '#1f3f5b': '#93b6db', // tag
   '#7a3e12': '#e2a676', // attribute
   '#3e5637': '#a9c79a', // string
-  '#5f5a53': '#aaa298', // punctuation
+  '#55574f': '#b4bab3', // punctuation
 };
 
 /** The editorial palette on night paper: every light colour mapped to its dark twin. */

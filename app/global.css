@@ -38,9 +38,7 @@
   --color-fd-accent-foreground: var(--color-ink);
   --color-fd-ring: var(--color-link);
 
-  /* Fumadocs / Tailwind font tokens → brand four-role families. */
-  --font-sans: var(--font-ibm-plex-sans), "Helvetica Neue", Arial, sans-serif;
-  --font-mono: var(--font-ibm-plex-mono), "SFMono-Regular", ui-monospace, Consolas, monospace;
+  /* Fumadocs / Tailwind font tokens: --font-sans and --font-mono are the brand's (app/brand.css). */
 }
 
 /* =============================================================================
