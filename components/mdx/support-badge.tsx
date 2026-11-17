@@ -58,10 +58,17 @@ function Chip({ label, color }: { label: string; color: string }) {
         letterSpacing: '0.07em',
         textTransform: 'uppercase',
         color,
-        whiteSpace: 'nowrap',
+        // In a narrow table cell the label wraps between its parts
+        // ("Shipped", "· verified"), never inside one.
+        flexWrap: 'wrap',
       }}
     >
-      {label}
+      {label.split(' · ').map((part, i) => (
+        <span key={i} style={{ whiteSpace: 'nowrap' }}>
+          {i ? '\u00a0·\u00a0' : ''}
+          {part}
+        </span>
+      ))}
     </span>
   );
 }

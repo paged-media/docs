@@ -58,6 +58,22 @@ const tdMono: CSSProperties = {
   letterSpacing: '-0.01em',
 };
 
+/**
+ * The table's box (app/global.css, "No table is wider than its column"). Four
+ * columns are too many for a phone: the table scrolls in a labelled region
+ * there. Three fit with fixed widths, a long name or value breaking anywhere.
+ */
+function Frame({ columns, label, children }: { columns: number; label: string; children: React.ReactNode }) {
+  return columns >= 4 ? (
+    <div className="paged-table-scroll" role="region" aria-label={`${label} (table)`} tabIndex={0}>
+      {children}
+    </div>
+  ) : (
+    <div className="paged-table-wrap">{children}</div>
+  );
+}
+const breakAnywhere: CSSProperties = { overflowWrap: 'anywhere' };
+
 export function AttrTable({
   element,
   rows,
@@ -78,30 +94,32 @@ export function AttrTable({
   }
   const list = rows ?? [];
   return (
-    <figure className="not-prose" style={{ margin: 'var(--space-5) 0', overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-sans)' }}>
-        <thead>
-          <tr>
-            <th style={th}>
-              Attribute
-              {element ? <span style={{ color: 'var(--color-muted)', fontWeight: 400 }}> · {element}</span> : null}
-            </th>
-            <th style={th}>Type / values</th>
-            <th style={th}>Support</th>
-            <th style={th}>Notes</th>
-          </tr>
-        </thead>
-        <tbody>
-          {list.map((r) => (
-            <tr key={r.attr}>
-              <td style={{ ...tdMono, color: 'var(--code-tag)' }}>{r.attr}</td>
-              <td style={{ ...tdMono, color: 'var(--color-ink-soft)' }}>{r.type}</td>
-              <td style={td}>{r.support ? <SupportBadge status={r.support} compact /> : '—'}</td>
-              <td style={td}>{r.note ?? ''}</td>
+    <figure className="not-prose" style={{ margin: 'var(--space-5) 0' }}>
+      <Frame columns={4} label={element ? `Attributes of ${element}` : 'Attributes'}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-sans)' }}>
+          <thead>
+            <tr>
+              <th style={th}>
+                Attribute
+                {element ? <span style={{ color: 'var(--color-muted)', fontWeight: 400 }}> · {element}</span> : null}
+              </th>
+              <th style={th}>Type / values</th>
+              <th style={th}>Support</th>
+              <th style={th}>Notes</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {list.map((r) => (
+              <tr key={r.attr}>
+                <td style={{ ...tdMono, color: 'var(--code-tag)' }}>{r.attr}</td>
+                <td style={{ ...tdMono, color: 'var(--color-ink-soft)' }}>{r.type}</td>
+                <td style={td}>{r.support ? <SupportBadge status={r.support} compact /> : '—'}</td>
+                <td style={td}>{r.note ?? ''}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Frame>
     </figure>
   );
 }
@@ -137,47 +155,57 @@ function ReferenceAttrTable({
   const neutral = SITE_ID === 'idml';
   const showPaged = !neutral && shown.some((a) => a.paged);
   const docs = getRefElement(element)?.docCount ?? 0;
+  const columns = 2 + (showPaged ? 1 : 0) + 1;
   return (
-    <figure className="not-prose" style={{ margin: 'var(--space-5) 0', overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-sans)' }}>
-        <thead>
-          <tr>
-            <th style={th}>
-              Attribute<span style={{ color: 'var(--color-muted)', fontWeight: 400 }}> · {element}</span>
-            </th>
-            <th style={th}>Values</th>
-            {showPaged ? <th style={th}>Paged</th> : null}
-            {neutral ? <th style={th}>Seen in</th> : <th style={th}>paged.set</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {shown.map((a) => (
-            <tr key={a.name}>
-              <td style={{ ...tdMono, color: 'var(--code-tag)' }}>
-                {a.name}
-                {a.kind === 'properties-child' ? <div style={{ color: 'var(--color-muted)', fontSize: 11 }}>in Properties</div> : null}
-              </td>
-              <td style={{ ...tdMono, color: 'var(--color-ink-soft)' }}>{valuesOf(a)}</td>
-              {showPaged ? (
-                <td style={td}>
-                  {a.paged ? [a.paged.imported && 'read', a.paged.exported && 'written'].filter(Boolean).join(' · ') || 'not read' : '—'}
-                </td>
-              ) : null}
-              {neutral ? (
-                <td style={{ ...td, fontVariantNumeric: 'tabular-nums' }}>{docs ? `${Math.round((a.docCount / docs) * 100)}%` : '—'}</td>
-              ) : (
-                <td style={td}>
-                  {a.typed?.path ? (
-                    <Link href="/docs/paged/scripting/settable-paths" style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
-                      {a.typed.path}
-                    </Link>
-                  ) : null}
-                </td>
-              )}
+    <figure className="not-prose" style={{ margin: 'var(--space-5) 0' }}>
+      <Frame columns={columns} label={`Attributes of ${element}`}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-sans)', ...(columns < 4 ? { tableLayout: 'fixed' } : {}) }}>
+          {columns < 4 ? (
+            <colgroup>
+              <col style={{ width: '36%' }} />
+              <col />
+              <col style={{ width: neutral ? '16%' : '30%' }} />
+            </colgroup>
+          ) : null}
+          <thead>
+            <tr>
+              <th style={th}>
+                Attribute<span style={{ color: 'var(--color-muted)', fontWeight: 400 }}> · {element}</span>
+              </th>
+              <th style={th}>Values</th>
+              {showPaged ? <th style={th}>Paged</th> : null}
+              {neutral ? <th style={th}>Seen in</th> : <th style={th}>paged.set</th>}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {shown.map((a) => (
+              <tr key={a.name}>
+                <td style={{ ...tdMono, ...breakAnywhere, color: 'var(--code-tag)' }}>
+                  {a.name}
+                  {a.kind === 'properties-child' ? <div style={{ color: 'var(--color-muted)', fontSize: 11 }}>in Properties</div> : null}
+                </td>
+                <td style={{ ...tdMono, ...breakAnywhere, color: 'var(--color-ink-soft)' }}>{valuesOf(a)}</td>
+                {showPaged ? (
+                  <td style={td}>
+                    {a.paged ? [a.paged.imported && 'read', a.paged.exported && 'written'].filter(Boolean).join(' · ') || 'not read' : '—'}
+                  </td>
+                ) : null}
+                {neutral ? (
+                  <td style={{ ...td, fontVariantNumeric: 'tabular-nums' }}>{docs ? `${Math.round((a.docCount / docs) * 100)}%` : '—'}</td>
+                ) : (
+                  <td style={{ ...td, ...breakAnywhere }}>
+                    {a.typed?.path ? (
+                      <Link href="/docs/paged/scripting/settable-paths" style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                        {a.typed.path}
+                      </Link>
+                    ) : null}
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Frame>
       <figcaption style={{ fontSize: 12.5, color: 'var(--color-muted)', marginTop: 6 }}>
         {attrs ? 'Selected attributes.' : `The ${shown.length} attributes real documents use most.`}
         {neutral ? ` Seen in: the share of documents with a ${element} that set it.` : ''}{' '}
@@ -205,37 +233,39 @@ function GeneratedAttrTable({ element }: { element: string }) {
     );
   }
   return (
-    <figure className="not-prose" style={{ margin: 'var(--space-5) 0', overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-sans)' }}>
-        <thead>
-          <tr>
-            <th style={th}>
-              Attribute<span style={{ color: 'var(--color-muted)', fontWeight: 400 }}> · {el.name}</span>
-            </th>
-            <th style={th}>Type / values</th>
-            <th style={th}>Script it</th>
-            <th style={th}>Notes</th>
-          </tr>
-        </thead>
-        <tbody>
-          {el.attributes.map((a) => (
-            <tr key={a.name}>
-              <td style={{ ...tdMono, color: 'var(--code-tag)' }}>{a.name}</td>
-              <td style={{ ...tdMono, color: 'var(--color-ink-soft)' }}>{a.typeHint}</td>
-              <td style={td}>
-                {a.settablePath ? (
-                  <Link href="/docs/paged/scripting/settable-paths" style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
-                    {a.settablePath}
-                  </Link>
-                ) : (
-                  <span style={{ color: 'var(--color-muted)' }}>read-only</span>
-                )}
-              </td>
-              <td style={td}>{a.summary}</td>
+    <figure className="not-prose" style={{ margin: 'var(--space-5) 0' }}>
+      <Frame columns={4} label={`Attributes of ${el.name}`}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-sans)' }}>
+          <thead>
+            <tr>
+              <th style={th}>
+                Attribute<span style={{ color: 'var(--color-muted)', fontWeight: 400 }}> · {el.name}</span>
+              </th>
+              <th style={th}>Type / values</th>
+              <th style={th}>Script it</th>
+              <th style={th}>Notes</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {el.attributes.map((a) => (
+              <tr key={a.name}>
+                <td style={{ ...tdMono, color: 'var(--code-tag)' }}>{a.name}</td>
+                <td style={{ ...tdMono, color: 'var(--color-ink-soft)' }}>{a.typeHint}</td>
+                <td style={td}>
+                  {a.settablePath ? (
+                    <Link href="/docs/paged/scripting/settable-paths" style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                      {a.settablePath}
+                    </Link>
+                  ) : (
+                    <span style={{ color: 'var(--color-muted)' }}>read-only</span>
+                  )}
+                </td>
+                <td style={td}>{a.summary}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Frame>
     </figure>
   );
 }

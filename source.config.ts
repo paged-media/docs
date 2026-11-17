@@ -223,6 +223,8 @@ function rehypeGlossaryAnchors() {
  * reader, the heading it sits under (or its column names), as `data-cols` and
  * `data-label`. The MDX `table` (components/mdx/prose-table.tsx) uses them to
  * put a table with too many columns for a phone in a labelled scroll region.
+ * A cell holding a run of 14 characters or more without a space is marked
+ * `paged-cell-break`.
  */
 function rehypeTableMeta() {
   return (tree: HastNode) => {
@@ -246,6 +248,12 @@ function rehypeTableMeta() {
             dataCols: String(cells.length),
             dataLabel: heading || names.join(', '),
           };
+          // A cell holding a long word or name (14 characters or more without a
+          // space) may break it anywhere (app/global.css); a cell of short
+          // words keeps them whole, so its column is never squeezed.
+          walk(node, (n) => {
+            if (n.type === 'element' && (n.tagName === 'td' || n.tagName === 'th') && /\S{14,}/.test(textOf(n))) addClass(n, 'paged-cell-break');
+          });
           continue;
         }
         visit(node);

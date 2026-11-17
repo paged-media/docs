@@ -558,7 +558,7 @@ function PagedSupport({ el, book }: { el: RefElement; book: IdmlReference }) {
       {n ? (
         <>
           <h3 id="paged-attributes">By attribute</h3>
-          <div className={s.wrap} role="region" aria-label={`Paged support for ${el.name}, by attribute (table)`} tabIndex={0}>
+          <div className={s.wrap} role="region" aria-label={`${el.name} attributes as Paged reads, edits and writes them (table)`} tabIndex={0}>
             <table className={`${s.table} ${s.stack}`}>
               <thead>
                 <tr>

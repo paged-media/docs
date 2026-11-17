@@ -283,21 +283,28 @@ body::before {
 
 /* -----------------------------------------------------------------------------
    No table is wider than its column (tests/browsers/tables.spec.ts walks every
-   page at 1440 and 390). A cell's words and code break where they must, so a
-   table's narrowest width is a few characters a column; a table that still
-   cannot fit, because it has too many columns for a phone, sits in a labelled,
-   focusable scroll region (`.paged-table-scroll`, role="region"), which is the
-   only place a table may scroll sideways. Prose tables take their wrapper from
+   page at 1440 and 390). Words and code in a cell wrap at their spaces; in a
+   cell that holds a long word or name (`.paged-cell-break`, which
+   rehypeTableMeta gives a cell with a run of 14 characters or more), it breaks
+   anywhere. Short words and names are never split: breaking every token
+   anywhere would let the table squeeze a column of short names down to a
+   letter a line. A table that still cannot fit, because
+   it has too many columns for a phone, sits in a labelled, focusable scroll
+   region (`.paged-table-scroll`, role="region"), which is the only place a
+   table may scroll sideways. Prose tables take their wrapper from
    components/mdx/prose-table.tsx; generated tables from their component.
    -------------------------------------------------------------------------- */
-#nd-page table {
+/* No specificity of their own (`:where`), so a component's table rules win. */
+:where(#nd-page) table {
   max-width: 100%;
 }
-#nd-page :where(td, th) {
-  overflow-wrap: anywhere;
+:where(#nd-page) :where(td, th) {
+  overflow-wrap: break-word;
 }
-#nd-page :where(td, th) :where(code) {
+:where(#nd-page) :where(td, th) :where(code) {
   white-space: normal;
+}
+:where(#nd-page) .paged-cell-break {
   overflow-wrap: anywhere;
 }
 .paged-table-wrap {

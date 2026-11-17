@@ -108,6 +108,19 @@
 .colExample {
   width: 26%;
 }
+/* The plugin vocabularies (plugin-capabilities.tsx). */
+.colName {
+  width: 22%;
+}
+.colShape {
+  width: 22%;
+}
+.colValues {
+  width: 24%;
+}
+.colRequired {
+  width: 13%;
+}
 
 /* A signature wraps between its parameters (each `, ` is a break), never
    inside the function's name unless the name alone is wider than the cell. */

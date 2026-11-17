@@ -217,6 +217,11 @@
 .entry .table td:first-child {
   padding-left: 0;
 }
+/* An attribute's name may be long (ParagraphShadingBottomRightCornerOption):
+   it breaks anywhere rather than widen the table past its column. */
+.entry .table td:first-child {
+  overflow-wrap: anywhere;
+}
 .entry .table tbody tr:target td {
   background: var(--color-accent-soft);
 }

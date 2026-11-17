@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react';
 
 /** Columns at which a prose table is too wide for a phone and scrolls in its own region. */
-export const WIDE_TABLE_COLUMNS = 5;
+export const WIDE_TABLE_COLUMNS = 4;
 
 /**
  * The MDX `table`: Markdown tables, wrapped so they never grow past the

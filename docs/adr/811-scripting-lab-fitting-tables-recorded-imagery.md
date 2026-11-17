@@ -7,7 +7,8 @@
 - **Scope:** `components/mdx/scripting-lab.tsx`, `scripting-lab-client.tsx`,
   `scripting-lab-stage.ts`, `lib/editor-embed.ts`, `components/mdx/live-demo*.tsx`,
   `components/mdx/scripting-catalog*.tsx` (+ module CSS), `path-reference-view.tsx`,
-  `sdk-catalog*.tsx`, `components/mdx/prose-table.tsx`, `source.config.ts` (`rehypeTableMeta`),
+  `sdk-catalog*.tsx`, `plugin-capabilities.tsx`, `attr-table.tsx`, `support-badge.tsx`,
+  `components/mdx/prose-table.tsx`, `source.config.ts` (`rehypeTableMeta`),
   `components/mdx/editor-figure.tsx`, `data/editor-figures.ts`, `lib/webp-size.ts`,
   `app/opengraph-image.png/`, `app/global.css`, `app/edition.css`,
   `scripts/capture-inspector.mjs`, `tests/browsers/{tables,lab}.spec.ts`.
@@ -55,12 +56,16 @@
    film stills) or, until one is recorded, says on paper what Run will do. Without WebGPU, Run
    is replaced by a note. `<LiveDemo>` takes the same form: the lab panel, a recorded frame
    (`public/demos/<id>.webp`) or the same honest empty stage, and the same note.
-5. **No table is wider than its column.** In `#nd-page`, cells and the code in them break where
-   they must; Markdown tables are wrapped by `<ProseTable>`; generated catalogs (scripting,
-   path reference, viewer SDK) are ledgers with fixed column widths that stack under their
-   column names on a narrow column. A table with too many columns for a phone — five or more
-   in Markdown (`rehypeTableMeta` counts them), the capability and comparison matrices, the
-   fact ledger, the element reference's tables — sits in a labelled, focusable scroll region
+5. **No table is wider than its column.** In `#nd-page`, words and code in a cell wrap at their
+   spaces, and a cell holding a run of 14 characters or more without one breaks it anywhere
+   (`rehypeTableMeta` marks it). Short words and names are never split: breaking every token
+   anywhere lets the browser squeeze a column of short names to a letter a line. Markdown
+   tables are wrapped by `<ProseTable>`; generated catalogs (scripting, path reference,
+   viewer SDK, plugin vocabularies) are ledgers with fixed column widths that stack under
+   their column names on a narrow column; a support badge wraps between its parts. A table
+   with too many columns for a phone — four or more in Markdown (`rehypeTableMeta` counts
+   them) or in an attribute table, the capability and comparison matrices, the fact
+   ledger, the element reference's tables — sits in a labelled, focusable scroll region
    (`role="region"`, a name, `tabindex="0"`), the only place a table may scroll sideways.
    `tests/browsers/tables.spec.ts` walks every page of each sitemap at 1440 and 390.
 6. **Stills have a slot before they exist.** `<EditorFigure id>` and `<EditorFigures ids>` show
