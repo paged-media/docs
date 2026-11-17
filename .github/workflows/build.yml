@@ -87,6 +87,9 @@ jobs:
       fail-fast: false
       matrix:
         site: [idml, paged]
+        # One engine per job: the table sweep walks every idml page, and the
+        # three engines in one job ran past the step's time.
+        browser: [chromium, firefox, webkit]
     env:
       SITE: ${{ matrix.site }}
     steps:
@@ -102,16 +105,16 @@ jobs:
         with:
           name: out-${{ matrix.site }}
           path: out
-      - name: install the three browsers
-        run: pnpm exec playwright install chromium firefox webkit
+      - name: install ${{ matrix.browser }}
+        run: pnpm exec playwright install ${{ matrix.browser }}
         timeout-minutes: 10
-      - name: browser tests (${{ matrix.site }})
-        run: pnpm test:browsers
+      - name: browser tests (${{ matrix.site }}, ${{ matrix.browser }})
+        run: pnpm test:browsers --project=${{ matrix.browser }}
         timeout-minutes: 15
       - name: keep traces of failures
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: browser-traces-${{ matrix.site }}
+          name: browser-traces-${{ matrix.site }}-${{ matrix.browser }}
           path: test-results
           retention-days: 7
