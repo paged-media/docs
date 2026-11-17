@@ -1,40 +1,26 @@
 ---
 title: Path showcases
-description: Every settable path, grouped into ten themed playgrounds — fills, strokes, transforms, effects, corners, text, tables, anchoring, blend, and styles — each a runnable demo against a starter document.
+description: Every settable path in one lab of ten themes, from fills and strokes to text, tables and styles, each with a script you run on a starter document.
 tier: intermediate
 diataxis: how-to
+full: true
 status: draft
 owner: paged-docs
 reviewed: "2026-06-27"
 ---
 
-**In short:** `paged.set(id, path, value)` accepts **<Fact id="script.settablePaths" /> settable paths**. They are
-grouped below into ten themes; each theme is a **runnable playground** that writes a
-few of its paths so you can see them take effect. The full, filterable list lives in
-[Settable paths](/docs/paged/scripting/settable-paths).
+**In short:** `paged.set(id, path, value)` accepts **<Fact id="script.settablePaths" /> settable paths**. The
+lab below groups them into ten themes; each theme has a **script** that writes a few
+of its paths on a starter document, so you can see them take effect. The full,
+filterable list lives in [Settable paths](/docs/paged/scripting/settable-paths).
 
 <Callout type="note">
-Every showcase starts from a seeded document with a frame already selected, so the
-script can read the selection (`JSON.parse(paged.selection())`) and address it as
-`` `${kind}:${id}` ``. Edit any snippet and press **Run**.
+Pick a theme, edit its script and press **Run**. The first Run loads the Paged editor
+into the stage; after that, every theme you open runs at once. Each run starts from
+the theme's starter document, mostly a page with one frame already selected, so the
+script reads the selection (`JSON.parse(paged.selection())`) and addresses it as
+`` `${kind}:${id}` ``. **Reset** puts the starter document back, and **Before** and
+**After** switch between it and the result.
 </Callout>
 
-<PathShowcase theme="fills" />
-
-<PathShowcase theme="strokes" />
-
-<PathShowcase theme="transform" />
-
-<PathShowcase theme="corners-fitting" />
-
-<PathShowcase theme="effects" />
-
-<PathShowcase theme="blend-opacity" />
-
-<PathShowcase theme="text-paragraph" />
-
-<PathShowcase theme="tables-cells" />
-
-<PathShowcase theme="anchored-textwrap" />
-
-<PathShowcase theme="styles-layers" />
+<ScriptingLab themes="all" />

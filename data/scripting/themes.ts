@@ -3,7 +3,7 @@
  * `paged.set`). Each theme carries an ordered `match` predicate so every path
  * lands in exactly one theme (first match wins — order matters), plus a seeded
  * showcase script that steps through a few representative paths with a visible
- * result. <PathReference> uses the groupings; <PathShowcase> renders the script.
+ * result. <PathReference> uses the groupings; <ScriptingLab themes="all"> runs the scripts.
  *
  * `demoPaths` (the paths a showcase actually writes) are validated against the
  * catalog by `check:scripting`, exactly like the example corpus.

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Stand-in editor</title>
+    <style>
+      body { margin: 0; padding: 12px; background: #fff; color: #111; font: 14px system-ui, sans-serif; }
+    </style>
+  </head>
+  <body>
+    <p id="state">booting</p>
+    <script>
+      // A stand-in for play.paged.media in the docs' browser tests
+      // (tests/browsers/lab.spec.ts serves it for every play.paged.media
+      // address). It answers both protocols the scripting lab speaks, the
+      // embedding API of embed.html and the legacy `?embed=script` page, as the
+      // editor would, and keeps every call in `window.calls` for the test.
+      const calls = (window.calls = []);
+      const state = document.getElementById('state');
+      const params = new URLSearchParams(location.search);
+      // One console line per script, naming its first line of code.
+      const ran = (source) => {
+        const first = source.split('\n').find((l) => l.trim() && !l.trim().startsWith('//')) || '';
+        return { output: source ? ['stub ran: ' + first.trim()] : [], error: null };
+      };
+      if (params.get('embed') === 'script') {
+        // legacy: paged:ready once "seeded", then paged:run → paged:result
+        calls.push(['boot', params.get('seed')]);
+        addEventListener('message', (e) => {
+          const d = e.data;
+          if (!d || d.type !== 'paged:run') return;
+          calls.push(['run', d.source, d.reseed]);
+          state.textContent = 'ran ' + calls.length;
+          e.source.postMessage({ type: 'paged:result', id: d.id, ...ran(String(d.source || '')) }, e.origin);
+        });
+        setTimeout(() => parent.postMessage({ type: 'paged:ready' }, '*'), 30);
+      } else {
+        // embed.html: paged:loaded → paged:init → paged:ready, then paged:call → paged:reply
+        let host = null;
+        addEventListener('message', (e) => {
+          const d = e.data;
+          if (!d || typeof d.type !== 'string') return;
+          if (d.type === 'paged:init') {
+            host = e.origin;
+            calls.push(['init', d.config]);
+            state.textContent = 'ready';
+            setTimeout(() => parent.postMessage({ type: 'paged:ready' }, host), 30);
+          } else if (d.type === 'paged:call') {
+            calls.push([d.method, ...(d.args || [])]);
+            state.textContent = d.method;
+            const value = d.method === 'runScript' ? ran(String((d.args || [])[0] || '')) : undefined;
+            parent.postMessage({ type: 'paged:reply', id: d.id, ok: true, value }, host);
+          }
+        });
+        parent.postMessage({ type: 'paged:loaded' }, '*');
+      }
+    </script>
+  </body>
+</html>

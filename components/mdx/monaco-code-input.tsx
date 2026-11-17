@@ -5,7 +5,7 @@
  * loader.config({ monaco })) rather than CDN-loaded, so its web workers are
  * same-origin and load cleanly inside the cross-origin-isolated (COEP) docs page.
  *
- * Loaded client-only (next/dynamic ssr:false from <ScriptingPlayground>), so this
+ * Loaded client-only (next/dynamic ssr:false from <ScriptingLab> and <ScriptingPlayground>), so this
  * module — which imports monaco and touches `self` — never runs during the static
  * export's server render.
  */
@@ -46,13 +46,30 @@ if (typeof window !== 'undefined') {
   };
 }
 
-export function MonacoCodeInput({ value, onChange, height }: { value: string; onChange: (v: string) => void; height: number }) {
+export function MonacoCodeInput({
+  value,
+  onChange,
+  height,
+  night = false,
+  wrap = false,
+  label,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  height: number;
+  /** Night in either theme (the scripting lab's slate panel). */
+  night?: boolean;
+  /** Wrap long lines (a narrow column) instead of scrolling sideways. */
+  wrap?: boolean;
+  /** The editor's accessible name. */
+  label?: string;
+}) {
   const dark = useIsDark();
   return (
     <Editor
       height={height}
       defaultLanguage="javascript"
-      theme={dark ? 'vs-dark' : 'vs'}
+      theme={night || dark ? 'vs-dark' : 'vs'}
       value={value}
       onChange={(v) => onChange(v ?? '')}
       loading={<div style={{ padding: 12, fontFamily: 'var(--font-mono, monospace)', fontSize: 12.5, color: 'var(--color-muted)' }}>Loading editor…</div>}
@@ -62,13 +79,14 @@ export function MonacoCodeInput({ value, onChange, height }: { value: string; on
         lineNumbers: 'on',
         scrollBeyondLastLine: false,
         automaticLayout: true,
-        wordWrap: 'off',
+        wordWrap: wrap ? 'on' : 'off',
         tabSize: 2,
         padding: { top: 10, bottom: 10 },
         renderLineHighlight: 'line',
         fontFamily: 'var(--font-mono, ui-monospace, monospace)',
         scrollbar: { vertical: 'auto', horizontal: 'auto' },
         overviewRulerLanes: 0,
+        ...(label ? { ariaLabel: label } : {}),
       }}
     />
   );

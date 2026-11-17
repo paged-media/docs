@@ -9,16 +9,17 @@ reviewed: "2026-06-27"
 ---
 
 **In short:** in five short steps you'll read a document, change a frame, build
-one from scratch, and undo it — every step running in a real editor you can edit.
-By the end you'll know the three moves every script is made of: **read**,
-**address**, **write**.
+one from scratch, and undo it — every step running in a real editor. The first
+**Run** loads it, and every later step runs in the same one. By the end you'll know
+the three moves every script is made of: **read**, **address**, **write**.
 
 ## 1. Read the document
 
 Everything starts with a read. `paged.tree()` returns the document hierarchy —
 **as a JSON string**, so parse it first. Press **Run**:
 
-<ScriptingPlayground
+<ScriptingLab
+  id="first-script-read"
   seed="one-text-frame-selected"
   lookFor="The console prints one spread → one page → one text frame."
   script={`const tree = JSON.parse(paged.tree());
@@ -38,7 +39,8 @@ is `2`, not `0`.
 To change something you need its **id**. The frame in this document is already
 selected, so read the selection and turn it into an address — `kind:id`:
 
-<ScriptingPlayground
+<ScriptingLab
+  id="first-script-address"
   seed="one-text-frame-selected"
   lookFor="The console prints the selected frame's address, e.g. textFrame:u3."
   script={`const sel = JSON.parse(paged.selection());   // [{ kind, id }]
@@ -52,7 +54,8 @@ console.log('selected:', ref);`}
 Now address it and write. `paged.set(id, path, value)` takes a [settable
 path](/docs/paged/scripting/settable-paths) and re-renders immediately:
 
-<ScriptingPlayground
+<ScriptingLab
+  id="first-script-write"
   seed="one-text-frame-selected"
   lookFor="The frame fills red, gains a thick border, and rotates 12°."
   script={`const [el] = JSON.parse(paged.selection());
@@ -68,7 +71,8 @@ paged.set(ref, 'frameRotationAngle', 12);`}
 Reads and writes work on what's there — but you can also **create**. Get a page
 id from `paged.pages()`, make a frame (it returns its new id), and pour text in:
 
-<ScriptingPlayground
+<ScriptingLab
+  id="first-script-author"
   seed="blank"
   lookFor="A new text frame appears on the blank page with a sentence in it."
   script={`const pid = JSON.parse(paged.pages())[0].selfId;
@@ -84,7 +88,8 @@ paged.insertText(story, 0, 'Hello from a paged.* script!');`}
 Every write goes through the editor's Operation channel, so `paged.undo()` reverts
 it exactly as ⌘Z would:
 
-<ScriptingPlayground
+<ScriptingLab
+  id="first-script-undo"
   seed="one-text-frame-selected"
   lookFor="The frame fills red, then undo reverts it, then redo re-applies it."
   script={`const [el] = JSON.parse(paged.selection());

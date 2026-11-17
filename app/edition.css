@@ -873,3 +873,413 @@
     width: calc(100% - 22px);
   }
 }
+
+/* -----------------------------------------------------------------------------
+   The scripting lab (components/mdx/scripting-lab*.tsx): the example lab's
+   slate panel and numbered tabs, a theme's paths as mono chips, then the
+   workspace: the script on night beside the stage, "Look for" and the console
+   under the stage. The panel is night in either theme, so it takes the night
+   tokens; the stage is stock with night ink. Tokens only.
+   -------------------------------------------------------------------------- */
+.paged-script-lab {
+  container: scriptlab / inline-size;
+}
+.paged-script-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.25;
+  text-decoration: none;
+}
+.paged-script-tab-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: var(--weight-mono);
+  opacity: 0.75;
+}
+.paged-script-body {
+  padding-top: 22px;
+}
+.paged-script-lab:not([data-tabs]) .paged-script-body {
+  padding-top: 0;
+}
+.paged-script-head {
+  display: grid;
+  gap: 10px;
+  max-width: 780px;
+  margin-bottom: 20px;
+}
+.paged-script-title {
+  margin: 0;
+  font-family: var(--font-display-serif);
+  font-size: clamp(28px, 3.6cqi, 46px);
+  line-height: 1;
+  letter-spacing: -0.045em;
+  font-weight: var(--weight-display);
+  color: var(--color-instrument-ink);
+}
+.paged-script-lab:not([data-tabs]) .paged-script-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: var(--weight-label);
+}
+.paged-script-summary {
+  margin: 0;
+  font-family: var(--font-text-serif);
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--color-instrument-ink);
+}
+.paged-script-paths-label {
+  margin: 6px 0 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: var(--weight-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-instrument-muted);
+}
+.paged-script-paths-label span {
+  margin-left: 6px;
+  font-weight: var(--weight-mono);
+}
+.paged-script-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.paged-script-chip {
+  max-width: 100%;
+  padding: 2px 7px;
+  border: 1px solid var(--color-instrument-rule);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--color-instrument-ink);
+  overflow-wrap: anywhere;
+}
+.paged-script-chip[data-demo] {
+  border-color: var(--color-accent-night);
+  color: var(--color-accent-night);
+}
+.paged-script-more {
+  margin-top: 12px;
+}
+.paged-script-more summary {
+  width: fit-content;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  color: var(--color-instrument-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--color-instrument-rule);
+  text-underline-offset: 0.22em;
+}
+.paged-script-more summary:hover {
+  color: var(--color-accent-night);
+}
+.paged-script-more[open] summary {
+  margin-bottom: 10px;
+}
+
+.paged-script-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+.paged-script-workspace > .paged-lab-sheet {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin-top: 0;
+}
+.paged-script-editor {
+  min-height: 170px;
+  background: var(--color-instrument);
+}
+.paged-script-editor-loading {
+  padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-instrument-muted);
+}
+.paged-script-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--color-instrument-rule);
+}
+.paged-script-run,
+.paged-script-button {
+  appearance: none;
+  min-height: 40px;
+  padding: 10px 18px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: var(--weight-sans-strong);
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-micro) var(--ease-flow),
+    border-color var(--dur-micro) var(--ease-flow),
+    color var(--dur-micro) var(--ease-flow);
+}
+.paged-script-run {
+  border: 1px solid var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+.paged-script-run:hover:not(:disabled) {
+  border-color: var(--color-accent-press);
+  background: var(--color-accent-press);
+}
+.paged-script-button {
+  border: 1px solid var(--color-instrument-rule);
+  background: transparent;
+  color: var(--color-instrument-ink);
+}
+.paged-script-button:hover:not(:disabled) {
+  border-color: var(--color-instrument-ink);
+}
+.paged-script-run:disabled,
+.paged-script-button:disabled {
+  cursor: progress;
+  opacity: 0.72;
+}
+.paged-script-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  border-bottom: 1px solid currentColor;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: var(--weight-sans-strong);
+  color: var(--color-instrument-ink);
+  text-decoration: none;
+}
+.paged-script-open:hover {
+  color: var(--color-accent-night);
+}
+.paged-script-gpu {
+  flex: 1 1 220px;
+  margin: 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--color-accent-night);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-instrument-ink);
+}
+
+/* Before / After: two square buttons on a hairline. */
+.paged-script-toggle {
+  display: inline-flex;
+  border: 1px solid var(--color-instrument-rule);
+}
+.paged-script-toggle button {
+  appearance: none;
+  padding: 5px 10px;
+  border: 0;
+  background: transparent;
+  color: var(--color-instrument-ink);
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+.paged-script-toggle button + button {
+  border-left: 1px solid var(--color-instrument-rule);
+}
+.paged-script-toggle button[aria-pressed='true'] {
+  background: var(--color-instrument-ink);
+  color: var(--color-slate);
+}
+.paged-script-toggle button:disabled {
+  color: var(--color-instrument-muted);
+  cursor: not-allowed;
+}
+
+/* The stage: stock, night ink; the frame sits over it once the editor runs. */
+.paged-script-stage {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  min-height: 280px;
+  overflow: hidden;
+  background: var(--stock-face);
+  color: var(--color-instrument);
+}
+.paged-script-poster {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+}
+.paged-script-poster img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.paged-script-poster figcaption {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  padding: 2px 6px;
+  background: var(--stock-face);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-instrument);
+}
+.paged-script-empty {
+  position: absolute;
+  inset: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  padding: clamp(16px, 4cqi, 32px);
+  border: 1px dashed color-mix(in srgb, var(--color-instrument) 35%, var(--stock-face));
+}
+.paged-script-empty-kicker {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: var(--weight-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-instrument) 72%, var(--stock-face));
+}
+.paged-script-empty-text {
+  max-width: 34ch;
+  margin: 0;
+  font-family: var(--font-text-serif);
+  font-size: 17px;
+  line-height: 1.45;
+  color: var(--color-instrument);
+}
+.paged-script-stage-status {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  margin: 0;
+  padding: 8px 12px;
+  background: var(--color-instrument);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-instrument-ink);
+}
+/* The page's one editor frame, kept over the running lab's stage
+   (scripting-lab-stage.ts); under the masthead and every drawer. */
+.paged-stage-frame {
+  position: absolute;
+  z-index: 5;
+  overflow: hidden;
+  background: var(--stock-face);
+}
+.paged-stage-frame[hidden] {
+  display: none;
+}
+.paged-stage-frame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+/* REMOVE-LEGACY: the legacy page is the whole editor, drawn at half size. */
+.paged-stage-frame[data-mode='legacy'] iframe {
+  width: 200%;
+  height: 200%;
+  transform: scale(0.5);
+  transform-origin: 0 0;
+}
+
+.paged-script-look {
+  margin: 0;
+  padding: 12px 16px;
+  border-top: 1px solid var(--color-instrument-rule);
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--color-instrument-ink);
+}
+.paged-script-look b {
+  display: block;
+  margin-bottom: 2px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: var(--weight-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent-night);
+}
+.paged-script-console {
+  max-height: 220px;
+  overflow: auto;
+  padding: 12px 16px 14px;
+  border-top: 1px solid var(--color-instrument-rule);
+  background: var(--color-instrument);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--color-instrument-ink);
+}
+.paged-script-console-head {
+  margin: 0 0 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: var(--weight-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-instrument-muted);
+}
+.paged-script-console pre {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.paged-script-console .paged-script-error {
+  color: var(--color-accent-night);
+}
+.paged-script-quiet {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  color: var(--color-instrument-muted);
+}
+@container scriptlab (max-width: 720px) {
+  .paged-script-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* The tabs become one row that scrolls sideways inside the panel. */
+  .paged-script-bar .paged-script-tabs {
+    flex: 1 1 100%;
+    flex-wrap: nowrap;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+    padding-bottom: 6px;
+  }
+  .paged-script-bar .paged-script-tab {
+    flex: none;
+    scroll-snap-align: start;
+  }
+}

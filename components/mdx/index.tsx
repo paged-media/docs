@@ -23,7 +23,7 @@ import { SdkPlayground } from './sdk-playground';
 import { IdmlInspector } from './idml-inspector';
 import { ScriptingPlayground } from './scripting-playground';
 import { FunctionPlayground } from './function-playground';
-import { PathShowcase } from './path-showcase';
+import { ScriptingLab } from './scripting-lab';
 import { PathReference } from './path-reference';
 import { ApiReferenceIndex } from './api-reference-index';
 import { SurfaceReach } from './surface-reach';
@@ -80,7 +80,7 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     IdmlInspector,
     ScriptingPlayground,
     FunctionPlayground,
-    PathShowcase,
+    ScriptingLab,
     PathReference,
     ApiReferenceIndex,
     SurfaceReach,
