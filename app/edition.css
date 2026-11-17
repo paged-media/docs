@@ -1283,3 +1283,45 @@
     scroll-snap-align: start;
   }
 }
+
+/* -----------------------------------------------------------------------------
+   The live demo (components/mdx/live-demo*.tsx): the lab's slate panel around
+   one stage. The stage is stock until Run (the recorded frame, or what Run
+   does), then the playground's editor at the demo's height.
+   -------------------------------------------------------------------------- */
+.paged-demo {
+  margin: var(--space-5) 0;
+}
+.paged-demo-panel {
+  padding-top: clamp(14px, 2.2vw, 22px);
+}
+.paged-demo-sheet {
+  margin-top: 0;
+}
+.paged-demo-stage {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--stock-face);
+  color: var(--color-instrument);
+}
+.paged-demo-stage[data-live] {
+  aspect-ratio: auto;
+  max-height: 80vh;
+  background: var(--color-instrument);
+}
+.paged-demo-stage iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.paged-demo-note {
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--color-instrument-muted);
+}
+.paged-demo-caption {
+  margin: var(--space-2) 0 0;
+}
