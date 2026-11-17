@@ -218,3 +218,30 @@ export function searchIndex(site: 'paged' | 'idml', origin: string, kinds: strin
     expect(new Set(body.pages.map((p: { url: string }) => p.url)).size).toBe(body.pages.length);
   });
 }
+
+/**
+ * The faces (app/layout.tsx): the two romans and Newsreader's italic, which the
+ * front page's headline sets above the fold, are preloaded; DM Sans italic is
+ * not, and is a face of the same family as the roman, so an `em` in the sans
+ * gets the real italic. The headline's italic line is drawn with the italic face.
+ */
+export function fonts() {
+  test('fonts: what is preloaded, and the italics are real faces of their families', async ({ page }) => {
+    await page.goto('/');
+    const preloads = await page.locator('link[rel="preload"][as="font"]').evaluateAll((ls) => ls.map((l) => l.getAttribute('href') ?? ''));
+    expect(preloads.filter((h) => /newsreader.*_normal/.test(h))).toHaveLength(1);
+    expect(preloads.filter((h) => /newsreader.*_italic/.test(h))).toHaveLength(1);
+    expect(preloads.filter((h) => /dm_sans.*_normal/.test(h))).toHaveLength(1);
+    expect(preloads.filter((h) => /dm_sans.*_italic/.test(h))).toHaveLength(0);
+    const faces = await page.evaluate(async () => {
+      await document.fonts.ready;
+      const first = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).split(',')[0].replace(/["'\s]/g, '');
+      const all = [...document.fonts].map((f) => ({ family: f.family.replace(/["']/g, ''), style: f.style, status: f.status }));
+      return { serif: first('--font-newsreader'), sans: first('--font-dm-sans'), all };
+    });
+    expect(faces.all).toContainEqual(expect.objectContaining({ family: faces.sans, style: 'italic' }));
+    // The headline's red italic line is set, so its face has loaded.
+    await expect(page.locator('.paged-home-title em')).toBeVisible();
+    expect(faces.all).toContainEqual({ family: faces.serif, style: 'italic', status: 'loaded' });
+  });
+}

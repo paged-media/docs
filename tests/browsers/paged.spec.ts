@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { crossSiteSearch, firstSearchResult, masthead, openClean, phoneWidth, recordStrip, searchIndex, themes } from './common';
+import { crossSiteSearch, firstSearchResult, fonts, masthead, openClean, phoneWidth, recordStrip, searchIndex, themes } from './common';
 
 // docs.paged.media — run against `SITE=paged pnpm build` (playwright.config.ts).
 
@@ -91,4 +91,5 @@ test('example lab: the views are tabs, and Live is the engine\'s own render', as
 masthead('Docs');
 searchIndex('paged', 'https://docs.paged.media', ['Guide', 'API', 'Plugin', 'Engine', 'Project']);
 phoneWidth(['/', '/scripting/your-first-script/', '/state/', '/sdk/', '/engine/the-renderer/the-pipeline/', '/engine/test-corpus/the-docs-examples-loop/']);
+fonts();
 themes();

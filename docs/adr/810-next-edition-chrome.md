@@ -75,8 +75,12 @@ format, larger than a list of pages needs to be.
 4. **Two faces, self-hosted.** Newsreader (opsz and wght, roman and italic) and DM Sans
    (opsz and wght, roman and italic), Latin subset, committed as woff2 under `app/fonts/`
    from `@fontsource-variable/*` 5.3.0, loaded with `next/font/local`; the README there
-   names the files, the versions and the OFL. Source Serif 4, IBM Plex and Cormorant
-   Garamond are retired; the mono is the system stack. No font is fetched at build time.
+   names the files, the versions and the OFL. The two romans and Newsreader's italic, which
+   the front pages' headlines set above the fold, are preloaded; DM Sans italic is declared
+   by a second `localFont` call into the roman's family with `preload: false`, so it loads
+   the first time running text needs it and is never synthesised. Source Serif 4, IBM Plex
+   and Cormorant Garamond are retired; the mono is the system stack. No font is fetched at
+   build time.
 5. **Reading pages at the study's scale.** The page title is the study's docs headline
    (`clamp(47px, 4.4vw, 78px)`, −0.06em) under a red mono kicker naming the site and
    chapter; h2 and h3 are Newsreader set light; the description under the title is the
@@ -100,7 +104,9 @@ format, larger than a list of pages needs to be.
    gives that element and link to its reference entry. `gen-field-guide.mjs` reads the
    positions and names from the example's IDML at build time (the frame's path through
    its ItemTransform into page space; the first line from the resolved style chain);
-   nothing is placed by hand. The caption names the example and the commit its bytes come
+   nothing is placed by hand. Each hotspot is a drop pin: its mark sits just under the point
+   it marks (a dot, or a rule the width of the indent) and its disc hangs below, so no marker
+   covers the type. The caption names the example and the commit its bytes come
    from. Without JavaScript the hotspots and stops are links to anchors and all five cards
    are in the page; a small script only moves the highlight. It is an MDX page, so the
    sidebar, search, the sitemap and llms.txt list it like any other.

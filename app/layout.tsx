@@ -23,15 +23,30 @@ const newsreader = localFont({
   variable: '--font-newsreader',
   fallback: ['Georgia', 'Times New Roman', 'serif'],
 });
+// DM Sans in two calls that make one family. The roman is preloaded: every
+// page's first paint sets it. The italic is not: it appears in running text,
+// not above the fold. Its @font-face names the family next/font gives the
+// roman (the name of the const, `dmSans`, as the loader writes it), so an `em`
+// in the sans still gets the real italic, loaded when it is first needed
+// (tests/browsers/common.ts `fonts` checks the pairing). Newsreader keeps both
+// files preloaded: the red italic second line of each front page's headline
+// is in the first paint.
 const dmSans = localFont({
-  src: [
-    { path: './fonts/dm-sans-latin-opsz-wght-normal.woff2', style: 'normal', weight: '100 1000' },
-    { path: './fonts/dm-sans-latin-opsz-wght-italic.woff2', style: 'italic', weight: '100 1000' },
-  ],
+  src: [{ path: './fonts/dm-sans-latin-opsz-wght-normal.woff2', style: 'normal', weight: '100 1000' }],
   display: 'swap',
   variable: '--font-dm-sans',
   fallback: ['Arial', 'Helvetica', 'sans-serif'],
 });
+const dmSansItalic = localFont({
+  src: [{ path: './fonts/dm-sans-latin-opsz-wght-italic.woff2', style: 'italic', weight: '100 1000' }],
+  display: 'swap',
+  preload: false,
+  adjustFontFallback: false,
+  declarations: [{ prop: 'font-family', value: 'dmSans' }],
+});
+// Nothing reads the italic call's class or variable: calling it is what adds
+// its @font-face to the stylesheet.
+void dmSansItalic;
 
 export const metadata: Metadata = {
   title: {

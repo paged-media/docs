@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { crossSiteSearch, firstSearchResult, masthead, openClean, phoneWidth, recordStrip, searchIndex, themes } from './common';
+import { crossSiteSearch, firstSearchResult, fonts, masthead, openClean, phoneWidth, recordStrip, searchIndex, themes } from './common';
 
 // idml.paged.media — run against `SITE=idml pnpm build` (playwright.config.ts).
 
@@ -163,4 +163,5 @@ test.describe('field guide', () => {
 masthead('IDML Reference');
 searchIndex('idml', 'https://idml.paged.media', ['Guide', 'Element', 'Cookbook', 'Glossary', 'Tool']);
 phoneWidth(['/', '/reference/', '/reference/text-frame/', '/meta/census/', '/typography/drop-caps-and-tabs/', '/tools/inspector/', '/field-guide/']);
+fonts();
 themes();
