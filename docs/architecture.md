@@ -106,7 +106,7 @@ data, except facts: a fact that cannot be evaluated fails the build. See
 | `cockpit` | `gen-matrix` | `matrix.json`, `support-map.json` (and `public/capabilities.json`) | `CapabilityMatrix`, `StatusHeadline`, `SupportBadge`, `StageRow`, `pagedEvidence` in the comparison, `ReviewLine` |
 | `core-catalog`, `cli-surface`, `editor-catalog`, `core-meta`, `plugin-*`, this repo, the lock and the engine's release tags | `gen-facts` (with `data/facts.json`) | `facts.json` (and `public/facts.json`), each fact with its provenance (`scripts/generate/facts-schema.md`) | `Fact`, `FactLedger`, `RecordStrip`, `SoftwareApplicationLd`, `resolveNote` |
 | the engine's release tags (one GraphQL query; a warning when it fails) | — | `sources/engine-releases.json` | `gen-facts`, `ReviewLine` |
-| `core-catalog` | `gen-scripting`, `gen-idml-schema` | `scripting.json`, `idml-schema.json` | `ScriptingCatalog`, `FunctionPlayground`, `PathShowcase`, `PathReference`, `AttrTable` |
+| `core-catalog` | `gen-scripting`, `gen-idml-schema` | `scripting.json`, `idml-schema.json` | `ScriptingCatalog`, `FunctionPlayground`, `ScriptingLab`, `PathReference`, `AttrTable` |
 | `sdk-catalog` | `gen-sdk` | `sdk-catalog.json` | `SdkCatalog` |
 | `cli-surface` | `gen-cli` | `cli.json` | `CliReference` |
 | `capability-matrix` | `gen-surfaces` | `surfaces.json` | `SurfaceReach` |
@@ -127,9 +127,12 @@ package `@paged-media/viewer` (its `./session` entry). Its wasm is copied to `pu
 and loaded from there on demand; it needs WebGPU
 ([ADR 803](adr/803-live-preview-uses-viewer-package.md)).
 
-`<LiveDemo>` and `<ScriptingPlayground>` embed the running editor from the playground origin
-in an iframe. This is why the host sends cross-origin isolation headers
-([ADR 804](adr/804-static-export-hosting.md)).
+`<LiveDemo>`, `<ScriptingLab>` and `<ScriptingPlayground>` embed the running editor from the
+playground origin in an iframe. This is why the host sends cross-origin isolation headers
+([ADR 804](adr/804-static-export-hosting.md)). The scripting lab loads one editor per page on
+the first Run and speaks the editor's embedding API through `lib/editor-embed.ts`, with the
+older `?embed=script` page behind the same adapter until the API's `seed` and `fitSelection`
+are deployed ([ADR 811](adr/811-scripting-lab-fitting-tables-recorded-imagery.md)).
 
 ## Where data is stored
 

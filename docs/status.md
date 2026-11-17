@@ -23,6 +23,15 @@ is in [`architecture.md`](architecture.md).
 - **Script examples.** A corpus of 117 scripts. Pages show them in a playground that runs
   the edited source in the embedded editor. CI executes every script in the engine's
   `paged-run`.
+- **The scripting lab (2026-11-17).** The path showcases are one lab with ten theme tabs; the
+  tutorial and the scripting overview use its single-script form. One editor per page, loaded
+  on the first Run, over the legacy `?embed=script` page until the embedding API's `seed` and
+  `fitSelection` are on play.paged.media (`LAB_EMBED`, ADR 811). The stages wait for their
+  recorded stills (`public/scripting/lab/`); until then they say what Run does.
+- **Tables fit (2026-11-17).** No table on either site is wider than its column at 1440 or
+  390, outside a labelled scroll region; `tests/browsers/tables.spec.ts` walks every page.
+- **Editor stills.** Slots on the embedding presets, template filling, the bundle host and the
+  inspector pages (`data/editor-figures.ts`); a still shows once its file and provenance are in.
 - **Generated platform pages.** The capability matrix and status headline, the conformance
   table, the scripting catalog and path reference, the command-line reference, the viewer
   API catalog, the surface comparison, the plugin capability reference, the REST reference
@@ -129,9 +138,9 @@ is in [`architecture.md`](architecture.md).
   request from a fork, the step is skipped and the job passes.
 - **The import rule for snippets is not enforced.** Seven pages of the IDML reference
   contain fenced `xml` blocks.
-- **The live preview and the live demos need WebGPU.** The preview shows a note without it;
-  the demos leave the message to the embedded editor. Live demos also depend on the
-  playground deployment.
+- **The live preview, the live demos and the scripting lab need WebGPU.** Without it each
+  shows a note, and the demos and the lab keep their recorded still where one exists. Live
+  demos and the lab also depend on the playground deployment.
 - **Two pins are matched by hand:** the viewer version in `package.json` and `core.pin`.
   A workflow warns when `core.pin` is behind the engine's latest tag; nothing bumps it.
 - **Indexing does not follow `status`.** Every page is indexed, drafts included.

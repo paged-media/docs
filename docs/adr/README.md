@@ -23,6 +23,7 @@ predate that scheme; this repository holds none of them. Records 800–804 were 
 | [808](808-cross-site-search.md) | Search reaches both sites | Accepted, 2026-11-16 |
 | [809](809-neutral-reference-and-inspector-sync.md) | The element reference is neutral; Paged support is a separate panel; the Inspector's panes select each other | Accepted, 2026-11-16 |
 | [810](810-next-edition-chrome.md) | The Next Edition: one chrome for the three sites, the brand's tokens and type, the lab, the field guide and a page index for paged.media | Accepted, 2026-11-17 |
+| [811](811-scripting-lab-fitting-tables-recorded-imagery.md) | One scripting lab per page, tables that fit their column, and slots for recorded imagery | Accepted, 2026-11-17 |
 
 These records are about how the documentation site is built. They are not pages of the
 site. Decisions made in other repositories that this repository's code rests on are listed
