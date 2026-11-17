@@ -36,6 +36,7 @@ import { ElementReference, ElementIndex, CensusMethod } from './element-referenc
 import { FieldGuide } from './field-guide';
 import { Callout, Note } from './callout';
 import { ProseTable } from './prose-table';
+import { EditorFigure, EditorFigures } from './editor-figure';
 import { GutenbergAside } from './gutenberg-aside';
 import { RelatedAcrossPillars } from './related-across-pillars';
 import { XRef } from './xref';
@@ -89,6 +90,8 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     ActivityFeed,
     RepoActivity,
     LiveDemo,
+    EditorFigure,
+    EditorFigures,
     AttrTable,
     ElementReference,
     ElementIndex,

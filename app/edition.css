@@ -1325,3 +1325,61 @@
 .paged-demo-caption {
   margin: var(--space-2) 0 0;
 }
+
+/* -----------------------------------------------------------------------------
+   Editor stills (components/mdx/editor-figure.tsx): the still on stock with a
+   hairline, its caption in the sans and the provenance line in mono under it.
+   Several side by side, two to a row, one on a phone.
+   -------------------------------------------------------------------------- */
+.paged-editor-figure {
+  margin: var(--space-5) 0;
+}
+.paged-editor-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--color-rule);
+  background: var(--stock-face);
+}
+.paged-editor-figure figcaption {
+  display: grid;
+  gap: 4px;
+  margin-top: var(--space-2);
+  max-width: var(--reading-measure);
+}
+.paged-editor-figure-caption {
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--color-ink-soft);
+}
+.paged-editor-figure-caption code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+}
+.paged-editor-figure-source {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+.paged-editor-figure-source a {
+  color: var(--color-link);
+}
+.paged-editor-figure-source code {
+  font-size: inherit;
+}
+.paged-editor-figures {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4) var(--space-4);
+  margin: var(--space-5) 0;
+}
+.paged-editor-figures .paged-editor-figure {
+  margin: 0;
+}
+@media (max-width: 719px) {
+  .paged-editor-figures {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
