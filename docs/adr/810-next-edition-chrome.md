@@ -1,6 +1,6 @@
 # ADR 810 — The Next Edition: one chrome for the three sites, the brand's tokens and type, the lab, the field guide and a page index for paged.media
 
-- **Status:** Proposed, 2026-11-17.
+- **Status:** Accepted, 2026-11-17.
 - **Follows:** paged-media/website ADR 861 (The Next Edition), which makes the design study
   "The Next Edition / Volume 05" the brand of paged.media, docs.paged.media and
   idml.paged.media, with real content in every slot.
