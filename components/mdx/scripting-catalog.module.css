@@ -281,6 +281,10 @@
   .table tbody td + td {
     margin-top: var(--space-2);
   }
+  /* a cell with nothing in it (a capability without a description) shows no label either */
+  .table tbody td:empty {
+    display: none;
+  }
   .table tbody td[data-label]::before {
     content: attr(data-label);
     display: block;
