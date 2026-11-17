@@ -4,11 +4,11 @@
  * idml.paged.media/tools/inspector/ shows (<EditorFigure id="inspector" />,
  * data/editor-figures.ts), from this site's own build.
  *
- *   SITE=idml pnpm build && node scripts/capture-inspector.mjs [--chrome]
+ *   SITE=idml pnpm build && node scripts/capture-inspector.mjs [--chrome] [--out <dir>]
  *
- * It serves out/ as the browser tests do (scripts/serve-out.mjs), opens the
+ * It serves out/ (or the export given with --out) as the browser tests do (scripts/serve-out.mjs), opens the
  * inspector, loads the sample package, chooses a text frame so the tree and
- * the XML show their link, and writes the inspector's box as
+ * the XML show their link, and writes the inspector's workspace as
  * public/editor/inspector.webp (encoded by the browser, so no image tool is
  * needed). Then it records the provenance in data/editor-figures.ts: this
  * checkout's commit and today's date. Capture from a clean, committed tree, so
@@ -25,14 +25,15 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const OUT_DIR = join(ROOT, 'out');
+const outAt = process.argv.indexOf('--out');
+const OUT_DIR = outAt > 0 ? resolve(process.argv[outAt + 1]) : join(ROOT, 'out');
 const TARGET = join(ROOT, 'public', 'editor', 'inspector.webp');
 const DATA = join(ROOT, 'data', 'editor-figures.ts');
 const PORT = 3290;
 const CHROME = process.argv.includes('--chrome');
 
 if (!existsSync(join(OUT_DIR, 'tools', 'inspector', 'index.html'))) {
-  console.error('capture-inspector: out/ is not an idml.paged.media build. Run `SITE=idml pnpm build` first.');
+  console.error(`capture-inspector: ${OUT_DIR} is not an idml.paged.media build. Run \`SITE=idml pnpm build\` first.`);
   process.exit(1);
 }
 
@@ -63,9 +64,28 @@ try {
   await tree.getByRole('treeitem', { name: 'TextFrame uframeR' }).click();
   // the page pane draws (or says it cannot) after the package is parsed
   await page.waitForTimeout(2500);
-  const box = page.locator('.paged-inspector');
+  // The workspace: the package's parts, the chosen element's path and
+  // references, the page, the element tree and the XML. The sticky masthead
+  // would be drawn into a tall element shot, so it steps aside.
+  await page.addStyleTag({ content: 'header[data-masthead] { display: none !important; }' });
+  const box = page.locator('.paged-inspector [class*="workspace"]').first();
   await box.scrollIntoViewIfNeeded();
-  const png = await box.screenshot({ animations: 'disabled' });
+  // The panes' borders may reach a pixel or two past the workspace's own box:
+  // clip to everything it draws.
+  const clip = await box.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    let right = r.right;
+    let bottom = r.bottom;
+    for (const d of el.querySelectorAll('*')) {
+      const q = d.getBoundingClientRect();
+      if (q.width && q.height) {
+        right = Math.max(right, q.right);
+        bottom = Math.max(bottom, q.bottom);
+      }
+    }
+    return { x: r.left + window.scrollX, y: r.top + window.scrollY, width: Math.ceil(right - r.left) + 1, height: Math.ceil(bottom - r.top) + 1 };
+  });
+  const png = await page.screenshot({ clip, fullPage: true, animations: 'disabled' });
   const webp = await page.evaluate(async (b64) => {
     const bitmap = await createImageBitmap(await (await fetch(`data:image/png;base64,${b64}`)).blob());
     const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);

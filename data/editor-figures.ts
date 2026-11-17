@@ -57,10 +57,10 @@ export const EDITOR_FIGURES = {
     provenance: null,
   },
   inspector: {
-    caption: 'The inspector with the sample package open: the summary, the package’s parts, the page, and a part’s elements beside its XML.',
-    alt: 'The IDML inspector showing a sample package: its summary, the list of parts, a rendered page, and the element tree beside the XML of a spread.',
+    caption: 'The inspector with the sample package open and a text frame chosen: the package’s parts, the frame’s path and references, the page, and the spread’s element tree beside its XML, the frame marked in both.',
+    alt: 'The IDML inspector: the list of the package’s parts, a strip with the chosen text frame’s path and references, the rendered page, and the spread’s element tree beside its XML with the text frame highlighted in both.',
     repo: 'docs',
-    provenance: null,
+    provenance: { commit: 'd6b24016c85caa719bc35425f56c30089a707af7', capturedAt: '2026-11-17' },
   },
 } satisfies Record<string, EditorFigure>;
 
