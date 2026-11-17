@@ -66,6 +66,17 @@ export function FieldGuide() {
               />
             ) : null}
             <span className="paged-guide-frame" style={frameBox} aria-hidden="true" />
+            {/* Each mark sits just under the point it marks, a dot or the span of the indent. */}
+            {hotspots.map((h) => (
+              <span
+                key={`mark-${h.key}`}
+                className="paged-guide-mark"
+                data-guide-mark={h.key}
+                data-kind={h.span ? 'span' : 'dot'}
+                style={h.span ? { left: `${h.span.x}%`, top: `${h.y}%`, width: `${h.span.w}%` } : { left: `${h.x}%`, top: `${h.y}%` }}
+                aria-hidden="true"
+              />
+            ))}
             {hotspots.map((h) => (
               <a
                 key={h.key}

@@ -12,10 +12,10 @@
  *     ItemTransform, then into the page's space (the page's ItemTransform
  *     inverted, less its GeometricBounds origin);
  *   - A, the text frame: the centre of those bounds;
- *   - B, the story: the centre of its first line (the frame's column at the
- *     frame's top inset, half a line of 120% auto leading down);
- *   - C, the style: the middle of the first-line indent the applied style
- *     resolves to (its BasedOn chain walked to the root), on that same line;
+ *   - B, the story: the foot of its first line, mid-column (the frame's
+ *     column at its top inset, one line of 120% auto leading down);
+ *   - C, the style: the first-line indent the applied style resolves to (its
+ *     BasedOn chain walked to the root), as a span at the foot of that line;
  *   - the attribute names each card lists, as the example's XML spells them.
  * Positions are percentages of the page, the raster being the whole page as
  * InDesign exports it (examples/<id>/_verified/p1.webp, staged to
@@ -163,7 +163,11 @@ const box = { x: Math.min(...xs), y: Math.min(...ys), w: Math.max(...xs) - Math.
 const tfp = byTag(frame, 'TextFramePreference');
 const insetList = tfp?.attrs.InsetSpacing ?? byTag(tfp ?? { children: [] }, 'InsetSpacing')?.text;
 const [inTop, inLeft, , inRight] = insetList ? insetList.split(/\s+/).map(Number) : [0, 0, 0, 0];
-const lineMid = box.y + inTop + (pointSize * 1.2) / 2;
+// The foot of the first line: B and C mark the line from just under it, so
+// no marker sits on the type (components/mdx/field-guide.tsx).
+const lineFoot = box.y + inTop + pointSize * 1.2;
+const indentFrom = box.x + inLeft + leftIndent;
+const indent = Math.max(firstLineIndent, 0);
 
 const pct = ([x, y]) => ({ x: round((x / pageW) * 100, 2), y: round((y / pageH) * 100, 2) });
 const hotspots = [
@@ -171,14 +175,15 @@ const hotspots = [
   {
     key: 'story',
     label: 'B',
-    ...pct([box.x + inLeft + (box.w - inLeft - inRight) / 2, lineMid]),
-    at: 'the middle of the story’s first line',
+    ...pct([box.x + inLeft + (box.w - inLeft - inRight) / 2, lineFoot]),
+    at: 'the foot of the story’s first line, mid-column',
   },
   {
     key: 'style',
     label: 'C',
-    ...pct([box.x + inLeft + leftIndent + Math.max(firstLineIndent, 0) / 2, lineMid]),
-    at: `the ${firstLineIndent} pt first-line indent its style sets`,
+    ...pct([indentFrom + indent / 2, lineFoot]),
+    span: { x: round((indentFrom / pageW) * 100, 2), w: round((indent / pageW) * 100, 2) },
+    at: `the ${firstLineIndent} pt first-line indent its style sets, measured under the line`,
   },
 ];
 

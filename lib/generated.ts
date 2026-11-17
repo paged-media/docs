@@ -623,6 +623,8 @@ export interface FieldGuideHotspot {
   y: number;
   /** Where on the object it sits, in words. */
   at: string;
+  /** A marked extent instead of a point (the indent): its left edge and width, percent of the page. */
+  span?: { x: number; w: number };
 }
 export interface FieldGuide {
   schema: string;
