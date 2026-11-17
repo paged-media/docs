@@ -218,9 +218,46 @@ function rehypeGlossaryAnchors() {
   };
 }
 
+/**
+ * Tables — each Markdown table carries its column count and a name for the
+ * reader, the heading it sits under (or its column names), as `data-cols` and
+ * `data-label`. The MDX `table` (components/mdx/prose-table.tsx) uses them to
+ * put a table with too many columns for a phone in a labelled scroll region.
+ */
+function rehypeTableMeta() {
+  return (tree: HastNode) => {
+    const visit = (parent: HastNode) => {
+      let heading = '';
+      for (const node of parent.children || []) {
+        if (node.type !== 'element') {
+          if (node.children) visit(node); // MDX JSX (a Callout, say)
+          continue;
+        }
+        if (/^h[1-6]$/.test(node.tagName ?? '')) heading = textOf(node).trim();
+        if (node.tagName === 'table') {
+          let firstRow: HastNode | undefined;
+          walk(node, (n) => {
+            if (!firstRow && n.type === 'element' && n.tagName === 'tr') firstRow = n;
+          });
+          const cells = (firstRow?.children || []).filter((c) => c.type === 'element' && (c.tagName === 'th' || c.tagName === 'td'));
+          const names = cells.map((c) => textOf(c).trim()).filter(Boolean);
+          node.properties = {
+            ...(node.properties || {}),
+            dataCols: String(cells.length),
+            dataLabel: heading || names.join(', '),
+          };
+          continue;
+        }
+        visit(node);
+      }
+    };
+    visit(tree);
+  };
+}
+
 export default defineConfig({
   mdxOptions: {
-    rehypePlugins: [rehypeInShort, rehypeCardList, rehypeGlossaryAnchors],
+    rehypePlugins: [rehypeInShort, rehypeCardList, rehypeGlossaryAnchors, rehypeTableMeta],
     rehypeCodeOptions: {
       themes: { light: 'github-light', dark: 'github-dark' },
     },

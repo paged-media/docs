@@ -303,7 +303,14 @@ function Attributes({ el, book }: { el: RefElement; book: IdmlReference }) {
   const slugs = new Map(book.elements.map((e) => [e.name, e.slug]));
   const showDefault = el.attributes.some((a) => a.typed?.default != null && typeof a.typed.default !== 'object');
   return (
-    <figure className="not-prose paged-ref-table-wrap" style={{ margin: 'var(--space-3) 0 var(--space-5)' }}>
+    <figure
+      className="not-prose paged-ref-table-wrap"
+      style={{ margin: 'var(--space-3) 0 var(--space-5)' }}
+      // On a phone the table scrolls sideways (app/global.css): a named region a keyboard can reach.
+      role="region"
+      aria-label={`Attributes of ${el.name} (table)`}
+      tabIndex={0}
+    >
       <table className={`paged-ref-table ${s.table}`}>
         <thead>
           <tr>
@@ -551,7 +558,7 @@ function PagedSupport({ el, book }: { el: RefElement; book: IdmlReference }) {
       {n ? (
         <>
           <h3 id="paged-attributes">By attribute</h3>
-          <div className={s.wrap}>
+          <div className={s.wrap} role="region" aria-label={`Paged support for ${el.name}, by attribute (table)`} tabIndex={0}>
             <table className={`${s.table} ${s.stack}`}>
               <thead>
                 <tr>
@@ -612,7 +619,7 @@ function PagedSupport({ el, book }: { el: RefElement; book: IdmlReference }) {
       {features.length ? (
         <>
           <h3 id="paged-features">In the capability record</h3>
-          <div className={s.wrap}>
+          <div className={s.wrap} role="region" aria-label={`${el.name} in the capability record (table)`} tabIndex={0}>
             <table className={s.table}>
               <thead>
                 <tr>

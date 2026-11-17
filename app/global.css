@@ -281,6 +281,64 @@ body::before {
   border-color: var(--color-rule);
 }
 
+/* -----------------------------------------------------------------------------
+   No table is wider than its column (tests/browsers/tables.spec.ts walks every
+   page at 1440 and 390). A cell's words and code break where they must, so a
+   table's narrowest width is a few characters a column; a table that still
+   cannot fit, because it has too many columns for a phone, sits in a labelled,
+   focusable scroll region (`.paged-table-scroll`, role="region"), which is the
+   only place a table may scroll sideways. Prose tables take their wrapper from
+   components/mdx/prose-table.tsx; generated tables from their component.
+   -------------------------------------------------------------------------- */
+#nd-page table {
+  max-width: 100%;
+}
+#nd-page :where(td, th) {
+  overflow-wrap: anywhere;
+}
+#nd-page :where(td, th) :where(code) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.paged-table-wrap {
+  margin: var(--space-4) 0;
+}
+.paged-table-wrap > table {
+  width: 100%;
+  margin: 0;
+}
+.paged-table-scroll {
+  position: relative;
+  margin: var(--space-4) 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+.paged-table-scroll:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+.paged-table-scroll > table {
+  width: 100%;
+  margin: 0;
+}
+/* A wide table keeps readable columns and scrolls inside its region; a hint
+   under it says so where it does. */
+@media (max-width: 719px) {
+  .paged-table-scroll > table {
+    min-width: 40rem;
+  }
+  .paged-table-scroll::after {
+    content: 'Scroll sideways for more columns';
+    position: sticky;
+    left: 0;
+    display: block;
+    padding-top: 6px;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    color: var(--color-muted);
+  }
+}
+
 /* =============================================================================
    SIDEBAR AND CONTENTS (Fumadocs), as the V5 docs sidebar: paper, a hairline
    to the article, small sans entries, section labels in spaced caps, and the

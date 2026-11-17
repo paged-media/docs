@@ -101,7 +101,13 @@ export function ElementIndexTable({ rows }: { rows: IndexRow[] }) {
       {groups.map((g) => (
         <section key={g.part} id={partId(g.part)} style={{ scrollMarginTop: 24 }}>
           <h2 className="paged-index-part">{g.part}</h2>
-          <figure className="paged-ref-table-wrap" style={{ margin: 'var(--space-3) 0' }}>
+          <figure
+            className="paged-ref-table-wrap"
+            style={{ margin: 'var(--space-3) 0' }}
+            role="region"
+            aria-label={`Elements in ${g.part} (table)`}
+            tabIndex={0}
+          >
             <table className="paged-ref-table" style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, tableLayout: 'fixed' }}>
               <colgroup>
                 <col style={{ width: '64%' }} />

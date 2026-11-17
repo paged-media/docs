@@ -406,7 +406,8 @@
   font-size: 11px;
   color: var(--color-accent);
   text-decoration: none;
-  white-space: nowrap;
+  /* a source path breaks where it must: the table stays inside its column */
+  overflow-wrap: anywhere;
 }
 .entry .src:hover {
   text-decoration: underline;

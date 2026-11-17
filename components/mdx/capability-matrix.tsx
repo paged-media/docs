@@ -80,7 +80,9 @@ function ChapterTable({ chapter }: { chapter: MatrixChapter }) {
           {chapter.features.length} features{chapter.greenPct != null ? ` · ${chapter.greenPct}% green` : ''}
         </span>
       </h3>
-      <div style={{ overflowX: 'auto' }}>
+      {/* A feature column and up to five stages: too wide for a phone, so it
+          scrolls in its own labelled region there. */}
+      <div className="paged-table-scroll" role="region" aria-label={`${chapter.title}: capability matrix`} tabIndex={0}>
         <table style={{ borderCollapse: 'collapse', fontSize: 13, width: '100%' }}>
           <thead>
             <tr>

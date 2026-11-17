@@ -33,7 +33,8 @@ export function FactLedger() {
   const now = Date.now();
   return (
     <>
-      <div className="paged-ledger-wrap">
+      {/* Five columns: on a phone it scrolls sideways in its own named region. */}
+      <div className="paged-ledger-wrap" role="region" aria-label="Every figure the docs state, with its source (table)" tabIndex={0}>
         <table className="paged-ledger">
           <thead>
             <tr>

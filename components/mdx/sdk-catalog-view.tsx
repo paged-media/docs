@@ -2,24 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import type { SdkGroup } from '@/lib/generated';
+import s from './scripting-catalog.module.css';
 
-const TH: React.CSSProperties = {
-  textAlign: 'left',
-  fontFamily: 'var(--font-sans)',
-  fontSize: 11,
-  fontWeight: 640,
-  letterSpacing: '0.04em',
-  color: 'var(--color-muted)',
-  padding: '4px 8px',
-  borderBottom: '1px solid var(--color-rule)',
-  whiteSpace: 'nowrap',
-};
-const TD: React.CSSProperties = {
-  padding: '6px 8px',
-  borderBottom: '1px solid color-mix(in srgb, var(--color-rule) 55%, transparent)',
-  verticalAlign: 'top',
-};
-const mono: React.CSSProperties = { fontFamily: 'var(--font-mono, monospace)', fontSize: 12 };
 
 const KIND_TONE: Record<string, string> = {
   function: 'var(--valid)',
@@ -48,6 +32,52 @@ function KindChip({ kind }: { kind: string }) {
     >
       {kind}
     </span>
+  );
+}
+
+/**
+ * One group's members as a ledger (scripting-catalog.module.css): fixed
+ * columns, so a long name or signature wraps in its cell, and on a narrow
+ * column each member stacks under the column names.
+ */
+export function SdkTable({ members, kinds = false, anchors = true }: { members: SdkGroup['members']; kinds?: boolean; anchors?: boolean }) {
+  return (
+    <div className={s.catalog}>
+      <table className={s.table}>
+        <colgroup>
+          <col className={s.colForm} />
+          <col className={s.colSignature} />
+          <col />
+        </colgroup>
+        <thead>
+          <tr>
+            <th scope="col">Member</th>
+            <th scope="col">Signature</th>
+            <th scope="col">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {members.map((m) => (
+            <tr key={m.name} id={anchors ? memberAnchor(m.name) : undefined}>
+              <td className={s.lead} data-label="Member">
+                <code className={s.form}>{m.name}</code>
+                {kinds ? (
+                  <div style={{ marginTop: 3 }}>
+                    <KindChip kind={m.kind} />
+                  </div>
+                ) : null}
+              </td>
+              <td data-label="Signature">
+                <code className={s.returns}>{m.signature}</code>
+              </td>
+              <td data-label="Description" className={s.summary}>
+                {m.summary}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -108,31 +138,7 @@ export function SdkCatalogView({ groups }: { groups: SdkGroup[] }) {
             {g.title}
           </h3>
           {g.summary ? <p style={{ fontSize: 12.5, color: 'var(--color-muted)', margin: '0 0 .5rem' }}>{g.summary}</p> : null}
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-              <thead>
-                <tr>
-                  <th style={TH}>Member</th>
-                  <th style={TH}>Signature</th>
-                  <th style={TH}>Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                {g.members.map((m) => (
-                  <tr key={m.name} id={memberAnchor(m.name)}>
-                    <td style={{ ...TD, ...mono, whiteSpace: 'nowrap' }}>
-                      <strong>{m.name}</strong>
-                      <div style={{ marginTop: 3 }}>
-                        <KindChip kind={m.kind} />
-                      </div>
-                    </td>
-                    <td style={{ ...TD, ...mono, color: 'var(--color-ink-soft, inherit)' }}>{m.signature}</td>
-                    <td style={{ ...TD, fontFamily: 'var(--font-sans)', fontSize: 13 }}>{m.summary}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <SdkTable members={g.members} kinds />
         </section>
       ))}
 

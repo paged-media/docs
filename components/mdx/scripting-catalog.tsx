@@ -10,8 +10,8 @@
 import { getScripting } from '@/lib/generated';
 import { SCRIPTING_EXAMPLES } from '@/data/scripting/examples';
 import { ScriptingFnsView, ScriptingPathsView } from './scripting-catalog-view';
-
-const mono: React.CSSProperties = { fontFamily: 'var(--font-mono, monospace)', fontSize: 12.5 };
+import { withCode } from './inline-code';
+import s from './scripting-catalog.module.css';
 
 function Functions() {
   const { hostFunctionGroups, hostFunctionCount } = getScripting();
@@ -22,20 +22,42 @@ function Functions() {
   return <ScriptingFnsView groups={hostFunctionGroups} count={hostFunctionCount} exampleFns={exampleFns} />;
 }
 
+/** The id grammar: one row per address form, as a ledger. */
 function Grammar() {
   const { idGrammar } = getScripting();
   if (!idGrammar.length) return <Empty />;
   return (
-    <ul className="not-prose" style={{ margin: '1rem 0', padding: 0, listStyle: 'none' }}>
-      {idGrammar.map((g) => (
-        <li key={g.form} style={{ marginBottom: 8 }}>
-          <code style={{ ...mono, fontWeight: 600 }}>{g.form}</code>{' '}
-          <span style={{ color: 'var(--color-muted)', fontSize: 12.5 }}>
-            e.g. <code style={mono}>{g.example}</code> — {g.note}
-          </span>
-        </li>
-      ))}
-    </ul>
+    <div className={`not-prose ${s.catalog}`}>
+      <table className={s.table}>
+        <colgroup>
+          <col className={s.colForm} />
+          <col className={s.colExample} />
+          <col />
+        </colgroup>
+        <thead>
+          <tr>
+            <th scope="col">Form</th>
+            <th scope="col">Example</th>
+            <th scope="col">Meaning</th>
+          </tr>
+        </thead>
+        <tbody>
+          {idGrammar.map((g) => (
+            <tr key={g.form}>
+              <td className={s.lead} data-label="Form">
+                <code className={s.form}>{g.form}</code>
+              </td>
+              <td data-label="Example">
+                <code className={s.example}>{g.example}</code>
+              </td>
+              <td data-label="Meaning" className={s.note}>
+                {withCode(g.note)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -49,19 +71,19 @@ function Constraints() {
   const { constraints } = getScripting();
   if (!constraints.length) return <Empty />;
   return (
-    <ul className="not-prose" style={{ margin: '1rem 0', paddingLeft: '1.1rem' }}>
+    <ol className={`not-prose ${s.rules}`}>
       {constraints.map((c, i) => (
-        <li key={i} style={{ fontFamily: 'var(--font-sans)', fontSize: 13.5, marginBottom: 6 }}>
-          {c}
+        <li key={i}>
+          <span>{withCode(c)}</span>
         </li>
       ))}
-    </ul>
+    </ol>
   );
 }
 
 function Empty() {
   return (
-    <p className="not-prose" style={{ color: 'var(--color-muted)', fontSize: 13 }}>
+    <p className={`not-prose ${s.empty}`}>
       No scripting catalog data. Run <code>pnpm generate:docs</code>.
     </p>
   );

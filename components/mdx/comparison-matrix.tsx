@@ -32,13 +32,25 @@ function Meter({ score }: { score: number }) {
   );
 }
 
+function TableFrame({ wide, label, children }: { wide: boolean; label: string; children: React.ReactNode }) {
+  return wide ? (
+    <div className="paged-table-scroll" role="region" aria-label={`${label} (table)`} tabIndex={0}>
+      {children}
+    </div>
+  ) : (
+    <div className="paged-table-wrap">{children}</div>
+  );
+}
+
 export function ComparisonMatrix({ only, differentiatorsOnly }: { only?: ToolKey[]; differentiatorsOnly?: boolean }) {
   const cols = only && only.length ? TOOL_ORDER.filter((k) => only.includes(k)) : TOOL_ORDER;
   const domains = differentiatorsOnly ? DOMAINS.filter((d) => d.kind === 'differentiator') : DOMAINS;
   return (
     <div className="not-prose" style={{ margin: '1.25rem 0' }}>
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: cols.length > 3 ? 720 : 460 }}>
+      {/* Two tools side by side fit any column; the full field (six columns) is
+          too wide for a phone and scrolls in its own labelled region. */}
+      <TableFrame wide={cols.length > 3} label={differentiatorsOnly ? 'Differentiators' : 'Capability matrix'}>
+        <table style={{ borderCollapse: 'collapse', width: '100%', ...(cols.length > 3 ? { minWidth: 720 } : {}) }}>
           <caption style={{ captionSide: 'top', textAlign: 'left', fontFamily: 'var(--font-sans)', fontSize: 11.5, color: 'var(--color-muted)', marginBottom: 6 }}>
             {differentiatorsOnly ? 'Differentiators' : 'Capability matrix'} · ordinal 0–3 · Paged&rsquo;s “x/y verified” from the capability record of {getMatrix().headline.record_generated_at?.slice(0, 10) ?? '—'}. Rows tagged <strong>baseline</strong> (every serious tool clears it) or <strong>differentiator</strong> (where the field separates).
           </caption>
@@ -56,7 +68,7 @@ export function ComparisonMatrix({ only, differentiatorsOnly }: { only?: ToolKey
             ))}
           </tbody>
         </table>
-      </div>
+      </TableFrame>
       <p style={{ fontFamily: 'var(--font-sans)', fontSize: 11.5, color: 'var(--color-muted)', marginTop: 8 }}>
         Legend: {SCALE.map((s) => `${'●'.repeat(s.score) || '○'} ${s.label}`).join(' · ')}. “planned” = on Paged’s roadmap, not yet shipped (scored honestly, not as present).
       </p>

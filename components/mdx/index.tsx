@@ -35,6 +35,7 @@ import { AttrTable } from './attr-table';
 import { ElementReference, ElementIndex, CensusMethod } from './element-reference';
 import { FieldGuide } from './field-guide';
 import { Callout, Note } from './callout';
+import { ProseTable } from './prose-table';
 import { GutenbergAside } from './gutenberg-aside';
 import { RelatedAcrossPillars } from './related-across-pillars';
 import { XRef } from './xref';
@@ -57,6 +58,8 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     // Markdown links are written site-neutral (`/docs/idml/…`); resolve them
     // for this build (lib/site.ts).
     a: ({ href, ...props }: ComponentProps<'a'>) => <A href={href ? resolveHref(href) : href} {...props} />,
+    // Markdown tables fit their column, or scroll in a labelled region (prose-table.tsx).
+    table: ProseTable,
     RawView,
     AnnotatedView,
     TreeView,

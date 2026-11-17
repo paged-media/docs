@@ -8,6 +8,9 @@ import { fileURLToPath } from 'node:url';
  *   SITE=idml pnpm build && SITE=idml pnpm test:browsers
  *   SITE=paged pnpm build && SITE=paged pnpm test:browsers
  *
+ * Each site runs its own spec and tables.spec.ts (every page of the sitemap at
+ * 1440 and 390).
+ *
  * They run against out/ served with the production headers
  * (scripts/serve-out.mjs), so what they see is what Cloudflare serves.
  * CI: the `browsers` job in .github/workflows/build.yml.
@@ -19,7 +22,8 @@ const ROOT = resolve(HERE, '..', '..');
 
 export default defineConfig({
   testDir: HERE,
-  testMatch: `${SITE}.spec.ts`,
+  // The site's own tests and the table sweep of every page (both sites).
+  testMatch: [`${SITE}.spec.ts`, 'tables.spec.ts'],
   // At the repo root, where CI collects failure traces from.
   outputDir: resolve(ROOT, 'test-results'),
   fullyParallel: true,

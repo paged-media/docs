@@ -1,0 +1,290 @@
+/* The scripting catalog (scripting-catalog.tsx, scripting-catalog-view.tsx) as
+   V5 ledgers: an ink rule over a spaced-caps head, hairlines between rows, mono
+   for code, the red only for links. Columns have fixed widths, so a long
+   signature or return type wraps inside its cell instead of widening the
+   table; when the catalog's column is narrow, each row stacks and every cell
+   sits under its column's name (the website's Ledger). Tokens only. */
+
+.catalog {
+  container: catalog / inline-size;
+  margin: var(--space-4) 0 var(--space-5);
+}
+
+/* The filter: a hairline field, square, the sans. */
+.filter {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 var(--space-2);
+  padding: 9px 12px;
+  border: 1px solid var(--color-rule-strong);
+  border-radius: 0;
+  background: var(--color-paper-soft);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.4;
+}
+.filter::placeholder {
+  color: var(--color-muted);
+}
+.filter:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.count {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+
+.group {
+  margin: 0 0 var(--space-5);
+}
+.groupTitle {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: var(--weight-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink);
+}
+.groupTitle span {
+  margin-left: 8px;
+  font-weight: var(--weight-mono);
+  color: var(--color-muted);
+}
+
+/* The ledger. */
+.table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-ink);
+}
+.table thead th {
+  padding: 10px var(--space-3) 8px 0;
+  border-top: var(--rule-medium);
+  border-bottom: var(--rule-thin);
+  text-align: left;
+  vertical-align: bottom;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: var(--weight-sans-strong);
+  line-height: 1.4;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.table tbody td {
+  padding: 10px var(--space-3) 10px 0;
+  border-bottom: var(--rule-thin);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.table :is(th, td):last-child {
+  padding-right: 0;
+}
+
+/* Column widths: functions (signature, returns, summary) and the id grammar
+   (form, example, meaning). */
+.colSignature {
+  width: 36%;
+}
+.colReturns {
+  width: 20%;
+}
+.colForm {
+  width: 34%;
+}
+.colExample {
+  width: 26%;
+}
+
+/* A signature wraps between its parameters (each `, ` is a break), never
+   inside the function's name unless the name alone is wider than the cell. */
+.signature {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.55;
+  white-space: normal;
+}
+.name {
+  font-weight: var(--weight-sans-strong);
+  color: var(--color-ink);
+}
+.params {
+  color: var(--color-ink-soft);
+}
+/* A return type wraps anywhere. */
+.returns {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--color-ink-soft);
+  overflow-wrap: anywhere;
+}
+.summary {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--color-ink);
+}
+.summary code,
+.note code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  overflow-wrap: anywhere;
+}
+.try {
+  margin-left: 6px;
+  white-space: nowrap;
+  font-weight: var(--weight-sans-strong);
+  color: var(--color-link);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+.try:hover {
+  color: var(--color-link-press);
+}
+
+.form,
+.example {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.form {
+  font-weight: var(--weight-sans-strong);
+}
+.example {
+  color: var(--color-ink-soft);
+}
+.note {
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.empty {
+  margin: var(--space-3) 0;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+/* The settable paths: mono names on hairlines, wrapping as a run of words. */
+.paths {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.path {
+  max-width: 100%;
+  padding: 2px 7px;
+  border: 1px solid var(--color-rule);
+  background: var(--color-paper-soft);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+/* The constraints: hairline rows in the sans. */
+.rules {
+  margin: var(--space-4) 0 var(--space-5);
+  padding: 0;
+  list-style: none;
+  border-top: var(--rule-medium);
+  counter-reset: rule;
+}
+.rules li {
+  display: grid;
+  grid-template-columns: 2.5em minmax(0, 1fr);
+  padding: 10px 0;
+  border-bottom: var(--rule-thin);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+  counter-increment: rule;
+}
+.rules li::before {
+  content: counter(rule, decimal-leading-zero);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 2.1;
+  color: var(--color-muted);
+}
+.rules code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+}
+
+/* A narrow column (a phone, or a narrow window): each row is a block, each cell
+   under its column's name. */
+@container catalog (max-width: 600px) {
+  .table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .table colgroup {
+    display: none;
+  }
+  .table,
+  .table tbody,
+  .table tr,
+  .table tbody td {
+    display: block;
+    width: auto;
+  }
+  .table tbody tr {
+    padding: var(--space-3) 0;
+    border-bottom: var(--rule-thin);
+  }
+  .table tbody tr:first-child {
+    border-top: var(--rule-medium);
+  }
+  .table tbody td {
+    padding: 2px 0;
+    border: 0;
+  }
+  .table tbody td + td {
+    margin-top: var(--space-2);
+  }
+  .table tbody td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 1px;
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: var(--weight-sans-strong);
+    line-height: 1.5;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  /* The signature heads its row, so it needs no label. */
+  .table tbody td.lead::before {
+    content: none;
+  }
+  .table tbody td.lead {
+    font-size: 13px;
+  }
+}
