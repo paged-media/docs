@@ -146,7 +146,8 @@ export default function HomePage() {
         <div className="paged-container paged-home-hero-grid">
           <div className="paged-home-hero-copy">
             <p className="paged-kicker">{copy.kicker}</p>
-            <h1 className="paged-home-title">
+            {/* A short headline (the IDML front page's) is set larger, as the study sets it. */}
+            <h1 className={copy.title.every((line) => line.length <= 12) ? 'paged-home-title is-short' : 'paged-home-title'}>
               {copy.title[0]}
               <br />
               <em>{copy.title[1]}</em>

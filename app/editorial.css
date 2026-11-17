@@ -380,6 +380,13 @@ a.paged-strip-value:hover,
   display: none;
 }
 @media (max-width: 719px) {
+  .paged-strip {
+    font-size: 9px;
+    letter-spacing: 0.06em;
+  }
+  .paged-strip-item + .paged-strip-item::before {
+    margin: 0 5px;
+  }
   .paged-strip-edition,
   .paged-strip-long {
     display: none;
@@ -409,6 +416,10 @@ a.paged-strip-value:hover,
 }
 .paged-footer.is-compact {
   margin-top: var(--space-8);
+}
+/* In the night theme the page is night too: a rule sets the footer off. */
+.dark .paged-footer {
+  border-top: 1px solid var(--color-instrument-rule);
 }
 .paged-footer-inner {
   max-width: var(--container);

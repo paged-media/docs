@@ -266,6 +266,10 @@ body::before {
 .prose :where(table):not(:where(.not-prose, .not-prose *)) {
   font-family: var(--font-sans);
   font-size: 14px;
+  border-radius: 0;
+  border-color: var(--color-rule);
+  border-top: 1px solid var(--color-ink);
+  background: transparent;
 }
 .prose :where(th):not(:where(.not-prose, .not-prose *)) {
   background: transparent;

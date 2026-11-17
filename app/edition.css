@@ -114,6 +114,10 @@
   font-weight: var(--weight-display);
   color: var(--color-ink);
 }
+.paged-home-title.is-short {
+  font-size: clamp(68px, 9.6vw, 158px);
+  line-height: 0.84;
+}
 .paged-home-title em {
   font-weight: var(--weight-display-light);
   color: var(--color-accent);
@@ -479,8 +483,11 @@
   overflow-x: auto;
   background: #0b1316;
 }
+/* Fumadocs colours code spans with `.shiki:not(…) code span`; the lab is night
+   in either theme, so it takes the night palette over that. */
 .paged-lab-panel .shiki,
-.paged-lab-panel .shiki span {
+.paged-lab-panel .shiki.shiki span,
+.paged-lab-panel .shiki.shiki code span {
   color: var(--shiki-dark);
 }
 .paged-lab-panel .paged-marginalia {
@@ -554,6 +561,8 @@
 }
 .paged-guide-figure {
   margin: 0;
+  position: sticky;
+  top: calc(var(--paged-masthead-height) + 32px);
 }
 .paged-guide-sheet {
   position: relative;
@@ -830,6 +839,9 @@
 @container guide (max-width: 760px) {
   .paged-guide-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .paged-guide-figure {
+    position: static;
   }
   .paged-guide-sheet {
     width: calc(100% - 22px);

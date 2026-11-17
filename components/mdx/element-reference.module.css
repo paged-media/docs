@@ -538,3 +538,8 @@
     overflow-wrap: anywhere;
   }
 }
+
+/* In the night theme the page is already night: the plate rises a step. */
+:global(.dark) .entry .plateGrid {
+  background: var(--color-instrument-soft);
+}
