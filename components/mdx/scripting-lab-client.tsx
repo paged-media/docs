@@ -20,6 +20,10 @@ import dynamic from 'next/dynamic';
 import type { SeedId } from '@/data/scripting/examples';
 import { claimStage, onStage, openInEditorHref, releaseStage, stageStore } from './scripting-lab-stage';
 
+/** Where the recorded results come from: the editor's still recorder
+ *  (apps/editor/apps/canvas/tests/films/stills/embed.film.ts), at this commit. */
+const LAB_POSTERS = { commit: '5f06bce4c', date: '18 Nov 2026' } as const;
+
 export interface LabItem {
   id: string;
   title: string;
@@ -340,7 +344,13 @@ export function ScriptingLabClient({ items, tabs, label }: { items: LabItem[]; t
                 {live ? null : item.poster ? (
                   <figure className="paged-script-poster">
                     <img src={item.poster} alt={`${name}: the result, recorded in the Paged editor`} decoding="async" loading="lazy" />
-                    <figcaption>Recorded result</figcaption>
+                    <figcaption>
+                      Recorded result: this script, run in the Paged editor at{' '}
+                      <a href={`https://github.com/paged-media/paged/commit/${LAB_POSTERS.commit}`}>
+                        <code>{LAB_POSTERS.commit}</code>
+                      </a>
+                      , {LAB_POSTERS.date}
+                    </figcaption>
                   </figure>
                 ) : (
                   <div className="paged-script-empty">
