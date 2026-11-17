@@ -88,7 +88,15 @@
   so that its result shows plainly once the stage fits the selection).
 - Once docs.paged.media runs the lab on `'connect'` in production, delete the legacy branch;
   `<ScriptingPlayground>` stays for the examples gallery until it moves to the same stage.
-- The lab's and the demos' stills, and the editor figures, arrive from the editor's film
-  stills; until then the pages show the empty stage or nothing, and the build lists a figure
-  whose file is there without its provenance.
+- The lab's and the demos' stills, and the editor figures, come from the editor's film
+  stills; until one exists the page shows the empty stage or nothing, and the build lists a
+  figure whose file is there without its provenance.
+
+## Amendment, 2026-11-18
+
+The recorded imagery is in. The six editor figures (the four embedding profiles, a filler's
+session, paged.draw's Path options) were captured at paged `09a35a100`; the ten lab results
+at `5f06bce4c`, through the embedding API with the revised theme scripts; the fill demo's end
+state at `09a35a100`. Each caption names its commit. The guided tour ends on an empty page,
+so its demo keeps the plain stage.
 - A new generated table follows rule 5 or fails the sweep.
