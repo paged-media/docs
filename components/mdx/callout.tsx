@@ -4,7 +4,7 @@ import { Pic } from '@/components/icons';
 /**
  * The brand Note (Components.jsx) standing in for the Fumadocs Callout: a left
  * rule (ink, or oxblood/warn/valid by kind), a paper-soft fill, a section-label
- * heading in IBM Plex Sans, and a sans body. Crisp corners, rules over shadows.
+ * heading in red mono caps, and a sans body. Crisp corners, rules over shadows.
  * Registered as both `Callout` and `Note` so authors can reach for either.
  */
 type Kind = 'info' | 'note' | 'warn' | 'warning' | 'error' | 'success' | 'renderer';

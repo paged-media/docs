@@ -4,6 +4,10 @@ import { source } from '@/lib/source';
 import { baseOptions } from '@/app/layout.config';
 import { SiteFooter } from '@/components/site-footer';
 
+// The masthead and ribbon sit above this layout (app/layout.tsx); the sidebar,
+// the table of contents and the phone bar stick below the masthead
+// (--fd-banner-height, app/global.css).
+//
 // The SiteFooter is a SIBLING of DocsLayout, not a child: a child lands in
 // DocsLayout's CSS grid and gets auto-placed in a top cell (which put the block
 // at the top of the page), whereas a sibling after it stacks below the whole

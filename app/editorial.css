@@ -1,90 +1,536 @@
 /* =============================================================================
-   EDITORIAL SHELL AND EVIDENCE LAYER — the record strip, the review line,
-   facts with their provenance, sidenotes and the search scope. Tokens only
-   (app/brand.css): blueprint (--color-link) for what a reader can act on,
-   oxblood (--color-accent) for editorial marks, warn for a dated claim.
+   EDITORIAL SHELL AND EVIDENCE LAYER — the shared chrome (masthead, ribbon,
+   footer; docs/adr/810-next-edition-chrome.md), the review line, facts with
+   their provenance, sidenotes and the search scope. Tokens only
+   (app/brand.css): the one red for what a reader acts on and for editorial
+   marks, warn for a dated claim, blue only for focus.
    ========================================================================== */
 
 /* -----------------------------------------------------------------------------
-   Record strip (components/record-strip.tsx): one line above the masthead.
-   Rules between the items, as in the site switch; on a phone the items wrap
-   and the rules give way to spacing.
+   Masthead (components/masthead.tsx), the V5 `.site-header`: sticky, paper at
+   .965 over an 18px blur, a 1px ink rule, 75px tall. Below 1400px the tagline
+   gives way, then Site atlas, then Library; below 920px the sections and tools
+   fold into the menu and the bar is the wordmark, search and the menu.
+   -------------------------------------------------------------------------- */
+.paged-masthead {
+  position: sticky;
+  top: 0;
+  z-index: 45;
+  background: color-mix(in srgb, var(--color-paper) 96.5%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--color-ink);
+  color: var(--color-ink);
+}
+.paged-masthead-inner {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 var(--pad);
+  height: var(--paged-masthead-height);
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2.2vw, 38px);
+}
+.paged-masthead-mark {
+  font-size: 39px;
+  text-decoration: none;
+  flex: none;
+}
+.paged-masthead-mark:hover {
+  color: var(--color-ink);
+}
+.paged-masthead-tagline {
+  font-family: var(--font-display-serif);
+  font-size: 12px;
+  font-weight: var(--weight-display-strong);
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  margin-right: auto;
+}
+.paged-masthead-nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 2.2vw, 35px);
+  margin-left: auto;
+}
+.paged-masthead-tagline + .paged-masthead-nav {
+  margin-left: 0;
+}
+.paged-masthead-link {
+  position: relative;
+  padding: 27px 0;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: var(--weight-sans-strong);
+  white-space: nowrap;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+.paged-masthead-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 20px;
+  width: 0;
+  height: 1px;
+  background: var(--color-accent);
+  transition: width 250ms var(--ease-flow);
+}
+.paged-masthead-link:hover {
+  color: var(--color-ink);
+}
+.paged-masthead-link:hover::after,
+.paged-masthead-link.is-current::after {
+  width: 100%;
+}
+.paged-masthead-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 16px;
+  border-left: 1px solid var(--color-rule);
+}
+.paged-masthead-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: var(--weight-sans-strong);
+  white-space: nowrap;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+.paged-masthead-tool.is-studio {
+  color: var(--color-accent);
+}
+.paged-masthead-tool.is-atlas {
+  font-size: 11px;
+  border-bottom: 1px solid var(--color-ink);
+  padding: 6px 0;
+}
+.paged-masthead-tool:hover {
+  color: var(--color-accent);
+}
+.paged-masthead-tool.is-studio:hover {
+  color: var(--color-ink);
+}
+.paged-masthead-ne {
+  width: 10px;
+  height: 10px;
+  flex: none;
+}
+.paged-masthead-tool .paged-masthead-ne {
+  color: var(--color-accent);
+}
+/* Fumadocs' search trigger as the V5 icon button: the glass alone; its label
+   and the shortcut stay for assistive technology and the tooltip. */
+button.paged-masthead-search {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  gap: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-ink);
+  font-size: 0;
+  overflow: hidden;
+}
+button.paged-masthead-search svg {
+  width: 17px;
+  height: 17px;
+}
+button.paged-masthead-search > div {
+  display: none;
+}
+button.paged-masthead-search:hover {
+  background: transparent;
+  color: var(--color-accent);
+}
+/* Fumadocs' theme switch: three square cells on a hairline. */
+.paged-masthead-theme {
+  border-radius: 0 !important;
+  border-color: var(--color-rule) !important;
+  padding: 2px !important;
+  gap: 1px;
+}
+.paged-masthead-theme > button {
+  border-radius: 0 !important;
+  width: 24px;
+  height: 24px;
+  padding: 5px;
+  color: var(--color-muted);
+}
+.paged-masthead-theme > button:hover {
+  color: var(--color-ink);
+}
+.paged-masthead-theme > button[class*='bg-fd-accent'] {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+.paged-masthead-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 37px;
+  padding: 9px 13px;
+  border: 1px solid var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: var(--weight-sans-strong);
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background-color var(--dur-micro) var(--ease-flow), transform var(--dur-micro) var(--ease-flow);
+}
+.paged-masthead-action:hover {
+  background: var(--color-accent-press);
+  border-color: var(--color-accent-press);
+  color: var(--color-on-accent);
+  transform: translateY(-1px);
+}
+.paged-masthead-action .paged-masthead-ne {
+  width: 12px;
+  height: 12px;
+}
+/* The phone menu: hidden until the sections fold away. */
+.paged-masthead-menu {
+  display: none;
+}
+.paged-masthead-menu > summary {
+  list-style: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+}
+.paged-masthead-menu > summary::-webkit-details-marker {
+  display: none;
+}
+.paged-masthead-menu > summary svg {
+  width: 20px;
+  height: 20px;
+}
+.paged-masthead-menu[open] > summary {
+  color: var(--color-accent);
+}
+.paged-masthead-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  max-height: calc(100dvh - var(--paged-masthead-height));
+  overflow-y: auto;
+  padding: 10px var(--pad) 22px;
+  background: var(--color-paper);
+  border-bottom: 1px solid var(--color-ink);
+  box-shadow: var(--shadow-3);
+}
+.paged-masthead-sheet nav {
+  display: flex;
+  flex-direction: column;
+}
+.paged-masthead-sheet .paged-masthead-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--color-rule);
+  font-family: var(--font-display-serif);
+  font-size: 23px;
+  font-weight: var(--weight-display);
+  letter-spacing: -0.02em;
+}
+.paged-masthead-sheet .paged-masthead-link::after {
+  display: none;
+}
+.paged-masthead-sheet .paged-masthead-link.is-current {
+  color: var(--color-accent);
+}
+.paged-masthead-sheet .paged-masthead-link.is-action {
+  color: var(--color-accent);
+}
+.paged-masthead-sheet-theme {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: var(--weight-label);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+@media (max-width: 1399px) {
+  .paged-masthead-tagline {
+    display: none;
+  }
+  .paged-masthead-tagline + .paged-masthead-nav {
+    margin-left: auto;
+  }
+}
+@media (max-width: 1299px) {
+  .paged-masthead-tool.is-atlas {
+    display: none;
+  }
+}
+@media (max-width: 1179px) {
+  .paged-masthead-tool.is-library {
+    display: none;
+  }
+  .paged-masthead-nav {
+    gap: 18px;
+  }
+}
+@media (max-width: 919px) {
+  .paged-masthead-nav,
+  .paged-masthead-tool,
+  .paged-masthead-tools > .paged-masthead-theme,
+  .paged-masthead-action {
+    display: none;
+  }
+  .paged-masthead-mark {
+    font-size: 32px;
+    margin-right: auto;
+  }
+  .paged-masthead-tools {
+    border-left: 0;
+    padding-left: 0;
+    gap: 4px;
+  }
+  .paged-masthead-menu {
+    display: block;
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   Ribbon (components/record-strip.tsx), the V5 `.surface-ribbon`: 34px, a
+   hairline under it, 10px spaced caps in muted. The edition on the left, the
+   record on the right. On a phone the edition gives way and the record keeps
+   its short labels.
    -------------------------------------------------------------------------- */
 .paged-strip {
-  background: var(--color-paper-soft);
   border-bottom: 1px solid var(--color-rule);
   font-family: var(--font-sans);
-  font-size: 12.5px;
-  line-height: 1.45;
-  color: var(--color-ink-soft);
+  font-size: 10px;
+  line-height: 1.4;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--color-muted);
   font-variant-numeric: tabular-nums;
 }
 .paged-strip-inner {
+  max-width: var(--container);
+  margin: 0 auto;
+  min-height: 34px;
+  padding: 0 var(--pad);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 16px;
+  flex-wrap: wrap;
+}
+.paged-strip-edition {
+  white-space: nowrap;
+}
+.paged-strip-items {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 2px 14px;
-  padding: 6px 16px;
+  justify-content: flex-end;
+  gap: 2px 0;
+  padding: 6px 0;
 }
-.paged-strip-label {
-  color: var(--color-muted);
+.paged-strip-item + .paged-strip-item::before {
+  content: '/';
+  margin: 0 8px;
+  color: var(--color-accent);
 }
 .paged-strip-value {
-  color: var(--color-ink);
-  font-weight: 560;
+  color: var(--color-ink-soft);
 }
 a.paged-strip-value,
 .paged-strip-link {
   text-decoration: underline;
   text-decoration-color: var(--color-rule-strong);
   text-decoration-thickness: 1px;
-  text-underline-offset: 0.2em;
-  transition: color var(--dur-micro) var(--ease-paper), text-decoration-color var(--dur-micro) var(--ease-paper);
+  text-underline-offset: 0.25em;
+  transition: color var(--dur-micro) var(--ease-flow), text-decoration-color var(--dur-micro) var(--ease-flow);
 }
 .paged-strip-link {
-  color: var(--color-link);
-  font-weight: 520;
+  color: var(--color-ink-soft);
 }
 a.paged-strip-value:hover,
 .paged-strip-link:hover {
-  color: var(--color-link-press);
+  color: var(--color-accent);
   text-decoration-color: currentColor;
 }
 .paged-strip-stale {
   color: var(--warn);
-  font-weight: 600;
-}
-.paged-strip-note {
-  margin-left: auto;
-  font-family: var(--font-text-serif);
-  font-style: italic;
-  font-size: 13px;
-  color: var(--color-muted);
+  font-weight: 700;
 }
 .paged-strip-short {
   display: none;
 }
-@media (min-width: 720px) {
-  .paged-strip-inner {
-    gap: 0;
-    padding: 6px 24px;
-  }
-  .paged-strip-item + .paged-strip-item {
-    margin-left: 12px;
-    padding-left: 12px;
-    border-left: 1px solid var(--color-rule-strong);
-  }
-}
 @media (max-width: 719px) {
-  .paged-strip {
-    font-size: 12px;
-  }
-  .paged-strip-long,
-  .paged-strip-note {
+  .paged-strip-edition,
+  .paged-strip-long {
     display: none;
   }
   .paged-strip-short {
     display: inline;
+  }
+  .paged-strip-inner {
+    justify-content: flex-start;
+  }
+  .paged-strip-items {
+    justify-content: flex-start;
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   Footer (components/site-footer.tsx), the V5 dark footer: night in either
+   theme; the wordmark and its strap, then Discover / Make / Understand, then
+   the colophon under a rule. The compact variant (docs pages) is shorter.
+   -------------------------------------------------------------------------- */
+.paged-footer {
+  margin-top: 0;
+  background: var(--color-instrument);
+  color: var(--color-instrument-ink);
+  --color-focus: var(--color-focus-night);
+  --focus-ring: 3px solid var(--color-focus-night);
+}
+.paged-footer.is-compact {
+  margin-top: var(--space-8);
+}
+.paged-footer-inner {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 55px var(--pad) 28px;
+}
+.paged-footer-top {
+  display: grid;
+  grid-template-columns: 1.6fr repeat(3, 1fr);
+  gap: 35px;
+  padding-bottom: 90px;
+}
+.paged-footer.is-compact .paged-footer-top {
+  padding-bottom: 48px;
+}
+.paged-footer-mark {
+  font-size: 70px;
+  color: var(--color-instrument-ink);
+  text-decoration: none;
+}
+.paged-footer.is-compact .paged-footer-mark {
+  font-size: 48px;
+}
+.paged-footer-mark:hover {
+  color: var(--color-instrument-ink);
+}
+.paged-footer-mark b {
+  color: var(--color-accent-night);
+}
+.paged-footer-strap {
+  margin: 20px 0 0;
+  max-width: 380px;
+  font-family: var(--font-display-serif);
+  font-size: 26px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--color-instrument-ink);
+}
+.paged-footer.is-compact .paged-footer-strap {
+  font-size: 20px;
+  max-width: 320px;
+}
+.paged-footer-mission {
+  margin: 20px 0 0;
+  max-width: 370px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--color-instrument-muted);
+}
+.paged-footer-col h2 {
+  margin: 0 0 20px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  line-height: 1.4;
+  font-weight: var(--weight-label);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-instrument-muted);
+}
+.paged-footer-col ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.paged-footer-col li {
+  margin: 12px 0;
+}
+.paged-footer-col a {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.4;
+  color: #e2e6dd;
+  text-decoration: none;
+}
+.paged-footer-col a:hover {
+  color: var(--color-accent-night);
+}
+.paged-footer-bottom {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1.2fr;
+  gap: 12px 32px;
+  padding-top: 22px;
+  border-top: 1px solid var(--color-instrument-rule);
+}
+.paged-footer-bottom p {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+  color: var(--color-instrument-muted);
+}
+.paged-footer-bottom a {
+  color: var(--color-instrument-ink);
+  text-underline-offset: 0.2em;
+}
+.paged-footer-bottom a:hover {
+  color: var(--color-accent-night);
+}
+.paged-footer-bottom strong {
+  font-weight: var(--weight-sans-strong);
+  color: var(--color-instrument-ink);
+}
+@media (max-width: 919px) {
+  .paged-footer-top {
+    grid-template-columns: 1fr 1fr;
+  }
+  .paged-footer-brand {
+    grid-column: 1 / -1;
+  }
+  .paged-footer-bottom {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .paged-footer-top {
+    gap: 22px;
+    padding-bottom: 50px;
+  }
+  .paged-footer-mark {
+    font-size: 56px;
   }
 }
 

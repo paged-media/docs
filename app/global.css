@@ -3,21 +3,20 @@
 @import 'fumadocs-ui/css/preset.css';
 @import './brand.css';
 @import './editorial.css';
+@import './edition.css';
 
 /* Tailwind v4 needs to scan Fumadocs UI's prebuilt components (node_modules is
  * not auto-scanned). Our own app/, components/, content/ are auto-detected. */
 @source '../node_modules/fumadocs-ui/dist/**/*.js';
 
 /* =============================================================================
-   PAGED BRAND ↔ FUMADOCS BRIDGE
-   The Paged design system (app/brand.css) is the source of truth. Here we
-   repoint Fumadocs' own `--color-fd-*` theme variables at the brand tokens so
-   all of Fumadocs' chrome (sidebar, nav, TOC, search, prose, cards) renders in
-   paper and ink — in either theme, since the dark theme below swaps the brand
-   tokens themselves and everything follows. Fumadocs' "primary" is what a
-   reader acts on (links, the active page in the sidebar and the TOC, focus),
-   so it is blueprint (--color-link); oxblood stays the editorial accent
-   (kickers, issue marks, proof marks), set where those are drawn.
+   PAGED BRAND ↔ FUMADOCS BRIDGE (The Next Edition, docs/adr/810)
+   The brand tokens (app/brand.css, vendored and checked by check:tokens) are
+   the source of truth. Fumadocs' own `--color-fd-*` variables point at them,
+   so its chrome (sidebar, TOC, search, prose, cards) is paper and ink in
+   either theme: the night theme below swaps the brand tokens and everything
+   follows. Fumadocs' "primary" is what a reader acts on (links, the active
+   page in the sidebar and the TOC): the one red, as in the V5 sidebar.
    ========================================================================== */
 :root,
 .dark {
@@ -25,67 +24,78 @@
   --color-fd-foreground: var(--color-ink);
   --color-fd-muted: var(--color-paper-soft);
   --color-fd-muted-foreground: var(--color-muted);
-  --color-fd-card: var(--color-paper-soft);
+  --color-fd-card: var(--color-paper);
   --color-fd-card-foreground: var(--color-ink);
   --color-fd-popover: var(--color-paper-soft);
   --color-fd-popover-foreground: var(--color-ink);
   --color-fd-border: var(--color-rule);
-  --color-fd-primary: var(--color-link);
-  --color-fd-primary-foreground: var(--color-paper-soft);
-  --color-fd-secondary: var(--color-paper-soft);
+  --color-fd-primary: var(--color-accent);
+  --color-fd-primary-foreground: var(--color-on-accent);
+  --color-fd-secondary: var(--paper-2);
   --color-fd-secondary-foreground: var(--color-ink);
-  --color-fd-accent: var(--color-link-soft);
+  --color-fd-accent: var(--paper-2);
   --color-fd-accent-foreground: var(--color-ink);
-  --color-fd-ring: var(--color-link);
+  --color-fd-ring: var(--color-focus);
 
-  /* Fumadocs / Tailwind font tokens: --font-sans and --font-mono are the brand's (app/brand.css). */
+  /* The sticky masthead (components/masthead.tsx) is above every layout:
+     Fumadocs' sticky sidebar, TOC and phone bar start under it. */
+  --paged-masthead-height: 75px;
+  --fd-banner-height: var(--paged-masthead-height);
+}
+@media (max-width: 919px) {
+  :root,
+  .dark {
+    --paged-masthead-height: 60px;
+  }
 }
 
 /* =============================================================================
-   NIGHT PAPER — the dark reading theme (follows the reader's system setting;
-   the theme switch overrides it). Still the editorial page, not a developer dashboard: warm ink
-   ground, paper-coloured text, the oxblood and blueprint lifted to read on it.
-   Contrast on --color-paper (#161412): ink 14.7:1, ink-soft 10.2:1, muted
-   5.9:1, accent 6.0:1, link 8.9:1, warn 8.5:1; on --color-paper-soft muted
-   5.5:1, link 8.3:1; muted on the link tint 4.9:1. All pass WCAG AA.
+   NIGHT — the dark reading theme (it follows the reader's system setting; the
+   masthead's switch overrides it). The brand's night set: the instrument
+   ground, its ink and muted, the accent lifted for night (#b51f19 is 2.6:1
+   there) and the night focus blue. On --color-instrument (#191d1c): ink
+   14.1:1, ink-soft 11.1:1, muted 6.7:1, accent 6.8:1, focus 7.5:1, every
+   code colour 8:1 or more; on --color-instrument-soft (#29302e) muted 5.3:1,
+   accent 5.4:1. A red fill carries night ink (6.8:1), not white.
    ========================================================================== */
 .dark {
-  --color-paper: #161412;
-  --color-paper-soft: #1e1b18;
-  --color-ink: #ece5d8;
-  --color-ink-soft: #c9c0b2;
-  --color-muted: #9a9184;
-  --color-rule: #34302a;
-  --color-rule-strong: #5b544a;
-  --color-accent: #d9776c;
-  --color-accent-press: #e89a8f;
-  --color-accent-soft: #3b2421;
-  --color-link: #9db6e0;
-  --color-link-press: #b8cbea;
-  --color-link-soft: #1f2630;
+  --color-paper: var(--color-instrument);
+  --color-paper-soft: var(--color-instrument-soft);
+  --color-ink: var(--color-instrument-ink);
+  --color-ink-soft: #ced2ca;
+  --color-muted: var(--color-instrument-muted);
+  --color-rule: var(--color-instrument-rule);
+  --color-rule-strong: #6f7c75;
+  --color-accent: var(--color-accent-night);
+  --color-accent-press: #f2b0a4;
+  --color-accent-soft: #3a2724;
+  --color-on-accent: var(--color-instrument);
+  --color-focus: var(--color-focus-night);
+  --focus-ring: 3px solid var(--color-focus-night);
+  --stock-edge: #0f1211;
 
-  --paper-2: #24201c;
-  --paper-3: #2c2722;
-  --ink-0: #f6f0e6;
+  --paper-2: #222827;
+  --paper-3: #2c3432;
+  --ink-0: #f5f6f0;
 
-  --blueprint: var(--color-link);
-  --blueprint-soft: var(--color-link-soft);
+  --blueprint: var(--color-focus-night);
+  --blueprint-soft: #1f2840;
   --valid: #7fb593;
   --valid-soft: #1c2a21;
   --warn: #d6a95c;
   --warn-soft: #2e2617;
 
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-2: 0 2px 6px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-3: 0 8px 28px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.35);
+  --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-3: 0 24px 45px rgba(0, 0, 0, 0.45);
 
   --code-text: var(--color-ink);
   --code-muted: var(--color-muted);
   --code-tag: #93b6db;
   --code-attr: #e2a676;
   --code-string: #a9c79a;
-  --code-comment: #8f8679;
-  --code-punctuation: #aaa298;
+  --code-comment: #9ca49d;
+  --code-punctuation: #b4bab3;
 
   color-scheme: dark;
 }
@@ -99,162 +109,335 @@ body {
   background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  font-size: 15px;
 }
-
-/* Honor reduced-motion: the rebrand's only motion is a few short color
-   transitions (copy action, start-here hover); drop them when asked. */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+/* The paper grain over the whole page (brand --paper-grain); never on night,
+   and never in the way of the pointer. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  opacity: var(--paper-grain-opacity);
+  background-image: var(--paper-grain);
 }
-
-/* Page title (Fumadocs DocsTitle, a bare <h1> outside .prose): the brand
-   `.docs-title` clamp(42px,6vw,92px) is too large for the docs page header, so
-   bring it to a calmer editorial scale. The home hero (.hero-title) and in-body
-   headings (.prose h*) keep their own sizes; only the page <h1> is affected.
-   Unlayered + later in source order than brand.css, so it wins the cascade. */
-h1 {
-  font-size: clamp(30px, 3.4vw, 48px);
-  line-height: 1.02;
-  letter-spacing: -0.035em;
-}
-.prose h1 {
-  font-size: clamp(30px, 3.4vw, 48px);
+.dark body::before {
+  display: none;
 }
 
 /* =============================================================================
-   READING COLUMN — map Fumadocs prose to the brand type scale.
-   Long-form reading is Source Serif 4 at the 66ch measure / 1.6 leading;
-   display headings are Newsreader; labels/captions/tables are IBM Plex Sans;
-   code is IBM Plex Mono. (Brand: app/brand.css type-scale classes.)
+   THE DOCS ARTICLE at V5's reading scale (the study's `.docs-main`): the page
+   title is a display headline, h2 and h3 are Newsreader set light, running
+   text is DM Sans at 16/1.78 on the 66ch measure. The brand's global h1–h3
+   are display sizes for front pages; here they are brought to a page's.
    ========================================================================== */
-.prose {
-  font-family: var(--font-text-serif);
-  color: var(--color-ink);
+#nd-page > h1 {
+  font-family: var(--font-display-serif);
+  font-size: clamp(47px, 4.4vw, 78px);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  font-weight: var(--weight-display);
+  margin: 0;
+  text-wrap: balance;
 }
-.prose p,
-.prose li {
+#nd-page > h1 em {
+  font-weight: var(--weight-display-light);
+  color: var(--color-accent);
+}
+/* The title's kicker: the site and the chapter, as a red mono path. */
+#nd-page > .paged-kicker {
+  margin: 0 0 -4px;
+}
+/* An element entry (the V5 reference entry): the element's name at display
+   size, closed by the red full stop. */
+#nd-page > .paged-entry-head {
+  letter-spacing: 0.02em;
+  text-transform: none;
+  font-size: 12px;
+  font-weight: var(--weight-mono);
+}
+#nd-page > .paged-entry-head + h1 {
+  font-size: clamp(40px, 7vw, 120px);
+  line-height: 0.88;
+  letter-spacing: -0.07em;
+  overflow-wrap: anywhere;
+}
+.paged-entry-stop {
+  color: var(--color-accent);
+}
+/* The description under the title is the page's lead, in the serif. */
+#nd-page > h1 + p {
   font-family: var(--font-text-serif);
-  font-size: 1.075rem;
-  line-height: 1.6;
-  letter-spacing: -0.004em;
+  font-size: clamp(20px, 1.7vw, 25px);
+  line-height: 1.36;
+  letter-spacing: -0.012em;
   color: var(--color-ink);
+  max-width: 44ch;
+  margin-bottom: var(--space-3);
+}
+/* Each rule reaches prose only: `:where()` keeps it at one class of
+   specificity, and `.not-prose` (examples, entries, the field guide) opts out,
+   as Fumadocs' own prose rules do. */
+.prose {
+  font-family: var(--font-sans);
+  color: var(--color-ink-soft);
+  font-size: 16px;
+  line-height: 1.78;
+}
+.prose :where(p, li):not(:where(.not-prose, .not-prose *)) {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.78;
+  color: var(--color-ink-soft);
   text-wrap: pretty;
 }
-.prose h1 {
+.prose :where(h1, h2):not(:where(.not-prose, .not-prose *)) {
   font-family: var(--font-display-serif);
-  font-size: clamp(36px, 4.5vw, 60px);
-  line-height: 0.98;
-  letter-spacing: -0.04em;
-  font-weight: var(--weight-display-strong);
-  color: var(--color-ink);
-}
-.prose h2 {
-  font-family: var(--font-display-serif);
-  font-size: clamp(26px, 3vw, 40px);
+  font-size: clamp(32px, 2.9vw, 44px);
   line-height: 1.02;
-  letter-spacing: -0.03em;
-  font-weight: var(--weight-display-strong);
+  letter-spacing: -0.045em;
+  font-weight: var(--weight-display-light);
   color: var(--color-ink);
+  margin-top: 1.6em;
 }
-.prose h3 {
-  font-family: var(--font-text-serif);
-  font-size: clamp(20px, 2.2vw, 27px);
+.prose :where(h3):not(:where(.not-prose, .not-prose *)) {
+  font-family: var(--font-display-serif);
+  font-size: clamp(24px, 2vw, 29px);
   line-height: 1.12;
-  letter-spacing: -0.02em;
-  font-weight: 650;
+  letter-spacing: -0.03em;
+  font-weight: var(--weight-display);
   color: var(--color-ink);
 }
-.prose h4 {
+.prose :where(h4):not(:where(.not-prose, .not-prose *)) {
   font-family: var(--font-sans);
   font-weight: var(--weight-sans-strong);
-  font-size: 1.05rem;
+  font-size: 16px;
+  letter-spacing: 0;
+  line-height: 1.4;
   color: var(--color-ink);
 }
-.prose code {
+.prose :where(h1, h2, h3, h4) {
+  scroll-margin-top: calc(var(--paged-masthead-height) + 24px);
+}
+.prose :where(code):not(:where(.not-prose, .not-prose *)) {
   font-family: var(--font-mono);
   color: var(--color-ink);
 }
-.prose a {
-  color: var(--color-link);
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.14em;
+.prose :where(code):not(:where(pre code, .not-prose, .not-prose *)) {
+  font-size: 0.82em;
+  padding: 1px 5px;
+  border: 0;
+  border-radius: 0;
+  background: var(--paper-2);
 }
-/* Headings carry auto-anchor links in Fumadocs; blueprint is for inline body
-   links, so heading links keep the heading's ink color. */
-.prose :is(h1, h2, h3, h4, h5, h6) a {
+.prose :where(a):not(:where(.not-prose, .not-prose *)) {
+  color: var(--color-accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.16em;
+}
+.prose :where(a):not(:where(.not-prose, .not-prose *)):hover {
+  color: var(--color-accent-press);
+}
+/* Headings carry auto-anchor links in Fumadocs; heading links keep the ink. */
+.prose :where(h1, h2, h3, h4, h5, h6) :where(a) {
   color: inherit;
   text-decoration: none;
 }
-.prose strong {
-  font-weight: var(--weight-text-strong);
+.prose :where(strong):not(:where(.not-prose, .not-prose *)) {
+  font-weight: var(--weight-sans-strong);
   color: var(--color-ink);
 }
-.prose blockquote {
+.prose :where(blockquote):not(:where(.not-prose, .not-prose *)) {
   border-left: var(--rule-heavy);
-  color: var(--color-ink-soft);
+  font-family: var(--font-text-serif);
+  font-size: 20px;
+  line-height: 1.45;
+  color: var(--color-ink);
   font-style: normal;
 }
-/* Tables: hairline rules, paper-soft header, mono numerics. */
-.prose table {
-  font-family: var(--font-sans);
-  font-size: 0.9rem;
+.prose :where(blockquote):not(:where(.not-prose, .not-prose *)) :where(p) {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
 }
-.prose th {
-  background: var(--color-paper-soft);
+/* Tables: hairlines, an ink rule under the head, no fills. */
+.prose :where(table):not(:where(.not-prose, .not-prose *)) {
+  font-family: var(--font-sans);
+  font-size: 14px;
+}
+.prose :where(th):not(:where(.not-prose, .not-prose *)) {
+  background: transparent;
   border-bottom: var(--rule-medium);
   font-weight: var(--weight-sans-strong);
+  color: var(--color-ink);
 }
-.prose td,
-.prose th {
+.prose :where(td, th):not(:where(.not-prose, .not-prose *)) {
   border-color: var(--color-rule);
 }
 
-/* Selected / active nav: blueprint, the interaction colour, never a heavy
-   filled block. */
-#nd-sidebar a[data-active='true'] {
-  color: var(--color-link);
+/* =============================================================================
+   SIDEBAR AND CONTENTS (Fumadocs), as the V5 docs sidebar: paper, a hairline
+   to the article, small sans entries, section labels in spaced caps, and the
+   current page in red with a 2px rule at its left.
+   ========================================================================== */
+#nd-sidebar,
+#nd-sidebar-mobile {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  border-color: var(--color-rule);
 }
-.prose a:hover {
-  color: var(--color-link-press);
+#nd-sidebar-mobile {
+  top: var(--paged-masthead-height);
+}
+.paged-sidebar-title {
+  font-family: var(--font-sans);
+  font-size: 10px !important;
+  font-weight: var(--weight-label) !important;
+  line-height: 1.5;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  text-decoration: none;
+}
+.paged-sidebar-title:hover {
+  color: var(--color-accent);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) :is(a, button) {
+  border-radius: 0;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--color-ink-soft);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) :is(a, button):hover {
+  background: transparent;
+  color: var(--color-accent);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active='true'] {
+  background: transparent;
+  color: var(--color-accent);
+  box-shadow: inset 2px 0 0 var(--color-accent);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active='true']::before {
+  display: none;
+}
+/* Section separators ("Start here", "The package") as the V5 group labels. */
+:is(#nd-sidebar, #nd-sidebar-mobile) p {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  line-height: 1.5;
+  font-weight: var(--weight-label);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+/* On a phone the masthead has search; the bar that opens the sidebar keeps
+   only its label and the drawer button. */
+#nd-subnav {
+  background: color-mix(in srgb, var(--color-paper) 96.5%, transparent);
+  border-color: var(--color-rule);
+}
+#nd-subnav [data-search] {
+  display: none;
+}
+
+/* "On this page": a label in spaced caps, its entries small and muted, the
+   one in view in red. */
+#nd-toc #toc-title {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--color-muted);
+  margin-bottom: var(--space-3);
+}
+#nd-toc #toc-title svg {
+  display: none;
+}
+#nd-toc a {
+  font-size: 12.5px;
+  color: var(--color-muted);
+}
+#nd-toc a[data-active='true'] {
+  color: var(--color-accent);
+}
+#nd-toc code {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-size: 0.92em;
+}
+
+/* Previous / next at the foot of a page (Fumadocs' footer: the article's last
+   grid of links): hairline cards with an ink rule on top, serif titles. */
+#nd-page > div.grid:last-child > a {
+  border-radius: 0;
+  border-color: var(--color-rule);
+  border-top: 1px solid var(--color-ink);
+  background: transparent;
+}
+#nd-page > div.grid:last-child > a:hover {
+  background: var(--paper-2);
+}
+#nd-page > div.grid:last-child > a > div > p {
+  font-family: var(--font-display-serif);
+  font-size: 21px;
+  font-weight: var(--weight-display);
+  letter-spacing: -0.03em;
+  color: var(--color-ink);
+}
+/* Fumadocs' breadcrumb over the kicker: muted mono caps, as the study's. */
+#nd-page > div.flex.items-center.text-sm:first-child {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+/* Code blocks: square, a hairline, the paper panel. */
+.prose figure.shiki {
+  border-radius: 0;
+  border-color: var(--color-rule);
+  box-shadow: none;
+  background: var(--color-paper-soft);
 }
 
 /* =============================================================================
    "In short" panel — the brand styleguide DefinitionBlock applied to the
    recurring "In short:" lead (marked by the rehypeInShort transform): a
-   paper-soft sheet with a 2px ink left rule, the lead set as a section label.
+   paper-soft sheet with a 2px ink left rule, the lead set in the serif under
+   a red mono kicker.
    ========================================================================== */
 .prose .paged-inshort {
   background: var(--color-paper-soft);
   border: 1px solid var(--color-rule);
   border-left: 2px solid var(--color-ink);
-  border-radius: 2px;
+  border-radius: 0;
   padding: var(--space-4) var(--space-5);
   margin: var(--space-5) 0;
   font-family: var(--font-text-serif);
+  font-size: 19px;
+  line-height: 1.5;
   color: var(--color-ink);
 }
 .prose .paged-inshort > strong:first-child {
   display: block;
-  font-family: var(--font-sans);
-  font-size: 11px;
-  line-height: 1;
-  letter-spacing: 0.14em;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.5;
+  letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  font-weight: 700;
+  font-weight: var(--weight-label);
   color: var(--color-accent);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-2);
 }
 
 /* Glossary entries carry an anchor (rehypeGlossaryAnchors): clear the sticky
    header when one is the target, and mark the targeted entry. */
 .prose .paged-term {
-  scroll-margin-top: 6rem;
+  scroll-margin-top: calc(var(--paged-masthead-height) + 24px);
 }
 .prose .paged-term:target {
   background: var(--color-paper-soft);
@@ -263,8 +446,8 @@ h1 {
 
 /* =============================================================================
    Card list — navigation bullet lists (marked by rehypeCardList) rendered as
-   the brand "where to begin" card grid: a 2px ink top rule, a serif card head
-   that turns oxblood on hover, and a sans description.
+   the "where to begin" grid of the V5 bridge: a 1px ink top rule, a serif
+   card head that turns red on hover, and a sans description.
    ========================================================================== */
 .prose ul.paged-cardlist {
   list-style: none;
@@ -277,7 +460,7 @@ h1 {
 .prose ul.paged-cardlist > li {
   margin: 0;
   padding: var(--space-3) 0 0;
-  border-top: 2px solid var(--color-ink);
+  border-top: 1px solid var(--color-ink);
 }
 .prose ul.paged-cardlist > li::marker {
   content: none;
@@ -286,11 +469,11 @@ h1 {
   margin: 0;
 }
 .prose ul.paged-cardlist :is(a, strong:first-child > a) {
-  font-family: var(--font-text-serif);
-  font-weight: 650;
-  font-size: 1.2rem;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  font-family: var(--font-display-serif);
+  font-weight: var(--weight-display);
+  font-size: 1.6rem;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
   color: var(--color-ink);
   text-decoration: none;
   display: inline-block;
@@ -298,7 +481,7 @@ h1 {
   transition: color var(--dur-fast);
 }
 .prose ul.paged-cardlist :is(a, strong:first-child > a):hover {
-  color: var(--color-link);
+  color: var(--color-accent);
 }
 .prose ul.paged-cardlist > li strong:first-child {
   font-weight: inherit;
@@ -432,77 +615,12 @@ h1 {
 }
 
 /* =============================================================================
-   HOME — landing grids (the brand home.jsx layout classes, which lived inline
-   in the mockup). Two-column hero (text + Gutenberg frontispiece), and the
-   three-up tier / start-here grids; all collapse on narrow screens.
-   ========================================================================== */
-.home-hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--space-7);
-  align-items: center;
-}
-.tiers-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-5);
-}
-.start-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-6);
-}
-.start-card {
-  text-decoration: none;
-  display: block;
-  padding-top: var(--space-4);
-  border-top: 2px solid var(--color-ink);
-}
-.start-card h3 {
-  transition: color var(--dur-fast);
-}
-.start-card:hover h3 {
-  color: var(--color-link);
-}
-@media (max-width: 860px) {
-  .home-hero,
-  .tiers-grid,
-  .start-grid {
-    grid-template-columns: 1fr;
-  }
-  .tiers-grid > * {
-    padding-left: 0 !important;
-    border-left: 0 !important;
-  }
-}
-
-/* =============================================================================
    READING MEASURE — running text keeps the brand measure (--reading-measure,
    66ch); examples, tables, figures, card grids and code still use the full
    column. Long lines are the main reason a long reference page tires the eye.
    ========================================================================== */
 .prose > :is(p, ul:not(.paged-cardlist), ol, blockquote, dl) {
   max-width: var(--reading-measure);
-}
-
-/* "On this page": Fumadocs renders it as an <h3>, which the brand's global h3
-   scale (app/brand.css) turned into a display heading bigger than the entries.
-   It is a label, set like the "In short" label. */
-#nd-toc #toc-title {
-  font-family: var(--font-sans);
-  font-size: 11px;
-  line-height: 1;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-weight: 700;
-  color: var(--color-muted);
-  margin-bottom: var(--space-3);
-}
-#nd-toc code {
-  border: 0;
-  background: none;
-  padding: 0;
-  font-size: 0.92em;
 }
 
 /* Draft mark — a page that is not `published` (sidebar via lib/source.ts, and
@@ -543,37 +661,6 @@ h1 {
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.08em;
-}
-
-/* Site switch (components/site-switcher.tsx): both sites, the current one
-   marked with the tab underline the Source Code Panel uses. */
-.paged-site-switch {
-  display: inline-flex;
-  align-items: stretch;
-  border: 1px solid var(--color-rule);
-  border-radius: 2px;
-  background: var(--color-paper-soft);
-}
-.paged-site-switch-item {
-  padding: 6px 10px;
-  font-family: var(--font-sans);
-  font-size: 12.5px;
-  line-height: 1.2;
-  font-weight: 520;
-  white-space: nowrap;
-  color: var(--color-muted);
-  text-decoration: none;
-}
-.paged-site-switch-item + .paged-site-switch-item {
-  border-left: 1px solid var(--color-rule);
-}
-a.paged-site-switch-item:hover {
-  color: var(--color-link);
-}
-.paged-site-switch-item.is-current {
-  color: var(--color-ink);
-  font-weight: 640;
-  box-shadow: inset 0 -2px 0 var(--color-ink);
 }
 
 /* =============================================================================
@@ -783,39 +870,106 @@ a.paged-site-switch-item:hover {
 }
 
 /* =============================================================================
-   SEARCH (components/search-dialog.tsx): a page row with its kind, then one
-   passage clamped to two lines.
+   SEARCH (components/search-dialog.tsx), V5's search overlay: a dark backdrop
+   with a blur, a paper dialog on a 1px ink border, the query set in the serif
+   at display size, a row per page with its kind in red mono on the left and
+   its title in the serif, then one passage clamped to two lines.
    ========================================================================== */
+.paged-search-overlay {
+  background: rgba(18, 24, 21, 0.79);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+}
+.paged-search-dialog {
+  max-width: min(900px, calc(100% - 1rem));
+  border-radius: 0;
+  border: 1px solid var(--color-ink);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-dialog);
+}
+@media (min-width: 768px) {
+  .paged-search-dialog {
+    top: clamp(30px, 10vh, 100px);
+  }
+}
+.paged-search-dialog > * {
+  border-color: var(--color-rule);
+}
+.paged-search-header {
+  padding: 18px 24px;
+  gap: 14px;
+  border-bottom: 1px solid var(--color-ink) !important;
+}
+.paged-search-header > svg {
+  width: 22px;
+  height: 22px;
+  color: var(--color-muted);
+}
+.paged-search-header input {
+  font-family: var(--font-display-serif);
+  font-size: clamp(22px, 3vw, 32px);
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+  color: var(--color-ink);
+}
+/* The query field is the dialog's one field and holds the caret: no ring. */
+.paged-search-header input:focus-visible {
+  outline: none;
+}
+.paged-search-header input::placeholder {
+  color: var(--color-muted);
+}
+.paged-search-header button {
+  border-radius: 0;
+  border-color: var(--color-rule);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+.paged-search-dialog [aria-selected] {
+  border-radius: 0;
+}
+.paged-search-dialog button[aria-selected='true'] {
+  background: var(--paper-3);
+  color: var(--color-ink);
+}
 .paged-search-page {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  padding: 12px 10px !important;
+  border-bottom: 1px solid var(--color-rule) !important;
 }
 .paged-search-title {
-  font-size: 14px;
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  font-weight: 600;
+  gap: 16px;
+  font-family: var(--font-display-serif);
+  font-size: 21px;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  font-weight: var(--weight-display-strong);
   color: var(--color-ink);
 }
 .paged-search-kind {
-  flex-shrink: 0;
-  padding: 0 6px;
-  border: 1px solid var(--color-rule-strong);
-  border-radius: 2px;
+  order: -1;
+  flex: 0 0 82px;
   font-family: var(--font-mono);
   font-size: 10px;
-  font-weight: 450;
+  font-weight: var(--weight-label);
   line-height: 1.6;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-muted);
+  color: var(--color-accent);
 }
 .paged-search-crumbs {
-  font-size: 11.5px;
+  padding-left: 98px;
+  font-family: var(--font-sans);
+  font-size: 12px;
   color: var(--color-muted);
+}
+.paged-search-snippet {
+  padding-left: 108px !important;
 }
 .paged-search-snippet :is(p, li) {
   margin: 0;
@@ -830,12 +984,47 @@ a.paged-site-switch-item:hover {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+.paged-search-snippet > [role='none'] {
+  display: none;
+}
 .paged-search-empty {
   margin: 0;
   padding: 24px 12px;
   text-align: center;
   font-size: 14px;
   color: var(--color-muted);
+}
+.paged-search-footer {
+  padding: 12px 24px !important;
+  background: transparent !important;
+  border-top: 1px solid var(--color-ink);
+}
+.paged-search-tags > button {
+  border-radius: 0;
+  border-color: var(--color-rule);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.paged-search-tags > button[data-active='true'] {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: var(--color-paper);
+}
+@media (max-width: 600px) {
+  .paged-search-header {
+    padding: 12px 14px;
+  }
+  .paged-search-title {
+    flex-direction: column;
+    gap: 2px;
+    font-size: 18px;
+  }
+  .paged-search-crumbs,
+  .paged-search-snippet {
+    padding-left: 10px !important;
+  }
 }
 /* The playground's Monaco frame takes the editor theme's own ground. */
 .paged-monaco-frame {

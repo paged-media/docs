@@ -31,6 +31,11 @@ import { resolveHref, SITE_ID, SITES, type SiteId } from '@/lib/site';
  * first, so an element name lands on the element's page. The footer filters
  * by kind. Same static index and engine as Fumadocs' default dialog.
  *
+ * The look is V5's search overlay (docs/adr/810-next-edition-chrome.md): a
+ * dark backdrop with a blur, a paper dialog on a 1px ink border, the query in
+ * the serif at display size, each page's kind in red mono beside its serif
+ * title. Styles: app/global.css (SEARCH) and app/editorial.css (scope).
+ *
  * Scope (docs/adr/808-cross-site-search.md): "This site" searches this site's
  * index; "Both sites" also loads the other site's static index from its own
  * origin (served with CORS, public/_headers). The other site's results carry
@@ -201,9 +206,9 @@ export default function PagedSearchDialog(props: SharedProps) {
 
   return (
     <SearchDialog search={search} onSearchChange={setSearch} isLoading={query.isLoading} {...props}>
-      <SearchDialogOverlay />
-      <SearchDialogContent>
-        <SearchDialogHeader>
+      <SearchDialogOverlay className="paged-search-overlay" />
+      <SearchDialogContent className="paged-search-dialog">
+        <SearchDialogHeader className="paged-search-header">
           <SearchDialogIcon />
           <SearchDialogInput />
           <SearchDialogClose />
@@ -220,8 +225,8 @@ export default function PagedSearchDialog(props: SharedProps) {
             </p>
           )}
         />
-        <SearchDialogFooter>
-          <TagsList tag={tag} onTagChange={setTag} allowClear>
+        <SearchDialogFooter className="paged-search-footer">
+          <TagsList tag={tag} onTagChange={setTag} allowClear className="paged-search-tags">
             {kinds.map((k) => (
               <TagsListItem key={k.value} value={k.value}>
                 {k.name}

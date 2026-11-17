@@ -31,4 +31,8 @@ export const docsFrontmatter = frontmatterSchema.extend({
   // omit these (they can't go stale).
   describes: z.array(z.string()).optional(),
   reviewed: z.string().optional(),
+  // The page head as a two-line display headline, the second line set in the
+  // accent italic (docs/adr/810). The <title>, search and the sidebar keep
+  // `title`, which the headline must say the same thing as.
+  headline: z.tuple([z.string(), z.string()]).optional(),
 });

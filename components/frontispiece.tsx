@@ -2,41 +2,25 @@ import { SITE_ID } from '@/lib/site';
 
 /**
  * The home hero's frontispiece — the one image that tells the two sites apart
- * at a glance. docs.paged.media keeps the engraved Gutenberg portrait (the
- * project); idml.paged.media shows the format itself: the package, drawn in the
- * brand's line-icon hand, with the parts a reader finds inside it.
+ * at a glance, a small plate beside the headline. docs.paged.media keeps the
+ * engraved Gutenberg portrait (the project); idml.paged.media shows the format
+ * itself: the package, drawn in the brand's line-icon hand, with the parts a
+ * reader finds inside it. Styles: app/edition.css.
  */
 export function Frontispiece() {
   return (
-    <figure style={{ margin: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
-      <div className="paged-cropmarks" style={{ padding: 4 }}>
-        <div
-          style={{
-            width: 220,
-            height: 220,
-            borderRadius: '50%',
-            background: 'var(--color-paper-soft)',
-            border: '1px solid var(--color-rule)',
-            overflow: 'hidden',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
+    <figure className="paged-frontispiece">
+      <div className="paged-cropmarks paged-frontispiece-frame">
+        <div className="paged-frontispiece-plate">
           {SITE_ID === 'idml' ? (
             <PackagePlate />
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src="/brand/gutenberg.svg"
-              alt="Engraved portrait of Johannes Gutenberg"
-              className="paged-engraving"
-              style={{ width: '106%', height: '106%', objectFit: 'contain', display: 'block' }}
-            />
+            <img src="/brand/gutenberg.svg" alt="Engraved portrait of Johannes Gutenberg" className="paged-engraving" />
           )}
         </div>
       </div>
-      <figcaption className="type-meta" style={{ textAlign: 'center' }}>
+      <figcaption className="type-meta">
         {SITE_ID === 'idml' ? (
           <>
             Frontispiece · the IDML package

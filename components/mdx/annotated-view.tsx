@@ -7,7 +7,7 @@ import { AnnotatedPanel } from './annotated-panel';
  * notes. The code is numbered, and every line an annotation's `lines` covers
  * (or that ends in a `<!--#N-->` marker, stripped at highlight time, see
  * lib/shiki.ts) gets the brand highlight. The notes sit in a rule-left
- * marginalia column — mono line ref + IBM Plex Sans note — matching the Source
+ * marginalia column — mono line ref + DM Sans note — matching the Source
  * Code Panel's annotated mode (SourcePanel.jsx); pointing at a note lights its
  * lines and pointing at a marked line lights its note (AnnotatedPanel).
  * Collapses to one column on narrow screens.

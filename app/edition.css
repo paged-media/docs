@@ -1,0 +1,530 @@
+/* =============================================================================
+   THE NEXT EDITION — the front pages, the field guide and the shared V5
+   pieces they are built from: the container, the button, the section heading
+   (kicker, two-line h2, line), the numbered index row and the three-up bridge
+   (docs/adr/810-next-edition-chrome.md). Tokens only (app/brand.css).
+   ========================================================================== */
+
+.paged-container {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 var(--pad);
+}
+
+/* A V5 button: square, a 1px ink outline that fills with ink on hover; the
+   primary one is the red. Both lift a pixel. */
+.paged-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 44px;
+  padding: 12px 18px;
+  border: 1px solid var(--color-ink);
+  background: transparent;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: var(--weight-sans-strong);
+  letter-spacing: 0.005em;
+  white-space: nowrap;
+  text-decoration: none;
+  transition:
+    background-color var(--dur-micro) var(--ease-flow),
+    color var(--dur-micro) var(--ease-flow),
+    transform var(--dur-micro) var(--ease-flow),
+    border-color var(--dur-micro) var(--ease-flow);
+}
+.paged-button:hover {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  transform: translateY(-1px);
+}
+.paged-button.is-primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-on-accent);
+}
+.paged-button.is-primary:hover {
+  background: var(--color-accent-press);
+  border-color: var(--color-accent-press);
+  color: var(--color-on-accent);
+}
+.paged-arrow {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+
+/* The section heading: a kicker across, the two-line headline on the left,
+   its line on the right. */
+.paged-section-heading {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px 70px;
+  align-items: end;
+  margin-bottom: clamp(30px, 5vw, 72px);
+}
+.paged-section-heading > .paged-kicker {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+.paged-section-heading h2 {
+  margin: 0;
+  font-family: var(--font-display-serif);
+  font-size: clamp(46px, 5.6vw, 100px);
+  line-height: 0.9;
+  letter-spacing: -0.068em;
+  font-weight: var(--weight-display);
+}
+.paged-section-line {
+  max-width: 510px;
+  margin: 0;
+  font-family: var(--font-text-serif);
+  font-size: clamp(19px, 1.9vw, 27px);
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  color: var(--color-ink-soft);
+}
+
+/* -----------------------------------------------------------------------------
+   Front page (app/(home)/page.tsx)
+   -------------------------------------------------------------------------- */
+.paged-home-hero {
+  border-bottom: 1px solid var(--color-ink);
+  background: var(--paper-2);
+}
+.paged-home-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.55fr);
+  gap: 75px;
+  align-items: end;
+  padding-top: clamp(56px, 6.5vw, 96px);
+  padding-bottom: clamp(56px, 6.5vw, 96px);
+}
+.paged-home-hero-copy > .paged-kicker {
+  margin: 0;
+}
+.paged-home-title {
+  margin: 30px 0 32px;
+  font-family: var(--font-display-serif);
+  font-size: clamp(46px, 7.6vw, 132px);
+  line-height: 0.86;
+  letter-spacing: -0.074em;
+  font-weight: var(--weight-display);
+  color: var(--color-ink);
+}
+.paged-home-title em {
+  font-weight: var(--weight-display-light);
+  color: var(--color-accent);
+  /* the italic overhangs its box; give it the room back */
+  padding-right: 0.06em;
+}
+.paged-home-lede {
+  max-width: 690px;
+  margin: 0;
+  font-family: var(--font-text-serif);
+  font-size: clamp(19px, 1.6vw, 23px);
+  line-height: 1.4;
+  letter-spacing: -0.012em;
+  color: var(--color-ink);
+}
+.paged-home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 34px;
+}
+.paged-home-aside {
+  border-top: 1px solid var(--color-ink);
+  padding-top: 22px;
+}
+
+.paged-frontispiece {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.paged-frontispiece-frame {
+  padding: 4px;
+}
+.paged-frontispiece-plate {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: var(--color-paper-soft);
+  border: 1px solid var(--color-rule);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.paged-frontispiece-plate img {
+  display: block;
+  width: 106%;
+  height: 106%;
+  object-fit: contain;
+}
+.paged-frontispiece-plate svg {
+  width: 100%;
+  height: 100%;
+}
+.paged-frontispiece figcaption {
+  text-align: center;
+}
+
+.paged-home-section {
+  padding: clamp(78px, 8.3vw, 150px) 0;
+}
+.paged-home-section.is-bridge {
+  background: var(--paper-3);
+}
+
+/* The numbered index: a row per question, a red mono numeral, the question in
+   the serif, its answer in the sans, an arrow that moves on hover. */
+.paged-index {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-ink);
+}
+.paged-index-item {
+  border-bottom: 1px solid var(--color-rule);
+}
+.paged-index-row {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1.1fr) minmax(0, 1fr) 24px;
+  gap: 8px 28px;
+  align-items: baseline;
+  padding: 26px 6px 26px 0;
+  color: var(--color-ink);
+  text-decoration: none;
+  transition:
+    padding var(--dur-micro) var(--ease-flow),
+    background-color var(--dur-micro) var(--ease-flow);
+}
+.paged-index-row:hover {
+  padding-left: 12px;
+  background: color-mix(in srgb, var(--color-paper-soft) 70%, transparent);
+  color: var(--color-ink);
+}
+.paged-index-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: var(--weight-label);
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+}
+.paged-index-title {
+  font-family: var(--font-display-serif);
+  font-size: clamp(25px, 2.4vw, 38px);
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+  font-weight: var(--weight-display);
+}
+.paged-index-desc {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-ink-soft);
+}
+.paged-index-row .paged-arrow {
+  align-self: center;
+  transition: transform var(--dur-micro) var(--ease-flow);
+}
+.paged-index-row:hover .paged-arrow {
+  transform: translateX(4px);
+  color: var(--color-accent);
+}
+.paged-index-more {
+  margin: -14px 0 18px calc(64px + 28px);
+  font-family: var(--font-sans);
+  font-size: 13px;
+}
+.paged-index-more a {
+  color: var(--color-accent);
+  text-underline-offset: 0.2em;
+}
+
+/* The bridge (V5 `.v5-wayfind`): three ways in, between two ink rules. */
+.paged-bridge {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--color-ink);
+  border-bottom: 1px solid var(--color-ink);
+}
+.paged-bridge-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 236px;
+  margin-right: 24px;
+  padding: 27px 26px 35px 0;
+  border-right: 1px solid var(--color-rule-strong);
+  color: var(--color-ink);
+  text-decoration: none;
+  transition:
+    padding var(--dur-micro) var(--ease-flow),
+    background-color var(--dur-micro) var(--ease-flow);
+}
+.paged-bridge-card:last-child {
+  border-right: 0;
+  margin-right: 0;
+}
+.paged-bridge-card:hover {
+  padding-left: 12px;
+  background: color-mix(in srgb, var(--color-paper-soft) 60%, transparent);
+  color: var(--color-ink);
+}
+.paged-bridge-card h3 {
+  margin: 19px 0 10px;
+  font-family: var(--font-display-serif);
+  font-size: clamp(29px, 3vw, 51px);
+  line-height: 1.03;
+  letter-spacing: -0.06em;
+  font-weight: var(--weight-display);
+}
+.paged-bridge-card p {
+  max-width: 310px;
+  margin: 0 auto 23px 0;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-muted);
+}
+.paged-bridge-card .paged-arrow {
+  margin-top: auto;
+  transition: transform var(--dur-micro) var(--ease-flow);
+}
+.paged-bridge-card:hover .paged-arrow {
+  transform: translateX(4px);
+  color: var(--color-accent);
+}
+
+@media (max-width: 989px) {
+  .paged-home-hero-grid,
+  .paged-section-heading {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+  .paged-home-aside {
+    display: flex;
+    justify-content: flex-start;
+  }
+  .paged-index-row {
+    grid-template-columns: 44px minmax(0, 1fr) 20px;
+  }
+  .paged-index-desc {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .paged-index-row .paged-arrow {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .paged-index-more {
+    margin-left: calc(44px + 28px);
+  }
+  .paged-bridge {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .paged-bridge-card {
+    min-height: 0;
+    margin-right: 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-rule-strong);
+  }
+  .paged-bridge-card:last-child {
+    border-bottom: 0;
+  }
+}
+@media (max-width: 600px) {
+  .paged-index-row {
+    grid-template-columns: 34px minmax(0, 1fr) 18px;
+    gap: 6px 14px;
+  }
+  .paged-index-more {
+    margin-left: calc(34px + 14px);
+  }
+  .paged-frontispiece-plate {
+    width: 150px;
+    height: 150px;
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   The example lab (components/mdx/example-tabs.tsx), V5's Read / Run / Inspect
+   lab: a slate panel in either theme, square tab buttons on a hairline, a mono
+   caps heading, the code on night (Shiki's night palette), the live render
+   and InDesign's page on paper.
+   -------------------------------------------------------------------------- */
+.paged-lab {
+  margin: var(--space-5) 0;
+}
+.paged-lab-caption {
+  margin: 0 0 var(--space-3);
+  max-width: var(--reading-measure);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--color-ink-soft);
+}
+.paged-lab-panel {
+  /* the night set, wherever the lab sits */
+  --lab-ink: var(--color-instrument-ink);
+  --lab-muted: #b9c0ba;
+  --lab-rule: #78817f;
+  --code-text: var(--color-instrument-ink);
+  --code-muted: var(--color-instrument-muted);
+  --code-tag: #93b6db;
+  --code-attr: #e2a676;
+  --code-string: #a9c79a;
+  --code-comment: #9ca49d;
+  --code-punctuation: #b4bab3;
+  --color-focus: var(--color-focus-night);
+  --focus-ring: 3px solid var(--color-focus-night);
+  background: var(--color-slate);
+  color: var(--lab-ink);
+  padding: 20px clamp(14px, 2.2vw, 28px) clamp(16px, 2.2vw, 28px);
+}
+.paged-lab.is-feature .paged-lab-panel {
+  border-top: 2px solid var(--color-accent-night);
+}
+.paged-lab-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--lab-rule);
+}
+.paged-lab-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.paged-lab-tab {
+  appearance: none;
+  border: 1px solid #737d79;
+  background: transparent;
+  color: #cbd2ce;
+  padding: 10px 15px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  line-height: 1;
+  font-weight: var(--weight-sans-strong);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-micro) var(--ease-flow),
+    color var(--dur-micro) var(--ease-flow);
+}
+.paged-lab-tab:hover,
+.paged-lab-tab[aria-selected='true'] {
+  background: #eee9de;
+  border-color: #eee9de;
+  color: #171b1b;
+}
+.paged-lab-tab-num {
+  font-weight: var(--weight-sans);
+  opacity: 0.8;
+}
+.paged-lab-copy {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: transparent;
+  padding: 4px 0;
+  color: var(--lab-ink);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: var(--weight-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.paged-lab-copy:hover,
+.paged-lab-copy[data-copied] {
+  color: var(--color-accent-night);
+}
+.paged-lab-sheet {
+  margin-top: 18px;
+  border: 1px solid var(--lab-rule);
+}
+.paged-lab-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px 14px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--lab-rule);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.4;
+  font-weight: var(--weight-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--lab-ink);
+}
+.paged-lab-path {
+  color: var(--lab-muted);
+  overflow-wrap: anywhere;
+}
+.paged-lab-body {
+  overflow-x: auto;
+  background: #0b1316;
+}
+.paged-lab-panel .shiki,
+.paged-lab-panel .shiki span {
+  color: var(--shiki-dark);
+}
+.paged-lab-panel .paged-marginalia {
+  border-left-color: var(--lab-rule);
+}
+.paged-lab-panel .paged-marginalia-note {
+  color: #d3d8d2;
+}
+.paged-lab-panel .paged-marginalia-ref {
+  color: var(--color-accent-night);
+}
+.paged-lab-panel .shiki .line:is([data-callout], [data-note]) {
+  background: color-mix(in srgb, var(--color-accent-night) 12%, transparent);
+  box-shadow: inset 2px 0 0 var(--color-accent-night);
+}
+.paged-lab-panel .shiki .line[data-note].is-hot,
+.paged-lab-panel .paged-marginalia li:is(.is-hot, :focus-visible) {
+  background: color-mix(in srgb, var(--color-accent-night) 24%, transparent);
+}
+/* Run and Inspect: the page on paper, as the V5 lab sets its specimen. */
+.paged-lab-panel[data-view='live'] .paged-lab-body,
+.paged-lab-panel[data-view='indesign'] .paged-lab-body {
+  background: transparent;
+  padding: clamp(12px, 2vw, 22px);
+}
+.paged-lab-panel[data-view='live'] .paged-lab-body > * {
+  /* the paper sheet keeps paper's tokens in either theme */
+  --color-fd-muted: #eae6db;
+  --color-fd-card: #f8f5eb;
+  --color-fd-border: #bebbb2;
+  --color-fd-muted-foreground: #63645d;
+  background: var(--stock-face);
+  color: #202421;
+  padding: clamp(10px, 1.6vw, 18px);
+  box-shadow: var(--stock-shadow);
+}
+.paged-lab-panel[data-view='indesign'] .paged-lab-body {
+  color: var(--lab-ink);
+}
+.paged-lab-panel[data-view='indesign'] figcaption,
+.paged-lab-panel[data-view='indesign'] .text-fd-muted-foreground {
+  color: var(--lab-muted);
+}
+.paged-lab-panel .paged-fit-switch {
+  background: var(--stock-face);
+  border-color: #b7bcb8;
+}

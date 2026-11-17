@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { RootProvider } from 'fumadocs-ui/provider/next';
+import { Masthead } from '@/components/masthead';
 import { RecordStrip } from '@/components/record-strip';
 import PagedSearchDialog from '@/components/search-dialog';
 import { Analytics, GoogleAnalytics } from '@/components/analytics';
@@ -60,15 +61,18 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" className={`${newsreader.variable} ${dmSans.variable}`} suppressHydrationWarning>
       <body className="flex min-h-screen flex-col">
         {/* The reader's system setting picks paper or night (the `.dark` tokens
-            in app/global.css); the theme switch overrides it. */}
+            in app/global.css); the masthead's theme switch overrides it. */}
         <RootProvider
           theme={{ defaultTheme: 'system', enableSystem: true }}
           // Our dialog (components/search-dialog.tsx): one row per page, kind
           // labels and filters, exact title matches first; static index.
           search={{ SearchDialog: PagedSearchDialog }}
         >
-          {/* The record strip: the engine release, the capability record's
-              date (marked "not current" past its age) and the status page. */}
+          {/* The masthead all three sites share (lib/masthead-nav.ts), then the
+              ribbon: the edition's name and the record line — the engine
+              release, the capability record's date (marked "not current" past
+              its age) and the way to the status page. */}
+          <Masthead />
           <RecordStrip />
           {children}
         </RootProvider>

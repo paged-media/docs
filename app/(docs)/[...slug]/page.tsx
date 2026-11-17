@@ -54,10 +54,35 @@ export default async function Page(props: PageProps) {
     terms: params.slug.length === 1 && params.slug[0] === 'glossary' ? parseGlossary(processed) : undefined,
   });
 
+  const headline = (page.data as { headline?: [string, string] }).headline;
+  const crumbs = breadcrumbs(params.slug, page.data.title, page.url);
+  // An element entry of the IDML reference (gen-idml-reference.mjs) opens as
+  // the V5 reference entry: the element's tag as the kicker, its name at
+  // display size with the red full stop (app/global.css `.paged-entry-head`).
+  const entry = SITE_ID === 'idml' && params.slug.length === 2 && params.slug[0] === 'reference';
   return (
     <DocsPage toc={page.data.toc} full={page.data.full} footer={{ items: neighbours(page.url) }}>
       <JsonLd data={jsonLd} />
-      <DocsTitle>{page.data.title}</DocsTitle>
+      {/* The V5 kicker over the title: the site and the chapter, as a path. */}
+      <p className={entry ? 'paged-kicker paged-entry-head' : 'paged-kicker'}>
+        {entry ? `<${page.data.title}> / ${crumbs[1]?.name ?? 'Element reference'}` : crumbs.slice(0, -1).map((c) => c.name).join(' / ')}
+      </p>
+      <DocsTitle>
+        {headline ? (
+          <>
+            {headline[0]}
+            <br />
+            <em>{headline[1]}</em>
+          </>
+        ) : (
+          page.data.title
+        )}
+        {entry ? (
+          <span className="paged-entry-stop" aria-hidden="true">
+            .
+          </span>
+        ) : null}
+      </DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       {/* Auto-rendered from frontmatter so the label can never disagree with it. */}
       <DifficultyLabel tier={page.data.tier as Tier} mode={page.data.diataxis as Diataxis} status={page.data.status as Status} />

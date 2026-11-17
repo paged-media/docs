@@ -1,18 +1,20 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
-import { SiteSwitcher } from '@/components/site-switcher';
-import { Wordmark } from '@/components/wordmark';
+import { SITE_ID } from '@/lib/site';
 
+/** The edition's label, as the V5 sidebar names its handbook. */
+const LABEL = { paged: 'The technical handbook', idml: 'The format atlas' } as const;
+
+/**
+ * Fumadocs' layout options. The shared masthead (components/masthead.tsx,
+ * rendered by app/layout.tsx above every layout) carries the wordmark, the
+ * sections, search and the theme switch, so the docs layout shows none of its
+ * own: its title is the edition's label at the head of the sidebar and of the
+ * phone bar that opens the sidebar drawer, linking to this site's front page.
+ */
 export const baseOptions: BaseLayoutProps = {
   nav: {
-    title: <Wordmark />,
+    title: <span className="paged-sidebar-title">{LABEL[SITE_ID]}</span>,
   },
-  links: [
-    // Both sites, the current one marked (components/site-switcher.tsx).
-    { type: 'custom', children: <SiteSwitcher /> },
-  ],
-  // A plain link to the organisation: no star or fork counts in the masthead.
-  githubUrl: 'https://github.com/paged-media',
-  // Light, dark, or the reader's system setting (the default, app/layout.tsx).
-  themeSwitch: { mode: 'light-dark-system' },
-  // Search: components/search-dialog.tsx over the static index from app/api/search/route.ts.
+  searchToggle: { enabled: false },
+  themeSwitch: { enabled: false },
 };

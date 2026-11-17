@@ -1,13 +1,13 @@
 import type { ReactNode } from 'react';
-import { HomeLayout } from 'fumadocs-ui/layouts/home';
-import { baseOptions } from '@/app/layout.config';
 import { SiteFooter } from '@/components/site-footer';
 
+// The home pages carry the shared masthead and ribbon (app/layout.tsx) and no
+// Fumadocs layout of their own: the page is the edition's front page.
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <HomeLayout {...baseOptions}>
+    <>
       {children}
       <SiteFooter />
-    </HomeLayout>
+    </>
   );
 }

@@ -18,7 +18,7 @@ import { SITE_ID } from '@/lib/site';
  *    reference lacks.
  *
  * Editorial styling (brand ReferenceTable): a 2px ink header rule, uppercase
- * IBM Plex Sans column labels, hairline row dividers, and a mono first column in
+ * DM Sans column labels, hairline row dividers, and a mono first column in
  * the code-tag color — no heavy borders, no zebra fill.
  */
 export interface AttrRow {

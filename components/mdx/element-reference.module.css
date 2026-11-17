@@ -1,19 +1,24 @@
 /*
- * The element entry (components/mdx/element-reference.tsx): an atlas entry on
- * editorial paper. Definition lists and tables are drawn with fine rules, not
- * boxes; the specimen sits on paper stock; the Paged support panel is framed
- * apart from the format reference (ADR 809). Brand tokens only (app/brand.css):
- * blueprint marks what a reader can act on, oxblood marks an issue.
+ * The element entry (components/mdx/element-reference.tsx), in the V5
+ * reference-entry form (docs/adr/810): the definition as a serif lead,
+ * definition lists and tables drawn with hairlines, not boxes; the
+ * relationship plate on night; the specimen on paper stock; the Paged support
+ * panel framed apart from the format reference (ADR 809). Brand tokens only
+ * (app/brand.css): the red marks what a reader acts on and an issue.
  */
 
 /* ── Definition ─────────────────────────────────────────────────────────── */
 .entry .lede {
   font-family: var(--font-text-serif);
-  font-size: 1.125rem;
-  line-height: 1.62;
+  font-size: clamp(21px, 1.9vw, 27px);
+  line-height: 1.32;
+  letter-spacing: -0.018em;
   color: var(--color-ink);
-  max-width: var(--reading-measure);
-  margin: 0 0 var(--space-4);
+  max-width: 34em;
+  margin: 0 0 var(--space-5);
+}
+.entry .lede code {
+  font-size: 0.78em;
 }
 
 .entry .facts {
@@ -65,18 +70,19 @@
   }
 }
 
-/* ── Relationships: a plate, parents | element | children ─────────────────── */
+/* ── Relationships: a plate on night, parents | element | children ──────── */
 .entry .plate {
   margin: var(--space-3) 0 var(--space-5);
 }
 .entry .plateGrid {
+  --color-focus: var(--color-focus-night);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: 0 var(--space-4);
-  padding: var(--space-4) var(--space-4);
-  background: var(--color-paper-soft);
-  border: 1px solid var(--color-rule);
+  padding: var(--space-5) var(--space-4);
+  background: var(--color-instrument);
+  color: var(--color-instrument-ink);
 }
 .entry .plateCol {
   margin: 0;
@@ -106,22 +112,25 @@
   justify-content: flex-end;
 }
 .entry .plateHead {
-  margin: 0 0 6px;
-  font-family: var(--font-sans);
-  font-size: 12.5px;
+  margin: 0 0 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
   line-height: 1.4;
-  font-weight: var(--weight-sans-strong);
-  color: var(--color-ink-soft);
+  font-weight: var(--weight-label);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-accent-night);
 }
 .entry .plateWord {
   position: relative;
-  padding: 10px 16px;
-  border: 1px solid var(--color-ink);
-  background: var(--color-paper);
-  font-family: var(--font-mono);
-  font-size: 14px;
-  font-weight: 560;
-  color: var(--color-ink);
+  padding: 12px 18px;
+  border: 1px solid var(--color-instrument-ink);
+  background: var(--color-instrument-soft);
+  font-family: var(--font-display-serif);
+  font-size: clamp(22px, 2.2vw, 30px);
+  letter-spacing: -0.03em;
+  font-weight: var(--weight-display);
+  color: var(--color-instrument-ink);
   white-space: nowrap;
 }
 /* the fine rules that tie the element to its two columns */
@@ -131,7 +140,7 @@
   position: absolute;
   top: 50%;
   width: var(--space-4);
-  border-top: 1px solid var(--color-rule-strong);
+  border-top: 1px solid var(--color-instrument-rule);
 }
 .entry .plateWord::before {
   right: 100%;
@@ -146,7 +155,10 @@
 .entry .plateMore {
   font-family: var(--font-sans);
   font-size: 12px;
-  color: var(--color-muted);
+  color: var(--color-instrument-muted);
+}
+.entry .plateGrid .count {
+  color: var(--color-instrument-muted);
 }
 @media (max-width: 639px) {
   .entry .plateGrid {
@@ -184,11 +196,13 @@
 }
 .entry .table th {
   text-align: left;
-  font-family: var(--font-sans);
-  font-size: 12.5px;
-  font-weight: var(--weight-sans-strong);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: var(--weight-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--color-ink);
-  padding: 10px 10px 8px;
+  padding: 12px 10px 9px;
   border-bottom: 1px solid var(--color-ink);
   white-space: nowrap;
   vertical-align: bottom;
@@ -204,7 +218,7 @@
   padding-left: 0;
 }
 .entry .table tbody tr:target td {
-  background: var(--blueprint-soft);
+  background: var(--color-accent-soft);
 }
 .entry .name {
   font-family: var(--font-mono);
@@ -232,7 +246,7 @@
   margin-left: 6px;
   font-family: var(--font-sans);
   font-size: 12px;
-  color: var(--blueprint);
+  color: var(--color-accent);
   text-decoration: none;
   opacity: 0;
 }
@@ -390,7 +404,7 @@
   margin-top: 3px;
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--blueprint);
+  color: var(--color-accent);
   text-decoration: none;
   white-space: nowrap;
 }
@@ -445,14 +459,17 @@
   line-height: 1.55;
 }
 .entry .plateCol a {
-  color: var(--color-ink);
+  color: var(--color-instrument-ink);
   text-decoration: underline;
-  text-decoration-color: var(--color-rule-strong);
+  text-decoration-color: var(--color-instrument-rule);
   text-underline-offset: 3px;
 }
 .entry .plateCol a:hover {
-  color: var(--blueprint);
+  color: var(--color-accent-night);
   text-decoration-color: currentColor;
+}
+.entry .plateCol code {
+  color: inherit;
 }
 .entry .table code,
 .entry .value,
@@ -461,7 +478,7 @@
 }
 .entry .src,
 .entry .plainLink {
-  color: var(--blueprint);
+  color: var(--color-accent);
 }
 .entry .plainLink {
   color: var(--code-tag);
