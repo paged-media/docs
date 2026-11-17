@@ -112,20 +112,20 @@ test.describe('scripting lab', () => {
       const ran = await callsOf(page);
       if (mode === 'connect') {
         expect(ran[0]).toEqual(['init', expect.objectContaining({ profile: 'viewer', role: 'editor', seed: 'one-text-frame-selected' })]);
-        expect(ran.map((c) => c[0])).toEqual(['init', 'newDocument', 'runScript', 'runScript', 'fitSelection']);
-        expect(ran[3][1]).toContain("paged.set(ref, 'frameFillColor', 'Color/Red');");
+        expect(ran.map((c) => c[0])).toEqual(['init', 'newDocument', 'runScript', 'runScript', 'fitSelection', 'fitSelection']);
+        expect(ran[3][1]).toContain("paged.set(ref, 'frameFillColor', red);");
       } else {
-        expect(ran).toEqual([['boot', 'one-text-frame-selected'], ['run', expect.stringContaining("'frameFillColor', 'Color/Red'"), true]]);
+        expect(ran).toEqual([['boot', 'one-text-frame-selected'], ['run', expect.stringContaining("paged.set(ref, 'frameFillColor', red);"), true]]);
       }
       await expect(lab(page).getByRole('group', { name: /^Stage:/ })).toHaveAttribute('data-live');
 
       // a theme on another seed runs at once, in the same frame
       await page.getByRole('tab', { name: /Text & paragraph/ }).click();
-      await expect(log).toContainText('stub ran: const story = JSON.parse(paged.stories())[0].selfId;');
+      await expect(log).toContainText('stub ran: const story = JSON.parse(paged.stories())[0];');
       await expect(page.locator('.paged-stage-frame iframe')).toHaveCount(1);
       if (mode === 'connect') {
         const later = await callsOf(page);
-        expect(later.slice(-4).map((c) => c[0])).toEqual(['newDocument', 'runScript', 'runScript', 'fitSelection']);
+        expect(later.slice(-5).map((c) => c[0])).toEqual(['newDocument', 'runScript', 'runScript', 'fitSelection', 'fitSelection']);
       }
     });
   }
@@ -145,7 +145,7 @@ test.describe('scripting lab', () => {
     await expect(beforeButton).toHaveAttribute('aria-pressed', 'true');
     await expect(consoleOf(panel)).toContainText('The stage shows the starter document');
     let ran = (await callsOf(page)).slice(before);
-    expect(ran.map((c) => c[0])).toEqual(['newDocument', 'runScript', 'fitSelection']);
+    expect(ran.map((c) => c[0])).toEqual(['newDocument', 'runScript', 'fitSelection', 'fitSelection']);
 
     await after.click();
     await expect(after).toHaveAttribute('aria-pressed', 'true');
@@ -154,7 +154,9 @@ test.describe('scripting lab', () => {
     // an edit, then Reset: the script comes back and the stage is re-seeded, not run
     const lines = panel.locator('.monaco-editor .view-lines');
     await panel.locator('.monaco-editor').click();
-    await page.keyboard.press('ControlOrMeta+a');
+    // a line of its own (Monaco lays its lines out of DOM order)
+    await page.keyboard.press('End');
+    await page.keyboard.press('Enter');
     await page.keyboard.insertText('//edited_by_the_test');
     await expect(lines).toContainText('//edited_by_the_test');
     const count = (await callsOf(page)).length;
@@ -162,7 +164,7 @@ test.describe('scripting lab', () => {
     await expect(beforeButton).toHaveAttribute('aria-pressed', 'true');
     await expect(lines).not.toContainText('//edited_by_the_test');
     ran = (await callsOf(page)).slice(count);
-    expect(ran.map((c) => c[0])).toEqual(['newDocument', 'runScript', 'fitSelection']);
+    expect(ran.map((c) => c[0])).toEqual(['newDocument', 'runScript', 'fitSelection', 'fitSelection']);
     expect(String(ran[1][1])).toContain('insertTextFrame'); // the seed's prelude, not the theme's script
   });
 

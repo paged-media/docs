@@ -25,9 +25,11 @@ is in [`architecture.md`](architecture.md).
   `paged-run`.
 - **The scripting lab (2026-11-17).** The path showcases are one lab with ten theme tabs; the
   tutorial and the scripting overview use its single-script form. One editor per page, loaded
-  on the first Run, over the legacy `?embed=script` page until the embedding API's `seed` and
-  `fitSelection` are on play.paged.media (`LAB_EMBED`, ADR 811). The stages wait for their
-  recorded stills (`public/scripting/lab/`); until then they say what Run does.
+  on the first Run, through the editor's embedding API (the viewer profile, `seed`,
+  `fitSelection`; `LAB_EMBED`, ADR 811), the legacy `?embed=script` page kept as a fallback.
+  Each theme's script was checked against play.paged.media for a result a reader can see. The
+  stages wait for their recorded stills (`public/scripting/lab/`); until then they say what
+  Run does.
 - **Tables fit (2026-11-17).** No table on either site is wider than its column at 1440 or
   390, outside a labelled scroll region; `tests/browsers/tables.spec.ts` walks every page.
 - **Editor stills.** Slots on the embedding presets, template filling, the bundle host and the

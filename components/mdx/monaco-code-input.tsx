@@ -48,13 +48,18 @@ if (typeof window !== 'undefined') {
 
 export function MonacoCodeInput({
   value,
+  defaultValue,
   onChange,
   height,
   night = false,
   wrap = false,
   label,
 }: {
-  value: string;
+  /** Controlled: the editor shows this text and is reset to it on every change. */
+  value?: string;
+  /** Uncontrolled: the text the editor starts with; give the component a new
+   *  `key` to start again. Fast typing never races a re-render this way. */
+  defaultValue?: string;
   onChange: (v: string) => void;
   height: number;
   /** Night in either theme (the scripting lab's slate panel). */
@@ -70,7 +75,7 @@ export function MonacoCodeInput({
       height={height}
       defaultLanguage="javascript"
       theme={night || dark ? 'vs-dark' : 'vs'}
-      value={value}
+      {...(defaultValue !== undefined ? { defaultValue } : { value })}
       onChange={(v) => onChange(v ?? '')}
       loading={<div style={{ padding: 12, fontFamily: 'var(--font-mono, monospace)', fontSize: 12.5, color: 'var(--color-muted)' }}>Loading editor…</div>}
       options={{

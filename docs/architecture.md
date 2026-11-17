@@ -131,8 +131,8 @@ and loaded from there on demand; it needs WebGPU
 playground origin in an iframe. This is why the host sends cross-origin isolation headers
 ([ADR 804](adr/804-static-export-hosting.md)). The scripting lab loads one editor per page on
 the first Run and speaks the editor's embedding API through `lib/editor-embed.ts`, with the
-older `?embed=script` page behind the same adapter until the API's `seed` and `fitSelection`
-are deployed ([ADR 811](adr/811-scripting-lab-fitting-tables-recorded-imagery.md)).
+older `?embed=script` page behind the same adapter as a fallback
+([ADR 811](adr/811-scripting-lab-fitting-tables-recorded-imagery.md)).
 
 ## Where data is stored
 

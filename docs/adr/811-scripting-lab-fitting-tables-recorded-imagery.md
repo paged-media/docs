@@ -46,11 +46,13 @@
    docs-side copy of `connectEditor` (`lib/editor-embed.ts`; `@paged-media/editor` is not on
    npm yet): `profile: "viewer"`, so the frame is the canvas alone, with `role: "editor"`,
    because the viewer's role writes nothing; `seed` in the frame's config; `fitSelection()`
-   after each run. Until play.paged.media serves those two and lets this origin frame
-   `embed.html`, `LAB_EMBED` in `scripting-lab-stage.ts` is `'legacy'`: the older
-   `?embed=script&seed=` page and its `paged:run` message, the whole editor at half size.
-   Changing that constant switches; `?lab-embed=connect` tries the new path on a deployed page
-   first. The legacy branch is marked REMOVE-LEGACY.
+   after each run, asked twice 300 ms apart, because a new document's own fit to its page can
+   land after the first ask. `LAB_EMBED` in `scripting-lab-stage.ts` chooses the protocol.
+   It was `'legacy'` (the older `?embed=script&seed=` page and its `paged:run` message, the
+   whole editor at half size) until play.paged.media served `seed` and `fitSelection` and let
+   docs.paged.media frame `embed.html`, and is `'connect'` since (the editor's release of
+   2026-11-17). `?lab-embed=legacy` falls back on a deployed page; the legacy branch is marked
+   REMOVE-LEGACY.
 4. **A stage is never empty and never fake.** Before Run, and where `navigator.gpu` is missing,
    the stage shows the theme's recorded result (`public/scripting/lab/<id>.webp`, the editor's
    film stills) or, until one is recorded, says on paper what Run will do. Without WebGPU, Run
@@ -81,10 +83,11 @@
 
 - The lab's tests run against a stand-in editor (`tests/browsers/editor-stub.html`) that
   speaks both protocols; CI needs no editor and no GPU. Whether the real editor answers is
-  checked on the deployed site, with WebGPU, before `LAB_EMBED` changes.
-- When `seed` and `fitSelection` reach play.paged.media and docs.paged.media is in its
-  `VITE_EMBED_ORIGINS`, flip `LAB_EMBED`, then delete the legacy branch; `<ScriptingPlayground>`
-  stays for the examples gallery until it moves to the same stage.
+  checked against play.paged.media in Chrome with WebGPU: the built lab, served on the docs
+  origin, runs every theme there and its stage is looked at (each theme's script is written
+  so that its result shows plainly once the stage fits the selection).
+- Once docs.paged.media runs the lab on `'connect'` in production, delete the legacy branch;
+  `<ScriptingPlayground>` stays for the examples gallery until it moves to the same stage.
 - The lab's and the demos' stills, and the editor figures, arrive from the editor's film
   stills; until then the pages show the empty stage or nothing, and the build lists a figure
   whose file is there without its provenance.

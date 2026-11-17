@@ -65,6 +65,7 @@ export function ScriptingLabClient({ items, tabs, label }: { items: LabItem[]; t
   const [view, setView] = useState<'before' | 'after' | null>(null);
   const [gpu, setGpu] = useState<boolean | null>(null);
   const [copied, setCopied] = useState(false);
+  const [resets, setResets] = useState(0);
   const stage = useSyncExternalStore(stageStore.subscribe, stageStore.get, stageStore.getServer);
   const slotRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<(HTMLAnchorElement | null)[]>([]);
@@ -143,6 +144,7 @@ export function ScriptingLabClient({ items, tabs, label }: { items: LabItem[]; t
 
   function reset() {
     setSources((s) => ({ ...s, [item.id]: item.script }));
+    setResets((n) => n + 1);
     if (live) void perform('reset');
     else {
       generation.current++;
@@ -277,7 +279,10 @@ export function ScriptingLabClient({ items, tabs, label }: { items: LabItem[]; t
               </div>
               <div className="paged-script-editor">
                 <MonacoCodeInput
-                  value={source}
+                  // Uncontrolled, so fast typing never races a re-render; a new
+                  // key (another tab, or Reset) starts it from the source again.
+                  key={`${item.id}:${resets}`}
+                  defaultValue={source}
                   onChange={(v) => setSources((s) => ({ ...s, [item.id]: v }))}
                   height={editorHeight(item.script)}
                   night

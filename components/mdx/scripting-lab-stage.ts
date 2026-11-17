@@ -10,9 +10,9 @@
  * and then the script, so a script always starts from the same page.
  *
  * Two ways to talk to the editor sit behind one adapter, `StageEditor`:
- *   connect  the embedding API (embed.html, lib/editor-embed.ts): the viewer
- *            profile, so the frame is the canvas alone; `seed` in the frame's
- *            config; `fitSelection()` after each run.
+ *   connect  (the default) the embedding API (embed.html, lib/editor-embed.ts):
+ *            the viewer profile, so the frame is the canvas; `seed` in the
+ *            frame's config; `fitSelection()` after each run.
  *   legacy   the older `?embed=script&seed=<name>` page and its `paged:run`
  *            message: the whole editor, drawn at half size, no fit.
  */
@@ -25,15 +25,17 @@ export const PLAYGROUND_ORIGIN = process.env.NEXT_PUBLIC_PLAYGROUND_URL || 'http
 export type EmbedMode = 'connect' | 'legacy';
 
 /**
- * The protocol the lab speaks. 'legacy' until play.paged.media serves the
- * embedding API with `seed` and `fitSelection` and lets docs.paged.media frame
- * `embed.html` (VITE_EMBED_ORIGINS); then 'connect'.
+ * The protocol the lab speaks: 'connect', the embedding API, which
+ * play.paged.media serves with `seed` and `fitSelection` and lets
+ * docs.paged.media and idml.paged.media frame (its release of 2026-11-17; the
+ * lab's ten themes were checked against it in Chrome with WebGPU).
  *
- * REMOVE-LEGACY: when this is 'connect' and the deploy is verified, delete
- * `legacyStage`, `legacyUrl` and the `scale` of the legacy frame. Until then
- * `?lab-embed=connect` on a docs page tries the embedding API without a rebuild.
+ * REMOVE-LEGACY: once docs.paged.media runs the lab on 'connect' in
+ * production, delete `legacyStage`, `legacyUrl` and the legacy frame's half
+ * scale. Until then `?lab-embed=legacy` on a docs page falls back without a
+ * rebuild.
  */
-export const LAB_EMBED: EmbedMode = 'legacy';
+export const LAB_EMBED: EmbedMode = 'connect';
 
 /** US Letter, the size of the editor's blank document (`paged.file.new`). */
 const PAGE_PT = [612, 792] as const;
@@ -96,6 +98,11 @@ async function connectStage(iframe: HTMLIFrameElement, seed: SeedId): Promise<St
       return source === null ? null : withTimeout(editor.runScript(source), 30_000, 'The editor');
     },
     async fit() {
+      await editor.call('fitSelection').catch(() => undefined);
+      // A new document fits its page once it has laid out, and on a slow
+      // starter (a table) that can land after the fit just asked for: ask
+      // again a moment later, so the stage keeps the selection framed.
+      await new Promise((r) => setTimeout(r, 300));
       await editor.call('fitSelection').catch(() => undefined);
     },
     dispose: () => editor.dispose(),
