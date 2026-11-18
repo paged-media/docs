@@ -41,8 +41,9 @@ export type Role = 'author' | 'editor' | 'filler' | 'viewer';
 
 /** What the frame's editor is made with (protocol.ts FrameConfig, the fields the docs use). */
 export interface FrameConfig {
-  /** A preset id (`viewer`, `template-fill`, `solo:draw`, …). */
-  profile?: string;
+  /** A preset id (`viewer`, `template-fill`, `solo:draw`, …), or a profile that
+   *  extends one (the editor's EditorProfile; the docs use `extends` and `canvas`). */
+  profile?: string | { extends: string; canvas?: { thumbnails?: boolean; rulers?: boolean } };
   /** The session's role; overrides the profile's. */
   role?: Role;
   /** A named seed prelude (the editor's `playground/seeds.ts`) run after the blank document. */

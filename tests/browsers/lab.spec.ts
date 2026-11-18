@@ -111,8 +111,8 @@ test.describe('scripting lab', () => {
       expect(requests[0]).toBe(mode === 'connect' ? `${PLAY}/embed.html` : `${PLAY}/?embed=script&seed=one-text-frame-selected`);
       const ran = await callsOf(page);
       if (mode === 'connect') {
-        expect(ran[0]).toEqual(['init', expect.objectContaining({ profile: 'viewer', role: 'editor', seed: 'one-text-frame-selected' })]);
-        expect(ran.map((c) => c[0])).toEqual(['init', 'newDocument', 'runScript', 'runScript', 'fitSelection', 'fitSelection']);
+        expect(ran[0]).toEqual(['init', expect.objectContaining({ profile: { extends: 'viewer', canvas: { thumbnails: false } }, role: 'editor', seed: 'one-text-frame-selected' })]);
+        expect(ran.map((c) => c[0])).toEqual(['init', 'newDocument', 'runScript', 'runScript', 'fitSelection', 'fitSelection', 'runScript']);
         expect(ran[3][1]).toContain("paged.set(ref, 'frameFillColor', red);");
       } else {
         expect(ran).toEqual([['boot', 'one-text-frame-selected'], ['run', expect.stringContaining("paged.set(ref, 'frameFillColor', red);"), true]]);
@@ -125,7 +125,7 @@ test.describe('scripting lab', () => {
       await expect(page.locator('.paged-stage-frame iframe')).toHaveCount(1);
       if (mode === 'connect') {
         const later = await callsOf(page);
-        expect(later.slice(-5).map((c) => c[0])).toEqual(['newDocument', 'runScript', 'runScript', 'fitSelection', 'fitSelection']);
+        expect(later.slice(-6).map((c) => c[0])).toEqual(['newDocument', 'runScript', 'runScript', 'fitSelection', 'fitSelection', 'runScript']);
       }
     });
   }
@@ -145,7 +145,7 @@ test.describe('scripting lab', () => {
     await expect(beforeButton).toHaveAttribute('aria-pressed', 'true');
     await expect(consoleOf(panel)).toContainText('The stage shows the starter document');
     let ran = (await callsOf(page)).slice(before);
-    expect(ran.map((c) => c[0])).toEqual(['newDocument', 'runScript', 'fitSelection', 'fitSelection']);
+    expect(ran.map((c) => c[0])).toEqual(['newDocument', 'runScript', 'fitSelection', 'fitSelection', 'runScript']);
 
     await after.click();
     await expect(after).toHaveAttribute('aria-pressed', 'true');
@@ -164,7 +164,7 @@ test.describe('scripting lab', () => {
     await expect(beforeButton).toHaveAttribute('aria-pressed', 'true');
     await expect(lines).not.toContainText('//edited_by_the_test');
     ran = (await callsOf(page)).slice(count);
-    expect(ran.map((c) => c[0])).toEqual(['newDocument', 'runScript', 'fitSelection', 'fitSelection']);
+    expect(ran.map((c) => c[0])).toEqual(['newDocument', 'runScript', 'fitSelection', 'fitSelection', 'runScript']);
     expect(String(ran[1][1])).toContain('insertTextFrame'); // the seed's prelude, not the theme's script
   });
 

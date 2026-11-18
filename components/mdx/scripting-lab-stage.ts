@@ -79,9 +79,10 @@ async function connectStage(iframe: HTMLIFrameElement, seed: SeedId): Promise<St
   iframe.src = `${PLAYGROUND_ORIGIN}/embed.html`;
   const editor = await connectEditor(
     iframe,
-    // The viewer profile draws the canvas alone; its role changes nothing, so
-    // the session is an editor's, which a script needs to write.
-    { profile: 'viewer', role: 'editor', seed, storage: 'memory' },
+    // The viewer profile: the canvas with a Hand and Zoom rail and no page
+    // strip. Its own role changes nothing, so the session is an editor's,
+    // which a script needs to write (the rail, not the role, keeps it quiet).
+    { profile: { extends: 'viewer', canvas: { thumbnails: false } }, role: 'editor', seed, storage: 'memory' },
     { origin: PLAYGROUND_ORIGIN },
   );
   return {
@@ -104,6 +105,9 @@ async function connectStage(iframe: HTMLIFrameElement, seed: SeedId): Promise<St
       // again a moment later, so the stage keeps the selection framed.
       await new Promise((r) => setTimeout(r, 300));
       await editor.call('fitSelection').catch(() => undefined);
+      // The stage shows the result, not the selection's handles (as the
+      // recorded results do); the next run seeds its own selection again.
+      await editor.runScript('paged.clearSelection()').catch(() => undefined);
     },
     dispose: () => editor.dispose(),
   };
