@@ -25,7 +25,21 @@ export async function firstSearchResult(page: Page, query: string): Promise<stri
   await page.keyboard.type(query, { delay: 20 });
   const title = page.locator('.paged-search-page .paged-search-title > span:first-child').first();
   await expect(title).toBeVisible({ timeout: 15_000 });
-  return (await title.textContent())?.trim() ?? '';
+  // The list re-renders as each typed letter's results arrive; read it once two
+  // reads a beat apart agree and are not empty (WebKit has read a row mid-render).
+  let last = '';
+  await expect
+    .poll(
+      async () => {
+        const now = (await title.textContent())?.trim() ?? '';
+        const settled = now !== '' && now === last;
+        last = now;
+        return settled;
+      },
+      { timeout: 15_000, intervals: [250] },
+    )
+    .toBe(true);
+  return last;
 }
 
 /** Every listed page renders at phone width without scrolling sideways. */
