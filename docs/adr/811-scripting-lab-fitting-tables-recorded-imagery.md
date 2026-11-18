@@ -100,3 +100,11 @@ at `5f06bce4c`, through the embedding API with the revised theme scripts; the fi
 state at `09a35a100`. Each caption names its commit. The guided tour ends on an empty page,
 so its demo keeps the plain stage.
 - A new generated table follows rule 5 or fails the sweep.
+
+## Amendment, 2026-11-18 (later)
+
+All of that imagery was recaptured at paged `eeef38be6`, after fixes that change what it
+shows: glyphs no longer snap to whole points (the business card's two "I"s match, engine
+ADR 189 amendment), the embedded viewer is canvas-only (editor ADR 274 amendment) and the
+sheet's Grid panel sits on paper (sheet ADR 510).
+

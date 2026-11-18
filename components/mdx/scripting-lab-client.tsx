@@ -22,7 +22,7 @@ import { claimStage, onStage, openInEditorHref, releaseStage, stageStore } from 
 
 /** Where the recorded results come from: the editor's still recorder
  *  (apps/editor/apps/canvas/tests/films/stills/embed.film.ts), at this commit. */
-const LAB_POSTERS = { commit: '5f06bce4c', date: '18 Nov 2026' } as const;
+const LAB_POSTERS = { commit: 'eeef38be6', date: '18 Nov 2026' } as const;
 
 export interface LabItem {
   id: string;
