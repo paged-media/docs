@@ -4,6 +4,12 @@
  * live-demo-client.tsx). The stage shows `public/demos/<script>.webp`, a
  * recorded frame of the demo, until Run, and instead of it where the browser
  * has no WebGPU; without that still it says what Run does.
+ *
+ * <LiveDemo sampleKind="magazine" /> opens a sample publication instead (a
+ * real magazine, catalogue or report the playground offers, rebuilt from its
+ * publisher's PDF); with a `script` too, the script tours it. Which sample is
+ * read from the module host's catalog on Run, by its kind: this repository
+ * names no publication.
  */
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -13,6 +19,13 @@ export function demoPoster(id: string): string | null {
   return existsSync(join(process.cwd(), 'public', 'demos', `${id}.webp`)) ? `/demos/${id}.webp` : null;
 }
 
-export function LiveDemo(props: { script: string; title?: string; caption?: string; height?: number; autoplay?: boolean }) {
-  return <LiveDemoClient {...props} poster={demoPoster(props.script)} />;
+export function LiveDemo(props: {
+  script?: string;
+  sampleKind?: string;
+  title?: string;
+  caption?: string;
+  height?: number;
+  autoplay?: boolean;
+}) {
+  return <LiveDemoClient {...props} poster={props.script && !props.sampleKind ? demoPoster(props.script) : null} />;
 }

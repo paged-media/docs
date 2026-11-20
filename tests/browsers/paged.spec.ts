@@ -103,3 +103,45 @@ test('the footer names the sample publications as illustration from archive.org,
     await expect(notice.locator('a[href="https://paged.media/imprint/#samples"]')).toHaveCount(1);
   }
 });
+
+test('a live demo of a real publication asks nothing of either host before Run, then opens the smallest sample of its kind', async ({ page }) => {
+  const asked: string[] = [];
+  page.on('request', (r) => {
+    if (/play\.paged\.media|modules\.paged\.media/.test(r.url())) asked.push(r.url());
+  });
+  await page.addInitScript(() => {
+    Object.defineProperty(Navigator.prototype, 'gpu', { configurable: true, get: () => ({}) });
+  });
+  await page.route('https://modules.paged.media/samples/catalog.json', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: { 'Access-Control-Allow-Origin': '*', 'Cross-Origin-Resource-Policy': 'cross-origin' },
+      body: JSON.stringify({
+        v: 1,
+        samples: [
+          { id: 'large-magazine', title: 'Large', kind: 'magazine', bytes: 90_000_000, document: 'a.paged', fonts: [] },
+          { id: 'small-magazine', title: 'Small', kind: 'magazine', bytes: 1_000_000, document: 'b.paged', fonts: [] },
+          { id: 'a-catalogue', title: 'Catalogue', kind: 'catalogue', bytes: 1, document: 'c.paged', fonts: [] },
+        ],
+      }),
+    }),
+  );
+  await page.route('https://play.paged.media/**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'text/html; charset=utf-8',
+      headers: { 'Cross-Origin-Embedder-Policy': 'credentialless', 'Cross-Origin-Resource-Policy': 'cross-origin' },
+      body: '<!doctype html><title>stand-in</title>',
+    }),
+  );
+  await page.goto('/demos/');
+  await page.waitForLoadState('networkidle');
+  expect(asked).toEqual([]);
+  const demo = page.locator('figure.paged-demo').filter({ hasText: 'A real magazine, rebuilt in Paged' });
+  await expect(demo).toContainText('opens a real magazine');
+  await demo.getByRole('button', { name: /Run live demo/ }).click();
+  await expect(demo.locator('iframe')).toHaveAttribute('src', 'https://play.paged.media/?sample=small-magazine');
+  // The notice, in text, on the page that shows the samples.
+  await expect(page.locator('main')).toContainText('illustrative and demonstration purposes only');
+});

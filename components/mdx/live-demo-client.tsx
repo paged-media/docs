@@ -13,20 +13,42 @@
  * browser without WebGPU, the stage shows the demo's recorded poster
  * (public/demos/<id>.webp), or, until one is recorded, says what Run does.
  * The origin is NEXT_PUBLIC_PLAYGROUND_URL (inlined at build), else production.
+ *
+ * With `sampleKind`, Run first reads the sample catalog on the module host and
+ * picks the smallest sample of that kind; the playground opens it
+ * (`?sample=<id>`) and the script, if any, tours it once it is open. Nothing
+ * is asked of either host before Run.
  */
 import { useEffect, useState } from 'react';
 
 const PLAYGROUND_ORIGIN = process.env.NEXT_PUBLIC_PLAYGROUND_URL || 'https://play.paged.media';
+const SAMPLES_CATALOG = process.env.NEXT_PUBLIC_SAMPLES_CATALOG || 'https://modules.paged.media/samples/catalog.json';
+
+/** The smallest sample of `kind` in the catalog, or null. */
+async function sampleOfKind(kind: string): Promise<{ id: string; title: string } | null> {
+  const r = await fetch(SAMPLES_CATALOG);
+  if (!r.ok) return null;
+  const c = (await r.json()) as { samples?: Array<{ id: string; title: string; kind?: string; bytes?: number }> };
+  const of = (c.samples ?? []).filter((s) => s.kind === kind).sort((a, b) => (a.bytes ?? 0) - (b.bytes ?? 0));
+  return of[0] ?? null;
+}
+
+const playUrl = (script: string | undefined, sample: string | undefined) => {
+  const q = [sample ? `sample=${encodeURIComponent(sample)}` : null, script ? `script=${encodeURIComponent(script)}` : null].filter(Boolean);
+  return `${PLAYGROUND_ORIGIN}/${q.length ? `?${q.join('&')}` : ''}`;
+};
 
 export function LiveDemoClient({
   script,
+  sampleKind,
   title,
   caption,
   height = 600,
   autoplay = true,
   poster,
 }: {
-  script: string;
+  script?: string;
+  sampleKind?: string;
   title?: string;
   caption?: string;
   height?: number;
@@ -35,12 +57,21 @@ export function LiveDemoClient({
 }) {
   const [loaded, setLoaded] = useState(false);
   const [gpu, setGpu] = useState<boolean | null>(null);
+  const [sample, setSample] = useState<{ id: string; title: string } | null>(null);
+  const [missing, setMissing] = useState(false);
   useEffect(() => {
     setGpu(!!(navigator as Navigator & { gpu?: unknown }).gpu);
   }, []);
-  const label = title ?? script;
-  const open = `${PLAYGROUND_ORIGIN}/?script=${encodeURIComponent(script)}`;
-  const src = `${open}${autoplay ? '&autoplay' : ''}`;
+  const label = title ?? script ?? `a real ${sampleKind}`;
+  const open = playUrl(script, sample?.id);
+  const src = `${open}${script && autoplay ? '&autoplay' : ''}`;
+  const run = async () => {
+    if (!sampleKind) return setLoaded(true);
+    const found = await sampleOfKind(sampleKind).catch(() => null);
+    if (!found) return setMissing(true);
+    setSample(found);
+    setLoaded(true);
+  };
 
   return (
     <figure className="not-prose paged-lab paged-demo">
@@ -73,7 +104,11 @@ export function LiveDemoClient({
                 <p className="paged-script-empty-text">
                   {gpu === false
                     ? 'The live demo needs WebGPU. There is no recorded frame of it yet.'
-                    : `Run loads the Paged editor here and plays the “${label}” script in it.`}
+                    : missing
+                      ? `The sample catalog offers no ${sampleKind} just now; the playground lists every sample on its empty canvas.`
+                      : sampleKind
+                        ? `Run loads the Paged editor here and opens a real ${sampleKind}, rebuilt from its publisher’s PDF${script ? `, then plays the “${script}” script on it` : ''}.`
+                        : `Run loads the Paged editor here and plays the “${label}” script in it.`}
                 </p>
               </div>
             )}
@@ -86,11 +121,16 @@ export function LiveDemoClient({
                   {poster ? ' The stage shows a recorded frame of it.' : ''}
                 </p>
               ) : (
-                <button type="button" className="paged-script-run" onClick={() => setLoaded(true)} aria-label={`Run live demo: ${label}`}>
+                <button type="button" className="paged-script-run" onClick={() => void run()} aria-label={`Run live demo: ${label}`}>
                   Run live demo
                 </button>
               )}
-              <span className="paged-demo-note">The real editor, driven by a script{poster ? '; the still above is a recorded frame' : ''}.</span>
+              <span className="paged-demo-note">
+                {sampleKind
+                  ? 'The real editor, with a sample publication, shown for illustration'
+                  : 'The real editor, driven by a script'}
+                {poster ? '; the still above is a recorded frame' : ''}.
+              </span>
             </div>
           )}
         </div>

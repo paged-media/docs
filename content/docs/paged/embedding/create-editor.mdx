@@ -74,6 +74,9 @@ editor.on((e) => {
 | `profile` | `string \| EditorProfile` | A preset id (`full`, `template-fill`, `viewer`, `solo:draw`, …) or a profile. Default `full`. |
 | `role` | `'author' \| 'editor' \| 'filler' \| 'viewer'` | The session's role; overrides the profile's. |
 | `document` | `{ bytes, name? }` | The document to open: `.paged`, `.idml`, or a template in either. |
+| `seed` | `string` | A seed document to start from, by name (`one-text-frame-selected`, `a-table`, `flyer`, …): a blank US Letter page and the seed's `paged.*` prelude. Ignored when `document` is given; an unknown name refuses with an `EditorError` of code `unknownSeed`. |
+| `sample` | `string` | A sample publication to open, by its id in the sample catalog (a real magazine, catalogue or report, rebuilt from its publisher's PDF and shown for illustration). The catalog is read before anything mounts: an id it does not list, or a catalog that cannot be read, refuses with an `EditorError` of code `unknownSample`. Ignored when `document` is given. The host page's Content-Security-Policy must admit the catalog's host. |
+| `samplesUrl` | `string` | The sample catalog's URL; `https://modules.paged.media/samples/catalog.json` by default. |
 | `actions` | `HostActions` | What the host decides: save, submit, close, back (below). |
 | `values` | `Record<string, FieldValue \| string \| boolean>` | Field values to set once the document is open. |
 | `locale` | `string` | The editor's language (`de`); English by default. See [Languages](/docs/paged/embedding/languages). |
