@@ -64,6 +64,12 @@ export function SiteFooter({ variant = 'full' }: { variant?: 'full' | 'compact' 
               for interoperability only.
             </p>
           )}
+          <p data-sample-notice>
+            {full
+              ? 'The sample publications shown in the editor’s demos and on paged.media are used for illustrative and demonstration purposes only; they come from archive.org and remain their publishers’ property. '
+              : 'Sample publications in the demos: for illustration only, from archive.org, their publishers’ property. '}
+            <a href="https://paged.media/imprint/#samples">The publications and their publishers</a>.
+          </p>
           <p>
             Documentation content <strong>CC&nbsp;BY&nbsp;4.0</strong>; site code <strong>MIT</strong>. Set in
             Newsreader and DM&nbsp;Sans. ©&nbsp;2026 And The Next GmbH

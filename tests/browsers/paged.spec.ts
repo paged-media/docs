@@ -93,3 +93,13 @@ searchIndex('paged', 'https://docs.paged.media', ['Guide', 'API', 'Plugin', 'Eng
 phoneWidth(['/', '/scripting/your-first-script/', '/state/', '/sdk/', '/engine/the-renderer/the-pipeline/', '/engine/test-corpus/the-docs-examples-loop/']);
 fonts();
 themes();
+
+test('the footer names the sample publications as illustration from archive.org, in text', async ({ page }) => {
+  for (const path of ['/', '/embedding/create-editor/']) {
+    await page.goto(path);
+    const notice = page.locator('footer [data-sample-notice]');
+    await expect(notice).toContainText('archive.org');
+    await expect(notice).toContainText(/illustrat/);
+    await expect(notice.locator('a[href="https://paged.media/imprint/#samples"]')).toHaveCount(1);
+  }
+});

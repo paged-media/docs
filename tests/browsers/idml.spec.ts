@@ -165,3 +165,13 @@ searchIndex('idml', 'https://idml.paged.media', ['Guide', 'Element', 'Cookbook',
 phoneWidth(['/', '/reference/', '/reference/text-frame/', '/meta/census/', '/typography/drop-caps-and-tabs/', '/tools/inspector/', '/field-guide/']);
 fonts();
 themes();
+
+test('the footer names the sample publications as illustration from archive.org, in text', async ({ page }) => {
+  for (const path of ['/', '/tools/inspector/']) {
+    await page.goto(path);
+    const notice = page.locator('footer [data-sample-notice]');
+    await expect(notice).toContainText('archive.org');
+    await expect(notice).toContainText(/illustrat/);
+    await expect(notice.locator('a[href="https://paged.media/imprint/#samples"]')).toHaveCount(1);
+  }
+});
