@@ -108,3 +108,13 @@ shows: glyphs no longer snap to whole points (the business card's two "I"s match
 ADR 189 amendment), the embedded viewer is canvas-only (editor ADR 274 amendment) and the
 sheet's Grid panel sits on paper (sheet ADR 510).
 
+
+## Amendment, 2026-11-20
+
+The four embedding-profile figures were recaptured at paged `2c960ecbe`. `full` and `viewer`
+now open a sample publication through the embedding API's `sample` option (editor ADR 212,
+amendment 2): a catalogue rebuilt in Paged from its publisher's PDF on archive.org. Their
+captions say so in text, as the footer does on every page; nothing about the samples is
+written into the images. `solo:draw` and `template-fill` keep their own pages. The viewer
+figure is taken with the viewer role, so its rail is Hand and Zoom, as the profiles table
+says. The scripting lab keeps its seeds: its scripts are written against them.

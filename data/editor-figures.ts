@@ -21,28 +21,28 @@ export interface EditorFigure {
 
 export const EDITOR_FIGURES = {
   'profile-full': {
-    caption: '`full`: the whole editor, with every bundle, panel, tool, menu and mode. A template is open, so a bar says it is being edited as a document.',
-    alt: 'The Paged editor in the full profile with a business-card template open: menu bar, control bar, tool rail, canvas, panels and the mode bar, and a notice that the document is a template with four fields.',
+    caption: '`full`: the whole editor, with every bundle, panel, tool, menu and mode, opened on a sample catalogue with the `sample` option. The catalogue was rebuilt in Paged from its publisher’s PDF (archive.org), shown for illustration only.',
+    alt: 'The Paged editor in the full profile with a sample furniture catalogue open at its cover: menu bar, control bar, tool rail, canvas, the Properties panel, the page strip and the mode bar.',
     repo: 'paged',
-    provenance: { commit: 'eeef38be6', capturedAt: '2026-11-18' },
+    provenance: { commit: '2c960ecbe', capturedAt: '2026-11-20' },
   },
   'profile-solo-draw': {
     caption: '`solo:draw`: the draw module’s application, with its own tools and menus and no mode bar.',
     alt: 'The Paged editor in the solo:draw profile: a shorter menu bar and the draw tools around a page with four rounded shapes in pink, violet and green.',
     repo: 'paged',
-    provenance: { commit: 'eeef38be6', capturedAt: '2026-11-18' },
+    provenance: { commit: '2c960ecbe', capturedAt: '2026-11-20' },
   },
   'profile-template-fill': {
     caption: '`template-fill`: Undo, Redo and Save, a short tool rail, and the template form as the inspector.',
     alt: 'The Paged editor in the template-fill profile: the business card with its fields dashed and labelled on the canvas, and the form beside it reading 3 of 4 fields filled.',
     repo: 'paged',
-    provenance: { commit: 'eeef38be6', capturedAt: '2026-11-18' },
+    provenance: { commit: '2c960ecbe', capturedAt: '2026-11-20' },
   },
   'profile-viewer': {
-    caption: '`viewer`: the canvas and its page thumbnails, with a short rail of Select, Hand and Zoom.',
-    alt: 'The Paged editor in the viewer profile: the business card on the canvas, a page thumbnail below, and a rail of three tools.',
+    caption: '`viewer`, with the viewer role: the canvas and its page thumbnails, and a rail of Hand and Zoom. The sample catalogue was rebuilt in Paged from its publisher’s PDF (archive.org), shown for illustration only.',
+    alt: 'The Paged editor in the viewer profile: the cover of a sample furniture catalogue on the canvas, the page strip below it, and a rail of two tools, Hand and Zoom.',
     repo: 'paged',
-    provenance: { commit: 'eeef38be6', capturedAt: '2026-11-18' },
+    provenance: { commit: '2c960ecbe', capturedAt: '2026-11-20' },
   },
   'template-filler': {
     caption: 'A filler session: the form lists the fields and counts them, and the canvas outlines each field with its label.',
