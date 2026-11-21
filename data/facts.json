@@ -80,7 +80,7 @@
       "pointer": "/totals/features"
     },
     "features.stable": {
-      "label": "shipped capabilities",
+      "label": "stable capabilities",
       "from": "cockpit/public.json",
       "pointer": "/totals/by_status/stable"
     },

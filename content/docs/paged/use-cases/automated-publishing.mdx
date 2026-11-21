@@ -1,6 +1,6 @@
 ---
 title: "Automated & data-driven publishing"
-description: Generate catalogs, datasheets, and documents from data — PIM-fed, scriptable, headless publishing with Paged's open IDML platform.
+description: Generate catalogs, datasheets, and documents from exported data — scriptable, headless publishing with Paged's open IDML platform.
 tier: intermediate
 diataxis: explanation
 status: published
@@ -67,12 +67,19 @@ scriptable foundation you can own and extend, not for turnkey parity today.
 - [Coming from Adobe InDesign Server](/docs/paged/use-cases/indesign-server) — the
   server jobs mapped one by one, with a worked command-line example.
 - [Compare DTP tools](/docs/paged/compare) — how automation stacks up across tools.
+- On paged.media: [database publishing](https://paged.media/database-publishing/),
+  [the automation server](https://paged.media/indesign-server/), and a
+  [review of your workflow](https://paged.media/enterprise/#assessment).
 
 ## Frequently asked questions
 
 **Can Paged generate a catalog from a database or PIM?**
-Yes — that is a primary use case. Script the document from your records, or use
-the data plugin's record flow, and produce IDML output in batches.
+From an export of their data, yes — that is a primary use case. Script the document
+from your records, or use the data plugin's record flow, and produce IDML output in
+batches. Records come from CSV, TSV, XLSX, JSON or Parquet files, which is still
+experimental (see the [capability state](/docs/paged/state)). There is no PIM
+connector and no live database connection yet: export from the PIM or the database
+to one of those formats.
 
 **Does it run on a server, without a GUI?**
 Yes. The engine is headless-friendly and web-native, so it fits build pipelines
