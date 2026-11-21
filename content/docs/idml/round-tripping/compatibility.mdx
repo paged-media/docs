@@ -6,7 +6,7 @@ diataxis: explanation
 status: published
 owner: paged-docs
 describes: [round-tripping.idml-reserialization, plugin-publish.byte-identity-sweep, plugin-publish.save-back-defects]
-reviewed: 2026-10-11
+reviewed: 2026-11-21
 ---
 
 **IDML grows by addition, travels both up and down between InDesign versions, and survives a round trip through another tool only if that tool writes back what it did not understand.**
@@ -84,9 +84,10 @@ Only opening the file in InDesign settles it.
 > An untouched `ItemTransform` or `StrokeWeight` keeps its source spelling, a `FillTint` of
 > `-1` is kept rather than deleted, and an identity `ItemTransform` is always written, never
 > removed. (Removing it once made every save toggle the attribute, and InDesign then drew
-> the right-hand pages of a book on the left ones.) Known gaps: a removed page leaves its
-> entry behind, a master spread created in Paged is not written, and an item's hidden state,
-> a name set in Paged and text variables authored in Paged do not reach the IDML yet. Export
+> the right-hand pages of a book on the left ones.) A page removed in Paged drops out of the
+> package with its designmap reference, a master spread created in Paged is written, and an
+> item's hidden state, a name set in Paged and text variables authored in Paged reach the
+> IDML; InDesign 2025 opens such a file and keeps them through a save as `.indd`. Export
 > returns a list of what the format could not carry.
 >
 > A `.paged` file is a valid IDML package with Paged's own parts added under `paged/`, so
